@@ -356,7 +356,7 @@ impl PyBiDirectionalMultiTape {
     pub fn prune(&mut self) {
         self.multi_tape.prune()
     }
-    pub fn get_minimal_data_region(&self, tape_no: TapeNo) -> Vec<CellState> {
+    pub fn get_minimal_data_region_for(&self, tape_no: TapeNo) -> Vec<CellState> {
         match self.multi_tape.get_tape(tape_no) {
             Some(tape) => tape.clone().get_minimal_data_region(),
             None => vec![],
@@ -625,7 +625,7 @@ impl PyMultiTapeAutomata {
     }
 
     /// Minimal contiguous region of the tape containing all non-void states.
-    pub fn get_minimal_data_region(&self, tape_no: TapeNo) -> Vec<CellState> {
+    pub fn get_minimal_data_region_for(&self, tape_no: TapeNo) -> Vec<CellState> {
         match self.automata.get_tape(tape_no) {
             Some(tape) => tape.clone().get_minimal_data_region(),
             None => vec![],

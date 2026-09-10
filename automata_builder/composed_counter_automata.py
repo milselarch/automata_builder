@@ -1,4 +1,5 @@
-from automata_builder._rust import D, PySingleTapeAutomata, PyMultiTapeProduct, PyProcessStepResult
+from automata_builder._rust import D, PySingleTapeAutomata, PyMultiTapeProduct, PyProcessStepResult, \
+    PySingleTapeProcessStepResult
 
 from automata_builder.counter_automata import (
     CounterAutomataRunner, DATA_TAPE, DT_DATA
@@ -73,5 +74,14 @@ class ComposedCounterAutomataRunner(object):
 
         return PyMultiTapeProduct(init_multi_tape_terms)
 
-    def step(self, verbose: bool = False) -> PyProcessStepResult:
-        return self.multi_tape_runner.step(verbose=verbose)
+    def step(
+        self, verbose: bool = False
+    ) -> tuple[PySingleTapeProcessStepResult, PyProcessStepResult]:
+        single_step_res = self.single_tape_automata.step(verbose=verbose)
+        multi_step_res = self.multi_tape_runner.step(verbose=verbose)
+
+        single_tape_data_region = (
+            self.single_tape_automata.get_minimal_data_region()
+        )
+        # TODO: implement get_minimal_data_region for multi tape
+        return single_step_res, multi_step_res
