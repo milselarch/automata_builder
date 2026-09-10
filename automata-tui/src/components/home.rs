@@ -5,7 +5,7 @@ use tokio::sync::mpsc::UnboundedSender;
 
 use super::Component;
 use crate::{action::Action, config::Config};
-use py_ca_compiler::automata::composer::{MultiTape, Tape, TapeCellState};
+use automata_builder::automata::composer::{MultiTape, Tape, TapeCellState};
 
 const NUM_NAMED_COLORS: usize = 16;
 const NAMED_COLORS: [Color; NUM_NAMED_COLORS] = [

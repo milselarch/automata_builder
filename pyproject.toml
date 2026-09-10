@@ -3,22 +3,23 @@ requires = ["maturin>=0.13,<2.0"]
 build-backend = "maturin"
 
 [project]
-name = "py_ca_compiler"
+name = "automata_builder"
 requires-python = ">=3.12"
 classifiers = [
     "Programming Language :: Rust",
     "Programming Language :: Python :: Implementation :: CPython",
     "Programming Language :: Python :: Implementation :: PyPy",
 ]
+dependencies = [
+    "numpy",
+    "overrides",
+    "result",
+    "frozendict",
+]
 dynamic = ["version"]
+
 [tool.maturin]
 features = ["pyo3/extension-module"]
-[tool.maturin.package]
-include = ["*.pyi"]
-
-[tool.setuptools]
-package-dir = {"" = "."}
-
-[tool.setuptools.packages.find]
-where = ["."]
-include = ["automata_builder", "automata_builder.*"]
+python-source = "."
+module-name = "automata_builder._rust"
+include = ["automata_builder/*.pyi"]

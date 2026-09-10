@@ -1,10 +1,10 @@
 import dataclasses
 
-from py_ca_compiler import PyMultiTapeProduct
+from automata_builder._rust import PyMultiTapeProduct
 
 from automata_builder.product_writes_map import FrozenProductWritesMap, ProductWritesMap
 from automata_builder.tape_overlaps import FrozenTapeOverlaps, TapeOverlaps
-from utils import FrozenSet, FreezableSet
+from automata_builder.utils import FrozenSet, FreezableSet
 
 
 @dataclasses.dataclass(frozen=True)

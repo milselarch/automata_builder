@@ -1,10 +1,10 @@
 import os
 
-import py_ca_compiler
+from automata_builder import _rust
 
 from typing import Final
 
-from py_ca_compiler import PySingleTapeAutomata
+from automata_builder._rust import PySingleTapeAutomata
 from automata_builder.rule_generator import (
     TapeCellState, AutomataTransitionsGroup, RuleGenerator, BLANK_INT
 )
@@ -109,9 +109,9 @@ class FiringSquadAutomataRunner(object):
             for left_state, right_dict in left_dict.items():
                 for right_state, new_middle_state in right_dict.items():
                     input_terms = (
-                        py_ca_compiler.A(position=-1, state=left_state),
-                        py_ca_compiler.A(position=0, state=middle_state),
-                        py_ca_compiler.A(position=1, state=right_state),
+                        _rust.A(position=-1, state=left_state),
+                        _rust.A(position=0, state=middle_state),
+                        _rust.A(position=1, state=right_state),
                     )
                     transitions_group.add_transition(
                         input_terms=input_terms,

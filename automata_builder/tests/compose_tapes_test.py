@@ -2,7 +2,7 @@ import argparse
 import time
 
 from pprint import pprint
-from py_ca_compiler import A, PyProduct
+from automata_builder._rust import A, PyProduct
 from tqdm import tqdm
 
 from automata_builder.counter_automata import (
@@ -37,11 +37,11 @@ parser.add_argument(
 
 if __name__ == '__main__':
     """
-    python -m automata_builder.compose_tapes_test
+    python -m automata_builder.tests.compose_tapes_test
     # build half-reduced tapes for base 6
-    python -m automata_builder.compose_tapes_test -a -b 6
+    python -m automata_builder.tests.compose_tapes_test -a -b 6
     # build half-reduced tapes for base 8
-    python -m automata_builder.compose_tapes_test -a -b 8
+    python -m automata_builder.tests.compose_tapes_test -a -b 8
     """
     args = parser.parse_args()
     runner = CounterAutomataRunner(

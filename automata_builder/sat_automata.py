@@ -6,7 +6,7 @@ import re
 from dataclasses import dataclass
 from typing import Callable, Final
 
-from py_ca_compiler import D, PyMultiTapeAutomata, PyProcessStepResult
+from automata_builder._rust import D, PyMultiTapeAutomata, PyProcessStepResult
 
 from automata_builder.rule_generator import BLANK_INT
 from automata_builder.rule_generator_multitape import (

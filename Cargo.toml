@@ -1,10 +1,11 @@
 [package]
-name = "ca_compiler"
+name = "automata_builder"
 version = "0.1.0"
 edition = "2021"
+description = "Construction and simulation of 1D cellular automata"
 
 [lib]
-name = "py_ca_compiler"
+name = "automata_builder"
 crate-type = ["cdylib", "rlib"]
 
 [dependencies]

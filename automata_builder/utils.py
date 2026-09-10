@@ -7,7 +7,7 @@ from abc import ABCMeta, abstractmethod
 from collections import defaultdict
 from typing import TypeVar, Iterator, Tuple, Sequence, Generic, Callable
 from dataclasses import is_dataclass
-from py_ca_compiler import D, A, PyMultiTapeProduct, PyProduct
+from automata_builder._rust import D, A, PyMultiTapeProduct, PyProduct
 
 T = TypeVar('T')
 U = TypeVar('U')

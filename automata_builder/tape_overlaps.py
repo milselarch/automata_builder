@@ -6,12 +6,12 @@ import typing
 
 from collections import defaultdict
 from typing import Iterator, Sequence
-from py_ca_compiler import D, PyMultiTapeProduct
+from automata_builder._rust import D, PyMultiTapeProduct
 
 from automata_builder.rule_generator import (
     TapeCellState, TapeNo
 )
-from utils import (
+from automata_builder.utils import (
     FreezableDefaultDict, FreezableSet, Freezable
 )
 

@@ -6,10 +6,10 @@ import dataclasses
 
 from collections import defaultdict
 
-from py_ca_compiler import PyMultiTapeProduct, D
+from automata_builder._rust import PyMultiTapeProduct, D
 from automata_builder.rule_generator import TapeCellState, TapeNo, VOID_STATE
 from automata_builder.tape_overlaps import MultiTapeState, TapeOverlaps
-from utils import (
+from automata_builder.utils import (
     FreezableDefaultDict, FreezableDict, Freezable, FrozenDict, FreezableSet
 )
 
