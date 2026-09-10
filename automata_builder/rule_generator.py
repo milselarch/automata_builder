@@ -5,7 +5,7 @@ import typing
 import numpy as np
 
 from typing import Final, Self
-from py_ca_compiler import A, PyExpression, PyProduct
+from automata_builder._rust import A, PyExpression, PyProduct
 
 
 class TapeNo(int):

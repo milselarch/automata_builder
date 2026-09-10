@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import copy
 import dataclasses
-import utils
+from automata_builder import utils
 
 from result import Result, Ok, Err
 from collections import defaultdict
@@ -12,7 +12,7 @@ from automata_builder.product_writes_map import ProductWritesMap
 from automata_builder.tape_overlaps_fsm import (
     TapeOverlapsFSMState, TapeOverlapsFSM
 )
-from utils import FreezableSet, FrozenSet
+from automata_builder.utils import FreezableSet, FrozenSet
 from automata_builder.rule_generator import (
     AutomataTransitionsGroup, TapeCellState, TapeNo,
     VOID_STATE, HALT_STATE
@@ -21,7 +21,7 @@ from automata_builder.tape_overlaps import (
     MultiTapeState, TapeOverlaps, MultiTapeStatesMap,
     FrozenTapeOverlaps, is_product_satisfiable
 )
-from py_ca_compiler import (
+from automata_builder._rust import (
     D, PyMultiTapeProduct, PyMultiTapeExpression,
     A, PyProduct, PyMultiTapeAutomata
 )

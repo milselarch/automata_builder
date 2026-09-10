@@ -2,7 +2,7 @@ import argparse
 import time
 
 from pprint import pprint
-from py_ca_compiler import A, PyProduct
+from automata_builder._rust import A, PyProduct
 from tqdm import tqdm
 
 from automata_builder.counter_automata import (

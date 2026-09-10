@@ -4,7 +4,7 @@ import copy
 
 from typing import Self
 from overrides import overrides
-from BinNumber import BinNumber
+from automata_builder.BinNumber import BinNumber
 
 
 class BitNumber(BinNumber):

@@ -1,4 +1,4 @@
-from py_ca_compiler import D, PySingleTapeAutomata, PyMultiTapeProduct, PyProcessStepResult
+from automata_builder._rust import D, PySingleTapeAutomata, PyMultiTapeProduct, PyProcessStepResult
 
 from automata_builder.counter_automata import (
     CounterAutomataRunner, DATA_TAPE, DT_DATA

@@ -3,7 +3,7 @@ from __future__ import annotations
 import os
 
 from typing import Final, Callable, Sequence
-from py_ca_compiler import D, PyMultiTapeAutomata, PyProcessStepResult
+from automata_builder._rust import D, PyMultiTapeAutomata, PyProcessStepResult
 
 from automata_builder.rule_generator import BLANK_INT
 from automata_builder.rule_generator_multitape import (
