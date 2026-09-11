@@ -149,8 +149,8 @@ name = "automata-tui"
 version = "0.1.0"
 dependencies = [
  "anyhow",
+ "automata_builder",
  "better-panic",
- "ca-compiler",
  "clap",
  "color-eyre",
  "config",
@@ -176,6 +176,29 @@ dependencies = [
  "tracing-error",
  "tracing-subscriber",
  "vergen-gix",
+]
+
+[[package]]
+name = "automata_builder"
+version = "0.1.0"
+dependencies = [
+ "arbitrary-int",
+ "cartesian",
+ "enum-iterator",
+ "indent",
+ "indexmap",
+ "itertools",
+ "log",
+ "num-bigint",
+ "num-traits",
+ "pyo3",
+ "pyo3-stub-gen",
+ "rayon",
+ "regex",
+ "serde",
+ "struct_macro_eq",
+ "strum 0.27.2",
+ "strum_macros 0.27.2",
 ]
 
 [[package]]
@@ -261,28 +284,6 @@ name = "bytes"
 version = "1.10.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d71b6127be86fdcfddb610f7182ac57211d4b18a3e9c82eb2d17662f2227ad6a"
-
-[[package]]
-name = "ca-compiler"
-version = "0.1.0"
-dependencies = [
- "arbitrary-int",
- "cartesian",
- "enum-iterator",
- "indent",
- "indexmap",
- "itertools",
- "log",
- "num-bigint",
- "num-traits",
- "pyo3",
- "pyo3-stub-gen",
- "rayon",
- "regex",
- "struct_macro_eq",
- "strum 0.27.2",
- "strum_macros 0.27.2",
-]
 
 [[package]]
 name = "camino"
