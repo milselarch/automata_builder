@@ -3,7 +3,7 @@ from __future__ import annotations
 import os
 
 from typing import Final, Callable, Sequence
-from automata_builder._rust import D, PyMultiTapeAutomata, PyProcessStepResult
+from automata_builder._rust import D, PyMultiTapeAutomata, PyProcessStepResult, PyMultiTapeDataRegion
 
 from automata_builder.rule_generator import BLANK_INT
 from automata_builder.rule_generator_multitape import (
@@ -580,6 +580,9 @@ class CounterAutomataRunner(object):
             end_position=self.initial_write_end,
             data=[MultiTapeState(DATA_TAPE, DT_DATA)]
         )
+
+    def get_minimal_data_region(self) -> PyMultiTapeDataRegion:
+        return self.multi_tape_automata.get_minimal_data_region()
 
     def read_data_tape_value(self) -> int:
         data_tape = self.multi_tape_automata[DATA_TAPE]

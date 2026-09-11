@@ -11,9 +11,9 @@ use crate::automata::py_rule_generator_multitape::{
     PyBidirectionalTape, PyRenderFrame, BLANK_INT,
 };
 use crate::automata::py_terms::{PyExpression, PyProduct, A};
-use crate::automata::rule_generator::VOID_STATE;
 use crate::automata::single_tape_automata::{
-    ProcessStepResult, SingleTapeAutomata, SingleTapeAutomataError, WriteRecord,
+    ProcessStepResult, SingleTapeAutomata, SingleTapeAutomataError,
+    WriteRecord,
 };
 use crate::automata::terms::{AbstractExpression, CellState, Expression};
 

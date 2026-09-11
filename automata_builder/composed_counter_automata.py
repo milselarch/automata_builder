@@ -1,4 +1,7 @@
-from automata_builder._rust import D, PySingleTapeAutomata, PyMultiTapeProduct, PyProcessStepResult
+from automata_builder._rust import (
+    D, PySingleTapeAutomata, PyMultiTapeProduct, PyProcessStepResult,
+    PySingleTapeProcessStepResult
+)
 
 from automata_builder.counter_automata import (
     CounterAutomataRunner, DATA_TAPE, DT_DATA
@@ -73,5 +76,27 @@ class ComposedCounterAutomataRunner(object):
 
         return PyMultiTapeProduct(init_multi_tape_terms)
 
-    def step(self, verbose: bool = False) -> PyProcessStepResult:
-        return self.multi_tape_runner.step(verbose=verbose)
+    def step(
+        self, verbose: bool = False
+    ) -> tuple[PySingleTapeProcessStepResult, PyProcessStepResult]:
+        single_tape_result = self.single_tape_automata.step(verbose=verbose)
+        multi_tape_result = self.multi_tape_runner.step(verbose=verbose)
+        return single_tape_result, multi_tape_result
+
+    def step_assert(
+        self, verbose: bool = False
+    ) -> tuple[PySingleTapeProcessStepResult, PyProcessStepResult]:
+        step_result = self.step(verbose=verbose)
+        single_tape_result, multi_tape_result = step_result
+        new_multi_tape_state = multi_tape_result.new_multi_tape
+        multi_tape_region = new_multi_tape_state.get_minimal_data_region()
+        new_single_tape_state = single_tape_result.new_tape
+        single_tape_region = new_single_tape_state.get_minimal_data_region()
+
+        for index in range(len(single_tape_region)):
+            product_slice = multi_tape_region[index].to_py_product()
+            # TODO: translate to single tape and check equal
+            assert single_tape_region[index] == multi_tape_region[index]
+
+        assert single_tape_result == multi_tape_result
+        return step_result

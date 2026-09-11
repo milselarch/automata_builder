@@ -1,15 +1,47 @@
-use std::collections::{BTreeMap, BTreeSet, HashMap};
+use indexmap::IndexSet;
+use std::collections::BTreeMap;
 use std::fmt;
-use indexmap::{IndexMap, IndexSet};
 
-use crate::automata::product_writes_map::{ProductWritesError, ProductWritesMap};
+use crate::automata::product_writes_map::ProductWritesError;
 use crate::automata::renderer::{RenderFrame, TapeRenderFrame};
 use crate::automata::rule_generator::{BidirectionalTape, TapeError, VOID_STATE};
 use crate::automata::tape_overlaps::MultiTapeState;
 use crate::automata::terms::CellState;
 use crate::automata::terms_multitape::{
-    AbstractMultiTapeExpression, MultiTapeExpression, MultiTapeProduct, TapeNo,
+    MultiTapeProduct, MultiTapeTerm, TapeNo
 };
+
+#[derive(Debug, Clone, Default)]
+pub struct MultiTapeDataRegion {
+    pub start_position: i64,
+    pub length: usize,
+    pub tape_regions: BTreeMap<TapeNo, Vec<CellState>>,
+}
+impl MultiTapeDataRegion {
+    pub fn new(start_position: i64, length: usize) -> MultiTapeDataRegion {
+        MultiTapeDataRegion { start_position, length, tape_regions: BTreeMap::new() }
+    }
+    pub fn add_tape_region(&mut self, tape_no: TapeNo, region: Vec<CellState>) {
+        assert_eq!(region.len(), self.length);
+        self.tape_regions.insert(tape_no, region);
+    }
+    pub fn get_product_slice_at(&self, index: usize) -> MultiTapeProduct {
+        let position = self.start_position + index as i64;
+        let mut terms: Vec<MultiTapeTerm> = vec![];
+
+        for tape_no in self.tape_regions.keys() {
+            let tape_region = self.tape_regions.get(tape_no).unwrap();
+            let cell_state = tape_region[index];
+            terms.push(MultiTapeTerm::new(
+                position, (*tape_no, cell_state),
+                false,
+            ));
+        }
+
+        MultiTapeProduct::new(terms)
+    }
+}
+
 
 #[derive(Debug, Clone, Default)]
 pub struct BiDirectionalMultiTape {
@@ -189,6 +221,42 @@ impl BiDirectionalMultiTape {
             max_pos = max_pos.max(tape_max);
         }
         (min_pos, max_pos)
+    }
+
+    pub fn get_minimal_data_range(&self) -> Option<(i64, i64)> {
+        /*
+        Returns the smallest range of positions for which
+        all the non-VOID cells are contained across all individual tapes.
+        */
+        let mut start_pos: Option<i64> = None;
+        let mut end_pos: Option<i64> = None;
+
+        for (_, tape) in self.tapes.iter() {
+            if let Some((tape_start, tape_end)) = tape.get_minimal_data_range() {
+                start_pos = Some(start_pos.map_or(tape_start, |s| s.min(tape_start)));
+                end_pos = Some(end_pos.map_or(tape_end, |e| e.max(tape_end)));
+            }
+        }
+        start_pos.zip(end_pos)
+    }
+
+    pub fn get_minimal_data_region(&self) -> MultiTapeDataRegion {
+        let minimal_data_range = self.get_minimal_data_range();
+        if let None = minimal_data_range {
+            return MultiTapeDataRegion::default();
+        }
+
+        let (start_pos, end_pos) = self.get_range();
+        let length = usize::try_from(end_pos - start_pos + 1).unwrap();
+        let mut multi_tape_data_region = MultiTapeDataRegion::new(start_pos, length);
+
+        for (tape_no, tape) in self.tapes.iter() {
+            let tape_minimal_data_region = tape.read_region(start_pos, length);
+            multi_tape_data_region.add_tape_region(
+                *tape_no, tape_minimal_data_region
+            );
+        }
+        multi_tape_data_region
     }
 }
 

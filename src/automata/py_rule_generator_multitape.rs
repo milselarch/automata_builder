@@ -15,9 +15,7 @@ use crate::automata::py_terms_multitape::{
 };
 use crate::automata::renderer::RenderFrame;
 use crate::automata::rule_generator::{BidirectionalTape, TapeError};
-use crate::automata::rule_generator_multitape::{
-    AutomataError, BiDirectionalMultiTape
-};
+use crate::automata::rule_generator_multitape::{AutomataError, BiDirectionalMultiTape, MultiTapeDataRegion};
 use crate::automata::tape_overlaps::MultiTapeState;
 use crate::automata::terms::CellState;
 use crate::automata::terms_multitape::{
@@ -305,6 +303,85 @@ impl PyBiDirectionalMultiTape {
     }
 }
 
+#[gen_stub_pyclass]
+#[pyclass]
+#[derive(Clone, Debug, Default)]
+pub struct PyMultiTapeDataRegion {
+    region: MultiTapeDataRegion,
+}
+impl PyMultiTapeDataRegion {
+    pub fn from_region(region: MultiTapeDataRegion) -> Self {
+        PyMultiTapeDataRegion { region }
+    }
+    pub fn get_region(&self) -> &MultiTapeDataRegion {
+        &self.region
+    }
+}
+
+#[gen_stub_pymethods]
+#[pymethods]
+impl PyMultiTapeDataRegion {
+    #[new]
+    pub fn new(start_position: i64, length: usize) -> Self {
+        PyMultiTapeDataRegion {
+            region: MultiTapeDataRegion::new(start_position, length),
+        }
+    }
+    #[getter]
+    pub fn start_position(&self) -> i64 {
+        self.region.start_position
+    }
+    #[getter]
+    pub fn length(&self) -> usize {
+        self.region.length
+    }
+    pub fn get_tape_nos(&self) -> Vec<TapeNo> {
+        self.region.tape_regions.keys().copied().collect()
+    }
+    pub fn get_tape_region(&self, tape_no: TapeNo) -> Option<Vec<CellState>> {
+        self.region.tape_regions.get(&tape_no).cloned()
+    }
+    pub fn add_tape_region(&mut self, tape_no: TapeNo, region: Vec<CellState>) -> PyResult<()> {
+        if region.len() != self.region.length {
+            return Err(PyValueError::new_err(format!(
+                "region length mismatch: expected {}, got {}",
+                self.region.length,
+                region.len()
+            )));
+        }
+        self.region.add_tape_region(tape_no, region);
+        Ok(())
+    }
+    pub fn get_product_slice_at(&self, index: usize) -> PyResult<PyMultiTapeProduct> {
+        if index >= self.region.length {
+            return Err(PyIndexError::new_err(format!(
+                "index out of bounds: len is {} but index is {}",
+                self.region.length,
+                index
+            )));
+        }
+        let product = self.region.get_product_slice_at(index);
+        Ok(PyMultiTapeProduct::from_product(product))
+    }
+    pub fn __deepcopy__(&self, _memo: &Bound<PyDict>) -> Self {
+        self.clone()
+    }
+    fn __repr__(&self) -> String {
+        format!(
+            "MultiTapeDataRegion(start_position={}, length={}, tape_nos={:?})",
+            self.region.start_position,
+            self.region.length,
+            self.region.tape_regions.keys().collect::<Vec<_>>()
+        )
+    }
+    fn __len__(&self) -> usize {
+        self.region.length
+    }
+    fn __getitem__(&self, index: usize) -> PyResult<PyMultiTapeProduct> {
+        self.get_product_slice_at(index)
+    }
+}
+
 #[gen_stub_pymethods]
 #[pymethods]
 impl PyBiDirectionalMultiTape {
@@ -356,11 +433,15 @@ impl PyBiDirectionalMultiTape {
     pub fn prune(&mut self) {
         self.multi_tape.prune()
     }
-    pub fn get_minimal_data_region(&self, tape_no: TapeNo) -> Vec<CellState> {
+    pub fn get_minimal_data_region_for(&self, tape_no: TapeNo) -> Vec<CellState> {
         match self.multi_tape.get_tape(tape_no) {
             Some(tape) => tape.clone().get_minimal_data_region(),
             None => vec![],
         }
+    }
+    pub fn get_minimal_data_region(&mut self) -> PyMultiTapeDataRegion {
+        let minimal_region = self.multi_tape.get_minimal_data_region();
+        PyMultiTapeDataRegion::from_region(minimal_region)
     }
     #[pyo3(signature = (start_position, length, cell_width = BLANK_INT))]
     pub fn render_tapes(
@@ -624,8 +705,13 @@ impl PyMultiTapeAutomata {
             .unwrap_or(crate::automata::rule_generator::VOID_STATE)
     }
 
+    pub fn get_minimal_data_region(&mut self) -> PyMultiTapeDataRegion {
+        let minimal_region = self.automata.get_multi_tape().get_minimal_data_region();
+        PyMultiTapeDataRegion::from_region(minimal_region)
+    }
+
     /// Minimal contiguous region of the tape containing all non-void states.
-    pub fn get_minimal_data_region(&self, tape_no: TapeNo) -> Vec<CellState> {
+    pub fn get_minimal_data_region_for(&self, tape_no: TapeNo) -> Vec<CellState> {
         match self.automata.get_tape(tape_no) {
             Some(tape) => tape.clone().get_minimal_data_region(),
             None => vec![],
