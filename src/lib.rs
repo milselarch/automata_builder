@@ -1,13 +1,17 @@
 use pyo3::prelude::*;
 use crate::automata::py_rule_generator_multitape::{
-    PyBiDirectionalMultiTape, PyBidirectionalTape, PyMultiTapeAutomata, PyMultiTapeState,
-    PyProcessStepResult, PyRenderFrame, PyWriteRecord,
+    PyBiDirectionalMultiTape, PyBidirectionalTape, PyMultiTapeAutomata,
+    PyMultiTapeDataRegion, PyMultiTapeState, PyProcessStepResult,
+    PyRenderFrame, PyWriteRecord
 };
 use crate::automata::py_single_tape_automata::{
-    PySingleTapeAutomata, PySingleTapeProcessStepResult, PySingleTapeWriteRecord
+    PySingleTapeAutomata, PySingleTapeProcessStepResult,
+    PySingleTapeWriteRecord
 };
 use crate::automata::py_terms::{A, PyProduct, PyExpression};
-use crate::automata::py_terms_multitape::{PyMultiTapeExpression, PyMultiTapeProduct, D};
+use crate::automata::py_terms_multitape::{
+    PyMultiTapeExpression, PyMultiTapeProduct, D
+};
 
 pub mod automata;
 
@@ -33,5 +37,6 @@ fn _rust(module: &Bound<'_, PyModule>) -> PyResult<()> {
     module.add_class::<PySingleTapeWriteRecord>()?;
     module.add_class::<PySingleTapeProcessStepResult>()?;
     module.add_class::<PySingleTapeAutomata>()?;
+    module.add_class::<PyMultiTapeDataRegion>()?;
     Ok(())
 }

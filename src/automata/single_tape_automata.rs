@@ -218,8 +218,8 @@ pub struct ProcessStepResult {
 pub struct SingleTapeAutomata {
     tape: BidirectionalTape,
     prod_to_state_map: ProductWriteMap,
-    leftmost_extent: i64,
-    rightmost_extent: i64,
+    leftmost_extent: i64,  // this must be negative or zero
+    rightmost_extent: i64,  // this must be positive or zero
     state_eq_map: IndexMap<CellState, Expression>,
 }
 
@@ -302,9 +302,10 @@ impl SingleTapeAutomata {
 
     /// `cell_width == None` is the `BLANK_INT` sentinel on the Python side.
     pub fn render_tape(
-        &self, start_position: i64, length: usize, cell_width: Option<usize>,
+        &self, start_position: i64, length: usize,
+        header_tag: &str, cell_width: Option<usize>,
     ) -> Result<RenderFrame, SingleTapeAutomataError> {
-        let left_tab = "Tape: ".to_string();
+        let left_tab = format!("Tape {}: ", header_tag);
         let left_sidebar = RenderFrame::from_padded_lines(vec![left_tab]);
         let content_width = length.saturating_sub(left_sidebar.get_width());
 
@@ -355,8 +356,14 @@ impl SingleTapeAutomata {
                 */
                 let product_is_void =
                     product.to_flat_terms().iter().all(|term| term.state == VOID_STATE);
+                let output_is_void = *output_state == VOID_STATE;
 
                 if product_is_void {
+                    if output_is_void {
+                        // This is allowed, but it doesn't do anything,
+                        // so we skip this product.
+                        continue;
+                    }
                     return Err(SingleTapeAutomataError::VoidProduct {
                         product: product._to_string("A"),
                         output: *output_state,

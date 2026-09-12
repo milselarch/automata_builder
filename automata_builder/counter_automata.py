@@ -3,7 +3,10 @@ from __future__ import annotations
 import os
 
 from typing import Final, Callable, Sequence
-from automata_builder._rust import D, PyMultiTapeAutomata, PyProcessStepResult, PyMultiTapeDataRegion
+from automata_builder._rust import (
+    D, PyMultiTapeAutomata, PyProcessStepResult, PyMultiTapeDataRegion,
+    PyRenderFrame
+)
 
 from automata_builder.rule_generator import BLANK_INT
 from automata_builder.rule_generator_multitape import (
@@ -639,13 +642,9 @@ class CounterAutomataRunner(object):
         # TODO: consider unpropagated carry states
         return encoded_number
 
-    def step(self, verbose: bool = True) -> PyProcessStepResult:
-        return self.multi_tape_automata.step(verbose=verbose)
-
-    def run_simulation(
-        self, num_timesteps: int = 30, terminal_width: int = BLANK_INT,
-        render_start: int = -5, render: bool = True
-    ):
+    @staticmethod
+    def resolve_terminal_width(terminal_width: int = BLANK_INT) -> int:
+        # TODO: refactor out away from runner
         try:
             terminal_size = os.get_terminal_size()
             default_terminal_width = terminal_size.columns - 1
@@ -655,6 +654,26 @@ class CounterAutomataRunner(object):
         if terminal_width == BLANK_INT:
             terminal_width = default_terminal_width
 
+        return terminal_width
+
+    def render_tapes(
+        self, start_position: int, length: int, cell_width: int = BLANK_INT
+    ) -> PyRenderFrame:
+        return self.multi_tape_automata.render_tapes(
+            start_position=start_position, length=length,
+            cell_width=cell_width
+        )
+
+    def step(self, verbose: bool = True) -> PyProcessStepResult:
+        return self.multi_tape_automata.step(verbose=verbose)
+
+    def run_simulation(
+        self, num_timesteps: int = 30, terminal_width: int = BLANK_INT,
+        render_start: int = -5, render: bool = True
+    ):
+        terminal_width = self.resolve_terminal_width(
+            terminal_width=terminal_width
+        )
         if render:
             for digit in range(self.base):
                 print(

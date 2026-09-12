@@ -534,6 +534,26 @@ class ComposeTapesResult(object):
         multi_tape_product = PyMultiTapeProduct(collected_global_terms)
         return Ok(multi_tape_product)
 
+    def remap_state_to_multi_tape(
+        self, tape_cell_state: TapeCellState
+    ) -> Result[tuple[MultiTapeState, ...], TapeCellState]:
+        """
+        Remaps a global tape cell state to the corresponding
+        multi-tape cell states for each tape in the original
+        multi-tape automata
+        :param tape_cell_state:
+        :return:
+        """
+        multi_tape_states_res = self.state_remap.rev_lookup(
+            tape_cell_state=tape_cell_state
+        )
+        if multi_tape_states_res.is_err():
+            halt_state = multi_tape_states_res.unwrap_err()
+            return Err(halt_state)
+
+        multi_tape_states = multi_tape_states_res.unwrap()
+        return Ok(multi_tape_states)
+
     def remap_term_to_multi_tape(
         self, input_term: A
     ) -> Result[PyMultiTapeProduct, TapeCellState]:

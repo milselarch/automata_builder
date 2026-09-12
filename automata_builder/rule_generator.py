@@ -215,6 +215,7 @@ class RuleGenerator(object):
     @classmethod
     def to_ruleset(
         cls, transitions_group: AutomataTransitionsGroup,
+        require_consistent_flat_term_offsets: bool = True,
         verbose: bool = False
     ) -> AutomataRuleSet:
         equations = cls.generate_equations(
@@ -233,7 +234,7 @@ class RuleGenerator(object):
 
             if not base_flat_term_offsets:
                 base_flat_term_offsets = flat_term_offsets
-            else:
+            elif require_consistent_flat_term_offsets:
                 assert flat_term_offsets == base_flat_term_offsets, (
                     f'Inconsistent flat term offsets for state {state}: '
                     f'{flat_term_offsets} != {base_flat_term_offsets}'

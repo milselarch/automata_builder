@@ -241,17 +241,22 @@ impl BiDirectionalMultiTape {
     }
 
     pub fn get_minimal_data_region(&self) -> MultiTapeDataRegion {
-        let minimal_data_range = self.get_minimal_data_range();
-        if let None = minimal_data_range {
-            return MultiTapeDataRegion::default();
+        let minimal_data_range_res = self.get_minimal_data_range();
+        let mut data_length: usize = 0;
+        let mut start_pos = 0;
+
+        match minimal_data_range_res {
+            Some((min_pos, max_pos)) => {
+                start_pos = min_pos;
+                data_length = (max_pos - min_pos + 1) as usize;
+            }
+            _ => {}
         }
 
-        let (start_pos, end_pos) = self.get_range();
-        let length = usize::try_from(end_pos - start_pos + 1).unwrap();
-        let mut multi_tape_data_region = MultiTapeDataRegion::new(start_pos, length);
-
+        let mut multi_tape_data_region =
+            MultiTapeDataRegion::new(start_pos, data_length);
         for (tape_no, tape) in self.tapes.iter() {
-            let tape_minimal_data_region = tape.read_region(start_pos, length);
+            let tape_minimal_data_region = tape.read_region(start_pos, data_length);
             multi_tape_data_region.add_tape_region(
                 *tape_no, tape_minimal_data_region
             );

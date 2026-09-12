@@ -252,14 +252,17 @@ impl PySingleTapeAutomata {
         self.automata.get_tape().get_all_states().into_iter().collect()
     }
 
-    #[pyo3(signature = (start_position, length, cell_width = BLANK_INT))]
+    #[pyo3(signature = (
+        start_position, length, header_tag="", cell_width = BLANK_INT
+    ))]
     pub fn render_tape(
-        &self, start_position: i64, length: usize, cell_width: i64,
+        &self, start_position: i64, length: usize,
+        header_tag: &str, cell_width: i64,
     ) -> PyResult<PyRenderFrame> {
         let cell_width = to_cell_width(cell_width)?;
         let frame = self
             .automata
-            .render_tape(start_position, length, cell_width)
+            .render_tape(start_position, length, header_tag, cell_width)
             .map_err(automata_err)?;
         Ok(PyRenderFrame::from_frame(frame))
     }
