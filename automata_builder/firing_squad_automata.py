@@ -6,7 +6,7 @@ from typing import Final
 
 from automata_builder._rust import PySingleTapeAutomata
 from automata_builder.rule_generator import (
-    TapeCellState, AutomataTransitionsGroup, RuleGenerator, BLANK_INT
+    TapeCellState, TapeTransitionsGroup, RuleGenerator, BLANK_INT
 )
 
 X: Final[TapeCellState] = TapeCellState(0)  # void state
@@ -102,8 +102,8 @@ class FiringSquadAutomataRunner(object):
         return self.automata.get_minimal_data_region()
 
     @staticmethod
-    def build_transitions_group() -> AutomataTransitionsGroup:
-        transitions_group = AutomataTransitionsGroup(num_states=None)
+    def build_transitions_group() -> TapeTransitionsGroup:
+        transitions_group = TapeTransitionsGroup(num_states=None)
 
         for middle_state, left_dict in RULE_MATRICES.items():
             for left_state, right_dict in left_dict.items():

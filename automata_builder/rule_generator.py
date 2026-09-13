@@ -25,23 +25,38 @@ def is_halt_state(term: A) -> bool:
     return term.get_state() == HALT_STATE
 
 
+@dataclasses.dataclass(frozen=True)
+class TapeTransition(object):
+    input_terms: tuple[A, ...]
+    output_state: TapeCellState
+    annotation: str = ''
+
+    def __post_init__(self):
+        assert isinstance(self.input_terms, tuple)
+        assert all(isinstance(term, A) for term in self.input_terms)
+        assert isinstance(self.output_state, int)
+
+
 @dataclasses.dataclass
-class AutomataTransitionsGroup(object):
+class TapeTransitionsGroup(object):
     """
     contains a set of transitions for a cellular automaton
     defined as a mapping from input states to output state
     map A[] -> output state
     """
     num_states: int | None = None
+    # map transitions from input terms to output state
     transitions_map: dict[tuple[A, ...], int] = dataclasses.field(
         default_factory=dict
     )
-    transitions: list[
-        tuple[
-            tuple[A, ...],
-            int
-        ]
+    # maps from input terms to TapeTransition objects
+    transitions_lookup: dict[
+        tuple[A, ...], TapeTransition
     ] = dataclasses.field(
+        default_factory=dict
+    )
+    # list of transitions in the order they were added
+    transitions: list[TapeTransition] = dataclasses.field(
         default_factory=list
     )
 
@@ -49,31 +64,33 @@ class AutomataTransitionsGroup(object):
         return len(self.transitions)
 
     def __getitem__(self, index: int) -> tuple[PyProduct, int]:
-        input_terms, output_state = self.transitions[index]
-        input_product = PyProduct(input_terms)
-        return input_product, output_state
+        transition = self.transitions[index]
+        input_product = PyProduct(transition.input_terms)
+        return input_product, transition.output_state
 
     def get_all_states(self):
         all_states = {0}
 
         for transition in self.transitions:
-            input_terms, output_state = transition
-            for term in input_terms:
+            for term in transition.input_terms:
                 all_states.add(term.get_state())
 
-            all_states.add(output_state)
+            all_states.add(transition.output_state)
 
         return all_states
 
     @classmethod
-    def spawn_new(cls, num_states: int | None) -> AutomataTransitionsGroup:
+    def spawn_new(cls, num_states: int | None) -> TapeTransitionsGroup:
         return cls(num_states=num_states, transitions=[])
 
     def add_transition(
-        self, input_terms: tuple[A, ...], output_state: int,
-        ban_halt_state: bool = False
+        self, input_terms: tuple[A, ...], output_state: TapeCellState,
+        ban_halt_state: bool = False, annotation: str = ''
     ) -> bool:
-        transition_entry = (input_terms, output_state)
+        transition_entry = TapeTransition(
+            input_terms=input_terms, output_state=output_state,
+            annotation=annotation
+        )
         if input_terms in self.transitions_map:
             if self.transitions_map[input_terms] == output_state:
                 return False
@@ -101,14 +118,17 @@ class AutomataTransitionsGroup(object):
 
         self.transitions.append(transition_entry)
         self.transitions_map[input_terms] = output_state
+        self.transitions_lookup[input_terms] = transition_entry
         return True
 
     def merge(
-        self, other: AutomataTransitionsGroup
+        self, other: TapeTransitionsGroup
     ) -> Self:
-        for input_terms, output_state in other.transitions:
+        for transition in other.transitions:
             self.add_transition(
-                input_terms=input_terms, output_state=output_state
+                input_terms=transition.input_terms,
+                output_state=transition.output_state,
+                annotation=transition.annotation
             )
 
         return self
@@ -214,7 +234,7 @@ class RuleGenerator(object):
 
     @classmethod
     def to_ruleset(
-        cls, transitions_group: AutomataTransitionsGroup,
+        cls, transitions_group: TapeTransitionsGroup,
         require_consistent_flat_term_offsets: bool = True,
         verbose: bool = False
     ) -> AutomataRuleSet:
@@ -256,8 +276,13 @@ class RuleGenerator(object):
                     assert isinstance(term, A)
 
         assert max_flat_terms > 0
+
+        num_states = transitions_group.num_states
+        if num_states is None:
+            num_states = max(transitions_group.get_all_states())
+
         return AutomataRuleSet(
-            num_states=transitions_group.num_states,
+            num_states=num_states,
             flat_term_offsets=tuple(base_flat_term_offsets),
             expansion_map=equations,
             num_flat_terms=max_flat_terms,
@@ -267,7 +292,7 @@ class RuleGenerator(object):
 
     @classmethod
     def generate_equations(
-        cls, transitions_group: AutomataTransitionsGroup,
+        cls, transitions_group: TapeTransitionsGroup,
         pad_product_length: bool = True,
         pad_expr_length: bool = True,
         verbose: bool = False
@@ -288,12 +313,11 @@ class RuleGenerator(object):
 
         state_eq_terms_map: dict[int, list[PyProduct]] = {}
         for transition in transitions_group.transitions:
-            input_states, output_state = transition
-            if output_state not in state_eq_terms_map:
-                state_eq_terms_map[output_state] = []
+            if transition.output_state not in state_eq_terms_map:
+                state_eq_terms_map[transition.output_state] = []
 
-            product = cls.tuple_to_product(input_states)
-            state_eq_terms_map[output_state].append(product)
+            product = cls.tuple_to_product(transition.input_terms)
+            state_eq_terms_map[transition.output_state].append(product)
 
         if pad_product_length:
             # ensure that all products have the same length
@@ -360,14 +384,21 @@ class RuleGenerator(object):
 
 
 if __name__ == "__main__":
-    transitions = AutomataTransitionsGroup(
+    transitions = TapeTransitionsGroup(
         transitions=[
-            ((A(0, 1),), 1),
-            ((A(1, 1), A(1, 0)), 0)
+            TapeTransition(
+                input_terms=(A(0, 1),),
+                output_state=TapeCellState(1)
+            ),
+            TapeTransition(
+                input_terms=(A(1, 1), A(1, 0)),
+                output_state=TapeCellState(0)
+            )
         ],
         num_states=2
     )
     ruleset = RuleGenerator.to_ruleset(
-        transitions, verbose=True
+        transitions, verbose=True,
+        require_consistent_flat_term_offsets=False
     )
     print('RULESET', ruleset)
