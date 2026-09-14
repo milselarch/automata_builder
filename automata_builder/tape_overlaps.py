@@ -250,6 +250,14 @@ class TapeOverlaps(Freezable):
             self.get_states_for_tape(tape_no=tape_no)
         ])
 
+    def group_states_by_tape(self) -> dict[TapeNo, set[MultiTapeState]]:
+        tape_states: dict[TapeNo, set[MultiTapeState]] = defaultdict(set)
+
+        for source_state in self._overlaps:
+            tape_states[source_state.tape_no].add(source_state)
+
+        return tape_states
+
     def get_states_for_tape(
         self, tape_no: TapeNo
     ) -> FreezableSet[MultiTapeState]:

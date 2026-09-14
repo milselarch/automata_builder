@@ -575,14 +575,15 @@ class ProductWritesMap(Freezable):
 
     def insert_neutral_product(self, product: PyMultiTapeProduct):
         """
-        Insert a product whose outputs rewrite the input terms
-        that have an offset = 0 to have the same state
+        Insert a product whose output is idempotent.
+        I.e., products where their outputs rewrite the input terms
+        at an offset = 0 to be at the same state as the input terms
         :param product:
         :return:
         """
-        zero_terms = self.get_zero_terms_from_product(product)
+        offset_zero_terms = self.get_zero_terms_from_product(product)
 
-        for zero_term in zero_terms:
+        for zero_term in offset_zero_terms:
             zero_state = MultiTapeState.from_term(zero_term)
             self.insert(product=product, tape_output=zero_state)
 
