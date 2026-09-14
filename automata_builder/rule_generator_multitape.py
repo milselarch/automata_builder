@@ -200,10 +200,26 @@ class MultiTapeRuleGenerator(object):
 @dataclasses.dataclass
 class OffsetGroupedTerms(object):
     terms: tuple[D, ...]
-    offset: int
+    offset: int | None = None
 
     def __hash__(self):
         return hash((self.terms, self.offset))
+
+    def __post_init__(self):
+        if self.offset is None and self.terms:
+            raise ValueError(
+                f"OffsetGroupedTerms without offset cannot have terms"
+            )
+
+
+@dataclasses.dataclass
+class MultiTapeStateTrie(object):
+    is_end: bool = False
+    next_tries: defaultdict[
+        MultiTapeState, MultiTapeStateTrie
+    ] = dataclasses.field(
+        default_factory=lambda: defaultdict(MultiTapeStateTrie)
+    )
 
 
 @dataclasses.dataclass
@@ -211,18 +227,18 @@ class MultiTapeProductTrie(object):
     """
     A trie of product terms nested from smallest to largest term offset
     """
-    offset: int | None
+    offset: int | None = None
     # whether the path of all terms till here constitute an inserted product
     is_end_product: bool = False
     # whether any nested trie contains an end product
     has_nested_end_product: bool = False
     # map next offset to term combinations at that offset
     combos_at_offset: defaultdict[
+        # TODO: replace with MultiTapeStateTrie
         int, set[OffsetGroupedTerms]
     ] = dataclasses.field(
         default_factory=lambda: defaultdict(set)
     )
-
     next_groups: defaultdict[
         OffsetGroupedTerms, MultiTapeProductTrie
     ] = dataclasses.field(
@@ -266,21 +282,13 @@ class MultiTapeProductTrie(object):
             term.get_tape_no(), term.get_state()
         )
 
-    def next(self, group: OffsetGroupedTerms) -> MultiTapeProductTrie:
-        offsets = [term.get_position() for term in terms]
+    def next(
+        self, group: OffsetGroupedTerms
+    ) -> MultiTapeProductTrie:
+        if group not in self.next_groups:
+            return MultiTapeProductTrie()
 
-        if not terms:
-            pass
-        elif len(set(offsets)) > 1:
-            raise ValueError(
-                f"Terms {terms} do not have the same offset"
-            )
-        elif terms[0].get_position() != self.offset:
-            raise ValueError(
-                f"Terms {terms} do not match current offset {self.offset}"
-            )
-
-        return self.next_groups[terms]
+        return self.next_groups[group]
 
     @staticmethod
     def _create_group_path(
@@ -299,7 +307,7 @@ class MultiTapeProductTrie(object):
 
         offset_groups: list[OffsetGroupedTerms] = []
         offset_grouped_terms: list[D] = []
-        covered_offsets: set[int] = set()
+        covered_offsets: set[int | None] = set()
         prev_offset: int | None = None
 
         for k, term in enumerate(sorted_terms):
@@ -1232,7 +1240,7 @@ class MultiTapeBuilder(object):
         to an output state that is the same as the previous input state,
         from an offset of start_offset up until a maximum offset of
         end_offset, given information about all the possible
-        overlaps that exist in the automata
+        overlaps that exist in the automata.
 
         :param product_exclusions:
         If a built product is in product_exclusions, we will
