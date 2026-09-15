@@ -197,6 +197,20 @@ class MultiTapeRuleGenerator(object):
         return state_eq_map
 
 
+def zigzag_sort_key(term: D):
+    """
+    Sorting key to sort terms by position in zigzag order
+    (higher absolute value first, sign of offset second)
+    0, -1, 1, -2, 2, -3, 3, ...
+    :param term:
+    :return:
+    """
+    return (
+        abs(term.get_position()), term.get_position() < 0,
+        MultiTapeState.from_term(term)
+    )
+
+
 @dataclasses.dataclass
 class OffsetGroupedTerms(object):
     terms: tuple[D, ...]
@@ -205,21 +219,86 @@ class OffsetGroupedTerms(object):
     def __hash__(self):
         return hash((self.terms, self.offset))
 
+    def __eq__(self, other):
+        if not isinstance(other, OffsetGroupedTerms):
+            return False
+
+        return (self.terms, self.offset) == (other.terms, other.offset)
+
+    def __bool__(self):
+        return bool(self.terms)
+
+    @classmethod
+    def blank(cls):
+        return cls(terms=())
+
     def __post_init__(self):
         if self.offset is None and self.terms:
             raise ValueError(
                 f"OffsetGroupedTerms without offset cannot have terms"
             )
 
+        assert list(self.terms) == sorted(self.terms)
+
 
 @dataclasses.dataclass
 class MultiTapeStateTrie(object):
-    is_end: bool = False
+    offset_group: OffsetGroupedTerms | None = None
+    has_nested_offset_group: bool = False
+
     next_tries: defaultdict[
         MultiTapeState, MultiTapeStateTrie
     ] = dataclasses.field(
         default_factory=lambda: defaultdict(MultiTapeStateTrie)
     )
+
+    def insert_group(self, group: OffsetGroupedTerms):
+        self._insert_group(group=group)
+
+    def _insert_group(
+        self, group: OffsetGroupedTerms,
+        rev_states: list[MultiTapeState] | None = None,
+    ):
+        if rev_states is None:
+            rev_states = list(group.terms)[::-1]
+        if not rev_states:
+            self.offset_group = group
+            return
+
+        self.has_nested_offset_group = True
+        next_state = rev_states.pop()
+        self.next_tries[next_state]._insert_group(
+            group=group, rev_states=rev_states
+        )
+
+    def lookup(
+        self, states: list[MultiTapeState]
+    ) -> OffsetGroupedTerms:
+        """
+        :param states:
+        :return:
+        """
+        rev_sorted_states = sorted(states)[::-1]
+        return self._lookup(rev_states=rev_sorted_states)
+
+    def _lookup(
+        self, rev_states: list[MultiTapeState]
+    ) -> OffsetGroupedTerms:
+        """
+        Given a list of MultiTapeStates sorted in reverse,
+        find the smallest covering offset group that contains
+        some subset of the input states
+        TODO: explanation sucks
+        :param rev_states:
+        :return:
+        """
+        if self.offset_group is not None:
+            return self.offset_group
+        if not rev_states:
+            return OffsetGroupedTerms.blank()
+
+        next_state = rev_states.pop()
+        return self.next_tries[next_state]._lookup(rev_states)
 
 
 @dataclasses.dataclass
@@ -232,18 +311,30 @@ class MultiTapeProductTrie(object):
     is_end_product: bool = False
     # whether any nested trie contains an end product
     has_nested_end_product: bool = False
-    # map next offset to term combinations at that offset
-    combos_at_offset: defaultdict[
-        # TODO: replace with MultiTapeStateTrie
-        int, set[OffsetGroupedTerms]
+    # map next offset to current groups that lead to a nested
+    # MultiTapeProductTrie with said offset
+    combos_with_next_offset: defaultdict[
+        int | None, MultiTapeStateTrie
     ] = dataclasses.field(
-        default_factory=lambda: defaultdict(set)
+        default_factory=lambda: defaultdict(MultiTapeStateTrie)
     )
     next_groups: defaultdict[
         OffsetGroupedTerms, MultiTapeProductTrie
     ] = dataclasses.field(
         default_factory=lambda: defaultdict(MultiTapeProductTrie)
     )
+
+    def get_next_offsets(self) -> set[int | None]:
+        return set(self.combos_with_next_offset.keys())
+
+    def resolve_offset_group(
+        self, offset: int, states: list[MultiTapeState]
+    ) -> OffsetGroupedTerms:
+        if offset not in self.combos_with_next_offset:
+            return OffsetGroupedTerms.blank()
+
+        state_trie = self.combos_with_next_offset[offset]
+        return state_trie.lookup(states)
 
     @property
     def has_end_product(self) -> bool:
@@ -267,20 +358,6 @@ class MultiTapeProductTrie(object):
         else:
             # flip from negative to positive
             return -prev_index
-
-    @staticmethod
-    def zigzag_sort_key(term: D):
-        """  
-        Sorting key to sort terms by position in zigzag order
-        (higher absolute value first, sign of offset second)
-        0, -1, 1, -2, 2, -3, 3, ...
-        :param term:
-        :return:
-        """
-        return (
-            abs(term.get_position()), term.get_position() < 0,
-            term.get_tape_no(), term.get_state()
-        )
 
     def next(
         self, group: OffsetGroupedTerms
@@ -310,35 +387,41 @@ class MultiTapeProductTrie(object):
         covered_offsets: set[int | None] = set()
         prev_offset: int | None = None
 
+        def add_group(_offset_grouped_terms: list[D], _offset: int | None):
+            _group = OffsetGroupedTerms(
+                terms=tuple(offset_grouped_terms),
+                offset=_offset
+            )
+            offset_groups.append(_group)
+
         for k, term in enumerate(sorted_terms):
             offset = term.get_position()
-            is_last = k == len(sorted_terms) - 1
-            flush_group = offset_grouped_terms and (
-                is_last or (offset != prev_offset)
+            flush_group = (
+                (len(offset_grouped_terms) > 0) and
+                (offset != prev_offset)
             )
 
             if flush_group:
                 if offset_grouped_terms:
-                    group = OffsetGroupedTerms(
-                        terms=tuple(offset_grouped_terms),
-                        offset=prev_offset
-                    )
-                    offset_groups.append(group)
+                    add_group(offset_grouped_terms, prev_offset)
 
                 covered_offsets.add(prev_offset)
                 offset_grouped_terms = []
-                prev_offset = offset
             else:
                 assert offset not in covered_offsets
                 offset_grouped_terms.append(term)
 
-        assert not offset_grouped_terms
+            prev_offset = offset
+
+        if offset_grouped_terms:
+            add_group(offset_grouped_terms, prev_offset)
+
         return offset_groups
 
     def create_group_path(
         self, terms: list[D]
     ) -> list[OffsetGroupedTerms]:
-        sorted_terms = self.sort_terms(terms)
+        sorted_terms = self.build_term_path(terms)
         return self._create_group_path(sorted_terms)
 
     def _insert_group_path(
@@ -365,7 +448,9 @@ class MultiTapeProductTrie(object):
             self.next_groups[current_group] = next_trie
         else:
             next_trie = self.next_groups[current_group]
+            next_offset = next_trie.offset
 
+        self.combos_with_next_offset[next_offset].insert_group(current_group)
         next_trie._insert_group_path(next_groups)
         self.has_nested_end_product = True
         return self.offset
@@ -381,9 +466,9 @@ class MultiTapeProductTrie(object):
         return self.next_groups[current_group]._has_group_path(next_groups)
 
     @classmethod
-    def sort_terms(cls, terms: list[D]) -> list[D]:
+    def build_term_path(cls, terms: list[D]) -> list[D]:
         unique_terms = list(set(terms))
-        term_path = sorted(unique_terms, key=cls.zigzag_sort_key)
+        term_path = sorted(unique_terms, key=zigzag_sort_key)
         return term_path
 
     def insert_term_path(self, terms: list[D]):
@@ -1231,17 +1316,16 @@ class MultiTapeBuilder(object):
 
     @classmethod
     def build_product_same_writes_map(
-        cls, overlaps: TapeOverlaps, offset: int,
-        current_product_path: list[tuple[D, ...]],
-        product_exclusions: MultiTapeProductTrie
+        cls, overlaps: TapeOverlaps,
+        current_product_path: list[OffsetGroupedTerms],
+        product_exclusions: MultiTapeProductTrie,
+        offset: int = 0
     ) -> ProductWritesMap:
         """
         Generate a mapping of all possible product combinations
-        to an output state that is the same as the previous input state,
-        from an offset of start_offset up until a maximum offset of
-        end_offset, given information about all the possible
-        overlaps that exist in the automata.
+        to an output state that is the same as the previous input state.
 
+        :param offset:
         :param product_exclusions:
         If a built product is in product_exclusions, we will
         exclude it from being added to the returned ProductWritesMap
@@ -1252,10 +1336,6 @@ class MultiTapeBuilder(object):
         The current partially built product.
         Each item contains the term for each tape for the
         same offset in the product path.
-        :param start_offset:
-        Position offset to start / continue product construction from
-        :param end_offset:
-        Position offset to terminate product construction at
         :return:
         A product writes map where the products generated
         will transition every combination of term states along
@@ -1264,35 +1344,56 @@ class MultiTapeBuilder(object):
         """
         product_writes_map = ProductWritesMap()
         if product_exclusions.is_end_product:
+            """
+            current product path is covered by a pre-existing product, 
+            so we don't need to build it
+            """
             return product_writes_map
 
-        if not product_exclusions.has_end_product:
-            flat_terms = sum([], current_product_path)
+        if not product_exclusions.has_nested_end_product:
+            """
+            current product path is not covered by a pre-existing product 
+            in any subcase, so we can build and insert it 
+            """
+            flat_terms = []
+            for group in current_product_path:
+                flat_terms.extend(group.terms)
+
             current_product = PyMultiTapeProduct(flat_terms)
             product_writes_map.insert_neutral_product(current_product)
             return product_writes_map
 
-        # TODO: skip zigzag step if offset doesn't exist
         # TODO: implement overlaps FSM optimization
         states_by_tape_map = overlaps.group_states_by_tape()
         tape_nos = sorted(states_by_tape_map.keys())
         all_states_by_tape = [
             list(states_by_tape_map[tape_no]) for tape_no in tape_nos
         ]
+        next_offsets = product_exclusions.get_next_offsets()
         combos = utils.cartesian_product(all_states_by_tape)
 
-        for offset_state in all_states:
-            term = offset_state.to_term(offset=start_offset)
-            next_product_exclusions = product_exclusions.next(term)
+        for next_offset in next_offsets:
+            if next_offset is None:
+                continue
 
-            current_product_path.append(term)
-            sub_products = cls.build_product_same_writes_map(
-                overlaps=overlaps,
-                current_product_path=current_product_path,
-                product_exclusions=next_product_exclusions
-            )
-            product_writes_map.merge(sub_products)
-            current_product_path.pop()
+            for combo in combos:
+                offset_group = OffsetGroupedTerms(
+                    terms=tuple([state.to_term(offset) for state in combo]),
+                    offset=offset
+                )
+                match_offset_group = product_exclusions.resolve_offset_group(
+                    offset=next_offset, states=list(combo)
+                )
+                next_exclusions = product_exclusions.next(match_offset_group)
+                current_product_path.append(offset_group)
+                sub_products = cls.build_product_same_writes_map(
+                    overlaps=overlaps,
+                    current_product_path=current_product_path,
+                    product_exclusions=next_exclusions,
+                    offset=next_offset
+                )
+                product_writes_map.merge(sub_products)
+                current_product_path.pop()
 
         return product_writes_map
 
@@ -1708,8 +1809,6 @@ class MultiTapeBuilder(object):
         """
         product_same_writes_map = self.build_product_same_writes_map(
             overlaps=global_overlaps, current_product_path=[],
-            start_offset=self.leftmost_extent,
-            end_offset=self.rightmost_extent,
             product_exclusions=preexisting_products
         )
         product_writes_map = ProductWritesMap()
