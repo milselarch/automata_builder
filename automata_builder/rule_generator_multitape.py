@@ -394,7 +394,7 @@ class MultiTapeProductTrie(object):
 
         def add_group(_offset_grouped_terms: list[D], _offset: int | None):
             _group = OffsetGroupedTerms(
-                terms=tuple(offset_grouped_terms),
+                terms=tuple(_offset_grouped_terms),
                 offset=_offset
             )
             offset_groups.append(_group)
@@ -444,6 +444,7 @@ class MultiTapeProductTrie(object):
         current_group, next_groups = group_path[0], group_path[1:]
 
         if current_group not in self.next_groups:
+            # TODO: shouldn't it be current offset instead?
             if next_groups:
                 next_offset = next_groups[0].offset
             else:
