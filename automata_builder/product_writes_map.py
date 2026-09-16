@@ -195,6 +195,9 @@ class ProductWritesMap(Freezable):
             prod_to_state_map=self._prod_to_state_map.to_frozen()
         )
 
+    def __len__(self) -> int:
+        return len(self._prod_to_state_map)
+
     def __iter__(self) -> typing.Iterator[PyMultiTapeProduct]:
         return iter(self._prod_to_state_map.keys())
 

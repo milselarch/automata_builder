@@ -313,6 +313,7 @@ class MultiTapeProductTrie(object):
     has_nested_end_product: bool = False
     # map next offset to current groups that lead to a nested
     # MultiTapeProductTrie with said offset
+    # TODO: really need to explain what is going on before I forget
     combos_with_next_offset: defaultdict[
         int | None, MultiTapeStateTrie
     ] = dataclasses.field(
@@ -323,6 +324,10 @@ class MultiTapeProductTrie(object):
     ] = dataclasses.field(
         default_factory=lambda: defaultdict(MultiTapeProductTrie)
     )
+
+    @classmethod
+    def spawn_root(cls):
+        return cls(offset=None, has_nested_end_product=True)
 
     def get_next_offsets(self) -> set[int | None]:
         return set(self.combos_with_next_offset.keys())
@@ -1367,10 +1372,15 @@ class MultiTapeBuilder(object):
         states_by_tape_map = overlaps.group_states_by_tape()
         tape_nos = sorted(states_by_tape_map.keys())
         all_states_by_tape = [
-            list(states_by_tape_map[tape_no]) for tape_no in tape_nos
+            sorted(list(states_by_tape_map[tape_no]))
+            for tape_no in tape_nos
         ]
-        next_offsets = product_exclusions.get_next_offsets()
-        combos = utils.cartesian_product(all_states_by_tape)
+        combos = list(utils.cartesian_product(all_states_by_tape))
+
+        if current_product_path:
+            next_offsets = product_exclusions.get_next_offsets()
+        else:
+            next_offsets = [offset]
 
         for next_offset in next_offsets:
             if next_offset is None:
@@ -1790,9 +1800,7 @@ class MultiTapeBuilder(object):
         all_tape_states_per_tape: MultiTapeStatesMap = (
             global_overlaps.create_whitelist_for_offset()
         )
-        preexisting_products = MultiTapeProductTrie(
-            offset=self.leftmost_extent
-        )
+        preexisting_products = MultiTapeProductTrie.spawn_root()
         preexisting_writes_map = self._get_prod_to_state_map()
         for multi_tape_product in preexisting_writes_map:
             preexisting_products.insert_product(multi_tape_product)
@@ -1807,17 +1815,21 @@ class MultiTapeBuilder(object):
         of term states along the write position offset to itself, 
         (so no change from input to output) 
         """
-        product_same_writes_map = self.build_product_same_writes_map(
+        self_writes_map = self.build_product_same_writes_map(
+            overlaps=global_overlaps, current_product_path=[],
+            product_exclusions=MultiTapeProductTrie.spawn_root()
+        )
+        covering_product_writes_map = self.build_product_same_writes_map(
             overlaps=global_overlaps, current_product_path=[],
             product_exclusions=preexisting_products
         )
         product_writes_map = ProductWritesMap()
         product_writes_map.merge(preexisting_writes_map)
-        product_writes_map.merge(product_same_writes_map)
+        product_writes_map.merge(covering_product_writes_map)
 
         # remap individual tape states to a global combined tape state
         global_state_path_remap = self.build_global_state_path_remap(
-            product_writes_map=product_same_writes_map,
+            product_writes_map=self_writes_map,
             overlaps=global_overlaps
         )
         # input-output pairs for the final combined automata
