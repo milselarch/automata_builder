@@ -260,13 +260,15 @@ class MultiTapeStateTrie(object):
         rev_states: list[MultiTapeState] | None = None,
     ):
         if rev_states is None:
-            rev_states = list(group.terms)[::-1]
+            states = [MultiTapeState.from_term(term) for term in group.terms]
+            rev_states = states[::-1]
         if not rev_states:
             self.offset_group = group
             return
 
         self.has_nested_offset_group = True
         next_state = rev_states.pop()
+        assert isinstance(next_state, MultiTapeState), next_state
         self.next_tries[next_state]._insert_group(
             group=group, rev_states=rev_states
         )
@@ -314,7 +316,7 @@ class MultiTapeProductTrie(object):
     # map next offset to current groups that lead to a nested
     # MultiTapeProductTrie with said offset
     # TODO: really need to explain what is going on before I forget
-    combos_with_next_offset: defaultdict[
+    combos_with_offset: defaultdict[
         int | None, MultiTapeStateTrie
     ] = dataclasses.field(
         default_factory=lambda: defaultdict(MultiTapeStateTrie)
@@ -325,20 +327,23 @@ class MultiTapeProductTrie(object):
         default_factory=lambda: defaultdict(MultiTapeProductTrie)
     )
 
+    def __bool__(self):
+        return bool(self.combos_with_offset) or bool(self.next_groups)
+
     @classmethod
     def spawn_root(cls):
         return cls(offset=None, has_nested_end_product=True)
 
     def get_next_offsets(self) -> set[int | None]:
-        return set(self.combos_with_next_offset.keys())
+        return set(self.combos_with_offset.keys())
 
     def resolve_offset_group(
         self, offset: int, states: list[MultiTapeState]
     ) -> OffsetGroupedTerms:
-        if offset not in self.combos_with_next_offset:
+        if offset not in self.combos_with_offset:
             return OffsetGroupedTerms.blank()
 
-        state_trie = self.combos_with_next_offset[offset]
+        state_trie = self.combos_with_offset[offset]
         return state_trie.lookup(states)
 
     @property
@@ -414,8 +419,8 @@ class MultiTapeProductTrie(object):
                 offset_grouped_terms = []
             else:
                 assert offset not in covered_offsets
-                offset_grouped_terms.append(term)
 
+            offset_grouped_terms.append(term)
             prev_offset = offset
 
         if offset_grouped_terms:
@@ -442,21 +447,16 @@ class MultiTapeProductTrie(object):
             return self.offset
 
         current_group, next_groups = group_path[0], group_path[1:]
+        current_offset: int | None = current_group.offset
 
         if current_group not in self.next_groups:
             # TODO: shouldn't it be current offset instead?
-            if next_groups:
-                next_offset = next_groups[0].offset
-            else:
-                next_offset = None
-
-            next_trie = MultiTapeProductTrie(offset=next_offset)
+            next_trie = MultiTapeProductTrie(offset=current_offset)
             self.next_groups[current_group] = next_trie
         else:
             next_trie = self.next_groups[current_group]
-            next_offset = next_trie.offset
 
-        self.combos_with_next_offset[next_offset].insert_group(current_group)
+        self.combos_with_offset[current_offset].insert_group(current_group)
         next_trie._insert_group_path(next_groups)
         self.has_nested_end_product = True
         return self.offset
@@ -1324,8 +1324,7 @@ class MultiTapeBuilder(object):
     def build_product_same_writes_map(
         cls, overlaps: TapeOverlaps,
         current_product_path: list[OffsetGroupedTerms],
-        product_exclusions: MultiTapeProductTrie,
-        offset: int = 0
+        product_exclusions: MultiTapeProductTrie
     ) -> ProductWritesMap:
         """
         Generate a mapping of all possible product combinations
@@ -1372,16 +1371,15 @@ class MultiTapeBuilder(object):
         # TODO: implement overlaps FSM optimization
         states_by_tape_map = overlaps.group_states_by_tape()
         tape_nos = sorted(states_by_tape_map.keys())
-        all_states_by_tape = [
+        combos = list(utils.cartesian_product([
             sorted(list(states_by_tape_map[tape_no]))
             for tape_no in tape_nos
-        ]
-        combos = list(utils.cartesian_product(all_states_by_tape))
+        ]))
 
         if current_product_path:
             next_offsets = product_exclusions.get_next_offsets()
         else:
-            next_offsets = [offset]
+            next_offsets = [0]
 
         for next_offset in next_offsets:
             if next_offset is None:
@@ -1389,8 +1387,10 @@ class MultiTapeBuilder(object):
 
             for combo in combos:
                 offset_group = OffsetGroupedTerms(
-                    terms=tuple([state.to_term(offset) for state in combo]),
-                    offset=offset
+                    offset=next_offset,
+                    terms=tuple([
+                        state.to_term(next_offset) for state in combo
+                    ]),
                 )
                 match_offset_group = product_exclusions.resolve_offset_group(
                     offset=next_offset, states=list(combo)
@@ -1400,8 +1400,7 @@ class MultiTapeBuilder(object):
                 sub_products = cls.build_product_same_writes_map(
                     overlaps=overlaps,
                     current_product_path=current_product_path,
-                    product_exclusions=next_exclusions,
-                    offset=next_offset
+                    product_exclusions=next_exclusions
                 )
                 product_writes_map.merge(sub_products)
                 current_product_path.pop()
