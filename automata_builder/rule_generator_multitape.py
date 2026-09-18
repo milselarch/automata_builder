@@ -228,6 +228,10 @@ class OffsetGroupedTerms(object):
     def __bool__(self):
         return bool(self.terms)
 
+    @property
+    def is_blank(self):
+        return not self.terms
+
     @classmethod
     def blank(cls):
         return cls(terms=())
@@ -290,17 +294,27 @@ class MultiTapeStateTrie(object):
         Given a list of MultiTapeStates sorted in reverse,
         find the smallest covering offset group that contains
         some subset of the input states
-        TODO: explanation sucks
         :param rev_states:
         :return:
         """
         if self.offset_group is not None:
             return self.offset_group
-        if not rev_states:
-            return OffsetGroupedTerms.blank()
 
-        next_state = rev_states.pop()
-        return self.next_tries[next_state]._lookup(rev_states)
+        # TODO: would be cool to not need to clone rev_states
+        rev_states = rev_states[::]
+
+        while rev_states:
+            next_state = rev_states.pop()
+            if next_state not in self.next_tries:
+                continue
+
+            resolved_group = self.next_tries[next_state]._lookup(rev_states)
+            if resolved_group.is_blank:
+                continue
+
+            return resolved_group
+
+        return OffsetGroupedTerms.blank()
 
 
 @dataclasses.dataclass

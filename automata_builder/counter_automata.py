@@ -351,8 +351,8 @@ class CounterAutomataBuilder(object):
         # shift counter-tape cell leftwards and increment if needed
         for digit in range(self.base):
             if digit == max_counter_digit:
-                # overflow digit from max_counter_digit to 0 and add new
-                # max_counter_digit at the end
+                # overflow digit from max_counter_digit to 0 and add a
+                # new max_counter_digit at the end
                 _transitions_group.add_transition(
                     input_terms=(
                         increment_trigger_term,
@@ -460,7 +460,7 @@ class CounterAutomataBuilder(object):
             output_cell_state=REDUCER_PAUSED_DATA,
             annotation='REDUCER_DATA_SPREAD_LEFT'
         )
-        # convert paused half-data tape state to active state
+        # convert the paused half-data tape state to an active state
         _transitions_group.add_transition(
             input_terms=(REDUCER_MID(REDUCER_PAUSED_DATA),),
             output_tape_no=REDUCER_TAPE,

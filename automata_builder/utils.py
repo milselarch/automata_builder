@@ -3,6 +3,7 @@ from __future__ import annotations
 import copy
 import typing
 
+from collections.abc import Iterable
 from abc import ABCMeta, abstractmethod
 from collections import defaultdict
 from typing import TypeVar, Iterator, Tuple, Sequence, Generic, Callable
@@ -390,3 +391,94 @@ class FrozenSet(FreezableSet[V]):
 
     def to_unfrozen(self) -> FreezableSet[V]:
         raise ValueError("Cannot be unfrozen")
+
+
+class RestoringList(Generic[V]):
+    def __init__(self, items: typing.Iterable[T] = ()) -> None:
+        self._items: list[T] = list(items)
+        self._context_popped_items: list[tuple[int, T]] | None = None
+
+    def __enter__(self) -> RestoringList[T]:
+        if self._context_popped_items is not None:
+            raise RuntimeError("RestoringList context is already entered")
+
+        self._context_popped_items = []
+        return self
+
+    def __exit__(self, exc_type: object, exc: object, tb: object) -> bool:
+        if self._context_popped_items is None:
+            raise RuntimeError("RestoringList context was not entered")
+
+        popped_items = self._context_popped_items
+        self._context_popped_items = None
+
+        # Restore in reverse pop order so the list returns to its prior state.
+        for index, value in reversed(popped_items):
+            self._items.insert(index, value)
+
+        return False  # do not suppress exceptions
+
+    def pop(self, index: int = -1) -> T:
+        value = self._items.pop(index)
+
+        if self._context_popped_items is not None:
+            # Normalize the negative index to the original
+            # positive position.
+            if index < 0:
+                index += len(self._items) + 1
+
+            self._context_popped_items.append((index, value))
+
+        return value
+
+    def append(self, value: T) -> None:
+        self._items.append(value)
+
+    def extend(self, values: Iterable[T]) -> None:
+        self._items.extend(values)
+
+    def insert(self, index: int, value: T) -> None:
+        self._items.insert(index, value)
+
+    def remove(self, value: T) -> None:
+        index = self._items.index(value)
+        self.pop(index)
+
+    def clear(self) -> None:
+        while self._items:
+            self.pop()
+
+    @typing.overload
+    def __getitem__(self, index: int) -> T: ...
+    @typing.overload
+    def __getitem__(self, index: slice) -> list[T]: ...
+    def __getitem__(self, index: int | slice) -> T | list[T]:
+        return self._items[index]
+
+    @typing.overload
+    def __setitem__(self, index: int, value: T) -> None: ...
+    @typing.overload
+    def __setitem__(self, index: slice, value: Iterable[T]) -> None: ...
+    def __setitem__(self, index: int | slice, value: T | Iterable[T]) -> None:
+        self._items[index] = value  # type: ignore[index, assignment]
+
+    def __delitem__(self, index: int | slice) -> None:
+        if isinstance(index, slice):
+            # Do deletion from right to left so earlier indexes remain valid.
+            indexes = range(*index.indices(len(self._items)))
+            for i in reversed(list(indexes)):
+                self.pop(i)
+        else:
+            self.pop(index)
+
+    def __len__(self) -> int:
+        return len(self._items)
+
+    def __iter__(self) -> Iterator[T]:
+        return iter(self._items)
+
+    def __contains__(self, value: object) -> bool:
+        return value in self._items
+
+    def __repr__(self) -> str:
+        return repr(self._items)

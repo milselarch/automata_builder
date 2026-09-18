@@ -47,7 +47,7 @@ class ComposedCounterAutomataRunner(object):
         self.composed_ruleset: AutomataRuleSet = RuleGenerator.to_ruleset(
             transitions_group=self.compose_result.transitions_group,
             require_consistent_flat_term_offsets=False,
-            verbose=True
+            verbose=False
         )
         self.single_tape_automata = PySingleTapeAutomata(
             state_eq_map=self.composed_ruleset.expansion_map
@@ -85,7 +85,14 @@ class ComposedCounterAutomataRunner(object):
     def step(
         self, verbose: bool = False, assert_consistency: bool = True
     ) -> tuple[PySingleTapeProcessStepResult, PyProcessStepResult]:
+        def log(*args, **kwargs):
+            if verbose:
+                print(*args, **kwargs)
+
+        log("<" * 10, "Single-tape", ">" * 10)
         single_tape_result = self.single_tape_automata.step(verbose=verbose)
+        log()
+        log("<" * 10, "Multi-tape", ">" * 10)
         multi_tape_result = self.multi_tape_runner.step(verbose=verbose)
 
         if assert_consistency:
@@ -130,7 +137,7 @@ class ComposedCounterAutomataRunner(object):
         )
         single_render_frame = self.single_tape_automata.render_tape(
             start_position=render_start, length=terminal_width,
-            header_tag='X', cell_width=2
+            header_tag='-', cell_width=2
         )
         multi_render_frame = self.multi_tape_runner.render_tapes(
             start_position=render_start, length=terminal_width,

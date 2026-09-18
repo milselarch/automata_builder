@@ -96,7 +96,8 @@ if __name__ == '__main__':
     """
 
     for transition in tqdm(transitions):
-        input_terms, output_state = transition
+        input_terms = transition.input_terms
+        output_state = transition.output_state
         input_product = PyProduct(input_terms)
         input_multi_term_prod_res = compose_result.remap_prod_to_multi_tape(
             input_product=input_product
@@ -122,7 +123,8 @@ if __name__ == '__main__':
     print(f'{num_pause_incomparable_transitions=}')
 
     for k, transition in enumerate(transitions[:args.display_transitions]):
-        input_terms, output_state = transition
+        input_terms = transition.input_terms
+        output_state = transition.output_state
         input_product = PyProduct(input_terms)
         print(f'[{k}]: {input_product} -> {output_state}')
 

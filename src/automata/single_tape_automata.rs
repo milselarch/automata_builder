@@ -358,12 +358,12 @@ impl SingleTapeAutomata {
                     product.to_flat_terms().iter().all(|term| term.state == VOID_STATE);
                 let output_is_void = *output_state == VOID_STATE;
 
-                if product_is_void {
-                    if output_is_void {
-                        // This is allowed, but it doesn't do anything,
-                        // so we skip this product.
-                        continue;
-                    }
+                if product_is_void && !output_is_void {
+                    /*
+                    Product transitions a contiguous region of void
+                    to a non-void state. This can't be allowed because
+                    it would make the simulation range infinite.
+                    */
                     return Err(SingleTapeAutomataError::VoidProduct {
                         product: product._to_string("A"),
                         output: *output_state,

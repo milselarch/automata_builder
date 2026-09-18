@@ -327,9 +327,13 @@ class RuleGenerator(object):
                     log(f'Product for state {next_state}: {product}')
                     log(type(product))
 
-                max_product_length = max([
-                    len(product) for product in state_eq_terms_map[next_state]
-                ])
+                max_product_length = max(
+                    max_product_length,
+                    max([
+                        len(product) for product in
+                        state_eq_terms_map[next_state]
+                    ])
+                )
 
             log(f'Padding products to length {max_product_length}')
             assert max_product_length > 0
