@@ -910,4 +910,3 @@ def is_product_satisfiable(
             return False
 
     return True
-

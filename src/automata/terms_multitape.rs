@@ -313,6 +313,19 @@ impl MultiTapeProduct {
     pub(crate) fn _get_term(&self, index: usize) -> Option<&MultiTapeTerm> {
         self._terms.get(index)
     }
+    pub fn merge_products(
+        products: Vec<MultiTapeProduct>
+    ) -> MultiTapeProduct {
+        let mut merged_terms: Vec<MultiTapeTerm> = Vec::new();
+        for product in products.iter() {
+            for term in product._terms.iter() {
+                merged_terms.push(term.copy());
+            }
+        }
+        MultiTapeProductFactory::new(merged_terms)
+            .with_optimized(products.iter().all(|p| p._optimized))
+            .to_product()
+    }
     pub(crate) fn pad_terms(&self, length: usize) -> Option<MultiTapeProduct> {
         let mut new_terms = self._terms.clone();
         let current_length = self._terms.len();

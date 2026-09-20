@@ -6,9 +6,12 @@ import typing
 from collections.abc import Iterable
 from abc import ABCMeta, abstractmethod
 from collections import defaultdict
+from types import TracebackType
 from typing import TypeVar, Iterator, Tuple, Sequence, Generic, Callable
 from dataclasses import is_dataclass
 from automata_builder._rust import D, A, PyMultiTapeProduct, PyProduct
+
+BLANK_INT: typing.Final[int] = -1
 
 T = TypeVar('T')
 U = TypeVar('U')
@@ -204,7 +207,7 @@ class FreezableDict(Freezable, Generic[K, V]):
     @classmethod
     def _decode(
         cls, data: tuple[tuple[K, V], ...]
-    ) -> FrozenDict[K, V]:
+    ):
         instance = FreezableDict()
         for key, value in data:
             instance[key] = value
@@ -220,7 +223,7 @@ class FreezableDict(Freezable, Generic[K, V]):
         )
         return default_dict
 
-    def to_frozen(self) -> FrozenDict[K, V]:
+    def to_frozen(self):
         return FrozenDict(initial_data=self._data)
 
     def to_unfrozen(self) -> FreezableDict[K, V]:
@@ -393,83 +396,69 @@ class FrozenSet(FreezableSet[V]):
         raise ValueError("Cannot be unfrozen")
 
 
-class RestoringList(Generic[V]):
-    def __init__(self, items: typing.Iterable[T] = ()) -> None:
+class PopRestorableList(Generic[T]):
+    """
+    A list where items that have been popped
+    can be restored later after leaving the context entered into
+    with :undo_pops_when_done:
+    """
+    def __init__(self, items: Iterable[T] = ()) -> None:
         self._items: list[T] = list(items)
-        self._context_popped_items: list[tuple[int, T]] | None = None
+        self._pop_contexts: list[_UndoPopsContext] = []
 
-    def __enter__(self) -> RestoringList[T]:
-        if self._context_popped_items is not None:
-            raise RuntimeError("RestoringList context is already entered")
+    def undo_pops_when_done(self) -> _UndoPopsContext[T]:
+        pop_context = _UndoPopsContext(self, self.undo_pop_context)
+        self._pop_contexts.append(pop_context)
+        return pop_context
 
-        self._context_popped_items = []
-        return self
+    def pop(self) -> T:
+        value = self._items.pop()
 
-    def __exit__(self, exc_type: object, exc: object, tb: object) -> bool:
-        if self._context_popped_items is None:
-            raise RuntimeError("RestoringList context was not entered")
-
-        popped_items = self._context_popped_items
-        self._context_popped_items = None
-
-        # Restore in reverse pop order so the list returns to its prior state.
-        for index, value in reversed(popped_items):
-            self._items.insert(index, value)
-
-        return False  # do not suppress exceptions
-
-    def pop(self, index: int = -1) -> T:
-        value = self._items.pop(index)
-
-        if self._context_popped_items is not None:
-            # Normalize the negative index to the original
-            # positive position.
-            if index < 0:
-                index += len(self._items) + 1
-
-            self._context_popped_items.append((index, value))
+        if self._pop_contexts:
+            last_pop_context = self._pop_contexts[-1]
+            last_pop_context.insert_popped_item(value)
 
         return value
 
+    def undo_pop_context(self, popped_items: list[T]) -> bool:
+        assert self._pop_contexts
+
+        while popped_items:
+            popped_item = popped_items.pop()
+            self._items.append(popped_item)
+
+        last_pop_context = self._pop_contexts[-1]
+        assert len(last_pop_context) == 0
+        self._pop_contexts.pop()
+        return True
+
     def append(self, value: T) -> None:
+        if self._pop_contexts:
+            raise RuntimeError("Cannot append when in pop context")
+
         self._items.append(value)
 
     def extend(self, values: Iterable[T]) -> None:
+        if self._pop_contexts:
+            raise RuntimeError("Cannot extend when in pop context")
+
         self._items.extend(values)
 
     def insert(self, index: int, value: T) -> None:
-        self._items.insert(index, value)
+        if self._pop_contexts:
+            raise RuntimeError("Cannot insert when in pop context")
 
-    def remove(self, value: T) -> None:
-        index = self._items.index(value)
-        self.pop(index)
+        self._items.insert(index, value)
 
     def clear(self) -> None:
         while self._items:
             self.pop()
 
-    @typing.overload
-    def __getitem__(self, index: int) -> T: ...
-    @typing.overload
-    def __getitem__(self, index: slice) -> list[T]: ...
-    def __getitem__(self, index: int | slice) -> T | list[T]:
+    def __getitem__(self, index: int) -> T:
         return self._items[index]
 
-    @typing.overload
-    def __setitem__(self, index: int, value: T) -> None: ...
-    @typing.overload
-    def __setitem__(self, index: slice, value: Iterable[T]) -> None: ...
-    def __setitem__(self, index: int | slice, value: T | Iterable[T]) -> None:
-        self._items[index] = value  # type: ignore[index, assignment]
-
-    def __delitem__(self, index: int | slice) -> None:
-        if isinstance(index, slice):
-            # Do deletion from right to left so earlier indexes remain valid.
-            indexes = range(*index.indices(len(self._items)))
-            for i in reversed(list(indexes)):
-                self.pop(i)
-        else:
-            self.pop(index)
+    def __setitem__(self, index: int, value: T) -> None:
+        self._items[index] = value
 
     def __len__(self) -> int:
         return len(self._items)
@@ -481,4 +470,32 @@ class RestoringList(Generic[V]):
         return value in self._items
 
     def __repr__(self) -> str:
-        return repr(self._items)
+        classname = self.__class__.__name__
+        return f'{classname}({self._items})'
+
+
+class _UndoPopsContext(Generic[T]):
+    def __init__(
+        self, restoring_list: PopRestorableList[T],
+        exit_callback: Callable[[list[T]], bool]
+    ) -> None:
+        self._restoring_list = restoring_list
+        self._exit_callback = exit_callback
+        self._popped_items: list[T] = []
+
+    def insert_popped_item(self, value: T) -> None:
+        self._popped_items.append(value)
+
+    def __len__(self):
+        return len(self._popped_items)
+
+    def __enter__(self) -> PopRestorableList[T]:
+        return self._restoring_list
+
+    def __exit__(
+        self,
+        exc_type: type[BaseException] | None,
+        exc: BaseException | None,
+        tb: TracebackType | None,
+    ):
+        self._exit_callback(self._popped_items)

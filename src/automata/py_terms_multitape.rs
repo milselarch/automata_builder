@@ -6,7 +6,7 @@ use std::collections::hash_map::DefaultHasher;
 use pyo3::{pyclass, pymethods, PyResult};
 use pyo3::exceptions::{PyIndexError, PyTypeError, PyValueError};
 use pyo3::prelude::*;
-use pyo3::types::PyDict;
+use pyo3::types::{PyDict, PyType};
 use pyo3_stub_gen::define_stub_info_gatherer;
 use pyo3_stub_gen::derive::{gen_stub_pyclass, gen_stub_pymethods};
 use crate::automata::py_terms::py_hash;
@@ -334,13 +334,11 @@ impl PyMultiTapeProduct {
             terms_set.insert(term.term.copy());
             rust_terms.push(term.term.copy());
         }
-
-        PyMultiTapeProduct {
-            product: MultiTapeProduct {
-                _terms: rust_terms, _optimized: false,
-                _annotation: String::new()
-            },
-        }
+        let product = MultiTapeProductFactory::new(rust_terms.clone()).to_product();
+        Self::new_from_product(product)
+    }
+    pub fn new_from_product(product: MultiTapeProduct) -> Self {
+        Self { product }
     }
     fn _get_term(&self, index: usize) -> Option<&MultiTapeTerm> {
         self.product._terms.get(index)
@@ -383,6 +381,20 @@ impl PyMultiTapeProduct {
             .to_product();
         Ok(PyMultiTapeProduct { product })
     }
+    #[classmethod]
+    pub fn merge(
+        _cls: &Bound<'_, PyType>, products: Vec<PyRef<PyMultiTapeProduct>>
+    ) -> Self {
+        let rs_products = products.into_iter().map(|product_ref| {
+            return product_ref.product.clone();
+        }).collect();
+
+        PyMultiTapeProduct::new_from_product(
+            MultiTapeProduct::merge_products(rs_products)
+        )
+    }
+
+    // TODO: expose method to merge multi products
     pub fn get_annotation(&self) -> PyResult<String> {
         Ok(self.product._annotation.clone())
     }

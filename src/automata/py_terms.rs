@@ -8,9 +8,10 @@ use pyo3::exceptions::{PyIndexError, PyTypeError, PyValueError};
 use pyo3::prelude::*;
 use pyo3_stub_gen::define_stub_info_gatherer;
 use pyo3_stub_gen::derive::{gen_stub_pyclass, gen_stub_pymethods};
-use crate::automata::py_terms_multitape::{PyMultiTapeProduct, D};
-use crate::automata::terms::{clip_after_space, validate_debug_info_exists, AbstractExpression, CellState, ExprDebugInfo, Expression, Product, Term};
-use crate::automata::terms_multitape::{MultiTapeProduct, MultiTapeTerm};
+use crate::automata::terms::{
+    clip_after_space, validate_debug_info_exists, AbstractExpression,
+    CellState, ExprDebugInfo, Expression, Product, Term
+};
 /*
 Reasons to redo this in rust
 - expansion of terms grows hyper-exponentially with each timestep,
