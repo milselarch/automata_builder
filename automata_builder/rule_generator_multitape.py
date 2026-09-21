@@ -341,7 +341,7 @@ class MultiTapeStateTrie(object):
         :return:
         """
         if self.offset_group is not None:
-            return {self.offset_group}
+            return { self.offset_group }
 
         resolved_groups: set[OffsetGroupedTerms] = set()
 
@@ -414,10 +414,14 @@ class MultiTapeProductTrie(object):
         self, offset: int, states: list[MultiTapeState]
     ) -> set[OffsetGroupedTerms]:
         if offset not in self.combos_with_offset:
-            return set()
+            return { OffsetGroupedTerms.blank() }
 
         state_trie = self.combos_with_offset[offset]
-        return state_trie.lookup_all(states)
+        resolved_groups = state_trie.lookup_all(states)
+        if not resolved_groups:
+            return { OffsetGroupedTerms.blank() }
+
+        return resolved_groups
 
     @property
     def has_products(self) -> bool:
@@ -1477,12 +1481,14 @@ class MultiTapeBuilder(object):
     def build_product_same_writes_map(
         cls, overlaps: TapeOverlaps,
         current_product_path: list[OffsetGroupedTerms],
-        product_exclusions: MultiTapeProductTrie
+        product_exclusions: MultiTapeProductTrie,
+        _root_exclusions: MultiTapeProductTrie | None = None,
     ) -> ProductWritesMap:
         """
         Generate a mapping of all possible product combinations
         to an output state that is the same as the previous input state.
 
+        :param _root_exclusions:
         :param product_exclusions:
         If a built product is in product_exclusions, we will
         exclude it from being added to the returned ProductWritesMap
@@ -1499,6 +1505,9 @@ class MultiTapeBuilder(object):
         the write position offset to itself,
         (so no change from input to output)
         """
+        if _root_exclusions is None:
+            _root_exclusions = product_exclusions
+
         product_writes_map = ProductWritesMap()
         if product_exclusions.has_end_product:
             """
@@ -1517,6 +1526,31 @@ class MultiTapeBuilder(object):
                 flat_terms.extend(group.terms)
 
             current_product = PyMultiTapeProduct(flat_terms)
+            """
+            Consider the following situation:
+            matching_offset_groups={
+                OffsetGroupedTerms(terms=(D(0,0,0), D(0,1,0)), offset=0), 
+                OffsetGroupedTerms(terms=(D(0,1,0), D(0,3,0)), offset=0), 
+                OffsetGroupedTerms(terms=(D(0,3,0),), offset=0)
+            }
+            
+            if we had gone along 
+            OffsetGroupedTerms(terms=(D(0,1,0), D(0,3,0)), then there 
+            could still be a pre-existing product matching our 
+            current_product along matching offset group at 
+            OffsetGroupedTerms(terms=(D(0,3,0),), offset=0) still, 
+            hence the need to skip if there are matching_products here 
+            """
+            # TODO: perhaps it might be more intuitive / efficient
+            #  to merge the tries corresponding to
+            #  matching_offset_groups instead
+            matching_products = _root_exclusions.load_matching_products_for(
+                product=current_product
+            )
+            # assert not matching_products
+            if matching_products:
+                return ProductWritesMap()
+
             product_writes_map.insert_neutral_product(current_product)
             return product_writes_map
 
@@ -1544,18 +1578,24 @@ class MultiTapeBuilder(object):
                         state.to_term(next_offset) for state in combo
                     ]),
                 )
-                match_offset_group = product_exclusions.get_offset_group(
-                    offset=next_offset, states=list(combo)
+                matching_offset_groups = (
+                    product_exclusions.get_matching_offset_groups_for_states(
+                        offset=next_offset, states=list(combo)
+                    )
                 )
-                next_exclusions = product_exclusions.next(match_offset_group)
-                current_product_path.append(offset_group)
-                sub_products = cls.build_product_same_writes_map(
-                    overlaps=overlaps,
-                    current_product_path=current_product_path,
-                    product_exclusions=next_exclusions
-                )
-                product_writes_map.merge(sub_products)
-                current_product_path.pop()
+                for match_offset_group in matching_offset_groups:
+                    next_exclusions = product_exclusions.next(
+                        match_offset_group
+                    )
+                    current_product_path.append(offset_group)
+                    sub_products = cls.build_product_same_writes_map(
+                        overlaps=overlaps,
+                        current_product_path=current_product_path,
+                        product_exclusions=next_exclusions,
+                        _root_exclusions=_root_exclusions
+                    )
+                    product_writes_map.merge(sub_products)
+                    current_product_path.pop()
 
         return product_writes_map
 
