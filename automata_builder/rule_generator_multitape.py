@@ -8,7 +8,7 @@ from automata_builder.utils import PopRestorableList
 
 from result import Result, Ok, Err
 from collections import defaultdict
-from typing import Sequence
+from typing import Sequence, Self
 
 from automata_builder.product_writes_map import ProductWritesMap
 from automata_builder.tape_overlaps_fsm import (
@@ -257,6 +257,51 @@ class MultiTapeStateTrie(object):
         default_factory=lambda: defaultdict(MultiTapeStateTrie)
     )
 
+    def __or__(self, other: MultiTapeStateTrie) -> MultiTapeStateTrie:
+        if self.offset_group is None:
+            offset_group = other.offset_group
+        elif other.offset_group is None:
+            offset_group = self.offset_group
+        elif self.offset_group == other.offset_group:
+            offset_group = self.offset_group
+        else:
+            raise ValueError(
+                f"offset_group mismatch: "
+                f"{self.offset_group} vs {other.offset_group}"
+            )
+
+        has_nested_offset_group = (
+            self.has_nested_offset_group or other.has_nested_offset_group
+        )
+        next_tries: defaultdict[
+            MultiTapeState, MultiTapeStateTrie
+        ] = defaultdict(MultiTapeStateTrie)
+
+        for state in self.next_tries:
+            next_tries[state] = self.next_tries[state]
+        for state in other.next_tries:
+            next_tries[state] = next_tries[state] | other.next_tries[state]
+
+        return MultiTapeStateTrie(
+            offset_group=offset_group,
+            has_nested_offset_group=has_nested_offset_group,
+            next_tries=next_tries
+        )
+
+    @classmethod
+    def merge(cls, tries: list[MultiTapeStateTrie]) -> MultiTapeStateTrie:
+        return cls._merge(tries[::])
+
+    @classmethod
+    def _merge(cls, tries: list[MultiTapeStateTrie]) -> MultiTapeStateTrie:
+        assert len(tries) > 0
+        if len(tries) == 1:
+            return tries[0]
+
+        last_trie = tries.pop()
+        others_merged = cls._merge(tries)
+        return others_merged | last_trie
+
     def insert_group(self, group: OffsetGroupedTerms):
         self._insert_group(group=group)
 
@@ -383,8 +428,71 @@ class MultiTapeProductTrie(object):
         default_factory=lambda: defaultdict(MultiTapeProductTrie)
     )
 
+    @classmethod
+    def _merge(cls, tries: list[MultiTapeProductTrie]) -> MultiTapeProductTrie:
+        assert len(tries) > 0
+        if len(tries) == 1:
+            return tries[0]
+
+        last_trie = tries.pop()
+        others_merged = cls._merge(tries)
+        return others_merged | last_trie
+
     def __bool__(self):
         return bool(self.combos_with_offset) or bool(self.next_groups)
+
+    def __or__(self, other: MultiTapeProductTrie) -> MultiTapeProductTrie:
+        if self.offset is None:
+            offset = other.offset
+        elif other.offset is None:
+            offset = self.offset
+        elif self.offset == other.offset:
+            offset = self.offset
+        else:
+            raise ValueError(
+                f"offset mismatch: {self.offset} vs {other.offset}"
+            )
+
+        if self.offset != other.offset:
+            raise ValueError(
+                f"offset mismatch {self.offset} vs {other.offset}"
+            )
+
+        end_products = self.end_products | other.end_products
+        has_nested_products = (
+            self.has_nested_products | other.has_nested_products
+        )
+        combos_with_offset: defaultdict[
+            int | None, MultiTapeStateTrie
+        ] = defaultdict(MultiTapeStateTrie)
+        next_groups: defaultdict[
+            OffsetGroupedTerms, MultiTapeProductTrie
+        ] = defaultdict(MultiTapeProductTrie)
+
+        for next_offset in self.combos_with_offset:
+            combos_with_offset[next_offset] = self.combos_with_offset[
+                next_offset
+            ]
+        for next_offset in other.combos_with_offset:
+            combos_with_offset[next_offset] = (
+                combos_with_offset[next_offset] |
+                other.combos_with_offset[next_offset]
+            )
+
+        for offset_group in self.next_groups:
+            next_groups[offset_group] = self.next_groups[offset_group]
+        for offset_group in other.next_groups:
+            next_groups[offset_group] = (
+                next_groups[offset_group] | other.next_groups[offset_group]
+            )
+
+        return MultiTapeProductTrie(
+            offset=offset,
+            end_products=end_products,
+            has_nested_products=has_nested_products,
+            combos_with_offset=combos_with_offset,
+            next_groups=next_groups
+        )
 
     @classmethod
     def spawn_root(cls):
