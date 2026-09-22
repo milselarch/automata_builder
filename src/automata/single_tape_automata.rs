@@ -12,20 +12,20 @@ pub enum SingleTapeAutomataError {
     Tape(TapeError),
     /// The same product wants to write two different output states.
     ConflictingOutput {
-        product: String,
+        product: Product,
         existing: CellState,
         incoming: CellState,
     },
     /// A product made purely out of void states would make the simulation
     /// range infinite, so it is rejected up-front.
-    VoidProduct { product: String, output: CellState },
+    VoidProduct { product: Product, output: CellState },
     /// Two different products want to write different states to the same cell.
     ConflictingWrite {
         position: i64,
-        product: String,
+        product: Product,
         previous: CellState,
         incoming: CellState,
-        previous_products: Vec<String>,
+        previous_products: Vec<Product>,
     },
 }
 
@@ -55,12 +55,18 @@ impl fmt::Display for SingleTapeAutomataError {
             ),
             SingleTapeAutomataError::ConflictingWrite {
                 position, product, previous, incoming, previous_products,
-            } => write!(
-                f,
-                "Conflicting writes from matching_product={} at position {}: \
-                 {} vs {} (prev_products={:?})",
-                product, position, previous, incoming, previous_products
-            ),
+            } => {
+                let product_strings = previous_products.iter().map(
+                    |p| p._to_string_with_annotation("A")
+                ).collect::<Vec<_>>();
+                write!(
+                    f,
+                    "Conflicting writes from matching_product={} at position {}: \
+                    {} vs {} (prev_products={:?})",
+                    product._to_string_with_annotation("A"), position,
+                    previous, incoming, product_strings
+                )
+            },
         }
     }
 }
@@ -121,7 +127,7 @@ impl ProductWriteMap {
         if self.frozen {
             // mirrors ProductWritesError::Frozen
             return Err(SingleTapeAutomataError::ConflictingOutput {
-                product: product._to_string("A"),
+                product,
                 existing: output_state,
                 incoming: output_state,
             });
@@ -130,7 +136,7 @@ impl ProductWriteMap {
         if let Some(&existing) = self.prod_to_state_map.get(&product) {
             if existing != output_state {
                 return Err(SingleTapeAutomataError::ConflictingOutput {
-                    product: product._to_string("A"),
+                    product,
                     existing,
                     incoming: output_state,
                 });
@@ -365,7 +371,7 @@ impl SingleTapeAutomata {
                     it would make the simulation range infinite.
                     */
                     return Err(SingleTapeAutomataError::VoidProduct {
-                        product: product._to_string("A"),
+                        product: product.copy(),
                         output: *output_state,
                     });
                 }
@@ -396,7 +402,7 @@ impl SingleTapeAutomata {
         let scan_end = max_pos + self.rightmost_extent + 1;
 
         let mut writes_map: HashMap<i64, CellState> = HashMap::new();
-        let mut origins_map: HashMap<i64, BTreeSet<String>> = HashMap::new();
+        let mut origins_map: HashMap<i64, BTreeSet<Product>> = HashMap::new();
         let mut active_writes: Vec<WriteRecord> = Vec::new();
 
         for position in scan_start..scan_end {
@@ -413,12 +419,12 @@ impl SingleTapeAutomata {
                 if prev_write != output_state {
                     let previous_products = origins_map
                         .get(&position)
-                        .map(|products| products.iter().cloned().collect::<Vec<String>>())
+                        .map(|products| products.iter().cloned().collect::<Vec<Product>>())
                         .unwrap_or_default();
 
                     return Err(SingleTapeAutomataError::ConflictingWrite {
                         position,
-                        product: matching_product._to_string("A"),
+                        product: matching_product.copy(),
                         previous: prev_write,
                         incoming: output_state,
                         previous_products,
@@ -434,12 +440,11 @@ impl SingleTapeAutomata {
                     write_record.log();
                 }
                 active_writes.push(write_record);
-
                 writes_map.insert(position, output_state);
                 origins_map
                     .entry(position)
                     .or_default()
-                    .insert(matching_product._to_string("A"));
+                    .insert(matching_product.copy());
 
                 new_tape.write(position, output_state);
                 debug_assert_eq!(new_tape.read(position), output_state);

@@ -9,8 +9,9 @@ use pyo3::prelude::*;
 use pyo3_stub_gen::define_stub_info_gatherer;
 use pyo3_stub_gen::derive::{gen_stub_pyclass, gen_stub_pymethods};
 use crate::automata::terms::{
-    clip_after_space, validate_debug_info_exists, AbstractExpression,
-    CellState, ExprDebugInfo, Expression, Product, Term
+    clip_after_space, validate_debug_info_exists,
+    AbstractExpression, CellState, ExprDebugInfo, Expression,
+    Product, ProductFactory, Term
 };
 /*
 Reasons to redo this in rust
@@ -319,11 +320,8 @@ impl PyProduct {
             rust_terms.push(term.term.copy());
         }
 
-        PyProduct {
-            product: Product {
-                _terms: rust_terms, _optimized: false,
-            },
-        }
+        let product = ProductFactory::new(rust_terms.clone()).to_product();
+        PyProduct::from_product(product)
     }
     fn _get_term(&self, index: usize) -> Option<&Term> {
         self.product._terms.get(index)
@@ -352,13 +350,16 @@ impl PartialEq<Term> for &Term {
 #[pymethods]
 impl PyProduct {
     #[new]
-    pub fn init(terms: Vec<A>) -> PyResult<PyProduct> {
+    #[pyo3(signature=(terms, annotation=""))]
+    pub fn init(terms: Vec<A>, annotation: &str) -> PyResult<PyProduct> {
         if terms.len() == 0 {
             return Err(PyValueError::new_err("terms cannot be empty"));
         }
         let rs_terms: Vec<Term> =
             terms.into_iter().map(|term| term.term).collect();
-        let product = Product::new(rs_terms);
+        let product = ProductFactory::new(rs_terms)
+            .with_annotation(annotation.to_string())
+            .to_product();
         Ok(PyProduct { product })
     }
     pub fn to_py_product(&self) -> PyResult<PyProduct> {
@@ -368,6 +369,9 @@ impl PyProduct {
         Ok(PyExpression::from(
             self.product.to_expression()
         ))
+    }
+    pub fn get_annotation(&self) -> PyResult<String> {
+        Ok(self.product._annotation.clone())
     }
     fn __hash__(&self) -> isize {
         let mut hasher = DefaultHasher::new();
@@ -637,6 +641,13 @@ impl PyExpression {
             }
         }
         Ok(terms)
+    }
+    pub fn get_flat_products(&self) -> PyResult<Vec<PyProduct>> {
+        let mut products = Vec::new();
+        for product in &self.expression.products {
+            products.push(product.to_py_product());
+        }
+        Ok(products)
     }
     fn pad_products(&self, length: usize) -> PyResult<PyExpression> {
         let new_expr = self.expression.pad_products(length);

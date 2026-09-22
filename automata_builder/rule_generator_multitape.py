@@ -429,6 +429,10 @@ class MultiTapeProductTrie(object):
     )
 
     @classmethod
+    def merge(cls, tries: list[MultiTapeProductTrie]) -> MultiTapeProductTrie:
+        return cls._merge(tries[::])
+
+    @classmethod
     def _merge(cls, tries: list[MultiTapeProductTrie]) -> MultiTapeProductTrie:
         assert len(tries) > 0
         if len(tries) == 1:
@@ -451,11 +455,6 @@ class MultiTapeProductTrie(object):
         else:
             raise ValueError(
                 f"offset mismatch: {self.offset} vs {other.offset}"
-            )
-
-        if self.offset != other.offset:
-            raise ValueError(
-                f"offset mismatch {self.offset} vs {other.offset}"
             )
 
         end_products = self.end_products | other.end_products
@@ -510,15 +509,15 @@ class MultiTapeProductTrie(object):
         state_trie = self.combos_with_offset[offset]
         return state_trie.lookup(states)
 
-    def get_matching_offset_groups_for(
+    def match_offset_groups_for(
         self, offset: int, group: OffsetGroupedTerms
     ) -> set[OffsetGroupedTerms]:
         states = sorted([MultiTapeState.from_term(t) for t in group.terms])
-        return self.get_matching_offset_groups_for_states(
+        return self.match_offset_groups_for_states(
             offset=offset, states=states
         )
 
-    def get_matching_offset_groups_for_states(
+    def match_offset_groups_for_states(
         self, offset: int, states: list[MultiTapeState]
     ) -> set[OffsetGroupedTerms]:
         if offset not in self.combos_with_offset:
@@ -660,7 +659,7 @@ class MultiTapeProductTrie(object):
 
         return self.next_groups[current_group]._has_group_path(next_groups)
 
-    def load_matching_products_for(
+    def load_matching_products(
         self, product: PyMultiTapeProduct
     ) -> set[PyMultiTapeProduct]:
         terms = product.get_flat_terms()
@@ -683,7 +682,7 @@ class MultiTapeProductTrie(object):
         if current_group.offset is None:
             raise ValueError("Blank groups are not allowed")
 
-        matching_groups = self.get_matching_offset_groups_for(
+        matching_groups = self.match_offset_groups_for(
             offset=current_group.offset, group=current_group
         )
         for matching_group in matching_groups:
@@ -1597,6 +1596,8 @@ class MultiTapeBuilder(object):
         to an output state that is the same as the previous input state.
 
         :param _root_exclusions:
+        If set, inserted products will be checked against this trie
+        for duplicates. For debugging purposes only.
         :param product_exclusions:
         If a built product is in product_exclusions, we will
         exclude it from being added to the returned ProductWritesMap
@@ -1613,9 +1614,6 @@ class MultiTapeBuilder(object):
         the write position offset to itself,
         (so no change from input to output)
         """
-        if _root_exclusions is None:
-            _root_exclusions = product_exclusions
-
         product_writes_map = ProductWritesMap()
         if product_exclusions.has_end_product:
             """
@@ -1634,30 +1632,15 @@ class MultiTapeBuilder(object):
                 flat_terms.extend(group.terms)
 
             current_product = PyMultiTapeProduct(flat_terms)
-            """
-            Consider the following situation:
-            matching_offset_groups={
-                OffsetGroupedTerms(terms=(D(0,0,0), D(0,1,0)), offset=0), 
-                OffsetGroupedTerms(terms=(D(0,1,0), D(0,3,0)), offset=0), 
-                OffsetGroupedTerms(terms=(D(0,3,0),), offset=0)
-            }
-            
-            if we had gone along 
-            OffsetGroupedTerms(terms=(D(0,1,0), D(0,3,0)), then there 
-            could still be a pre-existing product matching our 
-            current_product along matching offset group at 
-            OffsetGroupedTerms(terms=(D(0,3,0),), offset=0) still, 
-            hence the need to skip if there are matching_products here 
-            """
-            # TODO: perhaps it might be more intuitive / efficient
-            #  to merge the tries corresponding to
-            #  matching_offset_groups instead
-            matching_products = _root_exclusions.load_matching_products_for(
-                product=current_product
-            )
-            # assert not matching_products
-            if matching_products:
-                return ProductWritesMap()
+            if _root_exclusions is not None:
+                matching_products = _root_exclusions.load_matching_products(
+                    product=current_product
+                )
+                assert not matching_products
+                """
+                if matching_products:
+                    return ProductWritesMap()
+                """
 
             product_writes_map.insert_neutral_product(current_product)
             return product_writes_map
@@ -1686,24 +1669,43 @@ class MultiTapeBuilder(object):
                         state.to_term(next_offset) for state in combo
                     ]),
                 )
-                matching_offset_groups = (
-                    product_exclusions.get_matching_offset_groups_for_states(
-                        offset=next_offset, states=list(combo)
-                    )
+                matching_groups = product_exclusions.match_offset_groups_for(
+                    offset=next_offset, group=offset_group
                 )
-                for match_offset_group in matching_offset_groups:
-                    next_exclusions = product_exclusions.next(
-                        match_offset_group
-                    )
-                    current_product_path.append(offset_group)
-                    sub_products = cls.build_product_same_writes_map(
-                        overlaps=overlaps,
-                        current_product_path=current_product_path,
-                        product_exclusions=next_exclusions,
-                        _root_exclusions=_root_exclusions
-                    )
-                    product_writes_map.merge(sub_products)
-                    current_product_path.pop()
+                matching_exclusions: list[MultiTapeProductTrie] = []
+                for match_offset_group in matching_groups:
+                    matching_exclusions.append(product_exclusions.next(
+                        group=match_offset_group
+                    ))
+
+                """
+                Consider the following situation:
+                matching_offset_groups={
+                    OffsetGroupedTerms(terms=(D(0,0,0), D(0,1,0)), offset=0), 
+                    OffsetGroupedTerms(terms=(D(0,1,0), D(0,3,0)), offset=0), 
+                    OffsetGroupedTerms(terms=(D(0,3,0),), offset=0)
+                }
+                
+                if we only went along 
+                OffsetGroupedTerms(terms=(D(0,1,0), D(0,3,0)), then there 
+                could still be a pre-existing product matching our 
+                current_product along matching offset group at 
+                OffsetGroupedTerms(terms=(D(0,3,0),), offset=0); 
+                hence the need to merge all product exclusions 
+                across matching offset groups
+                """
+                next_exclusions = MultiTapeProductTrie.merge(
+                    tries=matching_exclusions
+                )
+                current_product_path.append(offset_group)
+                sub_products = cls.build_product_same_writes_map(
+                    overlaps=overlaps,
+                    current_product_path=current_product_path,
+                    product_exclusions=next_exclusions,
+                    _root_exclusions=_root_exclusions
+                )
+                product_writes_map.merge(sub_products)
+                current_product_path.pop()
 
         return product_writes_map
 
@@ -1897,7 +1899,7 @@ class MultiTapeBuilder(object):
         multi_tape_product = global_state_path_remap.remap_single_tape_terms(
             terms=terms
         ).unwrap()
-        matching_products = preexisting_products.load_matching_products_for(
+        matching_products = preexisting_products.load_matching_products(
             product=multi_tape_product
         )
         return matching_products
@@ -2120,7 +2122,6 @@ class MultiTapeBuilder(object):
                 remapped_output_state = global_state_path_remap[
                     output_state_path
                 ]
-
             transitions_group.add_transition(
                 input_terms=tuple(remapped_product_input_terms),
                 output_state=remapped_output_state,

@@ -1,6 +1,7 @@
 use std::cmp::Ordering;
 use rayon::iter::ParallelIterator;
 use std::collections::{HashMap, HashSet};
+use std::fmt::{Display, Formatter};
 use std::hash::{Hash, Hasher};
 use std::ops::{BitOr, Mul};
 use indexmap::IndexSet;
@@ -156,14 +157,14 @@ impl Mul<Product> for Term {
 
     fn mul(self, rhs: Product) -> Product {
         let mut new_terms: Vec<Term> = Vec::new();
+        let rhs_optimized = rhs._optimized;
         new_terms.push(self.clone());
         for term in rhs._terms.iter() {
             new_terms.push(term.copy());
         }
-        Product {
-            _terms: new_terms,
-            _optimized: self._optimized,
-        }
+        ProductFactory::new(new_terms)
+            .with_optimized(self._optimized && rhs_optimized)
+            .to_product()
     }
 }
 impl Mul<Expression> for Term {
@@ -267,16 +268,62 @@ impl AbstractExpression for Term {
     }
 }
 
+#[derive(Clone, Debug)]
+pub struct  ProductFactory {
+    pub (crate) _terms: Vec<Term>,
+    pub (crate) _optimized: bool,
+    pub (crate) _annotation: String
+}
+impl ProductFactory {
+    pub fn spawn_empty() -> ProductFactory {
+        ProductFactory {
+            _terms: vec![],
+            _optimized: false,
+            _annotation: String::new()
+        }
+    }
+    pub fn new(terms: Vec<Term>) -> ProductFactory {
+        Self::spawn_empty().with_terms(terms)
+    }
+    pub fn with_terms(
+        self, terms: Vec<Term>
+    ) -> ProductFactory {
+        let mut clone = self.clone();
+        clone._terms = terms;
+        clone
+    }
+    pub fn with_optimized(
+        &mut self, optimized: bool
+    ) -> ProductFactory {
+        let mut clone = self.clone();
+        clone._optimized = optimized;
+        clone
+    }
+    pub fn with_annotation(
+        &mut self, annotation: String
+    ) -> ProductFactory {
+        let mut clone = self.clone();
+        clone._annotation = annotation;
+        clone
+    }
+    pub fn to_product(self) -> Product {
+        Product {
+            _terms: self._terms,
+            _optimized: self._optimized,
+            _annotation: self._annotation.clone()
+        }
+    }
+}
+
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Product {
     pub (crate) _terms: Vec<Term>,
-    pub (crate) _optimized: bool
+    pub (crate) _optimized: bool,
+    pub (crate) _annotation: String
 }
 impl Product {
     pub fn new(terms: Vec<Term>) -> Self {
-        Product {
-            _terms: terms, _optimized: false,
-        }
+        ProductFactory::new(terms).to_product()
     }
     pub fn to_flat_terms(&self) -> Vec<Term> {
         self._terms.clone()
@@ -340,8 +387,18 @@ impl Product {
         let norm_terms = self.to_normalized_vec(true);
         Product::new(norm_terms)
     }
+    pub(crate) fn _to_string_with_annotation(&self, name: &str) -> String {
+        let product_string = self._to_string(name);
+        format!("{}:{}", product_string, self._annotation)
+    }
 }
-
+impl Display for Product {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        return write!(
+            f, "{}", self._to_string("A")
+        );
+    }
+}
 impl PartialEq<Self> for Product {
     fn eq(&self, other: &Product) -> bool {
         self._terms == other._terms
@@ -372,7 +429,9 @@ impl Mul for Product {
         for term in rhs._terms.iter() {
             new_terms.push(term.clone());
         }
-        Product { _terms: new_terms, _optimized: self._optimized }
+        ProductFactory::new(new_terms)
+            .with_optimized(self._optimized && rhs._optimized)
+            .to_product()
     }
 }
 impl Mul<Term> for &Product {
@@ -380,10 +439,11 @@ impl Mul<Term> for &Product {
 
     fn mul(self, rhs: Term) -> Product {
         let mut new_terms: Vec<Term> = self._terms.clone();
-        new_terms.push(rhs);
-        Product {
-            _terms: new_terms, _optimized: false
-        }
+        new_terms.push(rhs.copy());
+        ProductFactory::new(new_terms)
+            .with_optimized(self._optimized && rhs._optimized)
+            .with_annotation(self._annotation.clone())
+            .to_product()
     }
 }
 impl Mul<Term> for Product {
@@ -392,10 +452,10 @@ impl Mul<Term> for Product {
     fn mul(self, rhs: Term) -> Product {
         let mut new_terms = self._terms.clone();
         new_terms.push(rhs.copy());
-        Product {
-            _terms: new_terms,
-            _optimized: self._optimized,
-        }
+        ProductFactory::new(new_terms)
+            .with_optimized(self._optimized && rhs._optimized)
+            .with_annotation(self._annotation)
+            .to_product()
     }
 }
 impl Mul<Expression> for Product {

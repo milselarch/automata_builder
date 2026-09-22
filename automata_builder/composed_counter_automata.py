@@ -7,7 +7,7 @@ from automata_builder.counter_automata import (
     CounterAutomataRunner, DATA_TAPE, DT_DATA, paused_counter, active_counter
 )
 from automata_builder.rule_generator import (
-    VOID_STATE, RuleGenerator, AutomataRuleSet, BLANK_INT
+    VOID_STATE, RuleGenerator, AutomataRuleSet, BLANK_INT, TapeCellState
 )
 from automata_builder.rule_generator_multitape import (
     MultiTapeBuilder, ComposeTapesResult
@@ -53,14 +53,14 @@ class ComposedCounterAutomataRunner(object):
             state_eq_map=self.composed_ruleset.expansion_map
         )
 
-        input_data_product = self.build_full_init_data_product()
-        input_data_state = self.compose_result.remap_from_product_to_state(
-            input_data_product
+        full_data_product = self.build_full_init_data_product()
+        single_input_data_state: TapeCellState = (
+            self.compose_result.remap_from_product_to_state(full_data_product)
         )
         self.single_tape_automata.write_region(
             position=self.initial_write_start,
             end_position=self.initial_write_end,
-            data=[input_data_state]
+            data=[single_input_data_state]
         )
         self.assert_tapes_consistency()
 

@@ -208,18 +208,6 @@ class AutomataRuleSet(object):
 
 class RuleGenerator(object):
     @staticmethod
-    def tuple_to_product(terms: tuple[A, ...]) -> PyProduct:
-        product = terms[0].to_py_product()
-        if len(terms) == 1:
-            return product
-
-        for term in terms[1:]:
-            product = product.multiply_by_term(term)
-
-        assert isinstance(product, PyProduct)
-        return product
-
-    @staticmethod
     def aggregate_bit_or(expr_list: list[
         typing.Union[PyExpression, PyProduct]
     ]) -> PyExpression:
@@ -316,7 +304,7 @@ class RuleGenerator(object):
             if transition.output_state not in state_eq_terms_map:
                 state_eq_terms_map[transition.output_state] = []
 
-            product = cls.tuple_to_product(transition.input_terms)
+            product = PyProduct(transition.input_terms, transition.annotation)
             state_eq_terms_map[transition.output_state].append(product)
 
         if pad_product_length:
@@ -361,7 +349,7 @@ class RuleGenerator(object):
 
         if pad_expr_length:
             # ensure that all expressions have the same length
-            # i.e. same number of products
+            # i.e., same number of products
             max_expr_length = max([
                 len(state_eq_map[next_state]) for next_state in state_eq_map
             ])

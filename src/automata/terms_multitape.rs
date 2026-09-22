@@ -414,6 +414,7 @@ impl Mul for MultiTapeProduct {
         for term in rhs._terms.iter() {
             new_terms.push(term.clone());
         }
+        // TODO: concat annotations?
         MultiTapeProductFactory::new(new_terms)
             .with_optimized(self._optimized && rhs._optimized)
             .to_product()
