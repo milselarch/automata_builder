@@ -198,7 +198,10 @@ class MultiTapeRuleGenerator(object):
         return state_eq_map
 
 
-def zigzag_sort_key(num: int):
+def zigzag_sort_key(num: int | None):
+    if num is None:
+        return float('inf'), float('inf')
+
     return abs(num), num < 0
 
 
@@ -598,14 +601,13 @@ class MultiTapeProductTrie(object):
             if offset_group.offset != trie_exclusion.offset:
                 continue
 
-            next_trie = self.next_groups[offset_group]
-            next_trie |= trie_exclusion
+            self.next_groups[offset_group] |= trie_exclusion
 
-            if not next_trie.has_end_product:
-                del self.next_groups[offset_group]
-                # TODO: remove from combos_with_offset also
-            else:
-                self.next_groups[offset_group] = next_trie
+        if trie_exclusion.offset not in self.combos_with_offset:
+            # self.next_groups[trie_exclusion.offset] = trie_exclusion
+            # self.combos_with_offset[]
+            # TODO: figure out how to complete this
+            pass
 
     def copy(self) -> MultiTapeProductTrie:
         return MultiTapeProductTrie(
@@ -632,24 +634,65 @@ class MultiTapeProductTrie(object):
         state_trie = self.combos_with_offset[offset]
         return state_trie.lookup(states)
 
+    def advance_exclusions(
+        self, source_offset_group: OffsetGroupedTerms
+    ) -> MultiTapeProductTrie:
+        assert source_offset_group.offset is not None
+        matching_groups = self.match_offset_groups_for(
+            offset=source_offset_group.offset, group=source_offset_group
+        )
+        matching_exclusions: list[MultiTapeProductTrie] = []
+        for match_offset_group in matching_groups:
+            matching_exclusions.append(self.next(
+                group=match_offset_group
+            ))
+
+        """
+        Consider the following situation:
+        matching_offset_groups={
+            OffsetGroupedTerms(terms=(D(0,0,0), D(0,1,0)), offset=0), 
+            OffsetGroupedTerms(terms=(D(0,1,0), D(0,3,0)), offset=0), 
+            OffsetGroupedTerms(terms=(D(0,3,0),), offset=0)
+        }
+        
+        if we only went along 
+        OffsetGroupedTerms(terms=(D(0,1,0), D(0,3,0)), then there 
+        could still be a pre-existing product matching our 
+        current_product along matching offset group at 
+        OffsetGroupedTerms(terms=(D(0,3,0),), offset=0); 
+        hence the need to merge all product exclusions 
+        across matching offset groups
+        """
+        next_exclusions = MultiTapeProductTrie.merge(
+            tries=matching_exclusions
+        )
+        for offset_group in self.next_groups:
+            if offset_group.offset == source_offset_group.offset:
+                continue
+
+            other_exclusions = self.next_groups[offset_group]
+            next_exclusions.merge_next_exclusion(other_exclusions)
+
+        return next_exclusions
+
     def match_offset_groups_for(
         self, offset: int, group: OffsetGroupedTerms
     ) -> set[OffsetGroupedTerms]:
         states = sorted([MultiTapeState.from_term(t) for t in group.terms])
-        return self.match_offset_groups_for_states(
+        return self._match_offset_groups_for_states(
             offset=offset, states=states
         )
 
-    def match_offset_groups_for_states(
+    def _match_offset_groups_for_states(
         self, offset: int, states: list[MultiTapeState]
     ) -> set[OffsetGroupedTerms]:
         if offset not in self.combos_with_offset:
-            return { OffsetGroupedTerms.blank() }
+            return {OffsetGroupedTerms.blank()}
 
         state_trie = self.combos_with_offset[offset]
         resolved_groups = state_trie.lookup_all(states)
         if not resolved_groups:
-            return { OffsetGroupedTerms.blank() }
+            return {OffsetGroupedTerms.blank()}
 
         return resolved_groups
 
@@ -1786,39 +1829,12 @@ class MultiTapeBuilder(object):
                 continue
 
             for combo in combos:
+                flat_terms = [state.to_term(next_offset) for state in combo]
                 offset_group = OffsetGroupedTerms(
-                    offset=next_offset,
-                    terms=tuple([
-                        state.to_term(next_offset) for state in combo
-                    ]),
+                    offset=next_offset, terms=tuple(flat_terms),
                 )
-                matching_groups = product_exclusions.match_offset_groups_for(
-                    offset=next_offset, group=offset_group
-                )
-                matching_exclusions: list[MultiTapeProductTrie] = []
-                for match_offset_group in matching_groups:
-                    matching_exclusions.append(product_exclusions.next(
-                        group=match_offset_group
-                    ))
-
-                """
-                Consider the following situation:
-                matching_offset_groups={
-                    OffsetGroupedTerms(terms=(D(0,0,0), D(0,1,0)), offset=0), 
-                    OffsetGroupedTerms(terms=(D(0,1,0), D(0,3,0)), offset=0), 
-                    OffsetGroupedTerms(terms=(D(0,3,0),), offset=0)
-                }
-                
-                if we only went along 
-                OffsetGroupedTerms(terms=(D(0,1,0), D(0,3,0)), then there 
-                could still be a pre-existing product matching our 
-                current_product along matching offset group at 
-                OffsetGroupedTerms(terms=(D(0,3,0),), offset=0); 
-                hence the need to merge all product exclusions 
-                across matching offset groups
-                """
-                next_exclusions = MultiTapeProductTrie.merge(
-                    tries=matching_exclusions
+                next_exclusions = product_exclusions.advance_exclusions(
+                    source_offset_group=offset_group
                 )
                 current_product_path.append(offset_group)
                 sub_products = cls.build_product_same_writes_map(
