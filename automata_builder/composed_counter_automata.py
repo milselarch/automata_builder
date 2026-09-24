@@ -1,6 +1,6 @@
 from automata_builder._rust import (
     D, PySingleTapeAutomata, PyMultiTapeProduct, PyProcessStepResult,
-    PySingleTapeProcessStepResult
+    PySingleTapeProcessStepResult, PyProduct
 )
 
 from automata_builder.counter_automata import (
@@ -64,8 +64,18 @@ class ComposedCounterAutomataRunner(object):
         )
         self.assert_tapes_consistency()
 
+    def count_unique_states(self):
+        return self.compose_result.count_unique_states()
+
+    @property
+    def transitions_group(self):
+        return self.compose_result.transitions_group
+
     def read_multi_tape_signal_value(self) -> int:
         return self.multi_tape_runner.read_signals_tape_value()
+
+    def remap_prod_to_multi_tape(self, input_product: PyProduct):
+        return self.compose_result.remap_prod_to_multi_tape(input_product)
 
     def build_full_init_data_product(
         self, position: int = 0

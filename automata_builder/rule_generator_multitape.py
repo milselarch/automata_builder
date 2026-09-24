@@ -593,8 +593,13 @@ class MultiTapeProductTrie(object):
             next_groups=next_groups
         )
 
-    def merge_next_exclusion(self, trie_exclusion: MultiTapeProductTrie):
-        if trie_exclusion.offset is None:
+    def merge_next_exclusion(
+        self, offset_group: OffsetGroupedTerms,
+        trie_exclusion: MultiTapeProductTrie
+    ):
+        offset = offset_group.offset
+        assert offset == trie_exclusion.offset
+        if offset is None:
             return
 
         for offset_group in self.next_groups:
@@ -603,10 +608,10 @@ class MultiTapeProductTrie(object):
 
             self.next_groups[offset_group] |= trie_exclusion
 
-        if trie_exclusion.offset not in self.combos_with_offset:
-            # self.next_groups[trie_exclusion.offset] = trie_exclusion
-            # self.combos_with_offset[]
-            # TODO: figure out how to complete this
+        if offset not in self.combos_with_offset:
+            self.has_nested_products |= trie_exclusion.has_products
+            self.combos_with_offset[offset].insert_group(offset_group)
+            self.next_groups[offset_group] = trie_exclusion
             pass
 
     def copy(self) -> MultiTapeProductTrie:
@@ -635,7 +640,8 @@ class MultiTapeProductTrie(object):
         return state_trie.lookup(states)
 
     def advance_exclusions(
-        self, source_offset_group: OffsetGroupedTerms
+        self, source_offset_group: OffsetGroupedTerms,
+        merge_from_adjacent_offsets: bool = False,
     ) -> MultiTapeProductTrie:
         assert source_offset_group.offset is not None
         matching_groups = self.match_offset_groups_for(
@@ -666,12 +672,17 @@ class MultiTapeProductTrie(object):
         next_exclusions = MultiTapeProductTrie.merge(
             tries=matching_exclusions
         )
-        for offset_group in self.next_groups:
-            if offset_group.offset == source_offset_group.offset:
-                continue
 
-            other_exclusions = self.next_groups[offset_group]
-            next_exclusions.merge_next_exclusion(other_exclusions)
+        if merge_from_adjacent_offsets:
+            for offset_group in self.next_groups:
+                if offset_group.offset == source_offset_group.offset:
+                    continue
+
+                other_exclusions = self.next_groups[offset_group]
+                next_exclusions.merge_next_exclusion(
+                    offset_group=offset_group, trie_exclusion=other_exclusions
+                )
+                pass
 
         return next_exclusions
 
@@ -1793,7 +1804,7 @@ class MultiTapeBuilder(object):
             current product path is not covered by a pre-existing product 
             in any subcase, so we can build and insert it 
             """
-            flat_terms = []
+            flat_terms: list[D] = []
             for group in current_product_path:
                 flat_terms.extend(group.terms)
 
@@ -2261,9 +2272,15 @@ class MultiTapeBuilder(object):
                 remapped_output_state = global_state_path_remap[
                     output_state_path
                 ]
+
+            annotation = multi_tape_product.get_annotation()
+            if not annotation:
+                annotation = str(multi_tape_product)
+
             transitions_group.add_transition(
                 input_terms=tuple(remapped_product_input_terms),
                 output_state=remapped_output_state,
+                annotation=annotation,
                 ban_halt_state=True
             )
 

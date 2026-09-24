@@ -224,10 +224,12 @@ class RuleGenerator(object):
     def to_ruleset(
         cls, transitions_group: TapeTransitionsGroup,
         require_consistent_flat_term_offsets: bool = True,
+        require_annotations: bool = True,
         verbose: bool = False
     ) -> AutomataRuleSet:
         equations = cls.generate_equations(
             transitions_group, pad_product_length=True,
+            require_annotations=require_annotations,
             pad_expr_length=True, verbose=verbose
         )
         max_flat_terms = 0
@@ -259,6 +261,8 @@ class RuleGenerator(object):
             for product in equations[state]:
                 assert isinstance(product, PyProduct)
                 base_terms_per_product = product.get_num_terms()
+                if require_annotations:
+                    assert product.get_annotation()
 
                 for term in product:
                     assert isinstance(term, A)
@@ -283,10 +287,12 @@ class RuleGenerator(object):
         cls, transitions_group: TapeTransitionsGroup,
         pad_product_length: bool = True,
         pad_expr_length: bool = True,
+        require_annotations: bool = False,
         verbose: bool = False
     ) -> dict[int, PyExpression]:
         """
         generates a mapping from state to expression
+        :param require_annotations:
         :param transitions_group:
         :param pad_product_length:
         whether to pad the products to the same length
@@ -303,6 +309,9 @@ class RuleGenerator(object):
         for transition in transitions_group.transitions:
             if transition.output_state not in state_eq_terms_map:
                 state_eq_terms_map[transition.output_state] = []
+
+            if require_annotations:
+                assert transition.annotation
 
             product = PyProduct(transition.input_terms, transition.annotation)
             state_eq_terms_map[transition.output_state].append(product)
@@ -331,6 +340,9 @@ class RuleGenerator(object):
 
                 for prod_idx in range(len(state_products)):
                     product = state_products[prod_idx]
+                    if require_annotations:
+                        assert product.get_annotation()
+
                     start_product_length = len(product)
                     pad_length = max_product_length - start_product_length
                     end_term = product[start_product_length - 1]
@@ -338,18 +350,25 @@ class RuleGenerator(object):
 
                     for _ in range(pad_length):
                         new_product = new_product.multiply_by_term(end_term)
+                        if require_annotations:
+                            assert new_product.get_annotation()
 
                     assert len(new_product) == max_product_length
                     state_products[prod_idx] = new_product
 
         state_eq_map: dict[int, PyExpression] = {
-            next_state: cls.aggregate_bit_or(state_eq_terms_map[next_state])
+            next_state: PyExpression(state_eq_terms_map[next_state])
             for next_state in state_eq_terms_map
         }
 
+        if require_annotations:
+            for next_state in state_eq_map:
+                for product in state_eq_map[next_state]:
+                    assert product.get_annotation()
+
         if pad_expr_length:
             # ensure that all expressions have the same length
-            # i.e., same number of products
+            # i.e., the same number of products
             max_expr_length = max([
                 len(state_eq_map[next_state]) for next_state in state_eq_map
             ])
@@ -360,6 +379,10 @@ class RuleGenerator(object):
 
                 for _ in range(pad_length):
                     state_eq_map[next_state] |= end_product
+
+                    if require_annotations:
+                        for product in state_eq_map[next_state]:
+                            assert product.get_annotation()
 
         sorted_states = sorted(list(state_eq_map.keys()))
         log(f'{sorted_states=}')

@@ -522,6 +522,13 @@ impl PartialEq<PyExpression> for &PyExpression {
 #[gen_stub_pymethods]
 #[pymethods]
 impl PyExpression {
+    #[new]
+    #[pyo3(signature=(products=vec![]))]
+    pub fn init(products: Vec<PyProduct>) -> PyResult<PyExpression> {
+        let rs_products = products.into_iter().map(|product| product.product).collect();
+        Ok(PyExpression { expression: Expression::new(rs_products) })
+    }
+
     pub fn to_py_product(&self) -> PyResult<PyProduct> {
         if self._get_num_products() != 1 {
             return Err(PyValueError::new_err(
