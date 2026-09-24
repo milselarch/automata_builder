@@ -164,6 +164,7 @@ impl Mul<Product> for Term {
         }
         ProductFactory::new(new_terms)
             .with_optimized(self._optimized && rhs_optimized)
+            .with_annotation(rhs._annotation.clone())
             .to_product()
     }
 }
@@ -394,9 +395,7 @@ impl Product {
 }
 impl Display for Product {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        return write!(
-            f, "{}", self._to_string("A")
-        );
+        write!(f, "{}", self._to_string("A"))
     }
 }
 impl PartialEq<Self> for Product {
@@ -509,7 +508,10 @@ impl Ord for Product {
 }
 impl AbstractExpression for Product {
     fn copy(&self) -> Self {
-        Product::new(self._terms.clone())
+        ProductFactory::new(self._terms.clone())
+            .with_annotation(self._annotation.clone())
+            .with_optimized(self._optimized)
+            .to_product()
     }
     fn _sub(&self, substitutions: &HashMap<i64, CellState>, default: CellState) -> bool {
         for term in self._terms.iter() {

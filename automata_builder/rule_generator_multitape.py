@@ -602,11 +602,11 @@ class MultiTapeProductTrie(object):
         if offset is None:
             return
 
-        for offset_group in self.next_groups:
-            if offset_group.offset != trie_exclusion.offset:
+        for next_offset_group in self.next_groups:
+            if next_offset_group.offset != trie_exclusion.offset:
                 continue
 
-            self.next_groups[offset_group] |= trie_exclusion
+            self.next_groups[next_offset_group] |= trie_exclusion
 
         if offset not in self.combos_with_offset:
             self.has_nested_products |= trie_exclusion.has_products
@@ -641,7 +641,7 @@ class MultiTapeProductTrie(object):
 
     def advance_exclusions(
         self, source_offset_group: OffsetGroupedTerms,
-        merge_from_adjacent_offsets: bool = False,
+        merge_from_adjacent_offsets: bool = True,
     ) -> MultiTapeProductTrie:
         assert source_offset_group.offset is not None
         matching_groups = self.match_offset_groups_for(
