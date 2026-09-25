@@ -177,9 +177,11 @@ impl BidirectionalTape {
         /*
         Get the minimum position where a non-VOID cell can be found.
         */
+        let rev_data_length = self.rev_data.len();
         for (i, state) in self.rev_data.iter().rev().enumerate() {
+            let pos = -((rev_data_length - i) as i64);
             if *state != VOID_STATE {
-                return Some(-(i as i64) - 1);
+                return Some(pos);
             }
         }
         for (pos, state) in self.data.iter().enumerate() {

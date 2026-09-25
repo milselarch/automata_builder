@@ -42,6 +42,11 @@ parser.add_argument(
     default=-5,
     help='Starting position for rendering the tapes (default: -5)'
 )
+parser.add_argument(
+    '--apply-reduction', '-a',
+    action='store_true',
+    help='Use a automata ruleset with half-reduction'
+)
 
 if __name__ == '__main__':
     args = parser.parse_args()
@@ -49,6 +54,7 @@ if __name__ == '__main__':
         base=args.base,
         initial_write_start=args.write_start,
         initial_write_end=args.write_end,
+        apply_reduction=args.apply_reduction
     )
     runner.run_simulation(
         num_timesteps=args.timesteps,

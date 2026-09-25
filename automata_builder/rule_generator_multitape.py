@@ -593,26 +593,34 @@ class MultiTapeProductTrie(object):
             next_groups=next_groups
         )
 
-    def merge_next_exclusion(
+    def insert(
         self, offset_group: OffsetGroupedTerms,
         trie_exclusion: MultiTapeProductTrie
     ):
+        """
+        Insert an offset group -> trie exclusion into own trie exclusions.
+        :param offset_group:
+        :param trie_exclusion:
+        :return:
+        """
         offset = offset_group.offset
         assert offset == trie_exclusion.offset
         if offset is None:
             return
 
+        self.has_nested_products |= trie_exclusion.has_products
+        self.combos_with_offset[offset].insert_group(offset_group)
+
         for next_offset_group in self.next_groups:
-            if next_offset_group.offset != trie_exclusion.offset:
+            if next_offset_group.offset == offset:
                 continue
 
             self.next_groups[next_offset_group] |= trie_exclusion
 
-        if offset not in self.combos_with_offset:
-            self.has_nested_products |= trie_exclusion.has_products
-            self.combos_with_offset[offset].insert_group(offset_group)
+        if offset_group not in self.next_groups:
             self.next_groups[offset_group] = trie_exclusion
-            pass
+        else:
+            self.next_groups[offset_group] |= trie_exclusion
 
     def copy(self) -> MultiTapeProductTrie:
         return MultiTapeProductTrie(
@@ -678,11 +686,11 @@ class MultiTapeProductTrie(object):
                 if offset_group.offset == source_offset_group.offset:
                     continue
 
-                other_exclusions = self.next_groups[offset_group]
-                next_exclusions.merge_next_exclusion(
-                    offset_group=offset_group, trie_exclusion=other_exclusions
+                adjacent_exclusions = self.next_groups[offset_group]
+                next_exclusions.insert(
+                    offset_group=offset_group,
+                    trie_exclusion=adjacent_exclusions
                 )
-                pass
 
         return next_exclusions
 

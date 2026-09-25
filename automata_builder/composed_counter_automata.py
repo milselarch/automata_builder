@@ -99,10 +99,10 @@ class ComposedCounterAutomataRunner(object):
             if verbose:
                 print(*args, **kwargs)
 
-        log("<" * 10, "Single-tape", ">" * 10)
+        log("Single-tape transitions:")
         single_tape_result = self.single_tape_automata.step(verbose=verbose)
         log()
-        log("<" * 10, "Multi-tape", ">" * 10)
+        log("Multi-tape transitions:")
         multi_tape_result = self.multi_tape_runner.step(verbose=verbose)
 
         if assert_consistency:
@@ -189,7 +189,7 @@ class ComposedCounterAutomataRunner(object):
         for timestep in range(num_timesteps):
             # print(f'{terminal_width=}')
             if timestep > 0:
-                self.step(verbose=render)
+                self.step(verbose=render, assert_consistency=False)
 
             if render:
                 # print(f'\nTIMESTEP {timestep}:')

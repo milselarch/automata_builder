@@ -404,7 +404,8 @@ class TapeOverlaps(Freezable):
     def get_overlaps(
         self, source_state: MultiTapeState
     ) -> FreezableDefaultDict[int, FreezableSet[MultiTapeState]]:
-        return copy.deepcopy(self._overlaps[source_state])
+        # return copy.deepcopy(self._overlaps[source_state])
+        return self._overlaps[source_state]
 
     def propagate_overlap(
         self, source_state: MultiTapeState, target_state: MultiTapeState,
