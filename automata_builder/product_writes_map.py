@@ -49,6 +49,30 @@ class ProductWritesMap(Freezable):
         if prod_to_state_map is not None:
             self._prod_to_state_map = prod_to_state_map
 
+    def get_stub_writes_str_for(self, product: PyMultiTapeProduct) -> str:
+        writes = self._prod_to_state_map[product]
+        stub_writes_str = ''
+
+        for tape_no, tape_cell_state in sorted(list(writes.items())):
+            stub_writes_str += f'T{tape_no}:{tape_cell_state}'
+
+        return stub_writes_str
+
+    def get_multi_tape_writes_for(
+        self, product: PyMultiTapeProduct
+    ) -> set[MultiTapeState]:
+        writes: set[MultiTapeState] = set()
+        writes_map = self._prod_to_state_map[product]
+
+        for tape_no in writes_map:
+            tape_cell_state = writes_map[tape_no]
+            multi_tape_state = MultiTapeState(
+                tape_no=tape_no, tape_cell_state=tape_cell_state
+            )
+            writes.add(multi_tape_state)
+
+        return writes
+
     def _freeze(self) -> None:
         self._prod_to_state_map.freeze()
 
@@ -557,6 +581,14 @@ class ProductWritesMap(Freezable):
 
     def __getitem__(self, item: PyMultiTapeProduct):
         return copy.copy(self._prod_to_state_map[item])
+
+    def get(
+        self, item: PyMultiTapeProduct,
+        default: FreezableDict[TapeNo, TapeCellState]
+    ):
+        return copy.copy(self._prod_to_state_map.get(
+            item, default
+        ))
 
     @classmethod
     def get_zero_terms_from_path(cls, product_path: list[D]) -> list[D]:

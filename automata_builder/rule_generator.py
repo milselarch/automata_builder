@@ -95,9 +95,14 @@ class TapeTransitionsGroup(object):
             if self.transitions_map[input_terms] == output_state:
                 return False
 
+            existing_transition = self.transitions_lookup[input_terms]
+            existing_output_state = existing_transition.output_state
+            existing_annotation = existing_transition.annotation
+
             raise ValueError(
                 f'Conflicting transition for input terms {input_terms}: '
-                f'{output_state} vs {self.transitions_map[input_terms]}'
+                f'{output_state} [{annotation}] vs {existing_output_state} '
+                f'[{existing_annotation}]'
             )
 
         _num_states: int | float = float('inf')

@@ -10,7 +10,7 @@ from result import Result, Ok, Err
 from collections import defaultdict
 from typing import Sequence
 
-from automata_builder.product_writes_map import ProductWritesMap
+from automata_builder.product_writes_map import ProductWritesMap, FrozenProductWritesMap
 from automata_builder.tape_overlaps_fsm import (
     TapeOverlapsFSMState, TapeOverlapsFSM
 )
@@ -478,6 +478,13 @@ class MultiTapeProductTrie(object):
         default_factory=lambda: defaultdict(MultiTapeProductTrie)
     )
 
+    def remove_end_product(self, product: PyMultiTapeProduct) -> bool:
+        if product in self.end_products:
+            self.end_products.remove(product)
+            return True
+        else:
+            return False
+
     @classmethod
     def merge(cls, tries: list[MultiTapeProductTrie]) -> MultiTapeProductTrie:
         return cls._merge(tries[::])
@@ -486,7 +493,7 @@ class MultiTapeProductTrie(object):
     def _merge(cls, tries: list[MultiTapeProductTrie]) -> MultiTapeProductTrie:
         assert len(tries) > 0
         if len(tries) == 1:
-            return tries[0]
+            return tries[0].copy()
 
         last_trie = tries.pop()
         others_merged = cls._merge(tries)
@@ -803,6 +810,12 @@ class MultiTapeProductTrie(object):
         return len(self.end_products) > 0
 
     @classmethod
+    def group_path_from_product(
+        cls, product: PyMultiTapeProduct
+    ) -> list[OffsetGroupedTerms]:
+        return cls.create_group_path(product.get_flat_terms())
+
+    @classmethod
     def create_group_path(cls, terms: list[D]) -> list[OffsetGroupedTerms]:
         sorted_terms = cls.build_term_path(terms)
         return cls._create_group_path(sorted_terms)
@@ -860,7 +873,7 @@ class MultiTapeProductTrie(object):
         self, group_path: list[OffsetGroupedTerms]
     ) -> set[PyMultiTapeProduct]:
         if not group_path:
-            return self.end_products
+            return self.end_products.copy()
 
         all_products: set[PyMultiTapeProduct] = set()
         current_group, next_groups = group_path[0], group_path[1:]
@@ -1799,13 +1812,13 @@ class MultiTapeBuilder(object):
         the write position offset to itself,
         (so no change from input to output)
         """
-        product_writes_map = ProductWritesMap()
+        _product_writes_map = ProductWritesMap()
         if product_exclusions.has_end_product:
             """
             current product path is covered by a pre-existing product, 
             so we don't need to build it
             """
-            return product_writes_map
+            return _product_writes_map
 
         if not product_exclusions.has_nested_products:
             """
@@ -1827,8 +1840,8 @@ class MultiTapeBuilder(object):
                     return ProductWritesMap()
                 """
 
-            product_writes_map.insert_neutral_product(current_product)
-            return product_writes_map
+            _product_writes_map.insert_neutral_product(current_product)
+            return _product_writes_map
 
         # TODO: implement overlaps FSM optimization
         states_by_tape_map = overlaps.group_states_by_tape()
@@ -1862,10 +1875,47 @@ class MultiTapeBuilder(object):
                     product_exclusions=next_exclusions,
                     _root_exclusions=_root_exclusions
                 )
-                product_writes_map.merge(sub_products)
+                _product_writes_map.merge(sub_products)
                 current_product_path.pop()
 
-        return product_writes_map
+        return _product_writes_map
+
+    @classmethod
+    def build_extended_products_for(
+        cls, source_product: PyMultiTapeProduct,
+        overlaps: TapeOverlaps, product_exclusions: MultiTapeProductTrie
+    ) -> set[PyMultiTapeProduct]:
+        annotation = source_product.get_annotation()
+        product_path = product_exclusions.group_path_from_product(
+            product=source_product
+        )
+        for offset_group in product_path:
+            product_exclusions = product_exclusions.advance_exclusions(
+                source_offset_group=offset_group
+            )
+
+        product_exclusions.remove_end_product(source_product)
+        _product_writes_map = cls.build_product_same_writes_map(
+            overlaps=overlaps,
+            current_product_path=product_path,
+            product_exclusions=product_exclusions
+        )
+
+        assert len(_product_writes_map) > 0
+        if len(_product_writes_map) == 1:
+            # built_product = list(_product_writes_map.keys())[0]
+            # built_product can be ordered differently
+            # assert built_product == source_product
+            return {source_product}
+
+        covered_products: set[PyMultiTapeProduct] = set()
+        for generated_product in _product_writes_map:
+            new_annotation = annotation + f'_({generated_product})'
+            covered_products.add(generated_product.with_annotation(
+                annotation=new_annotation
+            ))
+
+        return covered_products
 
     @classmethod
     def build_remap_states(
@@ -2064,7 +2114,7 @@ class MultiTapeBuilder(object):
 
     def build_transitions_for_product(
         self, multi_tape_product: PyMultiTapeProduct,
-        product_writes_map: ProductWritesMap,
+        product_writes_map: FrozenProductWritesMap,
         all_tape_states_per_tape: MultiTapeStatesMap,
         global_overlaps: TapeOverlaps,
         global_state_path_remap: MultiTapeStatePathRemap,
@@ -2228,14 +2278,16 @@ class MultiTapeBuilder(object):
         specific_combos = utils.cartesian_product(product_pos_combos)
 
         for remapped_product_input_terms in specific_combos:
-            current_product_writes = copy.deepcopy(product_writes)
+            current_product_writes = product_writes.to_unfrozen()
             matching_products = self.get_matching_prods_for_single_tape_terms(
                 global_state_path_remap=global_state_path_remap,
                 preexisting_products=preexisting_products,
                 terms=remapped_product_input_terms
             )
             for matching_product in matching_products:
-                matching_product_writes = product_writes_map[matching_product]
+                matching_product_writes = product_writes_map.get(
+                    matching_product, utils.FreezableDict()
+                )
                 for product_write in matching_product_writes.items():
                     write_tape_no, write_tape_cell_state = product_write
                     existing_write_cell_state = current_product_writes.get(
@@ -2294,12 +2346,18 @@ class MultiTapeBuilder(object):
 
         return transitions_group
 
-    def compose_tapes(self) -> ComposeTapesResult:
+    def compose_tapes(
+        self, verbose: bool = True
+    ) -> ComposeTapesResult:
         """
         Combine a multi-tape automata into a single tape automata
         TODO: reorder existing products for comparison with generated ones
         :return:
         """
+        def log(*args, **kwargs):
+            if verbose:
+                print(*args, **kwargs)
+
         global_overlaps = self.build_overlaps()
         # TODO assert that void state can overlap with itself at any offset
         # get all tape states that can exist in each tape
@@ -2308,8 +2366,47 @@ class MultiTapeBuilder(object):
         )
         preexisting_products = MultiTapeProductTrie.spawn_root()
         preexisting_writes_map = self._get_prod_to_state_map()
+
         for multi_tape_product in preexisting_writes_map:
             preexisting_products.insert_product(multi_tape_product)
+
+        extended_preexisting_map: dict[
+            PyMultiTapeProduct, set[PyMultiTapeProduct]
+        ] = dict()
+
+        for multi_tape_product in preexisting_writes_map:
+            writes_stub = preexisting_writes_map.get_stub_writes_str_for(
+                product=multi_tape_product
+            )
+            product_extensions = self.build_extended_products_for(
+                source_product=multi_tape_product,
+                overlaps=global_overlaps,
+                product_exclusions=preexisting_products
+            )
+            annotation = multi_tape_product.get_annotation()
+            log(
+                f'\nBuilding extensions for: {multi_tape_product} '
+                f'{annotation} -> {writes_stub}'
+            )
+            for k, extended_product in enumerate(product_extensions):
+                extended_annotation = extended_product.get_annotation()
+                log(f'[{k}] -> {extended_product}')
+                log(extended_annotation)
+
+            extended_preexisting_map[multi_tape_product] = product_extensions
+
+        extended_preexisting_products = ProductWritesMap()
+        for multi_tape_product in preexisting_writes_map:
+            writes = preexisting_writes_map.get_multi_tape_writes_for(
+                product=multi_tape_product
+            )
+            extended_products = extended_preexisting_map[multi_tape_product]
+            for extended_product in extended_products:
+                for write_multi_tape_state in writes:
+                    extended_preexisting_products.insert(
+                        product=extended_product,
+                        tape_output=write_multi_tape_state
+                    )
 
         """
         Generate rules for all possible term combinations
@@ -2330,8 +2427,9 @@ class MultiTapeBuilder(object):
             product_exclusions=preexisting_products
         )
         product_writes_map = ProductWritesMap()
-        product_writes_map.merge(preexisting_writes_map)
+        product_writes_map.merge(extended_preexisting_products)
         product_writes_map.merge(covering_product_writes_map)
+        frozen_product_writes_map = product_writes_map.to_frozen()
 
         # remap individual tape states to a global combined tape state
         global_state_path_remap = self.build_global_state_path_remap(
@@ -2343,7 +2441,7 @@ class MultiTapeBuilder(object):
             num_states=None, transitions=[]
         )
 
-        for multi_tape_product in product_writes_map:
+        for multi_tape_product in frozen_product_writes_map:
             """
             print(
                 f'TRANSITIONS_FOR: {multi_tape_product} '
@@ -2352,7 +2450,7 @@ class MultiTapeBuilder(object):
             """
             product_transitions_group = self.build_transitions_for_product(
                 multi_tape_product=multi_tape_product,
-                product_writes_map=product_writes_map,
+                product_writes_map=frozen_product_writes_map,
                 all_tape_states_per_tape=all_tape_states_per_tape,
                 global_overlaps=global_overlaps,
                 global_state_path_remap=global_state_path_remap,

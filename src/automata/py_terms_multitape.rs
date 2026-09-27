@@ -398,6 +398,16 @@ impl PyMultiTapeProduct {
     pub fn get_annotation(&self) -> PyResult<String> {
         Ok(self.product._annotation.clone())
     }
+    pub fn with_annotation(&self, annotation: String) -> PyMultiTapeProduct {
+        let rs_terms = self.product._terms.clone();
+        let optimized = self.product._optimized;
+        let product = MultiTapeProductFactory::new(rs_terms)
+            .with_optimized(optimized)
+            .with_annotation(annotation)
+            .to_product();
+        PyMultiTapeProduct::new_from_product(product)
+    }
+
     pub fn to_py_product(&self) -> PyResult<PyMultiTapeProduct> {
         Ok(Self::from_product(self.product.copy()))
     }
