@@ -103,6 +103,19 @@ class MultiTapeStatesMap(object):
     def get_tape_nos(self) -> list[TapeNo]:
         return sorted(list(self._whitelist.keys()))
 
+    def get_multi_tape_states_for(
+        self, tape_no: TapeNo
+    ) -> set[MultiTapeState]:
+        multi_tape_states: set[MultiTapeState] = set()
+        tape_cell_states = self._whitelist[tape_no]
+
+        for tape_cell_state in tape_cell_states:
+            multi_tape_states.add(MultiTapeState(
+                tape_no=tape_no, tape_cell_state=tape_cell_state
+            ))
+
+        return multi_tape_states
+
     def insert(self, tape_no: TapeNo, state: TapeCellState | MultiTapeState):
         if isinstance(state, MultiTapeState):
             assert tape_no == state.tape_no
@@ -112,6 +125,25 @@ class MultiTapeStatesMap(object):
             tape_cell_state: TapeCellState = state
 
         self._whitelist[tape_no].add(tape_cell_state)
+
+    def insert_multi_tape_state(self, state: MultiTapeState):
+        tape_no = state.tape_no
+        self.insert(tape_no, state)
+
+    def insert_multi_tape_states(self, states: Sequence[MultiTapeState]):
+        for state in states:
+            self.insert_multi_tape_state(state)
+
+    def to_flat_states(self) -> list[tuple[MultiTapeState, ...]]:
+        tape_nos = self.get_tape_nos()
+        flat_states_per_tape: list[tuple[MultiTapeState, ...]] = []
+
+        for tape_no in tape_nos:
+            flat_states_per_tape.append(tuple(self.get_multi_tape_states_for(
+                tape_no=tape_no
+            )))
+
+        return flat_states_per_tape
 
     def __contains__(self, item: TapeNo):
         return item in self._whitelist

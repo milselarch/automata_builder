@@ -2139,18 +2139,27 @@ class MultiTapeBuilder(object):
 
         return transitions_group
 
+    @classmethod
     def _build_full_products_satisfying(
-        self, requirements_by_offset: defaultdict[
-            int, dict[TapeNo, TapeCellState]
-        ]
-    ) -> list[tuple[D, ...]]:
-        raise NotImplementedError
+        cls, overlaps: TapeOverlaps,
+        requirements_by_offset: defaultdict[int, MultiTapeStatesMap],
+    ) -> list[PyMultiTapeProduct]:
+        offsets = sorted(requirements_by_offset.keys())
+        term_paths = cls._build_full_term_paths_satisfying(
+            offset_index=0, offsets=offsets, overlaps=overlaps,
+            requirements_by_offset=requirements_by_offset
+        )
+        products: list[PyMultiTapeProduct] = []
+        for term_path in term_paths:
+            products.append(PyMultiTapeProduct(term_path))
+
+        return products
 
     @classmethod
     def _build_full_term_paths_satisfying(
         cls, offset_index: int, offsets: Sequence[int],
         overlaps: TapeOverlaps,
-        offset_tape_states_map: defaultdict[int, MultiTapeStatesMap],
+        requirements_by_offset: defaultdict[int, MultiTapeStatesMap],
     ) -> list[tuple[D, ...]]:
         if offset_index >= len(offsets):
             return [()]
@@ -2158,22 +2167,37 @@ class MultiTapeBuilder(object):
         tape_nos = overlaps.get_all_tape_nos()
         offset = offsets[offset_index]
         offset_tape_states_whitelist = copy.copy(
-            offset_tape_states_map[offset]
+            requirements_by_offset[offset]
         )
 
         for tape_no in tape_nos:
-            if tape_no not in offset_tape_states_whitelist:
-                offset_tape_states_whitelist[tape_no] = set([
-                    multi_tape_state.tape_cell_state for multi_tape_state in
-                    overlaps.get_states_for_tape(tape_no)
-                ])
+            if tape_no in offset_tape_states_whitelist:
+                continue
 
-        sub_offset_term_paths = cls._build_full_term_paths_satisfying(
+            multi_tape_states = overlaps.get_states_for_tape(tape_no)
+            offset_tape_states_whitelist.insert_multi_tape_states(
+                states=multi_tape_states
+            )
+
+        states_per_tape = offset_tape_states_whitelist.to_flat_states()
+        multi_tape_state_combos = utils.cartesian_product(states_per_tape)
+        term_paths: list[tuple[D, ...]] = []
+        sub_term_paths = cls._build_full_term_paths_satisfying(
             offset_index=offset_index + 1,
-            offsets=offsets,
-            offset_tape_states_map=offset_tape_states_whitelist
+            offsets=offsets, overlaps=overlaps,
+            requirements_by_offset=requirements_by_offset
         )
-        # TODO: concat sub offset term paths
+
+        for multi_tape_state_combo in multi_tape_state_combos:
+            current_offset_terms: tuple[D, ...] = tuple([
+                multi_tape_state.to_term()
+                for multi_tape_state in multi_tape_state_combo
+            ])
+            for sub_offset_term_path in sub_term_paths:
+                offset_term_path = current_offset_terms + sub_offset_term_path
+                term_paths.append(offset_term_path)
+
+        return term_paths
 
     def compose_tapes(
         self, verbose: bool = True
