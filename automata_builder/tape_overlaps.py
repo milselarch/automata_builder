@@ -113,6 +113,9 @@ class MultiTapeStatesMap(object):
 
         self._whitelist[tape_no].add(tape_cell_state)
 
+    def __contains__(self, item: TapeNo):
+        return item in self._whitelist
+
     def __getitem__(self, item: TapeNo) -> set[TapeCellState]:
         return copy.copy(self._whitelist[item])
 
@@ -154,6 +157,9 @@ class TapeOverlaps(Freezable):
             )
         else:
             self._overlaps = overlaps
+
+    def get_all_tape_nos(self) -> list[TapeNo]:
+        return sorted(list(self._overlaps.keys()))
 
     def _freeze(self) -> None:
         self._overlaps.freeze()

@@ -4,7 +4,6 @@ import copy
 import dataclasses
 
 from automata_builder import utils
-from automata_builder.utils import PopRestorableList
 
 from result import Result, Ok, Err
 from collections import defaultdict
@@ -233,6 +232,29 @@ class OffsetGroupedTerms(object):
     def __bool__(self):
         return bool(self.terms)
 
+    def satisfiable_with(self, other: OffsetGroupedTerms) -> bool:
+        if self.offset != other.offset:
+            return False
+
+        writes: dict[TapeNo, TapeCellState] = {}
+
+        for term in self.terms:
+            assert term.get_position() == self.offset
+            tape_no = TapeNo(term.get_tape_no())
+            state = TapeCellState(term.get_cell_state())
+            writes[tape_no] = state
+
+        for term in other.terms:
+            tape_no = TapeNo(term.get_tape_no())
+            state = TapeCellState(term.get_cell_state())
+            if tape_no not in writes:
+                continue
+
+            if writes[tape_no] != state:
+                return False
+
+        return True
+
     @property
     def is_blank(self):
         return not self.terms
@@ -249,208 +271,8 @@ class OffsetGroupedTerms(object):
 
         assert list(self.terms) == sorted(self.terms)
 
-
-@dataclasses.dataclass
-class MultiTapeStateTrie(object):
-    offset_group: OffsetGroupedTerms | None = None
-    # whether any nested trie contains an offset group
-    # (i.e., not just a blank group)
-    has_nested_offset_group: bool = False
-
-    next_tries: defaultdict[
-        MultiTapeState, MultiTapeStateTrie
-    ] = dataclasses.field(
-        default_factory=lambda: defaultdict(MultiTapeStateTrie)
-    )
-
-    @property
-    def has_offset_group(self):
-        return (
-            self.offset_group is not None or
-            self.has_nested_offset_group
-        )
-
-    def __or__(self, other: MultiTapeStateTrie) -> MultiTapeStateTrie:
-        if self.offset_group is None:
-            offset_group = other.offset_group
-        elif other.offset_group is None:
-            offset_group = self.offset_group
-        elif self.offset_group == other.offset_group:
-            offset_group = self.offset_group
-        else:
-            raise ValueError(
-                f"offset_group mismatch: "
-                f"{self.offset_group} vs {other.offset_group}"
-            )
-
-        has_nested_offset_group = (
-            self.has_nested_offset_group or other.has_nested_offset_group
-        )
-        next_tries: defaultdict[
-            MultiTapeState, MultiTapeStateTrie
-        ] = defaultdict(MultiTapeStateTrie)
-
-        for state in self.next_tries:
-            next_tries[state] = self.next_tries[state]
-        for state in other.next_tries:
-            next_tries[state] = next_tries[state] | other.next_tries[state]
-
-        return MultiTapeStateTrie(
-            offset_group=offset_group,
-            has_nested_offset_group=has_nested_offset_group,
-            next_tries=next_tries
-        )
-
-    def __and__(self, other: MultiTapeStateTrie) -> MultiTapeStateTrie:
-        offset_group = None
-        if self.offset_group == other.offset_group:
-            offset_group = self.offset_group
-
-        has_nested_offset_group = False
-        next_tries: defaultdict[
-            MultiTapeState, MultiTapeStateTrie
-        ] = defaultdict(MultiTapeStateTrie)
-
-        for state in self.next_tries:
-            if state not in other.next_tries:
-                continue
-
-            next_trie = self.next_tries[state]
-            merged_trie = next_trie & other.next_tries[state]
-            if merged_trie.has_offset_group:
-                next_tries[state] = merged_trie
-                has_nested_offset_group = True
-
-        return MultiTapeStateTrie(
-            offset_group=offset_group,
-            has_nested_offset_group=has_nested_offset_group,
-            next_tries=next_tries
-        )
-
-    @classmethod
-    def merge(cls, tries: list[MultiTapeStateTrie]) -> MultiTapeStateTrie:
-        return cls._merge(tries[::])
-
-    @classmethod
-    def _merge(cls, tries: list[MultiTapeStateTrie]) -> MultiTapeStateTrie:
-        assert len(tries) > 0
-        if len(tries) == 1:
-            return tries[0]
-
-        last_trie = tries.pop()
-        others_merged = cls._merge(tries)
-        return others_merged | last_trie
-
-    def insert_group(self, group: OffsetGroupedTerms):
-        self._insert_group(group=group)
-
-    def _insert_group(
-        self, group: OffsetGroupedTerms,
-        rev_states: list[MultiTapeState] | None = None,
-    ):
-        if rev_states is None:
-            states = [MultiTapeState.from_term(term) for term in group.terms]
-            rev_states = states[::-1]
-        if not rev_states:
-            self.offset_group = group
-            return
-
-        self.has_nested_offset_group = True
-        next_state = rev_states.pop()
-        assert isinstance(next_state, MultiTapeState), next_state
-        self.next_tries[next_state]._insert_group(
-            group=group, rev_states=rev_states
-        )
-
-    def lookup(
-        self, states: list[MultiTapeState]
-    ) -> OffsetGroupedTerms:
-        """
-        Finds the smallest covering offset group that contains
-        some subset of the input states
-        :param states:
-        :return:
-        """
-        rev_sorted_states = PopRestorableList(sorted(states)[::-1])
-        return self._lookup(rev_states=rev_sorted_states)
-
-    def lookup_all(
-        self, states: list[MultiTapeState]
-    ) -> set[OffsetGroupedTerms]:
-        """
-        Finds all covering offset groups that contain
-        some subset of the input states
-        :param states:
-        :return:
-        """
-        rev_sorted_states = PopRestorableList(sorted(states)[::-1])
-        return self._lookup_all(rev_states=rev_sorted_states)
-
-    def _lookup(
-        self, rev_states: PopRestorableList[MultiTapeState]
-    ) -> OffsetGroupedTerms:
-        """
-        Given a list of MultiTapeStates sorted in reverse,
-        find the smallest covering offset group that contains
-        some subset of the input states
-        :param rev_states:
-        :return:
-        """
-        if self.offset_group is not None:
-            return self.offset_group
-
-        with rev_states.undo_pops_when_done():
-            while rev_states:
-                next_state = rev_states.pop()
-                if next_state not in self.next_tries:
-                    continue
-
-                next_trie = self.next_tries[next_state]
-                resolved_group = next_trie._lookup(rev_states)
-                if resolved_group.is_blank:
-                    continue
-
-                return resolved_group
-
-        return OffsetGroupedTerms.blank()
-
-    def _lookup_all(
-        self, rev_states: PopRestorableList[MultiTapeState]
-    ) -> set[OffsetGroupedTerms]:
-        """
-        Given a list of MultiTapeStates sorted in reverse,
-        find all covering offset groups that contain
-        some subset of the input states
-        :param rev_states:
-        :return:
-        """
-        if self.offset_group is not None:
-            return { self.offset_group }
-
-        resolved_groups: set[OffsetGroupedTerms] = set()
-
-        with rev_states.undo_pops_when_done():
-            while rev_states:
-                next_state = rev_states.pop()
-                if next_state not in self.next_tries:
-                    continue
-
-                next_trie = self.next_tries[next_state]
-                sub_resolved_groups = next_trie._lookup_all(rev_states)
-                resolved_groups |= sub_resolved_groups
-
-        return resolved_groups
-
-    def get_all(self) -> set[OffsetGroupedTerms]:
-        resolved_groups: set[OffsetGroupedTerms] = set()
-        if self.offset_group is not None:
-            resolved_groups.add(self.offset_group)
-
-        for next_state in self.next_tries:
-            next_trie = self.next_tries[next_state]
-            resolved_groups |= next_trie.get_all()
-
-        return resolved_groups
+        for term in self.terms:
+            assert term.get_position() == self.offset
 
 
 @dataclasses.dataclass
@@ -464,14 +286,6 @@ class MultiTapeProductTrie(object):
     )
     # whether any nested trie contains an end product
     has_nested_products: bool = False
-    # map next offset to current groups that lead to a nested
-    # MultiTapeProductTrie with said offset
-    # TODO: really need to explain what is going on before I forget
-    combos_with_offset: defaultdict[
-        int | None, MultiTapeStateTrie
-    ] = dataclasses.field(
-        default_factory=lambda: defaultdict(MultiTapeStateTrie)
-    )
     next_groups: defaultdict[
         OffsetGroupedTerms, MultiTapeProductTrie
     ] = dataclasses.field(
@@ -500,7 +314,7 @@ class MultiTapeProductTrie(object):
         return others_merged | last_trie
 
     def __bool__(self):
-        return bool(self.combos_with_offset) or bool(self.next_groups)
+        return bool(self.next_groups)
 
     def __or__(self, other: MultiTapeProductTrie) -> MultiTapeProductTrie:
         if self.offset is None:
@@ -518,22 +332,9 @@ class MultiTapeProductTrie(object):
         has_nested_products = (
             self.has_nested_products | other.has_nested_products
         )
-        combos_with_offset: defaultdict[
-            int | None, MultiTapeStateTrie
-        ] = defaultdict(MultiTapeStateTrie)
         next_groups: defaultdict[
             OffsetGroupedTerms, MultiTapeProductTrie
         ] = defaultdict(MultiTapeProductTrie)
-
-        for next_offset in self.combos_with_offset:
-            combos_with_offset[next_offset] = self.combos_with_offset[
-                next_offset
-            ]
-        for next_offset in other.combos_with_offset:
-            combos_with_offset[next_offset] = (
-                combos_with_offset[next_offset] |
-                other.combos_with_offset[next_offset]
-            )
 
         for offset_group in self.next_groups:
             next_groups[offset_group] = self.next_groups[offset_group]
@@ -546,7 +347,6 @@ class MultiTapeProductTrie(object):
             offset=offset,
             end_products=end_products,
             has_nested_products=has_nested_products,
-            combos_with_offset=combos_with_offset,
             next_groups=next_groups
         )
 
@@ -565,23 +365,9 @@ class MultiTapeProductTrie(object):
         end_products = self.end_products & other.end_products
         has_nested_products: bool = False
 
-        combos_with_offset: defaultdict[
-            int | None, MultiTapeStateTrie
-        ] = defaultdict(MultiTapeStateTrie)
         next_groups: defaultdict[
             OffsetGroupedTerms, MultiTapeProductTrie
         ] = defaultdict(MultiTapeProductTrie)
-
-        for next_offset in self.combos_with_offset:
-            if next_offset not in other.combos_with_offset:
-                continue
-
-            merged_offset_groups_trie = (
-                self.combos_with_offset[next_offset] &
-                other.combos_with_offset[next_offset]
-            )
-            if merged_offset_groups_trie.has_offset_group:
-                combos_with_offset[next_offset] = merged_offset_groups_trie
 
         for group in self.next_groups:
             if group not in other.next_groups:
@@ -596,7 +382,6 @@ class MultiTapeProductTrie(object):
             offset=offset,
             end_products=end_products,
             has_nested_products=has_nested_products,
-            combos_with_offset=combos_with_offset,
             next_groups=next_groups
         )
 
@@ -616,7 +401,6 @@ class MultiTapeProductTrie(object):
             return
 
         self.has_nested_products |= trie_exclusion.has_products
-        self.combos_with_offset[offset].insert_group(offset_group)
 
         for next_offset_group in self.next_groups:
             if next_offset_group.offset == offset:
@@ -634,7 +418,6 @@ class MultiTapeProductTrie(object):
             offset=self.offset,
             end_products=self.end_products.copy(),
             has_nested_products=self.has_nested_products,
-            combos_with_offset=self.combos_with_offset.copy(),
             next_groups=self.next_groups.copy()
         )
 
@@ -643,16 +426,12 @@ class MultiTapeProductTrie(object):
         return cls(offset=None, has_nested_products=True)
 
     def get_next_offsets(self) -> set[int | None]:
-        return set(self.combos_with_offset.keys())
+        offsets = set()
 
-    def get_offset_group(
-        self, offset: int, states: list[MultiTapeState]
-    ) -> OffsetGroupedTerms:
-        if offset not in self.combos_with_offset:
-            return OffsetGroupedTerms.blank()
+        for offset_group in self.next_groups:
+            offsets.add(offset_group.offset)
 
-        state_trie = self.combos_with_offset[offset]
-        return state_trie.lookup(states)
+        return offsets
 
     def advance_exclusions(
         self, source_offset_group: OffsetGroupedTerms,
@@ -660,7 +439,7 @@ class MultiTapeProductTrie(object):
     ) -> MultiTapeProductTrie:
         assert source_offset_group.offset is not None
         matching_groups = self.match_offset_groups_for(
-            offset=source_offset_group.offset, group=source_offset_group
+            target_group=source_offset_group
         )
         matching_exclusions: list[MultiTapeProductTrie] = []
         for match_offset_group in matching_groups:
@@ -702,25 +481,19 @@ class MultiTapeProductTrie(object):
         return next_exclusions
 
     def match_offset_groups_for(
-        self, offset: int, group: OffsetGroupedTerms
+        self, target_group: OffsetGroupedTerms,
+        insert_blank: bool = True,
     ) -> set[OffsetGroupedTerms]:
-        states = sorted([MultiTapeState.from_term(t) for t in group.terms])
-        return self._match_offset_groups_for_states(
-            offset=offset, states=states
-        )
+        matching_groups: set[OffsetGroupedTerms] = set()
 
-    def _match_offset_groups_for_states(
-        self, offset: int, states: list[MultiTapeState]
-    ) -> set[OffsetGroupedTerms]:
-        if offset not in self.combos_with_offset:
+        for offset_group in self.next_groups:
+            if offset_group.satisfiable_with(target_group):
+                matching_groups.add(offset_group)
+
+        if insert_blank and not matching_groups:
             return {OffsetGroupedTerms.blank()}
 
-        state_trie = self.combos_with_offset[offset]
-        resolved_groups = state_trie.lookup_all(states)
-        if not resolved_groups:
-            return {OffsetGroupedTerms.blank()}
-
-        return resolved_groups
+        return matching_groups
 
     @property
     def has_products(self) -> bool:
@@ -729,7 +502,7 @@ class MultiTapeProductTrie(object):
 
     @staticmethod
     def next_zigzag_index(prev_index: int | None = None):
-        """  
+        """
         Get the next index in a zigzag pattern
         0, -1, 1, -2, 2, -3, 3, ...
         :param prev_index:
@@ -823,7 +596,7 @@ class MultiTapeProductTrie(object):
     def _insert_group_path(
         self, group_path: list[OffsetGroupedTerms],
         product: PyMultiTapeProduct
-    ) -> int | None:
+    ) -> MultiTapeProductTrie:
         """
         :param group_path:
         terms that are assumed to have been sorted by position
@@ -831,7 +604,7 @@ class MultiTapeProductTrie(object):
         """
         if not group_path:
             self.end_products.add(product)
-            return self.offset
+            return self
 
         current_group, next_groups = group_path[0], group_path[1:]
         current_offset: int | None = current_group.offset
@@ -842,10 +615,9 @@ class MultiTapeProductTrie(object):
         else:
             next_trie = self.next_groups[current_group]
 
-        self.combos_with_offset[current_offset].insert_group(current_group)
         next_trie._insert_group_path(next_groups, product=product)
         self.has_nested_products = True
-        return self.offset
+        return next_trie
 
     def _has_group_path(self, group_path: list[OffsetGroupedTerms]) -> bool:
         if not group_path:
@@ -881,7 +653,7 @@ class MultiTapeProductTrie(object):
             raise ValueError("Blank groups are not allowed")
 
         matching_groups = self.match_offset_groups_for(
-            offset=current_group.offset, group=current_group
+            target_group=current_group
         )
         for matching_group in matching_groups:
             next_trie = self.next_groups[matching_group]
@@ -900,13 +672,15 @@ class MultiTapeProductTrie(object):
 
     def _insert_term_path(
         self, terms: list[D], product: PyMultiTapeProduct
-    ):
+    ) -> MultiTapeProductTrie:
         group_path = self.create_group_path(terms)
-        self._insert_group_path(group_path, product=product)
+        return self._insert_group_path(group_path, product=product)
 
-    def insert_product(self, product: PyMultiTapeProduct):
+    def insert_product(
+        self, product: PyMultiTapeProduct
+    ) -> MultiTapeProductTrie:
         terms = product.get_flat_terms()
-        self._insert_term_path(terms, product=product)
+        return self._insert_term_path(terms, product=product)
 
     def has_term_path(self, terms: list[D]) -> bool:
         group_path = self.create_group_path(terms)
@@ -1894,14 +1668,33 @@ class MultiTapeBuilder(object):
                 source_offset_group=offset_group
             )
 
+        requirements_by_offset: defaultdict[
+            int, MultiTapeStatesMap
+        ] = defaultdict(MultiTapeStatesMap)
+
+        for end_product in product_exclusions.end_products:
+            flat_terms = end_product.get_flat_terms()
+
+            for flat_term in flat_terms:
+                offset = flat_term.get_position()
+                tape_no = TapeNo(flat_term.get_tape_no())
+                tape_cell_state = TapeCellState(flat_term.get_cell_state())
+                requirements_by_offset[offset].insert(
+                    tape_no=tape_no, state=tape_cell_state
+                )
+
+        # product_exclusions.end_products = set()
+        # TODO: generate full products that exclude end_products here?
         product_exclusions.remove_end_product(source_product)
         _product_writes_map = cls.build_product_same_writes_map(
             overlaps=overlaps,
             current_product_path=product_path,
             product_exclusions=product_exclusions
         )
-
         assert len(_product_writes_map) > 0
+        if not _product_writes_map:
+            return set()
+
         if len(_product_writes_map) == 1:
             # built_product = list(_product_writes_map.keys())[0]
             # built_product can be ordered differently
@@ -2345,6 +2138,42 @@ class MultiTapeBuilder(object):
             )
 
         return transitions_group
+
+    def _build_full_products_satisfying(
+        self, requirements_by_offset: defaultdict[
+            int, dict[TapeNo, TapeCellState]
+        ]
+    ) -> list[tuple[D, ...]]:
+        raise NotImplementedError
+
+    @classmethod
+    def _build_full_term_paths_satisfying(
+        cls, offset_index: int, offsets: Sequence[int],
+        overlaps: TapeOverlaps,
+        offset_tape_states_map: defaultdict[int, MultiTapeStatesMap],
+    ) -> list[tuple[D, ...]]:
+        if offset_index >= len(offsets):
+            return [()]
+
+        tape_nos = overlaps.get_all_tape_nos()
+        offset = offsets[offset_index]
+        offset_tape_states_whitelist = copy.copy(
+            offset_tape_states_map[offset]
+        )
+
+        for tape_no in tape_nos:
+            if tape_no not in offset_tape_states_whitelist:
+                offset_tape_states_whitelist[tape_no] = set([
+                    multi_tape_state.tape_cell_state for multi_tape_state in
+                    overlaps.get_states_for_tape(tape_no)
+                ])
+
+        sub_offset_term_paths = cls._build_full_term_paths_satisfying(
+            offset_index=offset_index + 1,
+            offsets=offsets,
+            offset_tape_states_map=offset_tape_states_whitelist
+        )
+        # TODO: concat sub offset term paths
 
     def compose_tapes(
         self, verbose: bool = True
