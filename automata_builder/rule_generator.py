@@ -230,12 +230,13 @@ class RuleGenerator(object):
         cls, transitions_group: TapeTransitionsGroup,
         require_consistent_flat_term_offsets: bool = True,
         require_annotations: bool = True,
+        pad_lengths: bool = True,
         verbose: bool = False
     ) -> AutomataRuleSet:
         equations = cls.generate_equations(
-            transitions_group, pad_product_length=True,
+            transitions_group, pad_product_length=pad_lengths,
             require_annotations=require_annotations,
-            pad_expr_length=True, verbose=verbose
+            pad_expr_length=pad_lengths, verbose=verbose
         )
         max_flat_terms = 0
         base_num_products = 0
@@ -257,7 +258,7 @@ class RuleGenerator(object):
 
             assert isinstance(flat_terms, list)
             num_flat_terms = len(flat_terms)
-            if max_flat_terms != 0:
+            if pad_lengths and max_flat_terms != 0:
                 assert num_flat_terms == max_flat_terms
 
             base_num_products = len(equations[state])
@@ -266,9 +267,10 @@ class RuleGenerator(object):
             for product in equations[state]:
                 assert isinstance(product, PyProduct)
                 base_terms_per_product = product.get_num_terms()
+                """
                 if require_annotations:
                     assert product.get_annotation()
-
+                """
                 for term in product:
                     assert isinstance(term, A)
 

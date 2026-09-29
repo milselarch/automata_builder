@@ -47,7 +47,7 @@ class ComposedCounterAutomataRunner(object):
         self.composed_ruleset: AutomataRuleSet = RuleGenerator.to_ruleset(
             transitions_group=self.compose_result.transitions_group,
             require_consistent_flat_term_offsets=False,
-            verbose=False
+            verbose=False, pad_lengths=False
         )
         self.single_tape_automata = PySingleTapeAutomata(
             state_eq_map=self.composed_ruleset.expansion_map
