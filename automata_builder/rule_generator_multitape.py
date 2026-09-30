@@ -276,6 +276,17 @@ class OffsetGroupedTerms(object):
             assert term.get_position() == self.offset
 
 
+def offset_group_path_to_product(
+    offset_group_path: list[OffsetGroupedTerms]
+) -> PyMultiTapeProduct:
+    flat_terms: list[D] = []
+    for group in offset_group_path:
+        flat_terms.extend(group.terms)
+
+    product = PyMultiTapeProduct(flat_terms)
+    return product
+
+
 @dataclasses.dataclass
 class MultiTapeProductTrie(object):
     """
@@ -690,6 +701,26 @@ class MultiTapeProductTrie(object):
     def has_product(self, product: PyMultiTapeProduct) -> bool:
         terms = product.get_flat_terms()
         return self.has_term_path(terms)
+
+    def search_all_products(self) -> set[PyMultiTapeProduct]:
+        all_products: set[PyMultiTapeProduct] = self.end_products.copy()
+
+        for next_group in self.next_groups:
+            sub_products = self.next_groups[next_group].search_all_products()
+            all_products |= sub_products
+
+        return all_products
+
+    def search_all_offsets(self) -> set[int]:
+        if self.offset is None:
+            return set()
+
+        all_offsets: set[int] = {self.offset}
+        for next_group in self.next_groups:
+            sub_offsets = self.next_groups[next_group].search_all_offsets()
+            all_offsets |= sub_offsets
+
+        return all_offsets
 
 
 @dataclasses.dataclass
@@ -1597,14 +1628,12 @@ class MultiTapeBuilder(object):
 
         if not product_exclusions.has_nested_products:
             """
-            current product path is not covered by a pre-existing product 
+            current_product_path is not covered by a pre-existing product
             in any subcase, so we can build and insert it 
             """
-            flat_terms: list[D] = []
-            for group in current_product_path:
-                flat_terms.extend(group.terms)
-
-            current_product = PyMultiTapeProduct(flat_terms)
+            current_product = offset_group_path_to_product(
+                offset_group_path=current_product_path
+            )
             if _root_exclusions is not None:
                 matching_products = _root_exclusions.load_matching_products(
                     product=current_product
@@ -1669,40 +1698,46 @@ class MultiTapeBuilder(object):
                 source_offset_group=offset_group
             )
 
+        # TODO: undo remove end_products, collect all product offsets
         product_exclusions = product_exclusions.copy()
         end_products = product_exclusions.end_products.copy()
         product_exclusions.end_products = set()
 
-        requirements_by_offset: defaultdict[
-            int, MultiTapeStatesMap
-        ] = defaultdict(MultiTapeStatesMap)
+        offsets_set: set[int] = set()
+        requirements_by_offset: dict[int, MultiTapeStatesMap] = {}
 
         for end_product in end_products:
             flat_terms = end_product.get_flat_terms()
 
             for flat_term in flat_terms:
                 offset = flat_term.get_position()
-                tape_no = TapeNo(flat_term.get_tape_no())
-                tape_cell_state = TapeCellState(flat_term.get_cell_state())
-                requirements_by_offset[offset].insert(
-                    tape_no=tape_no, state=tape_cell_state
-                )
+                offsets_set.add(offset)
 
+                if end_product == source_product:
+                    tape_no = TapeNo(flat_term.get_tape_no())
+                    cell_state = TapeCellState(flat_term.get_cell_state())
+                    if offset not in requirements_by_offset:
+                        requirements_by_offset[offset] = MultiTapeStatesMap()
+
+                    requirements_by_offset[offset].insert(
+                        tape_no=tape_no, state=cell_state
+                    )
+
+        overlapping_product_offsets = product_exclusions.search_all_offsets()
+        offsets: list[int] = sorted(offsets_set | overlapping_product_offsets)
         extended_products: set[PyMultiTapeProduct] = set()
-        pre_group_path_combos = cls.build_full_group_paths_satisfying(
-            overlaps=overlaps, requirements_by_offset=requirements_by_offset
+        group_path_combos = cls.build_full_group_paths_satisfying(
+            overlaps=overlaps, offsets=offsets,
+            requirements_by_offset=requirements_by_offset
         )
-        for pre_group_path_combo in pre_group_path_combos:
-            _product_writes_map = cls.build_product_same_writes_map(
-                overlaps=overlaps,
-                current_product_path=pre_group_path_combo,
-                product_exclusions=product_exclusions
+        for pre_group_path_combo in group_path_combos:
+            extended_product = offset_group_path_to_product(
+                offset_group_path=pre_group_path_combo
             )
-            for generated_product in _product_writes_map:
-                new_annotation = annotation + f'_({generated_product})'
-                extended_products.add(generated_product.with_annotation(
-                    annotation=new_annotation
-                ))
+            new_annotation = annotation + f'_({extended_product})'
+            extended_products.add(extended_product.with_annotation(
+                annotation=new_annotation
+            ))
 
         assert extended_products
         return extended_products
@@ -2138,10 +2173,9 @@ class MultiTapeBuilder(object):
 
     @classmethod
     def build_full_group_paths_satisfying(
-        cls, overlaps: TapeOverlaps,
-        requirements_by_offset: defaultdict[int, MultiTapeStatesMap],
+        cls, overlaps: TapeOverlaps, offsets: list[int],
+        requirements_by_offset: dict[int, MultiTapeStatesMap],
     ) -> list[list[OffsetGroupedTerms]]:
-        offsets = sorted(requirements_by_offset.keys())
         group_paths = cls._build_full_group_paths_satisfying(
             offset_index=0, offsets=offsets, overlaps=overlaps,
             requirements_by_offset=requirements_by_offset
@@ -2152,16 +2186,18 @@ class MultiTapeBuilder(object):
     def _build_full_group_paths_satisfying(
         cls, offset_index: int, offsets: Sequence[int],
         overlaps: TapeOverlaps,
-        requirements_by_offset: defaultdict[int, MultiTapeStatesMap],
+        requirements_by_offset: dict[int, MultiTapeStatesMap],
     ) -> list[list[OffsetGroupedTerms]]:
         if offset_index >= len(offsets):
             return [[]]
 
         tape_nos = overlaps.get_all_tape_nos()
         offset = offsets[offset_index]
-        offset_tape_states_whitelist = copy.copy(
-            requirements_by_offset[offset]
-        )
+        offset_tape_states_whitelist = MultiTapeStatesMap()
+        if offset in requirements_by_offset:
+            offset_tape_states_whitelist = copy.deepcopy(
+                requirements_by_offset[offset]
+            )
 
         for tape_no in tape_nos:
             if tape_no in offset_tape_states_whitelist:

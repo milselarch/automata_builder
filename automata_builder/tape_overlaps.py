@@ -190,8 +190,13 @@ class TapeOverlaps(Freezable):
         else:
             self._overlaps = overlaps
 
-    def get_all_tape_nos(self) -> list[TapeNo]:
-        return sorted(list(self._overlaps.keys()))
+    def get_all_tape_nos(self) -> set[TapeNo]:
+        tape_nos: set[TapeNo] = set()
+
+        for source_state in self._overlaps:
+            tape_nos.add(source_state.tape_no)
+
+        return tape_nos
 
     def _freeze(self) -> None:
         self._overlaps.freeze()

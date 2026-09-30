@@ -650,11 +650,20 @@ class ProductWritesMap(Freezable):
             write_tape_no, write_tape_cell_state
         )
         if existing_tape_write_state != write_tape_cell_state:
+            matched_existing_product = [
+               _existing_prod
+               for _existing_prod in self._prod_to_state_map
+               if _existing_prod == product
+            ][0]
+
+            matched_annotation = matched_existing_product.get_annotation()
+            new_annotation = product.get_annotation()
+
             raise ValueError(
-                f"Conflicting output states for {product=} "
-                f"on tape {write_tape_no}: "
+                f"Conflicting output states for {matched_existing_product=} "
+                f"({matched_annotation}) on tape {write_tape_no}: "
                 f"{existing_tape_write_state} vs "
-                f"{write_tape_cell_state}"
+                f"{write_tape_cell_state} for {product=} ({new_annotation})"
             )
 
         writes_map[write_tape_no] = write_tape_cell_state
