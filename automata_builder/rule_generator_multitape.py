@@ -2291,7 +2291,7 @@ class MultiTapeBuilder(object):
 
         return group_paths
 
-    def compose_tapes(
+    def compile_tapes(
         self, verbose: bool = True
     ) -> CompileTapesResult:
         """

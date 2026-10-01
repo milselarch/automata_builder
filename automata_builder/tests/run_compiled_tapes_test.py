@@ -5,7 +5,7 @@ from automata_builder._rust import PyProduct
 from tqdm import tqdm
 
 from automata_builder.compiled_counter_automata import (
-    CompiledCounterAutomataRunner
+    CompiledCounterAutomataRunner, CounterAutomataSettings
 )
 from automata_builder.counter_automata import SIGNALS_TAPE, from_counter_state
 from automata_builder.rule_generator import BLANK_INT
@@ -60,16 +60,26 @@ parser.add_argument(
     action='store_true',
     help='Use a automata ruleset with half-reduction'
 )
+parser.add_argument(
+    '--verbose', '-v',
+    action='store_true',
+    help='Show verbose logs for tapes compilation'
+)
 
 if __name__ == '__main__':
+    """
+    python -m automata_builder.tests.run_compiled_tapes_test -a -b 2 --verbose
+    """
     args = parser.parse_args()
     start_stamp = time.time()
 
     runner = CompiledCounterAutomataRunner(
-        base=args.base,
         initial_write_start=args.write_start,
         initial_write_end=args.write_end,
-        apply_reduction=args.apply_reduction
+        verbose=args.verbose,
+        automata_settings=CounterAutomataSettings(
+            base=args.base, apply_reduction=args.apply_reduction
+        )
     )
 
     end_stamp = time.time()

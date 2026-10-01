@@ -34,12 +34,14 @@ class CachedCounterAutomataCompiler(object):
         ] = {}
 
     def compile_for(
-        self, settings: CounterAutomataSettings
+        self, settings: CounterAutomataSettings,
+        verbose: bool = False
     ) -> CompileTapesResult:
         if settings not in self._cache:
             runner = CompiledCounterAutomataRunner(
                 automata_settings=settings,
-                initial_write_start=0, initial_write_end=1
+                initial_write_start=0, initial_write_end=1,
+                verbose=verbose
             )
             self._cache[settings] = runner.compile_result
 
@@ -50,7 +52,8 @@ class CompiledCounterAutomataRunner(object):
     def __init__(
         self, automata_settings: CounterAutomataSettings,
         initial_write_start: int = 0, initial_write_end: int = 20,
-        cache: CachedCounterAutomataCompiler | None = None
+        cache: CachedCounterAutomataCompiler | None = None,
+        verbose: bool = False
     ):
         self.base = automata_settings.base
         self.initial_write_start = initial_write_start
@@ -73,11 +76,11 @@ class CompiledCounterAutomataRunner(object):
 
         if cache is None:
             self.compile_result: CompileTapesResult = (
-                self.multi_tape_builder.compose_tapes()
+                self.multi_tape_builder.compile_tapes(verbose=verbose)
             )
         else:
             self.compile_result: CompileTapesResult = cache.compile_for(
-                settings=automata_settings
+                settings=automata_settings, verbose=verbose
             )
 
         self.compiled_ruleset: AutomataRuleSet = RuleGenerator.to_ruleset(

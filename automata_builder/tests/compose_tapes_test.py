@@ -58,7 +58,7 @@ if __name__ == '__main__':
     )
 
     start_stamp = time.time()
-    compose_result = multi_tape_builder.compose_tapes()
+    compose_result = multi_tape_builder.compile_tapes()
     end_stamp = time.time()
     duration = end_stamp - start_stamp
 
