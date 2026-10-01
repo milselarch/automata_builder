@@ -1,3 +1,7 @@
+from __future__ import annotations
+
+import dataclasses
+
 from automata_builder._rust import (
     D, PySingleTapeAutomata, PyMultiTapeProduct, PyProcessStepResult,
     PySingleTapeProcessStepResult, PyProduct
@@ -10,23 +14,49 @@ from automata_builder.rule_generator import (
     VOID_STATE, RuleGenerator, AutomataRuleSet, BLANK_INT, TapeCellState
 )
 from automata_builder.rule_generator_multitape import (
-    MultiTapeBuilder, ComposeTapesResult
+    MultiTapeBuilder, CompileTapesResult
 )
 from automata_builder.tape_overlaps import MultiTapeState
 
 INPUT_DATA_STATE = MultiTapeState(tape_no=DATA_TAPE, tape_cell_state=DT_DATA)
 
 
-class ComposedCounterAutomataRunner(object):
+@dataclasses.dataclass(frozen=True)
+class CounterAutomataSettings(object):
+    base: int = 8
+    apply_reduction: bool = False
+
+
+class CachedCounterAutomataCompiler(object):
+    def __init__(self):
+        self._cache: dict[
+            CounterAutomataSettings, CompileTapesResult
+        ] = {}
+
+    def compile_for(
+        self, settings: CounterAutomataSettings
+    ) -> CompileTapesResult:
+        if settings not in self._cache:
+            runner = CompiledCounterAutomataRunner(
+                automata_settings=settings,
+                initial_write_start=0, initial_write_end=1
+            )
+            self._cache[settings] = runner.compile_result
+
+        return self._cache[settings]
+
+
+class CompiledCounterAutomataRunner(object):
     def __init__(
-        self, base: int = 8, initial_write_start: int = 0,
-        initial_write_end: int = 20,
-        apply_reduction: bool = False
+        self, automata_settings: CounterAutomataSettings,
+        initial_write_start: int = 0, initial_write_end: int = 20,
+        cache: CachedCounterAutomataCompiler | None = None
     ):
-        self.base = base
+        self.base = automata_settings.base
         self.initial_write_start = initial_write_start
         self.initial_write_end = initial_write_end
-        self.apply_reduction = apply_reduction
+        self.apply_reduction = automata_settings.apply_reduction
+        self._cache = cache
 
         self.multi_tape_runner = CounterAutomataRunner(
             base=self.base,
@@ -41,21 +71,27 @@ class ComposedCounterAutomataRunner(object):
             overlap_states={INPUT_DATA_STATE}
         )
 
-        self.compose_result: ComposeTapesResult = (
-            self.multi_tape_builder.compose_tapes()
-        )
-        self.composed_ruleset: AutomataRuleSet = RuleGenerator.to_ruleset(
-            transitions_group=self.compose_result.transitions_group,
+        if cache is None:
+            self.compile_result: CompileTapesResult = (
+                self.multi_tape_builder.compose_tapes()
+            )
+        else:
+            self.compile_result: CompileTapesResult = cache.compile_for(
+                settings=automata_settings
+            )
+
+        self.compiled_ruleset: AutomataRuleSet = RuleGenerator.to_ruleset(
+            transitions_group=self.compile_result.transitions_group,
             require_consistent_flat_term_offsets=False,
             verbose=False, pad_lengths=False
         )
         self.single_tape_automata = PySingleTapeAutomata(
-            state_eq_map=self.composed_ruleset.expansion_map
+            state_eq_map=self.compiled_ruleset.expansion_map
         )
 
         full_data_product = self.build_full_init_data_product()
         single_input_data_state: TapeCellState = (
-            self.compose_result.remap_from_product_to_state(full_data_product)
+            self.compile_result.remap_from_product_to_state(full_data_product)
         )
         self.single_tape_automata.write_region(
             position=self.initial_write_start,
@@ -65,17 +101,17 @@ class ComposedCounterAutomataRunner(object):
         self.assert_tapes_consistency()
 
     def count_unique_states(self):
-        return self.compose_result.count_unique_states()
+        return self.compile_result.count_unique_states()
 
     @property
     def transitions_group(self):
-        return self.compose_result.transitions_group
+        return self.compile_result.transitions_group
 
     def read_multi_tape_signal_value(self) -> int:
         return self.multi_tape_runner.read_signals_tape_value()
 
     def remap_prod_to_multi_tape(self, input_product: PyProduct):
-        return self.compose_result.remap_prod_to_multi_tape(input_product)
+        return self.compile_result.remap_prod_to_multi_tape(input_product)
 
     def build_full_init_data_product(
         self, position: int = 0
@@ -122,7 +158,7 @@ class ComposedCounterAutomataRunner(object):
         for index in range(len(single_tape_region)):
             product_slice = multi_tape_region[index].to_py_product()
             # TODO: translate to single tape and check equal
-            remapped_state = self.compose_result.remap_from_product_to_state(
+            remapped_state = self.compile_result.remap_from_product_to_state(
                 product=product_slice
             )
             assert single_tape_region[index] == remapped_state, (

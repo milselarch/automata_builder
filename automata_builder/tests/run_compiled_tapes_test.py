@@ -4,8 +4,8 @@ import time
 from automata_builder._rust import PyProduct
 from tqdm import tqdm
 
-from automata_builder.composed_counter_automata import (
-    ComposedCounterAutomataRunner
+from automata_builder.compiled_counter_automata import (
+    CompiledCounterAutomataRunner
 )
 from automata_builder.counter_automata import SIGNALS_TAPE, from_counter_state
 from automata_builder.rule_generator import BLANK_INT
@@ -65,7 +65,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
     start_stamp = time.time()
 
-    runner = ComposedCounterAutomataRunner(
+    runner = CompiledCounterAutomataRunner(
         base=args.base,
         initial_write_start=args.write_start,
         initial_write_end=args.write_end,

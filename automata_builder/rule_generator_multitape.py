@@ -1063,7 +1063,7 @@ class TransitionOptimizations(object):
 
 
 @dataclasses.dataclass
-class ComposeTapesResult(object):
+class CompileTapesResult(object):
     transitions_group: TapeTransitionsGroup
     state_remap: MultiTapeStatePathRemap
 
@@ -2293,7 +2293,7 @@ class MultiTapeBuilder(object):
 
     def compose_tapes(
         self, verbose: bool = True
-    ) -> ComposeTapesResult:
+    ) -> CompileTapesResult:
         """
         Combine a multi-tape automata into a single tape automata
         TODO: reorder existing products for comparison with generated ones
@@ -2408,7 +2408,7 @@ class MultiTapeBuilder(object):
             )
             global_transitions_group.merge(product_transitions_group)
 
-        return ComposeTapesResult(
+        return CompileTapesResult(
             transitions_group=global_transitions_group,
             state_remap=global_state_path_remap
         )
