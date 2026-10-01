@@ -101,9 +101,45 @@ impl ProductTrie {
         Self::sort_term_path(unsorted_term_path)
     }
 
-    pub fn insert(&self, product: Product) -> Result<(), SingleTapeAutomataError> {
+    pub fn insert(&mut self, product: Product) -> Result<(), SingleTapeAutomataError> {
         let terms = product.to_flat_terms();
-        Ok(())
+        let term_path = Self::create_term_path(terms);
+        self.insert_term_path(&*term_path, product)
+    }
+
+    fn insert_term_path(
+        &mut self,
+        term_path: &[(i64, CellState)],
+        product: Product,
+    ) -> Result<(), SingleTapeAutomataError> {
+        match term_path.first() {
+            // Base case: no more terms, this node is the end of the path.
+            None => {
+                self.end_product = Some(product);
+                Ok(())
+            }
+            // Recursive case: descend into (or create) the child for this key,
+            // then recurse on the rest of the slice.
+            Some(&key) => {
+                self.has_nested_products = true;
+                let child = self.children.entry(key).or_default();
+
+                match &child.end_product {
+                    Some(matching_product) => {
+                        return Err(SingleTapeAutomataError::ConflictingWrite {
+                            position: 0,
+                            product: product.clone(),
+                            previous:0,
+                            incoming: 0,
+                            previous_products: vec![matching_product.clone()],
+                        })
+                    }
+                    _ => {}
+                }
+
+                child.insert_term_path(&term_path[1..], product)
+            }
+        }
     }
 }
 
