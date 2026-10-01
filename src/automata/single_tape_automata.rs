@@ -8,6 +8,16 @@ use crate::automata::rule_generator::{BidirectionalTape, TapeError, VOID_STATE};
 use crate::automata::terms::{AbstractExpression, CellState, Expression, Product, Term};
 
 #[derive(Debug, Clone)]
+pub enum InsertIntoProductTrieError {
+    ConflictingWrite {
+        new_product: Product,
+        current_product: Product,
+        new_state: CellState,
+        current_state: CellState,
+    },
+}
+
+#[derive(Debug, Clone)]
 pub enum SingleTapeAutomataError {
     Tape(TapeError),
     /// The same product wants to write two different output states.
@@ -101,17 +111,20 @@ impl ProductTrie {
         Self::sort_term_path(unsorted_term_path)
     }
 
-    pub fn insert(&mut self, product: Product) -> Result<(), SingleTapeAutomataError> {
+    pub fn insert(
+        &mut self, product: Product, write_state: CellState
+    ) -> Result<(), InsertIntoProductTrieError> {
         let terms = product.to_flat_terms();
         let term_path = Self::create_term_path(terms);
-        self.insert_term_path(&*term_path, product)
+        self.insert_term_path(
+            &*term_path, product, write_state
+        )
     }
 
     fn insert_term_path(
-        &mut self,
-        term_path: &[(i64, CellState)],
-        product: Product,
-    ) -> Result<(), SingleTapeAutomataError> {
+        &mut self, term_path: &[(i64, CellState)],
+        product: Product, write_state: CellState
+    ) -> Result<(), InsertIntoProductTrieError> {
         match term_path.first() {
             // Base case: no more terms, this node is the end of the path.
             None => {
@@ -126,12 +139,8 @@ impl ProductTrie {
 
                 match &child.end_product {
                     Some(matching_product) => {
-                        return Err(SingleTapeAutomataError::ConflictingWrite {
-                            position: 0,
-                            product: product.clone(),
-                            previous:0,
-                            incoming: 0,
-                            previous_products: vec![matching_product.clone()],
+                        return Err(InsertIntoProductTrieError::ConflictingWrite {
+
                         })
                     }
                     _ => {}
