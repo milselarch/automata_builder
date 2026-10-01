@@ -1,11 +1,11 @@
-use std::collections::{BTreeSet, HashMap};
+use std::collections::{BTreeSet, HashMap, HashSet};
 use std::fmt;
 
 use indexmap::{IndexMap, IndexSet};
-
+use num_traits::{abs, signum};
 use crate::automata::renderer::RenderFrame;
 use crate::automata::rule_generator::{BidirectionalTape, TapeError, VOID_STATE};
-use crate::automata::terms::{AbstractExpression, CellState, Expression, Product};
+use crate::automata::terms::{AbstractExpression, CellState, Expression, Product, Term};
 
 #[derive(Debug, Clone)]
 pub enum SingleTapeAutomataError {
@@ -71,6 +71,42 @@ impl fmt::Display for SingleTapeAutomataError {
     }
 }
 impl std::error::Error for SingleTapeAutomataError {}
+
+#[derive(Debug, Clone, Default)]
+pub struct ProductTrie {
+    offset: Option<i64>,
+    end_product: Option<Product>,
+    has_nested_products: bool,
+    // map from (term position, cell_state) -> nested product trie
+    children: HashMap<(i64, CellState), ProductTrie>,
+}
+
+impl ProductTrie {
+    pub fn sort_term_path(
+        unsorted_term_path: Vec<(i64, CellState)>
+    ) -> Vec<(i64, CellState)> {
+        let mut sorted_term_path = unsorted_term_path;
+        sorted_term_path.sort_by_key(|(pos_ref, cell_state_ref)| {
+            let pos = *pos_ref;
+            let cell_state = *cell_state_ref;
+            // zigzag sort by position, then by cell state
+            (abs(pos), pos < 0, cell_state)
+        });
+        sorted_term_path
+    }
+
+    pub fn create_term_path(terms: Vec<Term>) -> Vec<(i64, CellState)> {
+        let unsorted_term_path = terms.into_iter()
+            .map(|term| (term.position, term.state)).collect();
+        Self::sort_term_path(unsorted_term_path)
+    }
+
+    pub fn insert(&self, product: Product) -> Result<(), SingleTapeAutomataError> {
+        let terms = product.to_flat_terms();
+        Ok(())
+    }
+}
+
 
 /// Single-tape analogue of `ProductWritesMap`.
 ///

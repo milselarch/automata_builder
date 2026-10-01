@@ -93,6 +93,7 @@ class TapeTransitionsGroup(object):
         )
         if input_terms in self.transitions_map:
             if self.transitions_map[input_terms] == output_state:
+                # block duplicate transitions
                 return False
 
             existing_transition = self.transitions_lookup[input_terms]

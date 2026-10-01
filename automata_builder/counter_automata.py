@@ -160,7 +160,7 @@ class CounterAutomataBuilder(object):
 
     def build_base_transitions_group(
         self, transitions_group: MultiTapeTransitionsGroup | None = None,
-        counter_right_state: TapeCellState = ST_REDUCE_START
+        counter_right_state: TapeCellState = ST_REDUCE_START,
     ) -> MultiTapeTransitionsGroup:
         if counter_right_state not in (ST_REDUCE_START, VOID_STATE):
             raise ValueError(
@@ -186,12 +186,14 @@ class CounterAutomataBuilder(object):
         _transitions_group.add_transition(
             input_terms=(
                 ST_LEFT(VOID_STATE), DT_LEFT(DT_DATA),
-                DT_MID(VOID_STATE), ST_MID(VOID_STATE)
+                DT_MID(VOID_STATE), ST_MID(VOID_STATE),
+                ST_RIGHT(VOID_STATE)  # <- inserted for compilability
             ),
             output_tape_no=SIGNALS_TAPE, output_cell_state=ST_REDUCE_START,
             annotation='EXP_REDUCE_START'
         )
-        # begin the counter accumulator on the right side
+
+        # begin the counter-accumulator on the right side
         _transitions_group.add_transition(
             input_terms=(
                 ST_MID(VOID_STATE), DT_MID(DT_DATA),
@@ -202,8 +204,8 @@ class CounterAutomataBuilder(object):
             annotation=f'COUNTER_ACC_START'
         )
 
-        # apply carry cells to counter cells
-        # carry cells stay stationary while counter cells move left
+        # apply carry cells to counter-cells
+        # carry cells stay stationary while counter-cells move left
         for mid_digit in range(self.base):
             for right_digit in range(self.base):
                 # when there is no carry state to apply, shift left
@@ -218,7 +220,7 @@ class CounterAutomataBuilder(object):
                     annotation=f'SHL_{mid_digit}_{right_digit}_NO_CARRY'
                 )
                 if right_digit < max_counter_digit:
-                    # carry but no overflow (right counter digit < base)
+                    # carry but no overflow (right counter-digit < base)
                     carry_no_overflow_combo = (
                         ST_MID(active_counter(mid_digit)),
                         ST_RIGHT(active_counter(right_digit)),
@@ -432,8 +434,10 @@ class CounterAutomataBuilder(object):
             input_terms=(
                 DT_LEFT(VOID_STATE),
                 DT_MID(DT_DATA),
+                ST_MID(VOID_STATE),  # <- inserted for compilability
                 REDUCER_LEFT(VOID_STATE),
-                REDUCER_MID(VOID_STATE)
+                REDUCER_MID(VOID_STATE),
+                ST_RIGHT(VOID_STATE)  # <- inserted for compilability
             ),
             output_tape_no=REDUCER_TAPE,
             output_cell_state=REDUCER_PAUSED_DATA,
@@ -444,7 +448,8 @@ class CounterAutomataBuilder(object):
             input_terms=(
                 REDUCER_LEFT(REDUCER_DATA),
                 DT_MID(DT_DATA),
-                REDUCER_MID(VOID_STATE)
+                REDUCER_MID(VOID_STATE),
+                ST_RIGHT(VOID_STATE)  # <- inserted for compilability
             ),
             output_tape_no=REDUCER_TAPE,
             output_cell_state=REDUCER_PAUSED_DATA,
@@ -462,7 +467,12 @@ class CounterAutomataBuilder(object):
         )
         # convert the paused half-data tape state to an active state
         _transitions_group.add_transition(
-            input_terms=(REDUCER_MID(REDUCER_PAUSED_DATA),),
+            input_terms=(
+                DT_MID(DT_DATA),  # <- inserted for compilability
+                ST_MID(VOID_STATE),  # <- inserted for compilability
+                ST_RIGHT(VOID_STATE),  # <- inserted for compilability
+                REDUCER_MID(REDUCER_PAUSED_DATA),
+            ),
             output_tape_no=REDUCER_TAPE,
             output_cell_state=REDUCER_DATA,
             annotation=f'REDUCER_PAUSE_TO_UNPAUSE'

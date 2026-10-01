@@ -163,6 +163,11 @@ impl D {
         let tape_and_cell_state = (tape_no, state);
         D { term: MultiTapeTerm::new(position, tape_and_cell_state, optimized) }
     }
+
+    pub fn shift(&self, offset: i64) -> PyResult<D> {
+        Ok(D { term: self.term.shift(offset) })
+    }
+
     fn __hash__(&self) -> PyResult<isize> {
         py_hash(&self.term)
     }
@@ -380,6 +385,9 @@ impl PyMultiTapeProduct {
             .with_annotation(annotation.parse()?)
             .to_product();
         Ok(PyMultiTapeProduct { product })
+    }
+    pub fn is_satisfiable_with(&self, other: &PyMultiTapeProduct) -> bool {
+        self.product.is_satisfiable_with(&other.product)
     }
     #[classmethod]
     pub fn merge(

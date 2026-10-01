@@ -661,9 +661,9 @@ class ProductWritesMap(Freezable):
 
             raise ValueError(
                 f"Conflicting output states for {matched_existing_product=} "
-                f"({matched_annotation}) on tape {write_tape_no}: "
+                f"[{matched_annotation}] on tape {write_tape_no}: "
                 f"{existing_tape_write_state} vs "
-                f"{write_tape_cell_state} for {product=} ({new_annotation})"
+                f"{write_tape_cell_state} for {product=} [{new_annotation}]"
             )
 
         writes_map[write_tape_no] = write_tape_cell_state

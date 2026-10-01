@@ -1,3 +1,4 @@
+import time
 import argparse
 
 from automata_builder.counter_automata import CounterAutomataRunner
@@ -56,7 +57,12 @@ if __name__ == '__main__':
         initial_write_end=args.write_end,
         apply_reduction=args.apply_reduction
     )
+
+    start_stamp = time.time()
     runner.run_simulation(
         num_timesteps=args.timesteps,
         terminal_width=args.terminal_width
     )
+    end_stamp = time.time()
+    duration = end_stamp - start_stamp
+    print(f'Simulation ran in {duration:.02f} seconds')
