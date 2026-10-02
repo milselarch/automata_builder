@@ -1,8 +1,8 @@
-use std::collections::{BTreeSet, HashMap, HashSet};
+use std::collections::{BTreeSet, HashMap};
 use std::fmt;
 
 use indexmap::{IndexMap, IndexSet};
-use num_traits::{abs, signum};
+use num_traits::{abs};
 use crate::automata::renderer::RenderFrame;
 use crate::automata::rule_generator::{BidirectionalTape, TapeError, VOID_STATE};
 use crate::automata::terms::{AbstractExpression, CellState, Expression, Product, Term};
@@ -15,6 +15,11 @@ pub enum InsertIntoProductTrieError {
         new_state: CellState,
         current_state: CellState,
     },
+    SameEndProductDiffWrite {
+        product: Product,
+        new_state: CellState,
+        current_state: CellState,
+    }
 }
 
 #[derive(Debug, Clone)]
@@ -83,15 +88,21 @@ impl fmt::Display for SingleTapeAutomataError {
 impl std::error::Error for SingleTapeAutomataError {}
 
 #[derive(Debug, Clone, Default)]
-pub struct ProductTrie {
-    offset: Option<i64>,
-    end_product: Option<Product>,
-    has_nested_products: bool,
+pub struct ProductWritesTrie {
+    offset_state: Option<(i64, CellState)>,
+    end_product: Option<(Product, CellState)>,
     // map from (term position, cell_state) -> nested product trie
-    children: HashMap<(i64, CellState), ProductTrie>,
+    children: HashMap<(i64, CellState), ProductWritesTrie>,
 }
 
-impl ProductTrie {
+#[derive(Debug, Clone, Ord, Eq, PartialEq, PartialOrd)]
+pub struct TermSortEntry {
+    abs_pos: u64,
+    is_negative: bool,
+    cell_state: CellState,
+}
+
+impl ProductWritesTrie {
     pub fn sort_term_path(
         unsorted_term_path: Vec<(i64, CellState)>
     ) -> Vec<(i64, CellState)> {
@@ -100,7 +111,11 @@ impl ProductTrie {
             let pos = *pos_ref;
             let cell_state = *cell_state_ref;
             // zigzag sort by position, then by cell state
-            (abs(pos), pos < 0, cell_state)
+            TermSortEntry {
+                abs_pos: u64::try_from(abs(pos)).unwrap(),
+                is_negative: pos < 0,
+                cell_state,
+            }
         });
         sorted_term_path
     }
@@ -116,37 +131,55 @@ impl ProductTrie {
     ) -> Result<(), InsertIntoProductTrieError> {
         let terms = product.to_flat_terms();
         let term_path = Self::create_term_path(terms);
-        self.insert_term_path(
+        self._insert_term_path(
             &*term_path, product, write_state
         )
     }
 
-    fn insert_term_path(
+    fn _insert_term_path(
         &mut self, term_path: &[(i64, CellState)],
         product: Product, write_state: CellState
     ) -> Result<(), InsertIntoProductTrieError> {
         match term_path.first() {
             // Base case: no more terms, this node is the end of the path.
             None => {
-                self.end_product = Some(product);
+                match self.end_product {
+                    None => {
+                        return Err(InsertIntoProductTrieError::SameEndProductDiffWrite {
+                            product,
+                            new_state: write_state,
+                            current_state: write_state,
+                        })
+                    },
+                    Some(_) => {}
+                }
+
+                self.end_product = Some((product, write_state));
                 Ok(())
             }
             // Recursive case: descend into (or create) the child for this key,
             // then recurse on the rest of the slice.
             Some(&key) => {
-                self.has_nested_products = true;
-                let child = self.children.entry(key).or_default();
+                let child = self.children.entry(key).or_insert(ProductWritesTrie {
+                    offset_state: key.clone().into(),
+                    end_product: None,
+                    children: Default::default(),
+                });
 
                 match &child.end_product {
-                    Some(matching_product) => {
+                    Some((matching_product, existing_write_state)) => {
                         return Err(InsertIntoProductTrieError::ConflictingWrite {
-
+                            new_product: product,
+                            current_product: matching_product.clone(),
+                            new_state: write_state,
+                            current_state: *existing_write_state
                         })
                     }
                     _ => {}
                 }
-
-                child.insert_term_path(&term_path[1..], product)
+                child._insert_term_path(
+                    &term_path[1..], product, write_state
+                )
             }
         }
     }
