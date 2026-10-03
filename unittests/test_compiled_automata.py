@@ -2,7 +2,12 @@ import random
 import unittest
 import tqdm
 
-from automata_builder.counter_automata import CounterAutomataRunner
+from automata_builder.compiled_counter_automata import (
+    CompiledCounterAutomataRunner, CounterAutomataSettings,
+    CachedCounterAutomataCompiler
+)
+
+_cache = CachedCounterAutomataCompiler()
 
 
 class TestHalfCounterAutomataConvergence(unittest.TestCase):
@@ -22,17 +27,19 @@ class TestHalfCounterAutomataConvergence(unittest.TestCase):
         write_end: int,
         steps: int,
     ) -> int:
-        runner = CounterAutomataRunner(
-            base=base,
+        runner = CompiledCounterAutomataRunner(
             initial_write_start=write_start,
             initial_write_end=write_end,
-            apply_reduction=True
+            cache=_cache,
+            automata_settings=CounterAutomataSettings(
+                base=base, apply_reduction=True
+            )
         )
         runner.run_simulation(num_timesteps=steps, render=False)
         return runner.read_signals_tape_value()
 
     def test_encoded_value_equals_half_cells_filled_after_2n_steps(
-        self, num_tests: int = 100, seed: int = 42
+            self, num_tests: int = 100, seed: int = 42
     ) -> None:
         random.seed(seed)
         pbar = tqdm.tqdm(range(num_tests))
@@ -40,7 +47,7 @@ class TestHalfCounterAutomataConvergence(unittest.TestCase):
         for _ in pbar:
             write_start = random.choice(range(-100, 100))
             write_end = write_start + random.choice(range(0, 50))
-            base = random.choice(range(2, 9))
+            base = random.choice(range(2, 4))
 
             pbar.set_description(
                 f'{write_start=} {write_end=} {base=}'

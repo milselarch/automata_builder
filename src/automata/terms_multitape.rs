@@ -70,6 +70,15 @@ impl MultiTapeTerm {
         }
     }
 
+    pub fn shift(&self, offset: i64) -> Self {
+        MultiTapeTerm {
+            position: self.position + offset,
+            state: self.state,
+            _optimized: self._optimized,
+            _debug_info: self._debug_info.clone()
+        }
+    }
+
     pub fn has_debug_position_info(&self) -> bool {
         self._debug_info.position_info.is_some()
     }
@@ -313,6 +322,19 @@ impl MultiTapeProduct {
     pub(crate) fn _get_term(&self, index: usize) -> Option<&MultiTapeTerm> {
         self._terms.get(index)
     }
+    pub fn merge_products(
+        products: Vec<MultiTapeProduct>
+    ) -> MultiTapeProduct {
+        let mut merged_terms: Vec<MultiTapeTerm> = Vec::new();
+        for product in products.iter() {
+            for term in product._terms.iter() {
+                merged_terms.push(term.copy());
+            }
+        }
+        MultiTapeProductFactory::new(merged_terms)
+            .with_optimized(products.iter().all(|p| p._optimized))
+            .to_product()
+    }
     pub(crate) fn pad_terms(&self, length: usize) -> Option<MultiTapeProduct> {
         let mut new_terms = self._terms.clone();
         let current_length = self._terms.len();
@@ -369,6 +391,30 @@ impl MultiTapeProduct {
         let norm_terms = self.to_normalized_vec(true);
         MultiTapeProduct::new(norm_terms)
     }
+
+    pub fn is_satisfiable_with(&self, other: &MultiTapeProduct) -> bool {
+        let other_terms = other.to_flat_terms();
+        let mut allocations: HashMap<(i64, TapeNo), CellState> = HashMap::new();
+
+        for term in self._terms.iter() {
+            let position = term.position;
+            let (tape_no, cell_state) = term.state;
+            allocations.insert((position, tape_no), cell_state);
+        }
+        for other_term in other_terms.iter() {
+            let position = other_term.position;
+            let (tape_no, cell_state) = other_term.state;
+            let existing_write = *allocations.get(
+                &(position, tape_no)
+            ).unwrap_or(&cell_state);
+
+            if (existing_write != cell_state) {
+                return false
+            }
+        }
+
+        true
+    }
 }
 
 impl PartialEq<Self> for MultiTapeProduct {
@@ -401,6 +447,7 @@ impl Mul for MultiTapeProduct {
         for term in rhs._terms.iter() {
             new_terms.push(term.clone());
         }
+        // TODO: concat annotations?
         MultiTapeProductFactory::new(new_terms)
             .with_optimized(self._optimized && rhs._optimized)
             .to_product()

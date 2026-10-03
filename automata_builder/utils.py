@@ -3,11 +3,15 @@ from __future__ import annotations
 import copy
 import typing
 
+from collections.abc import Iterable
 from abc import ABCMeta, abstractmethod
 from collections import defaultdict
+from types import TracebackType
 from typing import TypeVar, Iterator, Tuple, Sequence, Generic, Callable
 from dataclasses import is_dataclass
 from automata_builder._rust import D, A, PyMultiTapeProduct, PyProduct
+
+BLANK_INT: typing.Final[int] = -1
 
 T = TypeVar('T')
 U = TypeVar('U')
@@ -203,7 +207,7 @@ class FreezableDict(Freezable, Generic[K, V]):
     @classmethod
     def _decode(
         cls, data: tuple[tuple[K, V], ...]
-    ) -> FrozenDict[K, V]:
+    ):
         instance = FreezableDict()
         for key, value in data:
             instance[key] = value
@@ -219,7 +223,7 @@ class FreezableDict(Freezable, Generic[K, V]):
         )
         return default_dict
 
-    def to_frozen(self) -> FrozenDict[K, V]:
+    def to_frozen(self):
         return FrozenDict(initial_data=self._data)
 
     def to_unfrozen(self) -> FreezableDict[K, V]:
@@ -390,3 +394,108 @@ class FrozenSet(FreezableSet[V]):
 
     def to_unfrozen(self) -> FreezableSet[V]:
         raise ValueError("Cannot be unfrozen")
+
+
+class PopRestorableList(Generic[T]):
+    """
+    A list where items that have been popped
+    can be restored later after leaving the context entered into
+    with :undo_pops_when_done:
+    """
+    def __init__(self, items: Iterable[T] = ()) -> None:
+        self._items: list[T] = list(items)
+        self._pop_contexts: list[_UndoPopsContext] = []
+
+    def undo_pops_when_done(self) -> _UndoPopsContext[T]:
+        pop_context = _UndoPopsContext(self, self.undo_pop_context)
+        self._pop_contexts.append(pop_context)
+        return pop_context
+
+    def pop(self) -> T:
+        value = self._items.pop()
+
+        if self._pop_contexts:
+            last_pop_context = self._pop_contexts[-1]
+            last_pop_context.insert_popped_item(value)
+
+        return value
+
+    def undo_pop_context(self, popped_items: list[T]) -> bool:
+        assert self._pop_contexts
+
+        while popped_items:
+            popped_item = popped_items.pop()
+            self._items.append(popped_item)
+
+        last_pop_context = self._pop_contexts[-1]
+        assert len(last_pop_context) == 0
+        self._pop_contexts.pop()
+        return True
+
+    def append(self, value: T) -> None:
+        if self._pop_contexts:
+            raise RuntimeError("Cannot append when in pop context")
+
+        self._items.append(value)
+
+    def extend(self, values: Iterable[T]) -> None:
+        if self._pop_contexts:
+            raise RuntimeError("Cannot extend when in pop context")
+
+        self._items.extend(values)
+
+    def insert(self, index: int, value: T) -> None:
+        if self._pop_contexts:
+            raise RuntimeError("Cannot insert when in pop context")
+
+        self._items.insert(index, value)
+
+    def clear(self) -> None:
+        while self._items:
+            self.pop()
+
+    def __getitem__(self, index: int) -> T:
+        return self._items[index]
+
+    def __setitem__(self, index: int, value: T) -> None:
+        self._items[index] = value
+
+    def __len__(self) -> int:
+        return len(self._items)
+
+    def __iter__(self) -> Iterator[T]:
+        return iter(self._items)
+
+    def __contains__(self, value: object) -> bool:
+        return value in self._items
+
+    def __repr__(self) -> str:
+        classname = self.__class__.__name__
+        return f'{classname}({self._items})'
+
+
+class _UndoPopsContext(Generic[T]):
+    def __init__(
+        self, restoring_list: PopRestorableList[T],
+        exit_callback: Callable[[list[T]], bool]
+    ) -> None:
+        self._restoring_list = restoring_list
+        self._exit_callback = exit_callback
+        self._popped_items: list[T] = []
+
+    def insert_popped_item(self, value: T) -> None:
+        self._popped_items.append(value)
+
+    def __len__(self):
+        return len(self._popped_items)
+
+    def __enter__(self) -> PopRestorableList[T]:
+        return self._restoring_list
+
+    def __exit__(
+        self,
+        exc_type: type[BaseException] | None,
+        exc: BaseException | None,
+        tb: TracebackType | None,
+    ):
+        self._exit_callback(self._popped_items)
