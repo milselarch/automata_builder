@@ -11,10 +11,12 @@ from automata_builder.counter_automata import SIGNALS_TAPE, from_counter_state
 from automata_builder.rule_generator import BLANK_INT
 
 """
-python -m automata_builder.tests.run_composed_tapes_test
-python -m automata_builder.tests.run_composed_tapes_test -n 2
-python -m automata_builder.tests.run_composed_tapes_test -b 6
-python -m automata_builder.tests.run_composed_tapes_test -a -b 6
+python -m automata_builder.tests.run_compiled_tapes_test
+python -m automata_builder.tests.run_compiled_tapes_test -n 2
+python -m automata_builder.tests.run_compiled_tapes_test -b 6
+python -m automata_builder.tests.run_compiled_tapes_test -a -b 6
+python -m automata_builder.tests.run_compiled_tapes_test -a -b 2 \
+    --write-start -100 --write-end -76 --timesteps 50
 """
 parser = argparse.ArgumentParser(
     description='Run the counter automata simulation.'
