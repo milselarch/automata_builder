@@ -4,3 +4,4 @@ numpy==2.4.4
 overrides==7.7.0
 result==0.17.0
 frozendict==2.4.7
+snakeviz==2.2.2

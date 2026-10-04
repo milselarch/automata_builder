@@ -3,7 +3,10 @@ from __future__ import annotations
 import os
 
 from typing import Final, Callable, Sequence
-from automata_builder._rust import D, PyMultiTapeAutomata, PyProcessStepResult
+from automata_builder._rust import (
+    D, PyMultiTapeAutomata, PyProcessStepResult, PyMultiTapeDataRegion,
+    PyRenderFrame
+)
 
 from automata_builder.rule_generator import BLANK_INT
 from automata_builder.rule_generator_multitape import (
@@ -157,7 +160,7 @@ class CounterAutomataBuilder(object):
 
     def build_base_transitions_group(
         self, transitions_group: MultiTapeTransitionsGroup | None = None,
-        counter_right_state: TapeCellState = ST_REDUCE_START
+        counter_right_state: TapeCellState = ST_REDUCE_START,
     ) -> MultiTapeTransitionsGroup:
         if counter_right_state not in (ST_REDUCE_START, VOID_STATE):
             raise ValueError(
@@ -183,12 +186,14 @@ class CounterAutomataBuilder(object):
         _transitions_group.add_transition(
             input_terms=(
                 ST_LEFT(VOID_STATE), DT_LEFT(DT_DATA),
-                DT_MID(VOID_STATE), ST_MID(VOID_STATE)
+                DT_MID(VOID_STATE), ST_MID(VOID_STATE),
+                ST_RIGHT(VOID_STATE)  # <- inserted for compilability
             ),
             output_tape_no=SIGNALS_TAPE, output_cell_state=ST_REDUCE_START,
             annotation='EXP_REDUCE_START'
         )
-        # begin the counter accumulator on the right side
+
+        # begin the counter-accumulator on the right side
         _transitions_group.add_transition(
             input_terms=(
                 ST_MID(VOID_STATE), DT_MID(DT_DATA),
@@ -199,8 +204,8 @@ class CounterAutomataBuilder(object):
             annotation=f'COUNTER_ACC_START'
         )
 
-        # apply carry cells to counter cells
-        # carry cells stay stationary while counter cells move left
+        # apply carry cells to counter-cells
+        # carry cells stay stationary while counter-cells move left
         for mid_digit in range(self.base):
             for right_digit in range(self.base):
                 # when there is no carry state to apply, shift left
@@ -215,7 +220,7 @@ class CounterAutomataBuilder(object):
                     annotation=f'SHL_{mid_digit}_{right_digit}_NO_CARRY'
                 )
                 if right_digit < max_counter_digit:
-                    # carry but no overflow (right counter digit < base)
+                    # carry but no overflow (right counter-digit < base)
                     carry_no_overflow_combo = (
                         ST_MID(active_counter(mid_digit)),
                         ST_RIGHT(active_counter(right_digit)),
@@ -348,8 +353,8 @@ class CounterAutomataBuilder(object):
         # shift counter-tape cell leftwards and increment if needed
         for digit in range(self.base):
             if digit == max_counter_digit:
-                # overflow digit from max_counter_digit to 0 and add new
-                # max_counter_digit at the end
+                # overflow digit from max_counter_digit to 0 and add a
+                # new max_counter_digit at the end
                 _transitions_group.add_transition(
                     input_terms=(
                         increment_trigger_term,
@@ -429,8 +434,10 @@ class CounterAutomataBuilder(object):
             input_terms=(
                 DT_LEFT(VOID_STATE),
                 DT_MID(DT_DATA),
+                ST_MID(VOID_STATE),  # <- inserted for compilability
                 REDUCER_LEFT(VOID_STATE),
-                REDUCER_MID(VOID_STATE)
+                REDUCER_MID(VOID_STATE),
+                ST_RIGHT(VOID_STATE)  # <- inserted for compilability
             ),
             output_tape_no=REDUCER_TAPE,
             output_cell_state=REDUCER_PAUSED_DATA,
@@ -441,7 +448,8 @@ class CounterAutomataBuilder(object):
             input_terms=(
                 REDUCER_LEFT(REDUCER_DATA),
                 DT_MID(DT_DATA),
-                REDUCER_MID(VOID_STATE)
+                REDUCER_MID(VOID_STATE),
+                ST_RIGHT(VOID_STATE)  # <- inserted for compilability
             ),
             output_tape_no=REDUCER_TAPE,
             output_cell_state=REDUCER_PAUSED_DATA,
@@ -457,9 +465,14 @@ class CounterAutomataBuilder(object):
             output_cell_state=REDUCER_PAUSED_DATA,
             annotation='REDUCER_DATA_SPREAD_LEFT'
         )
-        # convert paused half-data tape state to active state
+        # convert the paused half-data tape state to an active state
         _transitions_group.add_transition(
-            input_terms=(REDUCER_MID(REDUCER_PAUSED_DATA),),
+            input_terms=(
+                DT_MID(DT_DATA),  # <- inserted for compilability
+                ST_MID(VOID_STATE),  # <- inserted for compilability
+                ST_RIGHT(VOID_STATE),  # <- inserted for compilability
+                REDUCER_MID(REDUCER_PAUSED_DATA),
+            ),
             output_tape_no=REDUCER_TAPE,
             output_cell_state=REDUCER_DATA,
             annotation=f'REDUCER_PAUSE_TO_UNPAUSE'
@@ -581,6 +594,9 @@ class CounterAutomataRunner(object):
             data=[MultiTapeState(DATA_TAPE, DT_DATA)]
         )
 
+    def get_minimal_data_region(self) -> PyMultiTapeDataRegion:
+        return self.multi_tape_automata.get_minimal_data_region()
+
     def read_data_tape_value(self) -> int:
         data_tape = self.multi_tape_automata[DATA_TAPE]
         data_region = data_tape.get_minimal_data_region()
@@ -636,13 +652,9 @@ class CounterAutomataRunner(object):
         # TODO: consider unpropagated carry states
         return encoded_number
 
-    def step(self, verbose: bool = True) -> PyProcessStepResult:
-        return self.multi_tape_automata.step(verbose=verbose)
-
-    def run_simulation(
-        self, num_timesteps: int = 30, terminal_width: int = BLANK_INT,
-        render_start: int = -5, render: bool = True
-    ):
+    @staticmethod
+    def resolve_terminal_width(terminal_width: int = BLANK_INT) -> int:
+        # TODO: refactor out away from runner
         try:
             terminal_size = os.get_terminal_size()
             default_terminal_width = terminal_size.columns - 1
@@ -652,6 +664,26 @@ class CounterAutomataRunner(object):
         if terminal_width == BLANK_INT:
             terminal_width = default_terminal_width
 
+        return terminal_width
+
+    def render_tapes(
+        self, start_position: int, length: int, cell_width: int = BLANK_INT
+    ) -> PyRenderFrame:
+        return self.multi_tape_automata.render_tapes(
+            start_position=start_position, length=length,
+            cell_width=cell_width
+        )
+
+    def step(self, verbose: bool = True) -> PyProcessStepResult:
+        return self.multi_tape_automata.step(verbose=verbose)
+
+    def run_simulation(
+        self, num_timesteps: int = 30, terminal_width: int = BLANK_INT,
+        render_start: int = -5, render: bool = True
+    ):
+        terminal_width = self.resolve_terminal_width(
+            terminal_width=terminal_width
+        )
         if render:
             for digit in range(self.base):
                 print(

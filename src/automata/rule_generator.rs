@@ -173,6 +173,60 @@ impl BidirectionalTape {
         (min_pos, max_pos)
     }
 
+    pub fn get_min_data_pos(&self) -> Option<i64> {
+        /*
+        Get the minimum position where a non-VOID cell can be found.
+        */
+        let rev_data_length = self.rev_data.len();
+        for (i, state) in self.rev_data.iter().rev().enumerate() {
+            // rev_data has cells from automata position -1 and decreasing,
+            // so we iterate from the back of rev_data to start from
+            // smallest automata position and move up
+            let pos = -((rev_data_length - i) as i64);
+            if *state != VOID_STATE {
+                return Some(pos);
+            }
+        }
+        for (pos, state) in self.data.iter().enumerate() {
+            if *state != VOID_STATE {
+                return Some(pos as i64);
+            }
+        }
+        None
+    }
+
+    pub fn get_max_data_pos(&self) -> Option<i64> {
+        /*
+        Get the maximum position where a non-VOID cell can be found.
+        */
+        for (index, state) in self.data.iter().rev().enumerate() {
+            let pos = self.data.len() as i64 - 1 - index as i64;
+            if *state != VOID_STATE {
+                return Some(pos);
+            }
+        }
+        for (index, state) in self.rev_data.iter().enumerate() {
+            // first index in rev_data corresponds to max position within rev_data (-1)
+            let pos = -(index as i64 + 1);
+            if *state != VOID_STATE {
+                return Some(pos);
+            }
+        }
+        None
+    }
+
+    pub fn get_minimal_data_range(&self) -> Option<(i64, i64)> {
+        /*
+        Inclusive range of positions for which non-VOID
+        cell data is currently allocated.
+        Returns `None` if all cells are void.
+        */
+        let min_pos = self.get_min_data_pos()?;
+        let max_pos = self.get_max_data_pos()?;
+        assert!(min_pos <= max_pos);
+        Some((min_pos, max_pos))
+    }
+
     // TODO: consider tracking unique states instead of recomputing
     pub fn get_all_states(&self) -> IndexSet<CellState> {
         self.data.iter().chain(self.rev_data.iter()).copied().collect()
@@ -235,6 +289,18 @@ impl BidirectionalTape {
         }
 
         minimal_data_region
+    }
+
+    pub fn read_region(
+        &self, start_position: i64, length: usize
+    ) -> Vec<CellState> {
+        let mut region = Vec::with_capacity(length);
+        for k in 0..length {
+            let position = start_position + k as i64;
+            let state = self.read(position);
+            region.push(state);
+        }
+        region
     }
 
     /// `cell_width == None` means "derive the width from the largest state"
