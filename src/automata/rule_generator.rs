@@ -179,6 +179,9 @@ impl BidirectionalTape {
         */
         let rev_data_length = self.rev_data.len();
         for (i, state) in self.rev_data.iter().rev().enumerate() {
+            // rev_data has cells from automata position -1 and decreasing,
+            // so we iterate from the back of rev_data to start from
+            // smallest automata position and move up
             let pos = -((rev_data_length - i) as i64);
             if *state != VOID_STATE {
                 return Some(pos);
@@ -196,15 +199,17 @@ impl BidirectionalTape {
         /*
         Get the maximum position where a non-VOID cell can be found.
         */
-        for (i, state) in self.data.iter().rev().enumerate() {
+        for (index, state) in self.data.iter().rev().enumerate() {
+            let pos = self.data.len() as i64 - 1 - index as i64;
             if *state != VOID_STATE {
-                let pos = self.data.len() as i64 - 1 - i as i64;
                 return Some(pos);
             }
         }
-        for (pos, state) in self.rev_data.iter().enumerate() {
+        for (index, state) in self.rev_data.iter().enumerate() {
+            // first index in rev_data corresponds to max position within rev_data (-1)
+            let pos = -(index as i64 + 1);
             if *state != VOID_STATE {
-                return Some(-(pos as i64));
+                return Some(pos);
             }
         }
         None

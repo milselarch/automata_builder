@@ -30,7 +30,7 @@ class TestCounterAutomataConvergence(unittest.TestCase):
         for _ in pbar:
             write_start = random.choice(range(-100, 100))
             write_end = write_start + random.choice(range(0, 50))
-            base = random.choice(range(2, 8))
+            base = random.choice(range(2, 9))
 
             pbar.set_description(
                 f'{write_start=} {write_end=} {base=}'
