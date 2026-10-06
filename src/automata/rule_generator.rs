@@ -348,6 +348,10 @@ impl BidirectionalTape {
         }
     }
 
+    pub fn is_state_eq(&self, position: i64, state: CellState) -> bool {
+        self.read(position) == state
+    }
+
     pub fn write(&mut self, position: i64, value: CellState) {
         if position >= 0 {
             let index = position as usize;

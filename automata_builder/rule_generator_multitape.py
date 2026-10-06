@@ -9,7 +9,9 @@ from result import Result, Ok, Err
 from collections import defaultdict
 from typing import Sequence
 
-from automata_builder.product_writes_map import ProductWritesMap, FrozenProductWritesMap
+from automata_builder.product_writes_map import (
+    ProductWritesMap, FrozenProductWritesMap
+)
 from automata_builder.tape_overlaps_fsm import (
     TapeOverlapsFSMState, TapeOverlapsFSM
 )
