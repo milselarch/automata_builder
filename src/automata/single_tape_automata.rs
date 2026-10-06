@@ -72,6 +72,16 @@ impl fmt::Display for SingleTapeAutomataError {
 }
 impl std::error::Error for SingleTapeAutomataError {}
 
+pub fn is_void_product(product: &Product) -> bool {
+    for term in product._terms.iter() {
+        if term.state != VOID_STATE {
+            return false
+        }
+    };
+    true
+}
+
+
 #[derive(Debug, Clone, Ord, Eq, PartialEq, PartialOrd)]
 pub struct TermSortEntry {
     abs_pos: u64,
@@ -132,7 +142,9 @@ impl ProductWritesTrie {
         &mut self, term_path: &[(i64, CellState)],
         product: Product, write_state: CellState
     ) -> Result<(), SingleTapeAutomataError> {
-        match term_path.first() {
+        let first_term_opt = term_path.first();
+
+        match first_term_opt {
             // Base case: no more terms, this node is the end of the path.
             None => {
                 match &self.write_opt {
@@ -509,13 +521,13 @@ impl SingleTapeAutomata {
     }
 
     pub fn seek_trie_match(
-        &self, position: i64
+        &self, write_position: i64
     ) -> Result<Option<(Product, CellState)>, SingleTapeAutomataError> {
-        self._seek_trie_match(position, &self.product_writes_trie)
+        self._seek_trie_match(write_position, &self.product_writes_trie)
     }
 
     pub fn _seek_trie_match(
-        &self, position: i64, trie: &ProductWritesTrie
+        &self, write_position: i64, trie: &ProductWritesTrie
     ) -> Result<Option<(Product, CellState)>, SingleTapeAutomataError> {
         /*
         Returns a writing product that matches the tape states at the
@@ -527,13 +539,13 @@ impl SingleTapeAutomata {
         let mut matched_write: Option<(Product, CellState)> = None;
         for (match_cond, next_trie) in trie.children.iter() {
             let (next_offset, required_state) = *match_cond;
-            let match_position = position + next_offset;
+            let match_position = write_position + next_offset;
             let cond_matches = self.tape.is_state_eq(match_position, required_state);
             if !cond_matches { continue }
 
-            let match_res = self._seek_trie_match(match_position, next_trie);
+            let match_res = self._seek_trie_match(write_position, next_trie)?;
             match match_res {
-                Ok(Some(new_match)) => {
+                Some(new_match) => {
                     let (new_product, new_write_state) = new_match.clone();
 
                     match matched_write {
@@ -544,7 +556,7 @@ impl SingleTapeAutomata {
                             let (existing_product, existing_state) = existing_write;
 
                             return Err(SingleTapeAutomataError::ConflictingWrite {
-                                position,
+                                position: write_position,
                                 product: new_product,
                                 previous: existing_state,
                                 incoming: new_write_state,
@@ -553,8 +565,7 @@ impl SingleTapeAutomata {
                         }
                     }
                 }
-                Err(err) => { return Err(err) }
-                Ok(None) => {}
+                None => {}
             }
         }
         Ok(matched_write)
@@ -585,14 +596,23 @@ impl SingleTapeAutomata {
                 }
             };
 
-            assert!(self.product_satisfies(&matching_product, position));
+            if !self.product_satisfies(&matching_product, position) {
+                panic!(
+                    "Product does not satisfy condition: {} [{}] at {}",
+                    &matching_product, matching_product._annotation, position
+                );
+            }
             let write_record = WriteRecord {
                 origin_product: matching_product.copy(),
                 position,
                 cell_state: output_state,
             };
             if log_active_writes {
-                write_record.log();
+                if (is_void_product(&matching_product)) {
+                    assert_eq!(output_state, VOID_STATE)
+                } else {
+                    write_record.log();
+                }
             }
             active_writes.push(write_record);
             writes_map.insert(position, output_state);

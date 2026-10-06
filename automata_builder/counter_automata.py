@@ -458,8 +458,9 @@ class CounterAutomataBuilder(object):
         # spread the data state leftwards (regardless of input data overlap)
         _transitions_group.add_transition(
             input_terms=(
+                REDUCER_LEFT(VOID_STATE),  # <- inserted for compilability rs
+                REDUCER_MID(VOID_STATE),
                 REDUCER_RIGHT(REDUCER_DATA),
-                REDUCER_MID(VOID_STATE)
             ),
             output_tape_no=REDUCER_TAPE,
             output_cell_state=REDUCER_PAUSED_DATA,
