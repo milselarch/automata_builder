@@ -780,8 +780,8 @@ class MultiTapeBuilder(object):
     ) -> TransitionOptimizations:
         """
         :param start_overlaps_fsm_state:
-        overlaps FSM state at start of time step
-        (i.e. previous overlaps FSM state)
+        Overlaps FSM state at the start of time step
+        (i.e., previous overlaps FSM state)
 
         :param states_written:
         Mapping of states -> contributing products
@@ -838,8 +838,8 @@ class MultiTapeBuilder(object):
             verbose=verbose
         )
 
-        # remove products that will never be satisfiable after
-        # current time step
+        # remove products that will never be made satisfiable after
+        # the current time step
         state_attrs_map = prod_to_state_map.build_all_state_attrs_map(
             extant_states=None, tape_overlaps=prev_overlaps
         )
@@ -991,7 +991,7 @@ class MultiTapeBuilder(object):
 
                 log("DO_WRITE", write_pair)
                 # Get the other products that use the current products'
-                # output state as one of their input states, and add it
+                # output state as one of their input states and add it
                 # to list of products to check for satisfiability later
                 affected_products = input_state_to_prod_map[output_state]
                 for affected_product in affected_products:
@@ -1017,7 +1017,7 @@ class MultiTapeBuilder(object):
             product_writes_map=prod_to_state_map
         )
 
-    def build_overlaps(self, verbose: bool = True) -> TapeOverlapsFSM:
+    def build_overlaps_fsm(self, verbose: bool = True) -> TapeOverlapsFSM:
         """
         Builds a mapping of which tape states can overlap with
         which other tape states at what relative offsets
@@ -1433,15 +1433,14 @@ class MultiTapeBuilder(object):
         cls, multi_tape_product: PyMultiTapeProduct,
         tape_overlaps_fsm: TapeOverlapsFSM
     ) -> bool:
+        product_terms = multi_tape_product.get_flat_terms()
+        prod_multi_tape_states = set([
+            MultiTapeState.from_term(term) for term in product_terms
+        ])
         matching_products = tape_overlaps_fsm.load_matching_products(
             multi_tape_product=multi_tape_product
         )
-
         for matching_product in matching_products:
-            product_terms = matching_product.get_flat_terms()
-            prod_multi_tape_states = set([
-                MultiTapeState.from_term(term) for term in product_terms
-            ])
             fsm_states_prod_is_in = tape_overlaps_fsm[matching_product]
 
             for fsm_state in fsm_states_prod_is_in:
@@ -1785,7 +1784,7 @@ class MultiTapeBuilder(object):
             if verbose:
                 print(*args, **kwargs)
 
-        tape_overlaps_fsm = self.build_overlaps()
+        tape_overlaps_fsm = self.build_overlaps_fsm()
         global_overlaps = tape_overlaps_fsm.merge()
         # TODO assert that void state can overlap with itself at any offset
         # get all tape states that can exist in each tape

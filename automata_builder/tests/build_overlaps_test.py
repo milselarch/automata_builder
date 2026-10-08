@@ -20,7 +20,7 @@ multi_tape_builder.declare_initial_group_overlaps(
         MultiTapeState(tape_no=DATA_TAPE, tape_cell_state=DT_DATA)
     }
 )
-tape_overlaps_fsm: TapeOverlapsFSM = multi_tape_builder.build_overlaps()
+tape_overlaps_fsm: TapeOverlapsFSM = multi_tape_builder.build_overlaps_fsm()
 merged_overlaps = tape_overlaps_fsm.merge()
 tape_overlap_states = merged_overlaps.get_all_states()
 # print(f'{tape_overlap_states=}')

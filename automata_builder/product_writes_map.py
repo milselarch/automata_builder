@@ -735,7 +735,7 @@ class ProductWritesMap(Freezable):
     ) -> set[TapeCellState]:
         """
         Get all the states that the source_state will transition to
-        (i.e. what the state could be at the same position after a timestep)
+        (i.e., what the state could be at the same position after a timestep)
         :param source_state:
         :param tape_overlaps:
         :return:
@@ -839,6 +839,8 @@ class ProductWritesMap(Freezable):
             transitioned_states.add(source_tape_cell_state)
 
         if source_tape_cell_state not in transitioned_states:
+            # this means that all instances of source_state transition
+            # to some other tape cell state after the current time step
             print("NO PATH TO SAME STATE", source_state, transitioned_states)
             pass
 

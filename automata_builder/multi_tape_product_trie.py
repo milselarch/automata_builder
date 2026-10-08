@@ -101,13 +101,16 @@ class MultiTapeProductTrie(object):
         default_factory=set
     )
     # whether any nested trie contains an end product
-    # TODO: this could just be a omputable property i think
+    # TODO: this could just be a computable property I think
     has_nested_products: bool = False
     next_groups: defaultdict[
         OffsetGroupedTerms, MultiTapeProductTrie
     ] = dataclasses.field(
         default_factory=lambda: defaultdict(MultiTapeProductTrie)
     )
+
+    def __repr__(self) -> str:
+        return self.__class__.__name__ + f'#{id(self)}'
 
     def remove_end_product(self, product: PyMultiTapeProduct) -> bool:
         if product in self.end_products:
