@@ -9,6 +9,8 @@ from result import Result, Ok, Err
 from collections import defaultdict
 from typing import Sequence
 
+from automata_builder.counter_automata import SIGNALS_TAPE
+from automata_builder.counter_states import from_counter_state
 from automata_builder.multi_tape_product_trie import MultiTapeProductTrie, OffsetGroupedTerms, \
     offset_group_path_to_product
 from automata_builder.product_writes_map import (
@@ -1621,6 +1623,19 @@ class MultiTapeBuilder(object):
                 terms=remapped_product_input_terms
             ).unwrap()
 
+            counter_terms = [
+                term for term in multi_tape_prod.get_flat_terms() if
+                term.get_tape_no() == SIGNALS_TAPE and
+                term.get_cell_state() % 2 == 0 and
+                term.get_cell_state() >= 4
+            ]
+            # print(f'{counter_terms=}')
+            paused_list = [
+                from_counter_state(term.get_cell_state())[1]
+                for term in counter_terms
+            ]
+            is_pause_incomparable_transition = len(set(paused_list)) > 1
+
             representable = self.is_multi_tape_product_representable(
                 multi_tape_product=multi_tape_prod,
                 tape_overlaps_fsm=tape_overlaps_fsm
@@ -1629,6 +1644,9 @@ class MultiTapeBuilder(object):
                 # TODO: there should be a lot more unrepresentable
                 #   products than there are now
                 continue
+
+            if is_pause_incomparable_transition:
+                assert not representable
 
             matching_products = preexisting_products.load_matching_products(
                 product=multi_tape_prod

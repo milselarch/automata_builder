@@ -7,7 +7,8 @@ from tqdm import tqdm
 from automata_builder.compiled_counter_automata import (
     CompiledCounterAutomataRunner, CounterAutomataSettings
 )
-from automata_builder.counter_automata import SIGNALS_TAPE, from_counter_state
+from automata_builder.counter_automata import SIGNALS_TAPE
+from automata_builder.counter_states import from_counter_state
 from automata_builder.rule_generator import BLANK_INT
 
 """
