@@ -245,14 +245,15 @@ class ProductWritesMap(Freezable):
                 f"Product {product} is not in {self._prod_to_state_map}"
             )
 
+        """
         if product.get_annotation() == 'EXP_REDUCE_START':
             print("TOMATO")
-
+        """
         has_transition_to_unsatisfiability = False
         has_input_terms_along_output_offset = False
         product_writes = self._prod_to_state_map[product]
-
         input_terms = product.get_flat_terms()
+
         for input_term in input_terms:
             input_multi_tape_state = MultiTapeState.from_term(input_term)
             input_term_attrs = state_attributes_map[input_multi_tape_state]
@@ -317,8 +318,10 @@ class ProductWritesMap(Freezable):
                 in_out_neq
             )
 
+        """
         if (1, 8) in product_writes.items():
             print("POTATO")
+        """
 
         if not has_input_terms_along_output_offset:
             """

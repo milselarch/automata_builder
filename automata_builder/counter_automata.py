@@ -14,7 +14,7 @@ from automata_builder.counter_states import ST_REDUCE_START, DT_LEFT, ST_MID, ST
 from automata_builder.rule_generator import BLANK_INT
 from automata_builder.rule_generator_multitape import (
     MultiTapeTransitionsGroup, TapeNo, TapeCellState,
-    MultiTapeRuleGenerator, MultiTapeState, VOID_STATE
+    MultiTapeRuleGenerator, MultiTapeState, VOID_STATE, generate_prod_priority_map
 )
 
 
@@ -52,7 +52,7 @@ class CounterAutomataBuilder(object):
             input_terms=(
                 ST_LEFT(VOID_STATE), DT_LEFT(DT_DATA),
                 DT_MID(VOID_STATE), ST_MID(VOID_STATE),
-                ST_RIGHT(VOID_STATE)  # <- inserted for compilability
+                # ST_RIGHT(VOID_STATE)  # <- inserted for compilability
             ),
             output_tape_no=SIGNALS_TAPE, output_cell_state=ST_REDUCE_START,
             annotation='EXP_REDUCE_START'
@@ -62,7 +62,8 @@ class CounterAutomataBuilder(object):
         _transitions_group.add_transition(
             input_terms=(
                 ST_MID(VOID_STATE), DT_MID(DT_DATA),
-                DT_RIGHT(VOID_STATE), ST_RIGHT(VOID_STATE)
+                DT_RIGHT(VOID_STATE), ST_RIGHT(VOID_STATE),
+                # ST_RIGHT(VOID_STATE).shift(1)
             ),
             output_tape_no=SIGNALS_TAPE,
             output_cell_state=paused_counter(1),
@@ -441,8 +442,11 @@ class CounterAutomataRunner(object):
             transitions_group = self.builder.build_transitions_group()
 
         self.transitions_group = transitions_group
+        self.prod_priority_map = generate_prod_priority_map(
+            transitions_group=self.transitions_group
+        )
         self.state_eq_map = MultiTapeRuleGenerator.generate_equations(
-            self.transitions_group
+            transitions_group=self.transitions_group
         )
 
         self.initial_write_start = initial_write_start

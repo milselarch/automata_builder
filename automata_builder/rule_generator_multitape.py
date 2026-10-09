@@ -11,8 +11,10 @@ from typing import Sequence
 
 from automata_builder.counter_automata import SIGNALS_TAPE
 from automata_builder.counter_states import from_counter_state
-from automata_builder.multi_tape_product_trie import MultiTapeProductTrie, OffsetGroupedTerms, \
+from automata_builder.multi_tape_product_trie import (
+    MultiTapeProductTrie, OffsetGroupedTerms,
     offset_group_path_to_product
+)
 from automata_builder.product_writes_map import (
     ProductWritesMap, FrozenProductWritesMap
 )
@@ -39,6 +41,7 @@ class MultiTapeTransition(object):
     input_terms: tuple[D, ...]
     output_state: MultiTapeState
     annotation: str = ''
+    priority: int = 0
 
 
 @dataclasses.dataclass
@@ -61,7 +64,8 @@ class MultiTapeTransitionsGroup(object):
         output_tape_no: int, output_cell_state: int,
         validate_void: bool = True,
         validate_halt: bool = True,
-        annotation: str = ''
+        annotation: str = '',
+        priority: int = 0
     ):
         """
         :param input_terms:
@@ -72,6 +76,7 @@ class MultiTapeTransitionsGroup(object):
         :param validate_halt:
         If true, check that the halt state is not within input terms
         :param annotation:
+        :param priority:
         :return:
         """
         if self.require_annotation and not annotation:
@@ -107,7 +112,8 @@ class MultiTapeTransitionsGroup(object):
         transition = MultiTapeTransition(
             input_terms=input_terms,
             output_state=output_state,
-            annotation=annotation
+            annotation=annotation,
+            priority=priority
         )
         self.transitions.append(transition)
 
@@ -138,15 +144,28 @@ class MultiTapeTransitionsGroup(object):
         return combined
 
 
-class MultiTapeRuleGenerator(object):
-    @staticmethod
-    def terms_to_product(
-        terms: tuple[D, ...], annotation: str
-    ) -> PyMultiTapeProduct:
-        return PyMultiTapeProduct(
-            terms=terms, annotation=annotation
-        )
+def generate_prod_priority_map(
+    transitions_group: MultiTapeTransitionsGroup,
+    require_annotations: bool = False
+) -> dict[PyMultiTapeProduct, int]:
+    prod_priority_map: dict[PyMultiTapeProduct, int] = {}
 
+    for transition in transitions_group.transitions:
+        input_terms = transition.input_terms
+        annotation = transition.annotation
+        product = PyMultiTapeProduct(
+            terms=input_terms, annotation=annotation
+        )
+        priority = transition.priority
+        assert prod_priority_map.get(product, priority) == priority
+        prod_priority_map[product] = transition.priority
+        if require_annotations:
+            assert product.get_annotation()
+
+    return prod_priority_map
+
+
+class MultiTapeRuleGenerator(object):
     @staticmethod
     def aggregate_bit_or(expr_list: list[
         PyMultiTapeExpression | PyMultiTapeProduct
@@ -170,14 +189,16 @@ class MultiTapeRuleGenerator(object):
         ] = {}
 
         for transition in transitions_group.transitions:
-            input_states = transition.input_terms
+            input_terms = transition.input_terms
             output_state = transition.output_state
             annotation = transition.annotation
 
             if output_state not in state_eq_terms_map:
                 state_eq_terms_map[output_state] = []
 
-            product = cls.terms_to_product(input_states, annotation)
+            product = PyMultiTapeProduct(
+                terms=input_terms, annotation=annotation
+            )
             state_eq_terms_map[output_state].append(product)
             if require_annotations:
                 assert product.get_annotation()
@@ -1167,6 +1188,7 @@ class MultiTapeBuilder(object):
     def build_extended_products_for(
         cls, source_product: PyMultiTapeProduct,
         overlaps: TapeOverlaps, product_exclusions: MultiTapeProductTrie,
+        prod_priority_map: dict[PyMultiTapeProduct, int],
         product_writes_map: ProductWritesMap
     ) -> set[PyMultiTapeProduct]:
         annotation = source_product.get_annotation()
@@ -1201,6 +1223,9 @@ class MultiTapeBuilder(object):
                     )
 
         all_writes: dict[TapeNo, TapeCellState] = {}
+        write_priority_by_tape: defaultdict[
+            TapeNo, int | float
+        ] = defaultdict(lambda: -float('inf'))
         # all products whose input terms could be satisfied
         # when the source_product's input terms are satisfied too
         writing_products = [source_product]
@@ -1210,13 +1235,18 @@ class MultiTapeBuilder(object):
 
         for product in writing_products:
             writes = product_writes_map.get_state_writes_for(product)
+            write_priority = prod_priority_map[product]
 
             for written_multi_tape_state in writes:
                 tape_no = written_multi_tape_state.tape_no
                 tape_cell_state = written_multi_tape_state.tape_cell_state
                 current_write_state = all_writes.get(tape_no, tape_cell_state)
 
-                if current_write_state != tape_cell_state:
+                if current_write_state == tape_cell_state:
+                    pass
+                elif write_priority > write_priority_by_tape[tape_no]:
+                    pass
+                else:
                     raise ValueError(
                         f'{source_product=} '
                         f'[{source_product.get_annotation()}] and '
@@ -1226,6 +1256,8 @@ class MultiTapeBuilder(object):
                         f'{current_write_state} vs {tape_cell_state}'
                     )
 
+                assert write_priority >= write_priority_by_tape[tape_no]
+                write_priority_by_tape[tape_no] = write_priority
                 all_writes[tape_no] = tape_cell_state
 
         overlapping_product_offsets = product_exclusions.search_all_offsets()
@@ -1808,7 +1840,8 @@ class MultiTapeBuilder(object):
                 source_product=multi_tape_product,
                 overlaps=global_overlaps,
                 product_exclusions=preexisting_products_trie,
-                product_writes_map=preexisting_writes_map
+                product_writes_map=preexisting_writes_map,
+                prod_priority_map=
             )
             annotation = multi_tape_product.get_annotation()
             log(
