@@ -11,3 +11,5 @@ pub mod py_rule_generator_multitape;
 pub mod single_tape_automata;
 pub mod multi_tape_automata;
 pub mod py_single_tape_automata;
+pub mod multi_tape_transition;
+pub mod py_multi_tape_transition;

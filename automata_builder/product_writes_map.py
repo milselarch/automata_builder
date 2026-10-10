@@ -438,7 +438,7 @@ class ProductWritesMap(Freezable):
                     """
                     source_state_written = True
 
-            # whether product writes to same tape as target_state
+            # whether product writes to same tape as target_state,
             # and the written TapeCellState is different from target_state
             writes_away_from_target_state = False
             # whether the product transitions cells

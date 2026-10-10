@@ -3,7 +3,7 @@
 Tooling to construct and simulate 1D cellular automata.
 
 The automata code is split into two importable libraries:
-- a python package - `automata_builder` (pure python code plus the
+- a python package - `automata_builder` (pure Python code plus the
   compiled `automata_builder._rust` extension module)
 - a rust crate - `automata_builder` (the `automata_builder::automata` module)
 

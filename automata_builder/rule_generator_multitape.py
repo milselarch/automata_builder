@@ -623,6 +623,10 @@ class MultiTapeBuilder(object):
         # declare that void states can overlap with one another
         self.declare_initial_group_overlaps(void_overlap_states)
 
+    def get_prod_priority_map(self) -> dict[PyMultiTapeProduct, int]:
+        # TODO: implement this in PyMultiTapeAutomata
+        raise NotImplementedError
+
     @property
     def leftmost_extent(self) -> int:
         return self._automata.leftmost_extent
