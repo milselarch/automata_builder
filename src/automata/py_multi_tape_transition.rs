@@ -5,9 +5,9 @@ use pyo3::exceptions::PyValueError;
 use pyo3_stub_gen::define_stub_info_gatherer;
 use pyo3_stub_gen::derive::{gen_stub_pyclass, gen_stub_pymethods};
 use crate::automata::multi_tape_transition::{
-    MultiTapeState, MultiTapeTransition, MultiTapeTransitionsGroup
+    MultiTapeState, MultiTapeTransition, MultiTapeTransitionsGroup, TransitionPriority
 };
-use crate::automata::py_terms_multitape::{PyMultiTapeExpression, D};
+use crate::automata::py_terms_multitape::{PyMultiTapeExpression, PyMultiTapeProduct, D};
 use crate::automata::terms::CellState;
 use crate::automata::terms_multitape::{MultiTapeTerm, TapeNo};
 
@@ -73,7 +73,7 @@ impl PyMultiTapeTransition {
         input_terms: Vec<D>,
         output_state: PyMultiTapeState,
         annotation: &str,
-        priority: i32,
+        priority: TransitionPriority,
     ) -> Self {
         let rs_terms: Vec<MultiTapeTerm> = input_terms.iter().map(|py_term| {
             py_term.get_term().clone()
@@ -110,7 +110,7 @@ impl PyMultiTapeTransition {
     }
 
     #[getter]
-    pub fn priority(&self) -> i32 {
+    pub fn priority(&self) -> TransitionPriority {
         self.inner.priority
     }
 
@@ -185,7 +185,7 @@ impl PyMultiTapeTransitionsGroup {
         validate_void: bool,
         validate_halt: bool,
         annotation: String,
-        priority: i32,
+        priority: TransitionPriority,
     ) -> PyResult<()> {
         /*
         param input_terms:
@@ -254,6 +254,23 @@ impl PyMultiTapeTransitionsGroup {
 
         Ok(py_equations_map)
     }
+
+    pub fn build_prod_priority_map(&self) -> PyResult<HashMap<
+        PyMultiTapeProduct, TransitionPriority
+    >> {
+        let prod_priority_map = self.inner.build_prod_priority_map();
+        let mut py_prod_priority_map: HashMap<
+            PyMultiTapeProduct, TransitionPriority
+        > = HashMap::new();
+
+        for (product, priority) in prod_priority_map.into_iter() {
+            let py_product = PyMultiTapeProduct::from(product);
+            py_prod_priority_map.insert(py_product, priority);
+        }
+        Ok(py_prod_priority_map)
+    }
+
+    pub fn get_all_states()
 }
 
 define_stub_info_gatherer!(stub_info);

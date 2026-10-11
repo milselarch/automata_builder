@@ -341,6 +341,9 @@ impl PyMultiTapeProduct {
         let product = MultiTapeProductFactory::new(rust_terms.clone()).to_product();
         Self::new_from_product(product)
     }
+    pub fn from(product: MultiTapeProduct) -> Self {
+        Self::new_from_product(product)
+    }
     pub fn new_from_product(product: MultiTapeProduct) -> Self {
         Self { product }
     }

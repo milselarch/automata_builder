@@ -1,11 +1,17 @@
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use std::fmt;
+use std::hash::Hash;
 use pyo3::prelude::*;
 use serde::{Deserialize, Serialize};
-use crate::automata::py_terms_multitape::{PyMultiTapeExpression, PyMultiTapeProduct};
+
 use crate::automata::rule_generator::{HALT_STATE, VOID_STATE};
 use crate::automata::terms::CellState;
-use crate::automata::terms_multitape::{MultiTapeExpression, MultiTapeProduct, MultiTapeProductFactory, MultiTapeTerm, TapeNo};
+use crate::automata::terms_multitape::{
+    MultiTapeCellState, MultiTapeExpression, MultiTapeProduct,
+    MultiTapeProductFactory, MultiTapeTerm, TapeNo
+};
+
+pub type TransitionPriority = u32;
 
 // Pure Rust structs (no PyO3 attributes)
 #[derive(Clone, Debug, Eq, Hash, PartialEq)]
@@ -21,6 +27,13 @@ impl MultiTapeState {
             tape_cell_state,
         }
     }
+    pub fn from_term(term: MultiTapeTerm) -> Self {
+        let (tape_no, tape_cell_state) = term.state;
+        Self::new(tape_no, tape_cell_state)
+    }
+    pub fn to_multi_tape_cell_state(&self) -> MultiTapeCellState {
+        (self.tape_no, self.tape_cell_state)
+    }
 }
 
 #[derive(Clone, Debug)]
@@ -28,7 +41,7 @@ pub struct MultiTapeTransition {
     pub input_terms: Vec<MultiTapeTerm>,
     pub output_state: MultiTapeState,
     pub annotation: String,
-    pub priority: i32,
+    pub priority: TransitionPriority,
 }
 
 impl MultiTapeTransition {
@@ -36,7 +49,7 @@ impl MultiTapeTransition {
         input_terms: Vec<MultiTapeTerm>,
         output_state: MultiTapeState,
         annotation: String,
-        priority: i32,
+        priority: TransitionPriority,
     ) -> Self {
         Self {
             input_terms,
@@ -87,6 +100,18 @@ impl MultiTapeTransitionsGroup {
         self.transitions.is_empty()
     }
 
+    pub fn get_all_states(&self) -> HashSet<MultiTapeState> {
+        let mut all_states: HashSet<MultiTapeState> = HashSet::new();
+
+        for transition in self.transitions.iter() {
+            for term in transition.input_terms.iter() {
+                all_states.insert(MultiTapeState::from_term(term.clone()));
+            }
+            all_states.insert(transition.output_state.clone());
+        }
+        all_states
+    }
+
     pub fn add_transition(
         &mut self,
         input_terms: Vec<MultiTapeTerm>,
@@ -95,7 +120,7 @@ impl MultiTapeTransitionsGroup {
         validate_void: bool,
         validate_halt: bool,
         annotation: String,
-        priority: i32,
+        priority: TransitionPriority,
     ) -> Result<(), AddTransitionError> {
         /*
         param input_terms:
@@ -228,5 +253,25 @@ impl MultiTapeTransitionsGroup {
         }
 
         Ok(state_eq_map)
+    }
+
+    pub fn build_prod_priority_map(&self) -> HashMap<
+        MultiTapeProduct, TransitionPriority
+    > {
+        let mut prod_priority_map: HashMap<
+            MultiTapeProduct, TransitionPriority
+        > = HashMap::new();
+
+        for transition in &self.transitions {
+            let input_terms = transition.input_terms.clone();
+            let annotation = transition.annotation.clone();
+            let product = MultiTapeProductFactory::new(input_terms)
+                .with_annotation(annotation)
+                .to_product();
+
+            prod_priority_map.insert(product, transition.priority);
+        }
+
+        prod_priority_map
     }
 }
