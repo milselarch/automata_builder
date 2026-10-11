@@ -1,4 +1,5 @@
 use pyo3::prelude::*;
+use crate::automata::py_multi_tape_transition::{PyMultiTapeTransition, PyMultiTapeTransitionsGroup};
 use crate::automata::py_rule_generator_multitape::{
     PyBiDirectionalMultiTape, PyBidirectionalTape, PyMultiTapeAutomata,
     PyMultiTapeDataRegion, PyMultiTapeState, PyProcessStepResult,
@@ -33,6 +34,9 @@ fn _rust(module: &Bound<'_, PyModule>) -> PyResult<()> {
     module.add_class::<PyWriteRecord>()?;
     module.add_class::<PyProcessStepResult>()?;
     module.add_class::<PyMultiTapeAutomata>()?;
+
+    module.add_class::<PyMultiTapeTransition>()?;
+    module.add_class::<PyMultiTapeTransitionsGroup>()?;
 
     module.add_class::<PySingleTapeWriteRecord>()?;
     module.add_class::<PySingleTapeProcessStepResult>()?;

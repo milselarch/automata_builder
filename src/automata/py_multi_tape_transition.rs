@@ -1,18 +1,29 @@
+use std::collections::HashMap;
+use std::hash::{DefaultHasher, Hash, Hasher};
 use pyo3::{pyclass, pymethods, PyResult};
 use pyo3::exceptions::PyValueError;
+use pyo3_stub_gen::define_stub_info_gatherer;
+use pyo3_stub_gen::derive::{gen_stub_pyclass, gen_stub_pymethods};
 use crate::automata::multi_tape_transition::{
     MultiTapeState, MultiTapeTransition, MultiTapeTransitionsGroup
 };
-use crate::automata::py_terms_multitape::D;
+use crate::automata::py_terms_multitape::{PyMultiTapeExpression, D};
 use crate::automata::terms::CellState;
 use crate::automata::terms_multitape::{MultiTapeTerm, TapeNo};
 
 // PyO3 wrapper classes
+#[gen_stub_pyclass]
 #[pyclass]
+#[derive(Clone, Eq, Hash, PartialEq)]
 pub struct PyMultiTapeState {
     inner: MultiTapeState,
 }
-
+impl PyMultiTapeState {
+    pub fn from(state: MultiTapeState) -> Self {
+        PyMultiTapeState { inner: state }
+    }
+}
+#[gen_stub_pymethods]
 #[pymethods]
 impl PyMultiTapeState {
     #[new]
@@ -35,13 +46,23 @@ impl PyMultiTapeState {
             self.inner.tape_no, self.inner.tape_cell_state
         )
     }
+    pub fn __hash__(&self) -> u64 {
+        let mut hasher = DefaultHasher::new();
+        self.inner.hash(&mut hasher);
+        hasher.finish()
+    }
+
+    pub fn __eq__(&self, other: &PyMultiTapeState) -> bool {
+        self.inner == other.inner
+    }
 }
 
+#[gen_stub_pyclass]
 #[pyclass]
 pub struct PyMultiTapeTransition {
     inner: MultiTapeTransition,
 }
-
+#[gen_stub_pymethods]
 #[pymethods]
 impl PyMultiTapeTransition {
     #[new]
@@ -50,7 +71,7 @@ impl PyMultiTapeTransition {
     ))]
     pub fn new(
         input_terms: Vec<D>,
-        output_state: &PyMultiTapeState,
+        output_state: PyMultiTapeState,
         annotation: &str,
         priority: i32,
     ) -> Self {
@@ -110,11 +131,12 @@ impl PyMultiTapeTransition {
     }
 }
 
+#[gen_stub_pyclass]
 #[pyclass]
 pub struct PyMultiTapeTransitionsGroup {
     inner: MultiTapeTransitionsGroup,
 }
-
+#[gen_stub_pymethods]
 #[pymethods]
 impl PyMultiTapeTransitionsGroup {
     #[new]
@@ -150,6 +172,11 @@ impl PyMultiTapeTransitionsGroup {
         self.inner.require_annotation
     }
 
+    #[pyo3(signature = (
+        input_terms, output_tape_no, output_cell_state,
+        validate_void=true, validate_halt=true,
+        annotation=String::new(), priority=0
+    ))]
     pub fn add_transition(
         &mut self,
         input_terms: Vec<D>,
@@ -160,6 +187,17 @@ impl PyMultiTapeTransitionsGroup {
         annotation: String,
         priority: i32,
     ) -> PyResult<()> {
+        /*
+        param input_terms:
+        param output_tape_no:
+        param output_cell_state:
+        param validate_void:
+        If true, check that the input terms do not all have a void state
+        param validate_halt:
+        If true, check that the halt state is not within input terms
+        param annotation:
+        :return:
+        */
         let rs_terms = input_terms.iter().map(|py_term| {
             py_term.get_term().clone()
         }).collect::<Vec<MultiTapeTerm>>();
@@ -188,4 +226,34 @@ impl PyMultiTapeTransitionsGroup {
                 inner
             }).map_err(|e| PyValueError::new_err(e))
     }
+
+    #[pyo3(signature=(require_annotations=false))]
+    pub fn generate_equations(
+        &self, require_annotations: bool
+    ) -> PyResult<HashMap<
+        PyMultiTapeState, PyMultiTapeExpression
+    >> {
+        let equations_map_res = self.inner.generate_equations(require_annotations);
+        let equations_map = match equations_map_res {
+            Ok(equations_map) => { equations_map }
+            Err(err_message) => {
+                return Err(PyValueError::new_err(err_message));
+            }
+        };
+
+        let mut py_equations_map: HashMap<
+            PyMultiTapeState, PyMultiTapeExpression
+        > = HashMap::new();
+
+        for (multi_tape_state, expression) in equations_map.into_iter() {
+            let py_multi_tape_state = PyMultiTapeState::from(multi_tape_state);
+            py_equations_map.insert(
+                py_multi_tape_state, PyMultiTapeExpression::new(expression)
+            );
+        }
+
+        Ok(py_equations_map)
+    }
 }
+
+define_stub_info_gatherer!(stub_info);

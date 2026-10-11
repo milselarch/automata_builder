@@ -608,7 +608,7 @@ impl SingleTapeAutomata {
                 cell_state: output_state,
             };
             if log_active_writes {
-                if (is_void_product(&matching_product)) {
+                if is_void_product(&matching_product) {
                     assert_eq!(output_state, VOID_STATE)
                 } else {
                     write_record.log();

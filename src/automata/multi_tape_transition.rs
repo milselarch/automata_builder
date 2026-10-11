@@ -1,12 +1,14 @@
+use std::collections::HashMap;
 use std::fmt;
 use pyo3::prelude::*;
 use serde::{Deserialize, Serialize};
+use crate::automata::py_terms_multitape::{PyMultiTapeExpression, PyMultiTapeProduct};
 use crate::automata::rule_generator::{HALT_STATE, VOID_STATE};
 use crate::automata::terms::CellState;
-use crate::automata::terms_multitape::{MultiTapeTerm, TapeNo};
+use crate::automata::terms_multitape::{MultiTapeExpression, MultiTapeProduct, MultiTapeProductFactory, MultiTapeTerm, TapeNo};
 
 // Pure Rust structs (no PyO3 attributes)
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Eq, Hash, PartialEq)]
 pub struct MultiTapeState {
     pub tape_no: TapeNo,
     pub tape_cell_state: CellState,
@@ -60,6 +62,11 @@ impl fmt::Display for AddTransitionError {
 
 #[derive(Clone, Debug)]
 pub struct MultiTapeTransitionsGroup {
+    /*
+    contains a set of transitions for a multi-tape cellular automaton
+    defined as a mapping from input states to output state
+    map D[] -> (output tape_no, output state)
+    */
     pub transitions: Vec<MultiTapeTransition>,
     pub require_annotation: bool,
 }
@@ -90,6 +97,18 @@ impl MultiTapeTransitionsGroup {
         annotation: String,
         priority: i32,
     ) -> Result<(), AddTransitionError> {
+        /*
+        param input_terms:
+        param output_tape_no:
+        param output_cell_state:
+        param validate_void:
+        If true, check that the input terms do not all have a void state
+        :param validate_halt:
+        If true, check that the halt state is not within input terms
+        :param annotation:
+        :param priority:
+        :return:
+         */
         if self.require_annotation && annotation.is_empty() {
             return Err(AddTransitionError::AnnotationExpected)
         }
@@ -141,5 +160,73 @@ impl MultiTapeTransitionsGroup {
         combined.transitions.extend(other.transitions.clone());
 
         Ok(combined)
+    }
+
+    pub fn generate_equations(
+        &self, require_annotations: bool
+    ) -> Result<HashMap<MultiTapeState, MultiTapeExpression>, String> {
+        let mut state_eq_terms_map: HashMap<
+            MultiTapeState, Vec<MultiTapeProduct>
+        > = HashMap::new();
+
+        for transition in &self.transitions {
+            let input_terms = transition.input_terms.clone();
+            let output_state = transition.output_state.clone();
+            let annotation = transition.annotation.clone();
+
+            let product = MultiTapeProductFactory::new(input_terms)
+                .with_annotation(annotation)
+                .to_product();
+
+            state_eq_terms_map
+                .entry(output_state.clone())
+                .or_insert_with(Vec::new)
+                .push(product);
+
+            if require_annotations {
+                // Assuming MultiTapeProduct has a method `get_annotation()`
+                let product = state_eq_terms_map.get(&output_state).unwrap().last().unwrap();
+                if product.get_annotation().is_empty() {
+                    return Err(format!(
+                        "Product for output state {:?} lacks an annotation",
+                        output_state
+                    ));
+                }
+            }
+        }
+
+        let mut state_eq_map: HashMap<
+            MultiTapeState, MultiTapeExpression
+        > = HashMap::new();
+
+        for next_state in state_eq_terms_map.keys() {
+            let expr = MultiTapeExpression::new(state_eq_terms_map[next_state].clone());
+            state_eq_map.insert(next_state.clone(), expr);
+        }
+
+        // Final validation of equations
+        for (next_state, expr) in &state_eq_map {
+            let flat_products = expr._get_products(); // Assuming this method exists
+            if flat_products.is_empty() {
+                return Err(format!(
+                    "Output state {:?} has no products in its expression {:?}",
+                    next_state, expr
+                ));
+            }
+
+            if require_annotations {
+                for product in flat_products {
+                    // Assuming PyMultiTapeProduct has a method `get_annotation()`
+                    if product.get_annotation().is_empty() {
+                        return Err(format!(
+                            "Flat product for output state {:?} lacks an annotation",
+                            next_state
+                        ));
+                    }
+                }
+            }
+        }
+
+        Ok(state_eq_map)
     }
 }

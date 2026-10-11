@@ -32,120 +32,12 @@ from automata_builder.tape_overlaps import (
 )
 from automata_builder._rust import (
     D, PyMultiTapeProduct, PyMultiTapeExpression,
-    A, PyProduct, PyMultiTapeAutomata
+    A, PyProduct, PyMultiTapeAutomata, PyMultiTapeTransitionsGroup
 )
 
 
-@dataclasses.dataclass(frozen=True)
-class MultiTapeTransition(object):
-    input_terms: tuple[D, ...]
-    output_state: MultiTapeState
-    annotation: str = ''
-    priority: int = 0
-
-
-@dataclasses.dataclass
-class MultiTapeTransitionsGroup(object):
-    """
-    contains a set of transitions for a multi-tape cellular automaton
-    defined as a mapping from input states to output state
-    map D[] -> (output tape_no, output state)
-    """
-    transitions: list[MultiTapeTransition] = dataclasses.field(
-        default_factory=list
-    )
-    require_annotation: bool = False
-
-    def __len__(self):
-        return len(self.transitions)
-
-    def add_transition(
-        self, input_terms: tuple[D, ...],
-        output_tape_no: int, output_cell_state: int,
-        validate_void: bool = True,
-        validate_halt: bool = True,
-        annotation: str = '',
-        priority: int = 0
-    ):
-        """
-        :param input_terms:
-        :param output_tape_no:
-        :param output_cell_state:
-        :param validate_void:
-        If true, check that the input terms do not all have a void state
-        :param validate_halt:
-        If true, check that the halt state is not within input terms
-        :param annotation:
-        :param priority:
-        :return:
-        """
-        if self.require_annotation and not annotation:
-            raise ValueError(f'Annotation expected')
-
-        if validate_void:
-            is_all_void = True
-
-            for term in input_terms:
-                if term.get_state() != VOID_STATE:
-                    is_all_void = False
-
-            if is_all_void:
-                raise ValueError(
-                    f"Input terms are all void, which is not "
-                    f"allowed since it would make the simulation range "
-                    f"infinite"
-                )
-        if validate_halt:
-            for term in input_terms:
-                if term.get_state() != HALT_STATE:
-                    continue
-
-                raise ValueError(
-                    f"Input term {term} has halt state, which is not "
-                    f"allowed since it has predefined behavior"
-                )
-
-        output_state = MultiTapeState(
-            tape_no=TapeNo(output_tape_no),
-            tape_cell_state=TapeCellState(output_cell_state)
-        )
-        transition = MultiTapeTransition(
-            input_terms=input_terms,
-            output_state=output_state,
-            annotation=annotation,
-            priority=priority
-        )
-        self.transitions.append(transition)
-
-    def __or__(
-        self, other: MultiTapeTransitionsGroup
-    ) -> MultiTapeTransitionsGroup:
-        if not isinstance(other, MultiTapeTransitionsGroup):
-            raise TypeError(f'unexpected type {type(other)}')
-
-        require_annotation = (
-            self.require_annotation or other.require_annotation
-        )
-        if require_annotation:
-            if not self.require_annotation:
-                raise ValueError(
-                    "Cannot combine transitions while other group "
-                    "does not require annotation"
-                )
-            elif not other.require_annotation:
-                raise ValueError(
-                    "Cannot combine transitions while own group "
-                    "requires annotation"
-                )
-
-        combined = self.__class__(require_annotation=require_annotation)
-        combined.transitions.extend(copy.deepcopy(self.transitions))
-        combined.transitions.extend(copy.deepcopy(other.transitions))
-        return combined
-
-
 def generate_prod_priority_map(
-    transitions_group: MultiTapeTransitionsGroup,
+    transitions_group: PyMultiTapeTransitionsGroup,
     require_annotations: bool = False
 ) -> dict[PyMultiTapeProduct, int]:
     prod_priority_map: dict[PyMultiTapeProduct, int] = {}
@@ -178,50 +70,6 @@ class MultiTapeRuleGenerator(object):
             result = result | expr_list[k]
 
         return result.to_py_expression()
-
-    @classmethod
-    def generate_equations(
-        cls, transitions_group: MultiTapeTransitionsGroup,
-        require_annotations: bool = False
-    ) -> dict[MultiTapeState, PyMultiTapeExpression]:
-        state_eq_terms_map: dict[
-            MultiTapeState, list[PyMultiTapeProduct]
-        ] = {}
-
-        for transition in transitions_group.transitions:
-            input_terms = transition.input_terms
-            output_state = transition.output_state
-            annotation = transition.annotation
-
-            if output_state not in state_eq_terms_map:
-                state_eq_terms_map[output_state] = []
-
-            product = PyMultiTapeProduct(
-                terms=input_terms, annotation=annotation
-            )
-            state_eq_terms_map[output_state].append(product)
-            if require_annotations:
-                assert product.get_annotation()
-
-        state_eq_map: dict[MultiTapeState, PyMultiTapeExpression] = {
-            next_state: cls.aggregate_bit_or(state_eq_terms_map[next_state])
-            for next_state in state_eq_terms_map
-        }
-        for next_state in state_eq_map:
-            expr = state_eq_map[next_state]
-            flat_products = expr.get_flat_products()
-
-            if not flat_products:
-                raise ValueError(
-                    f"Output state {next_state} has no products in "
-                    f"its expression {expr}"
-                )
-
-            for product in flat_products:
-                if require_annotations:
-                    assert product.get_annotation()
-
-        return state_eq_map
 
 
 @dataclasses.dataclass

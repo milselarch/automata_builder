@@ -1,7 +1,6 @@
 use std::cmp::PartialEq;
 use std::collections::{HashMap, HashSet};
-use std::hash::{Hash, Hasher};
-use std::collections::hash_map::DefaultHasher;
+use std::hash::{Hash};
 
 use pyo3::{pyclass, pymethods, PyResult};
 use pyo3::exceptions::{PyIndexError, PyTypeError, PyValueError};

@@ -408,7 +408,7 @@ impl MultiTapeProduct {
                 &(position, tape_no)
             ).unwrap_or(&cell_state);
 
-            if (existing_write != cell_state) {
+            if existing_write != cell_state {
                 return false
             }
         }

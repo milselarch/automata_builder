@@ -2,19 +2,22 @@ from __future__ import annotations
 
 import os
 
-from typing import Final, Callable, Sequence
+from typing import Sequence
 from automata_builder._rust import (
     D, PyMultiTapeAutomata, PyProcessStepResult, PyMultiTapeDataRegion,
-    PyRenderFrame
+    PyRenderFrame, PyMultiTapeTransitionsGroup
 )
 
-from automata_builder.counter_states import ST_REDUCE_START, DT_LEFT, ST_MID, ST_RIGHT, DT_DATA, ST_LEFT, DT_MID, \
-    SIGNALS_TAPE, paused_counter, active_counter, CARRY_TAPE, CT_DATA, CT_MID, DT_RIGHT, REDUCER_DATA, REDUCER_LEFT, \
+from automata_builder.counter_states import (
+    ST_REDUCE_START, DT_LEFT, ST_MID, ST_RIGHT, DT_DATA, ST_LEFT, DT_MID,
+    SIGNALS_TAPE, paused_counter, active_counter, CARRY_TAPE, CT_DATA,
+    CT_MID, DT_RIGHT, REDUCER_DATA, REDUCER_LEFT,
     REDUCER_MID, REDUCER_PAUSED_DATA, REDUCER_TAPE, REDUCER_RIGHT, DATA_TAPE
+)
 from automata_builder.rule_generator import BLANK_INT
 from automata_builder.rule_generator_multitape import (
-    MultiTapeTransitionsGroup, TapeNo, TapeCellState,
-    MultiTapeRuleGenerator, MultiTapeState, VOID_STATE, generate_prod_priority_map
+    TapeCellState, MultiTapeRuleGenerator, MultiTapeState,
+    VOID_STATE, generate_prod_priority_map
 )
 
 
@@ -24,9 +27,9 @@ class CounterAutomataBuilder(object):
         self.base = base
 
     def build_base_transitions_group(
-        self, transitions_group: MultiTapeTransitionsGroup | None = None,
+        self, transitions_group: PyMultiTapeTransitionsGroup | None = None,
         counter_right_state: TapeCellState = ST_REDUCE_START,
-    ) -> MultiTapeTransitionsGroup:
+    ) -> PyMultiTapeTransitionsGroup:
         if counter_right_state not in (ST_REDUCE_START, VOID_STATE):
             raise ValueError(
                 f'counter_right_state must be either '
@@ -37,13 +40,13 @@ class CounterAutomataBuilder(object):
         if transitions_group is not None:
             _transitions_group = transitions_group
         else:
-            _transitions_group = MultiTapeTransitionsGroup(
+            _transitions_group = PyMultiTapeTransitionsGroup(
                 require_annotation=True
             )
 
         # TODO: actually precompute the number of states beforehand (?)
         max_counter_digit = self.base - 1
-        _transitions_group = MultiTapeTransitionsGroup(
+        _transitions_group = PyMultiTapeTransitionsGroup(
             require_annotation=True
         )
 
