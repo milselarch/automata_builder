@@ -185,10 +185,10 @@ class CounterAutomataBuilder(object):
         return _transitions_group
 
     def build_increment_transitions_group(
-        self, transitions_group: MultiTapeTransitionsGroup | None = None,
+        self, transitions_group: PyMultiTapeTransitionsGroup | None = None,
         increment_trigger_term: D = DT_MID(DT_DATA),
         no_increment_states: Sequence[D] = (DT_MID(VOID_STATE),)
-    ) -> MultiTapeTransitionsGroup:
+    ) -> PyMultiTapeTransitionsGroup:
         """
         builds transitions group rules for shifting the
         leftmost counter-tape cell left wards and
@@ -203,7 +203,7 @@ class CounterAutomataBuilder(object):
         if transitions_group is not None:
             _transitions_group = transitions_group
         else:
-            _transitions_group = MultiTapeTransitionsGroup(
+            _transitions_group = PyMultiTapeTransitionsGroup(
                 require_annotation=True
             )
 
@@ -279,8 +279,8 @@ class CounterAutomataBuilder(object):
 
     @classmethod
     def build_reducer_transitions_group(
-        cls, transitions_group: MultiTapeTransitionsGroup | None = None
-    ) -> MultiTapeTransitionsGroup:
+        cls, transitions_group: PyMultiTapeTransitionsGroup | None = None
+    ) -> PyMultiTapeTransitionsGroup:
         """
         On the reducer tape, we will build rules to
         1. Spawn a data state cell on the leftwards end of the data tape
@@ -293,7 +293,7 @@ class CounterAutomataBuilder(object):
         if transitions_group is not None:
             _transitions_group = transitions_group
         else:
-            _transitions_group = MultiTapeTransitionsGroup(
+            _transitions_group = PyMultiTapeTransitionsGroup(
                 require_annotation=True
             )
 
@@ -349,7 +349,7 @@ class CounterAutomataBuilder(object):
         )
         return _transitions_group
 
-    def build_transitions_group(self) -> MultiTapeTransitionsGroup:
+    def build_transitions_group(self) -> PyMultiTapeTransitionsGroup:
         transitions_group = self.build_base_transitions_group()
         transitions_group = self.build_increment_transitions_group(
             transitions_group=transitions_group,
@@ -358,7 +358,7 @@ class CounterAutomataBuilder(object):
         )
         return transitions_group
 
-    def build_reduced_transitions_group(self) -> MultiTapeTransitionsGroup:
+    def build_reduced_transitions_group(self) -> PyMultiTapeTransitionsGroup:
         """
         The rules built here are designed to produce an automaton
         that generates the n-nary representation of n/2, where n is
@@ -448,9 +448,7 @@ class CounterAutomataRunner(object):
         self.prod_priority_map = generate_prod_priority_map(
             transitions_group=self.transitions_group
         )
-        self.state_eq_map = MultiTapeRuleGenerator.generate_equations(
-            transitions_group=self.transitions_group
-        )
+        self.state_eq_map = self.transitions_group.generate_equations()
 
         self.initial_write_start = initial_write_start
         self.initial_write_end = initial_write_end

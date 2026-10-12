@@ -15,12 +15,11 @@ use crate::automata::py_terms_multitape::{
 };
 use crate::automata::renderer::RenderFrame;
 use crate::automata::rule_generator::{BidirectionalTape, TapeError};
-use crate::automata::rule_generator_multitape::{AutomataError, BiDirectionalMultiTape, MultiTapeDataRegion};
-use crate::automata::tape_overlaps::MultiTapeState;
-use crate::automata::terms::CellState;
-use crate::automata::terms_multitape::{
-    AbstractMultiTapeExpression, MultiTapeExpression, TapeNo,
+use crate::automata::rule_generator_multitape::{
+    AutomataError, BiDirectionalMultiTape, MultiTapeDataRegion
 };
+use crate::automata::terms::CellState;
+use crate::automata::terms_multitape::{AbstractMultiTapeExpression, MultiTapeExpression, MultiTapeState, TapeNo};
 
 /// `BLANK_INT` sentinel used by the python side to mean
 /// "derive the cell width automatically".

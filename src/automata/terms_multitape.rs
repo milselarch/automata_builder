@@ -1,6 +1,7 @@
 use rayon::iter::ParallelIterator;
 use std::cmp::Ordering;
 use std::collections::{HashMap, HashSet};
+use std::fmt;
 use std::hash::{Hash, Hasher};
 use std::ops::{BitOr, Mul};
 use indexmap::IndexSet;
@@ -9,6 +10,34 @@ use crate::automata::terms::{clip_after_space, CellState, ExprDebugInfo, ExprPos
 
 pub type TapeNo = u16;
 pub type MultiTapeCellState = (TapeNo, CellState);
+
+#[derive(Debug, Clone, Copy, Eq, PartialEq, Ord, PartialOrd, Hash)]
+pub struct MultiTapeState {
+    pub tape_no: TapeNo,
+    pub tape_cell_state: CellState,
+}
+
+impl MultiTapeState {
+    pub fn new(tape_no: TapeNo, tape_cell_state: CellState) -> Self {
+        Self {
+            tape_no,
+            tape_cell_state,
+        }
+    }
+    pub fn from_term(term: MultiTapeTerm) -> Self {
+        let (tape_no, tape_cell_state) = term.state;
+        Self::new(tape_no, tape_cell_state)
+    }
+    pub fn to_multi_tape_cell_state(&self) -> MultiTapeCellState {
+        (self.tape_no, self.tape_cell_state)
+    }
+}
+
+impl fmt::Display for MultiTapeState {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "MultiTapeState({}, {})", self.tape_no, self.tape_cell_state)
+    }
+}
 
 pub trait AbstractMultiTapeExpression: Mul + BitOr + Eq + Sized {
     fn copy(&self) -> Self;

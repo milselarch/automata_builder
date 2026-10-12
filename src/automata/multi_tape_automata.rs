@@ -1,6 +1,7 @@
 use std::collections::{BTreeSet, HashMap};
 use std::fmt;
 use indexmap::IndexMap;
+use crate::automata::multi_tape_transition::{MultiTapeTransitionsGroup, TransitionPriority};
 use crate::automata::product_writes_map::ProductWritesMap;
 use crate::automata::renderer::RenderFrame;
 use crate::automata::rule_generator::{BidirectionalTape, VOID_STATE};
@@ -49,14 +50,21 @@ pub struct MultiTapeAutomata {
     prod_to_state_map: ProductWritesMap,
     leftmost_extent: i64,
     rightmost_extent: i64,
+
+    transitions_group: MultiTapeTransitionsGroup,
     /// `IndexMap` mirrors the insertion-ordered Python `dict`.
     state_eq_map: IndexMap<MultiTapeState, MultiTapeExpression>,
+    prod_priority_map: IndexMap<MultiTapeProduct, TransitionPriority>
 }
 
 impl MultiTapeAutomata {
     pub fn new(
-        state_eq_map: IndexMap<MultiTapeState, MultiTapeExpression>,
+        transitions_group: MultiTapeTransitionsGroup,
+        require_annotations: bool
     ) -> Result<MultiTapeAutomata, AutomataError> {
+        let state_eq_map = transitions_group.generate_equations(
+            require_annotations
+        );
         let prod_to_state_map = Self::reverse_state_eq_map(&state_eq_map, true)?;
         let (leftmost_extent, rightmost_extent) =
             Self::compute_rule_range(&prod_to_state_map);

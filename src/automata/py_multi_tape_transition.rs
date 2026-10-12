@@ -1,5 +1,6 @@
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use std::hash::{DefaultHasher, Hash, Hasher};
+use indexmap::{IndexMap, IndexSet};
 use pyo3::{pyclass, pymethods, PyResult};
 use pyo3::exceptions::PyValueError;
 use pyo3_stub_gen::define_stub_info_gatherer;
@@ -270,7 +271,16 @@ impl PyMultiTapeTransitionsGroup {
         Ok(py_prod_priority_map)
     }
 
-    pub fn get_all_states()
+    pub fn get_all_states(&self) -> PyResult<HashSet<PyMultiTapeState>> {
+        let all_states = self.inner.get_all_states();
+        let mut py_all_states: HashSet<PyMultiTapeState> = HashSet::new();
+
+        for multi_tape_state in all_states.into_iter() {
+            let py_multi_tape_state = PyMultiTapeState::from(multi_tape_state);
+            py_all_states.insert(py_multi_tape_state);
+        }
+        Ok(py_all_states)
+    }
 }
 
 define_stub_info_gatherer!(stub_info);

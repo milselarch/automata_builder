@@ -1,40 +1,16 @@
 use std::collections::{HashMap, HashSet};
 use std::fmt;
 use std::hash::Hash;
+use indexmap::{IndexMap, IndexSet};
 use pyo3::prelude::*;
 use serde::{Deserialize, Serialize};
 
 use crate::automata::rule_generator::{HALT_STATE, VOID_STATE};
+use crate::automata::rule_generator_multitape::AutomataError;
 use crate::automata::terms::CellState;
-use crate::automata::terms_multitape::{
-    MultiTapeCellState, MultiTapeExpression, MultiTapeProduct,
-    MultiTapeProductFactory, MultiTapeTerm, TapeNo
-};
+use crate::automata::terms_multitape::{MultiTapeCellState, MultiTapeExpression, MultiTapeProduct, MultiTapeProductFactory, MultiTapeState, MultiTapeTerm, TapeNo};
 
 pub type TransitionPriority = u32;
-
-// Pure Rust structs (no PyO3 attributes)
-#[derive(Clone, Debug, Eq, Hash, PartialEq)]
-pub struct MultiTapeState {
-    pub tape_no: TapeNo,
-    pub tape_cell_state: CellState,
-}
-
-impl MultiTapeState {
-    pub fn new(tape_no: TapeNo, tape_cell_state: CellState) -> Self {
-        Self {
-            tape_no,
-            tape_cell_state,
-        }
-    }
-    pub fn from_term(term: MultiTapeTerm) -> Self {
-        let (tape_no, tape_cell_state) = term.state;
-        Self::new(tape_no, tape_cell_state)
-    }
-    pub fn to_multi_tape_cell_state(&self) -> MultiTapeCellState {
-        (self.tape_no, self.tape_cell_state)
-    }
-}
 
 #[derive(Clone, Debug)]
 pub struct MultiTapeTransition {
@@ -100,8 +76,8 @@ impl MultiTapeTransitionsGroup {
         self.transitions.is_empty()
     }
 
-    pub fn get_all_states(&self) -> HashSet<MultiTapeState> {
-        let mut all_states: HashSet<MultiTapeState> = HashSet::new();
+    pub fn get_all_states(&self) -> IndexSet<MultiTapeState> {
+        let mut all_states: IndexSet<MultiTapeState> = IndexSet::new();
 
         for transition in self.transitions.iter() {
             for term in transition.input_terms.iter() {
@@ -189,7 +165,10 @@ impl MultiTapeTransitionsGroup {
 
     pub fn generate_equations(
         &self, require_annotations: bool
-    ) -> Result<HashMap<MultiTapeState, MultiTapeExpression>, String> {
+    ) -> Result<
+        HashMap<MultiTapeState, MultiTapeExpression>,
+        AutomataError
+    > {
         let mut state_eq_terms_map: HashMap<
             MultiTapeState, Vec<MultiTapeProduct>
         > = HashMap::new();
@@ -212,10 +191,9 @@ impl MultiTapeTransitionsGroup {
                 // Assuming MultiTapeProduct has a method `get_annotation()`
                 let product = state_eq_terms_map.get(&output_state).unwrap().last().unwrap();
                 if product.get_annotation().is_empty() {
-                    return Err(format!(
-                        "Product for output state {:?} lacks an annotation",
-                        output_state
-                    ));
+                    return Err(AutomataError::EmptyAnnotation {
+                        product: product.clone()
+                    });
                 }
             }
         }
@@ -233,10 +211,9 @@ impl MultiTapeTransitionsGroup {
         for (next_state, expr) in &state_eq_map {
             let flat_products = expr._get_products(); // Assuming this method exists
             if flat_products.is_empty() {
-                return Err(format!(
-                    "Output state {:?} has no products in its expression {:?}",
-                    next_state, expr
-                ));
+                return Err(AutomataError::NoProductsForState {
+                    state: next_state.clone()
+                });
             }
 
             if require_annotations {
@@ -255,12 +232,12 @@ impl MultiTapeTransitionsGroup {
         Ok(state_eq_map)
     }
 
-    pub fn build_prod_priority_map(&self) -> HashMap<
+    pub fn build_prod_priority_map(&self) -> IndexMap<
         MultiTapeProduct, TransitionPriority
     > {
-        let mut prod_priority_map: HashMap<
+        let mut prod_priority_map: IndexMap<
             MultiTapeProduct, TransitionPriority
-        > = HashMap::new();
+        > = IndexMap::new();
 
         for transition in &self.transitions {
             let input_terms = transition.input_terms.clone();
