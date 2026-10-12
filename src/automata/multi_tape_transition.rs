@@ -8,7 +8,10 @@ use serde::{Deserialize, Serialize};
 use crate::automata::rule_generator::{HALT_STATE, VOID_STATE};
 use crate::automata::rule_generator_multitape::AutomataError;
 use crate::automata::terms::CellState;
-use crate::automata::terms_multitape::{MultiTapeCellState, MultiTapeExpression, MultiTapeProduct, MultiTapeProductFactory, MultiTapeState, MultiTapeTerm, TapeNo};
+use crate::automata::terms_multitape::{
+    MultiTapeExpression, MultiTapeProduct, MultiTapeProductFactory,
+    MultiTapeState, MultiTapeTerm, TapeNo
+};
 
 pub type TransitionPriority = u32;
 
@@ -166,12 +169,12 @@ impl MultiTapeTransitionsGroup {
     pub fn generate_equations(
         &self, require_annotations: bool
     ) -> Result<
-        HashMap<MultiTapeState, MultiTapeExpression>,
+        IndexMap<MultiTapeState, MultiTapeExpression>,
         AutomataError
     > {
-        let mut state_eq_terms_map: HashMap<
+        let mut state_eq_terms_map: IndexMap<
             MultiTapeState, Vec<MultiTapeProduct>
-        > = HashMap::new();
+        > = IndexMap::new();
 
         for transition in &self.transitions {
             let input_terms = transition.input_terms.clone();
@@ -198,9 +201,9 @@ impl MultiTapeTransitionsGroup {
             }
         }
 
-        let mut state_eq_map: HashMap<
+        let mut state_eq_map: IndexMap<
             MultiTapeState, MultiTapeExpression
-        > = HashMap::new();
+        > = IndexMap::new();
 
         for next_state in state_eq_terms_map.keys() {
             let expr = MultiTapeExpression::new(state_eq_terms_map[next_state].clone());
@@ -220,10 +223,9 @@ impl MultiTapeTransitionsGroup {
                 for product in flat_products {
                     // Assuming PyMultiTapeProduct has a method `get_annotation()`
                     if product.get_annotation().is_empty() {
-                        return Err(format!(
-                            "Flat product for output state {:?} lacks an annotation",
-                            next_state
-                        ));
+                        return Err(AutomataError::EmptyAnnotation {
+                            product: product.clone()
+                        });
                     }
                 }
             }

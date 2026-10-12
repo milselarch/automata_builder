@@ -62,9 +62,8 @@ impl MultiTapeAutomata {
         transitions_group: MultiTapeTransitionsGroup,
         require_annotations: bool
     ) -> Result<MultiTapeAutomata, AutomataError> {
-        let state_eq_map = transitions_group.generate_equations(
-            require_annotations
-        );
+        let state_eq_map = transitions_group.generate_equations(require_annotations)?;
+        let prod_priority_map = transitions_group.build_prod_priority_map();
         let prod_to_state_map = Self::reverse_state_eq_map(&state_eq_map, true)?;
         let (leftmost_extent, rightmost_extent) =
             Self::compute_rule_range(&prod_to_state_map);
@@ -74,7 +73,9 @@ impl MultiTapeAutomata {
             prod_to_state_map,
             leftmost_extent,
             rightmost_extent,
+            transitions_group,
             state_eq_map,
+            prod_priority_map
         })
     }
 

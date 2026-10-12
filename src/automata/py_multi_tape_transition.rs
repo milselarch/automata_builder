@@ -1,16 +1,17 @@
 use std::collections::{HashMap, HashSet};
 use std::hash::{DefaultHasher, Hash, Hasher};
-use indexmap::{IndexMap, IndexSet};
 use pyo3::{pyclass, pymethods, PyResult};
 use pyo3::exceptions::PyValueError;
 use pyo3_stub_gen::define_stub_info_gatherer;
 use pyo3_stub_gen::derive::{gen_stub_pyclass, gen_stub_pymethods};
 use crate::automata::multi_tape_transition::{
-    MultiTapeState, MultiTapeTransition, MultiTapeTransitionsGroup, TransitionPriority
+    MultiTapeTransition, MultiTapeTransitionsGroup, TransitionPriority
 };
-use crate::automata::py_terms_multitape::{PyMultiTapeExpression, PyMultiTapeProduct, D};
+use crate::automata::py_terms_multitape::{
+    PyMultiTapeExpression, PyMultiTapeProduct, D
+};
 use crate::automata::terms::CellState;
-use crate::automata::terms_multitape::{MultiTapeTerm, TapeNo};
+use crate::automata::terms_multitape::{MultiTapeState, MultiTapeTerm, TapeNo};
 
 // PyO3 wrapper classes
 #[gen_stub_pyclass]
@@ -135,7 +136,7 @@ impl PyMultiTapeTransition {
 #[gen_stub_pyclass]
 #[pyclass]
 pub struct PyMultiTapeTransitionsGroup {
-    inner: MultiTapeTransitionsGroup,
+    pub inner: MultiTapeTransitionsGroup,
 }
 #[gen_stub_pymethods]
 #[pymethods]
@@ -237,8 +238,8 @@ impl PyMultiTapeTransitionsGroup {
         let equations_map_res = self.inner.generate_equations(require_annotations);
         let equations_map = match equations_map_res {
             Ok(equations_map) => { equations_map }
-            Err(err_message) => {
-                return Err(PyValueError::new_err(err_message));
+            Err(err) => {
+                return Err(PyValueError::new_err(err.to_string()));
             }
         };
 

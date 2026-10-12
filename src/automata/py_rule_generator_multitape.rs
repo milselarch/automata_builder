@@ -9,6 +9,7 @@ use pyo3_stub_gen::derive::{gen_stub_pyclass, gen_stub_pymethods};
 use crate::automata::multi_tape_automata::{
     MultiTapeAutomata, ProcessStepResult, WriteRecord
 };
+use crate::automata::py_multi_tape_transition::PyMultiTapeTransitionsGroup;
 use crate::automata::py_terms::py_hash;
 use crate::automata::py_terms_multitape::{
     PyMultiTapeExpression, PyMultiTapeProduct, D
@@ -582,19 +583,16 @@ impl PyMultiTapeAutomata {
 #[gen_stub_pymethods]
 #[pymethods]
 impl PyMultiTapeAutomata {
-    /// `state_eq_map`: `dict[MultiTapeState, PyMultiTapeExpression]`
     #[new]
-    pub fn new(state_eq_map: &Bound<'_, PyDict>) -> PyResult<Self> {
-        let mut rs_state_eq_map: IndexMap<MultiTapeState, MultiTapeExpression> =
-            IndexMap::with_capacity(state_eq_map.len());
-
-        for (key, value) in state_eq_map.iter() {
-            let multi_tape_state = extract_multi_tape_state(&key)?;
-            let expression = extract_expression(&value)?;
-            rs_state_eq_map.insert(multi_tape_state, expression);
-        }
-
-        let automata = MultiTapeAutomata::new(rs_state_eq_map).map_err(automata_err)?;
+    #[pyo3(signature=(transitions_group, require_annotations=false))]
+    pub fn new(
+        transitions_group: &PyMultiTapeTransitionsGroup,
+        require_annotations: bool
+    ) -> PyResult<Self> {
+        let rs_transitions_group = transitions_group.inner.clone();
+        let automata = MultiTapeAutomata::new(
+            rs_transitions_group, require_annotations
+        ).map_err(automata_err)?;
         Ok(PyMultiTapeAutomata { automata })
     }
 
