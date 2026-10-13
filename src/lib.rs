@@ -1,7 +1,10 @@
 use pyo3::prelude::*;
-use crate::automata::py_multi_tape_transition::{PyMultiTapeTransition, PyMultiTapeTransitionsGroup};
+use crate::automata::py_multi_tape_automata::PyMultiTapeAutomata;
+use crate::automata::py_multi_tape_transition::{
+    PyMultiTapeTransition, PyMultiTapeTransitionsGroup
+};
 use crate::automata::py_rule_generator_multitape::{
-    PyBiDirectionalMultiTape, PyBidirectionalTape, PyMultiTapeAutomata,
+    PyBiDirectionalMultiTape, PyBidirectionalTape,
     PyMultiTapeDataRegion, PyMultiTapeState, PyProcessStepResult,
     PyRenderFrame, PyWriteRecord
 };

@@ -494,6 +494,9 @@ class MultiTapeBuilder(object):
             self._automata.get_prod_to_state_map()
         )
 
+    def _get_prod_priority_map(self) -> dict[PyMultiTapeProduct, int]:
+        return self._automata.get_prod_priority_map()
+
     def declare_initial_group_overlaps(
         self, overlap_states: set[MultiTapeState]
     ):
@@ -1675,6 +1678,7 @@ class MultiTapeBuilder(object):
         all_tape_states_per_tape: MultiTapeStatesMap = (
             global_overlaps.create_whitelist_for_offset()
         )
+        prod_priority_map = self._get_prod_priority_map()
         preexisting_writes_map = self._get_prod_to_state_map()
         preexisting_products_trie = MultiTapeProductTrie.spawn_root()
         for multi_tape_product in preexisting_writes_map:
@@ -1693,7 +1697,7 @@ class MultiTapeBuilder(object):
                 overlaps=global_overlaps,
                 product_exclusions=preexisting_products_trie,
                 product_writes_map=preexisting_writes_map,
-                prod_priority_map=
+                prod_priority_map=prod_priority_map
             )
             annotation = multi_tape_product.get_annotation()
             log(

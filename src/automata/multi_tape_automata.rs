@@ -1,14 +1,15 @@
 use std::collections::{BTreeSet, HashMap};
 use std::fmt;
 use indexmap::IndexMap;
-use crate::automata::multi_tape_transition::{MultiTapeTransitionsGroup, TransitionPriority};
+use crate::automata::multi_tape_transition::{
+    MultiTapeTransitionsGroup, TransitionPriority
+};
 use crate::automata::product_writes_map::ProductWritesMap;
 use crate::automata::renderer::RenderFrame;
 use crate::automata::rule_generator::{BidirectionalTape, VOID_STATE};
 use crate::automata::rule_generator_multitape::{AutomataError, BiDirectionalMultiTape};
-use crate::automata::tape_overlaps::MultiTapeState;
 use crate::automata::terms::CellState;
-use crate::automata::terms_multitape::{AbstractMultiTapeExpression, MultiTapeExpression, MultiTapeProduct, TapeNo};
+use crate::automata::terms_multitape::{AbstractMultiTapeExpression, MultiTapeExpression, MultiTapeProduct, MultiTapeState, TapeNo};
 
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub struct WriteRecord {
@@ -54,7 +55,7 @@ pub struct MultiTapeAutomata {
     transitions_group: MultiTapeTransitionsGroup,
     /// `IndexMap` mirrors the insertion-ordered Python `dict`.
     state_eq_map: IndexMap<MultiTapeState, MultiTapeExpression>,
-    prod_priority_map: IndexMap<MultiTapeProduct, TransitionPriority>
+    pub(crate) prod_priority_map: IndexMap<MultiTapeProduct, TransitionPriority>
 }
 
 impl MultiTapeAutomata {
@@ -185,7 +186,7 @@ impl MultiTapeAutomata {
 
                 if product_is_void {
                     return Err(AutomataError::VoidProduct {
-                        product: product._to_string("D"),
+                        product: product.clone(),
                         output: *multi_tape_output,
                     });
                 }
@@ -193,7 +194,7 @@ impl MultiTapeAutomata {
                 let annotation = product.get_annotation();
                 if require_annotations && annotation.is_empty() {
                     return Err(AutomataError::EmptyAnnotation {
-                        product: product._to_string("D"),
+                        product: product.clone(),
                     });
                 }
 
@@ -275,7 +276,7 @@ impl MultiTapeAutomata {
                         return Err(AutomataError::ConflictingWrite {
                             tape_no,
                             position,
-                            product: matching_product._to_string("D"),
+                            product: matching_product.clone(),
                             annotation,
                             previous: prev_write,
                             incoming: tape_cell_state,

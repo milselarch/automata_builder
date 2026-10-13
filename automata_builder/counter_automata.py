@@ -12,7 +12,7 @@ from automata_builder.counter_states import (
     ST_REDUCE_START, DT_LEFT, ST_MID, ST_RIGHT, DT_DATA, ST_LEFT, DT_MID,
     SIGNALS_TAPE, paused_counter, active_counter, CARRY_TAPE, CT_DATA,
     CT_MID, DT_RIGHT, REDUCER_DATA, REDUCER_LEFT,
-    REDUCER_MID, REDUCER_PAUSED_DATA, REDUCER_TAPE, REDUCER_RIGHT, DATA_TAPE
+    REDUCER_MID, REDUCER_PAUSED_DATA, REDUCER_TAPE, REDUCER_RIGHT, DATA_TAPE, from_counter_state
 )
 from automata_builder.rule_generator import BLANK_INT
 from automata_builder.rule_generator_multitape import (
@@ -272,7 +272,8 @@ class CounterAutomataBuilder(object):
                     ),
                     output_tape_no=SIGNALS_TAPE,
                     output_cell_state=paused_counter(digit),
-                    annotation=f'BLEED_{digit}_OVER_{no_increment_state}'
+                    annotation=f'BLEED_{digit}_OVER_{no_increment_state}',
+                    priority=1
                 )
 
         return _transitions_group
@@ -448,11 +449,9 @@ class CounterAutomataRunner(object):
         self.prod_priority_map = generate_prod_priority_map(
             transitions_group=self.transitions_group
         )
-        self.state_eq_map = self.transitions_group.generate_equations()
-
         self.initial_write_start = initial_write_start
         self.initial_write_end = initial_write_end
-        self.multi_tape_automata = PyMultiTapeAutomata(self.state_eq_map)
+        self.multi_tape_automata = PyMultiTapeAutomata(self.transitions_group)
 
         self.init_tapes = [DATA_TAPE, SIGNALS_TAPE, CARRY_TAPE]
         if apply_reduction:
