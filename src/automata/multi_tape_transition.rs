@@ -4,7 +4,7 @@ use std::hash::Hash;
 use indexmap::{IndexMap, IndexSet};
 use pyo3::prelude::*;
 use serde::{Deserialize, Serialize};
-
+use crate::automata::py_terms_multitape::PyMultiTapeProduct;
 use crate::automata::rule_generator::{HALT_STATE, VOID_STATE};
 use crate::automata::rule_generator_multitape::AutomataError;
 use crate::automata::terms::CellState;
@@ -15,14 +15,13 @@ use crate::automata::terms_multitape::{
 
 pub type TransitionPriority = u32;
 
-#[derive(Clone, Debug)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub struct MultiTapeTransition {
     pub input_terms: Vec<MultiTapeTerm>,
     pub output_state: MultiTapeState,
     pub annotation: String,
     pub priority: TransitionPriority,
 }
-
 impl MultiTapeTransition {
     pub fn new(
         input_terms: Vec<MultiTapeTerm>,
@@ -37,13 +36,22 @@ impl MultiTapeTransition {
             priority,
         }
     }
+    pub fn to_product(&self) -> MultiTapeProduct {
+        MultiTapeProductFactory::new(self.input_terms.clone())
+            .with_annotation(self.annotation.clone())
+            .to_product()
+    }
 }
 
-#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub enum AddTransitionError {
     AnnotationExpected,
     AllTermsAreVoid,
-    HasHaltState
+    HasHaltState,
+    MultipleTransitionPriorities {
+        existing_transitions: Vec<MultiTapeTransition>,
+
+    }
 }
 
 impl fmt::Display for AddTransitionError {
@@ -60,6 +68,8 @@ pub struct MultiTapeTransitionsGroup {
     map D[] -> (output tape_no, output state)
     */
     pub transitions: Vec<MultiTapeTransition>,
+    pub prod_to_transitions: HashMap<PyMultiTapeProduct, HashSet<MultiTapeTransition>>,
+    pub prod_priority_map: HashMap<MultiTapeProduct, TransitionPriority>,
     pub require_annotation: bool,
 }
 
@@ -138,11 +148,27 @@ impl MultiTapeTransitionsGroup {
         let transition = MultiTapeTransition::new(
             input_terms, output_state, annotation, priority
         );
-        self.transitions.push(transition);
+        println!("TRANSITION_ADD {:?}", transition);
+        self._insert_transition(transition);
         Ok(())
     }
 
-    pub fn or(&self, other: &MultiTapeTransitionsGroup) -> Result<MultiTapeTransitionsGroup, String> {
+    pub fn _insert_transition(
+        &mut self, transition: MultiTapeTransition
+    ) -> Result<(), > {
+        let product = transition.to_product();
+        let existing_priority = self.prod_priority_map.get(&product)
+            .unwrap_or(&transition.priority);
+
+        if (existing_priority != transition.priority) {
+
+        }
+        self.transitions.push(transition);
+    }
+
+    pub fn or(
+        &self, other: &MultiTapeTransitionsGroup
+    ) -> Result<MultiTapeTransitionsGroup, String> {
         let require_annotation = self.require_annotation || other.require_annotation;
 
         if require_annotation {
@@ -248,7 +274,16 @@ impl MultiTapeTransitionsGroup {
                 .with_annotation(annotation)
                 .to_product();
 
-            prod_priority_map.insert(product, transition.priority);
+            let priority = transition.priority;
+            let prev_opt = prod_priority_map.insert(product, priority);
+
+            match prev_opt {
+                None => {}
+                Some(prev_priority) => {
+                    // TODO: return error, or raise more useful error message
+                    assert_eq!(prev_priority, priority)
+                }
+            }
         }
 
         prod_priority_map

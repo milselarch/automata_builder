@@ -5,7 +5,7 @@ import os
 from typing import Sequence
 from automata_builder._rust import (
     D, PyMultiTapeAutomata, PyProcessStepResult, PyMultiTapeDataRegion,
-    PyRenderFrame, PyMultiTapeTransitionsGroup
+    PyRenderFrame, PyMultiTapeTransitionsGroup, PyMultiTapeProduct
 )
 
 from automata_builder.counter_states import (
@@ -16,8 +16,7 @@ from automata_builder.counter_states import (
 )
 from automata_builder.rule_generator import BLANK_INT
 from automata_builder.rule_generator_multitape import (
-    TapeCellState, MultiTapeRuleGenerator, MultiTapeState,
-    VOID_STATE, generate_prod_priority_map
+    TapeCellState, MultiTapeState, VOID_STATE
 )
 
 
@@ -232,7 +231,8 @@ class CounterAutomataBuilder(object):
                     ),
                     output_tape_no=SIGNALS_TAPE,
                     output_cell_state=paused_counter(0),
-                    annotation=f'LM_OVERFLOW_{max_counter_digit}'
+                    annotation=f'LM_OVERFLOW_{max_counter_digit}',
+                    priority=1
                 )
                 # spawn a carry cell state to propagate to digits to the right
                 _transitions_group.add_transition(
@@ -446,8 +446,8 @@ class CounterAutomataRunner(object):
             transitions_group = self.builder.build_transitions_group()
 
         self.transitions_group = transitions_group
-        self.prod_priority_map = generate_prod_priority_map(
-            transitions_group=self.transitions_group
+        self._prod_priority_map: dict[PyMultiTapeProduct, int] = (
+            self.transitions_group.build_prod_priority_map()
         )
         self.initial_write_start = initial_write_start
         self.initial_write_end = initial_write_end

@@ -36,6 +36,7 @@ from automata_builder._rust import (
 )
 
 
+"""
 def generate_prod_priority_map(
     transitions_group: PyMultiTapeTransitionsGroup,
     require_annotations: bool = False
@@ -55,6 +56,7 @@ def generate_prod_priority_map(
             assert product.get_annotation()
 
     return prod_priority_map
+"""
 
 
 class MultiTapeRuleGenerator(object):
