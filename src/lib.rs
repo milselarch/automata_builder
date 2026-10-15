@@ -22,6 +22,16 @@ pub mod automata;
 /// Native (rust) extension module of the `automata_builder` python package.
 #[pymodule]
 fn _rust(module: &Bound<'_, PyModule>) -> PyResult<()> {
+    let _ = env_logger::Builder::from_env(
+        env_logger::Env::default().default_filter_or("debug")
+    ).try_init();
+
+    std::panic::set_hook(Box::new(|panic_info| {
+        eprintln!("=== RUST PANIC ===");
+        eprintln!("{}", panic_info);
+        std::thread::sleep(std::time::Duration::from_millis(100));
+    }));
+
     module.add_class::<A>()?;
     module.add_class::<PyProduct>()?;
     module.add_class::<PyExpression>()?;

@@ -26,6 +26,7 @@ itertools = "0.13.0"
 cartesian = "0.3.0"
 struct_macro_eq = "0.1.0"
 serde = { version = "1.0.226", features = ["derive"] }
+env_logger = "0.11.11"
 
 [[bin]]
 name = "stub_gen"

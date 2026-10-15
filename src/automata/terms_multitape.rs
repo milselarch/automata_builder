@@ -6,12 +6,18 @@ use std::hash::{Hash, Hasher};
 use std::ops::{BitOr, Mul};
 use indexmap::IndexSet;
 use rayon::iter::IntoParallelRefIterator;
-use crate::automata::terms::{clip_after_space, CellState, ExprDebugInfo, ExprPosition};
+use serde::{Deserialize, Serialize};
+use crate::automata::terms::{
+    clip_after_space, CellState, ExprDebugInfo, ExprPosition
+};
 
 pub type TapeNo = u16;
 pub type MultiTapeCellState = (TapeNo, CellState);
 
-#[derive(Debug, Clone, Copy, Eq, PartialEq, Ord, PartialOrd, Hash)]
+#[derive(
+    Debug, Clone, Copy, Eq, PartialEq, Ord, PartialOrd,
+    Hash, Serialize, Deserialize
+)]
 pub struct MultiTapeState {
     pub tape_no: TapeNo,
     pub tape_cell_state: CellState,
@@ -57,7 +63,7 @@ pub trait AbstractMultiTapeExpression: Mul + BitOr + Eq + Sized {
     fn _assign_indexes_as_base(&mut self);
 }
 
-#[derive(Clone, Debug, Eq)]
+#[derive(Clone, Debug, Eq, Serialize, Deserialize)]
 pub struct MultiTapeTerm {
     // position within the cellular automata tape
     pub (crate) position: i64,

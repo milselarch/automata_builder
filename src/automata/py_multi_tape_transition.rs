@@ -222,11 +222,18 @@ impl PyMultiTapeTransitionsGroup {
     pub fn __or__(
         &self, other: &PyMultiTapeTransitionsGroup
     ) -> PyResult<PyMultiTapeTransitionsGroup> {
-        self.inner
-            .or(&other.inner)
-            .map(|inner| PyMultiTapeTransitionsGroup {
-                inner
-            }).map_err(|e| PyValueError::new_err(e))
+        let merged_res = self.inner.or(&other.inner);
+
+        match merged_res {
+            Ok(merged) => {
+                Ok(PyMultiTapeTransitionsGroup {
+                    inner: merged
+                })
+            }
+            Err(err) => {
+                Err(PyValueError::new_err(err.to_string()))
+            }
+        }
     }
 
     #[pyo3(signature=(require_annotations=false))]
@@ -260,11 +267,11 @@ impl PyMultiTapeTransitionsGroup {
     pub fn build_prod_priority_map(&self) -> PyResult<HashMap<
         PyMultiTapeProduct, TransitionPriority
     >> {
-        let prod_priority_map = self.inner.build_prod_priority_map();
         let mut py_prod_priority_map: HashMap<
             PyMultiTapeProduct, TransitionPriority
         > = HashMap::new();
 
+        let prod_priority_map = self.inner.prod_priority_map.clone();
         for (product, priority) in prod_priority_map.into_iter() {
             let py_product = PyMultiTapeProduct::from(product);
             py_prod_priority_map.insert(py_product, priority);
