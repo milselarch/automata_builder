@@ -108,14 +108,16 @@ impl PyMultiTapeAutomata {
     pub fn get_prod_priority_map(&self) -> HashMap<
         PyMultiTapeProduct, TransitionPriority
     > {
-        let mut prod_priority_map: HashMap<
+        let mut py_prod_priority_map: HashMap<
             PyMultiTapeProduct, TransitionPriority
         > = HashMap::new();
-        for (product, priority) in self.automata.prod_priority_map.iter() {
+
+        let prod_priority_map = self.automata.get_prod_priority_map();
+        for (product, priority) in prod_priority_map.iter() {
             let py_product = PyMultiTapeProduct::from(product.clone());
-            prod_priority_map.insert(py_product, priority.clone());
+            py_prod_priority_map.insert(py_product, priority.clone());
         }
-        prod_priority_map
+        py_prod_priority_map
     }
 
     pub fn get_num_products(&self) -> usize {

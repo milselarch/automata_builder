@@ -450,6 +450,9 @@ impl MultiTapeProduct {
 
         true
     }
+    pub fn to_string(&self) -> String {
+        self._to_string(&*MultiTapeTerm::_get_name())
+    }
 }
 
 impl PartialEq<Self> for MultiTapeProduct {
@@ -627,10 +630,10 @@ impl AbstractMultiTapeExpression for MultiTapeProduct {
     fn to_expression(&self) -> MultiTapeExpression {
         MultiTapeExpression::new(vec![self.copy()])
     }
-    fn _to_string(&self, name: &str) -> String {
+    fn _to_string(&self, term_name: &str) -> String {
         self._terms
             .iter()
-            .map(|term| term._to_string(name))
+            .map(|term| term._to_string(term_name))
             .collect::<Vec<String>>()
             .join("*")
     }

@@ -1,6 +1,7 @@
 use std::collections::{BTreeSet, HashMap};
 use std::fmt;
 use indexmap::IndexMap;
+
 use crate::automata::multi_tape_transition::{
     MultiTapeTransitionsGroup, TransitionPriority
 };
@@ -9,7 +10,10 @@ use crate::automata::renderer::RenderFrame;
 use crate::automata::rule_generator::{BidirectionalTape, VOID_STATE};
 use crate::automata::rule_generator_multitape::{AutomataError, BiDirectionalMultiTape};
 use crate::automata::terms::CellState;
-use crate::automata::terms_multitape::{AbstractMultiTapeExpression, MultiTapeExpression, MultiTapeProduct, MultiTapeState, TapeNo};
+use crate::automata::terms_multitape::{
+    AbstractMultiTapeExpression, MultiTapeExpression, MultiTapeProduct,
+    MultiTapeState, TapeNo
+};
 
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub struct WriteRecord {
@@ -17,7 +21,7 @@ pub struct WriteRecord {
     /// `(tape_no, position)`
     pub write_target: (TapeNo, i64),
     pub tape_cell_state: CellState,
-    /// for debugging purposes (to trace originating product)
+    /// for debugging purposes (to trace the originating product)
     pub annotation: String,
 }
 
@@ -55,7 +59,6 @@ pub struct MultiTapeAutomata {
     transitions_group: MultiTapeTransitionsGroup,
     /// `IndexMap` mirrors the insertion-ordered Python `dict`.
     state_eq_map: IndexMap<MultiTapeState, MultiTapeExpression>,
-    pub(crate) prod_priority_map: IndexMap<MultiTapeProduct, TransitionPriority>
 }
 
 impl MultiTapeAutomata {
@@ -64,7 +67,6 @@ impl MultiTapeAutomata {
         require_annotations: bool
     ) -> Result<MultiTapeAutomata, AutomataError> {
         let state_eq_map = transitions_group.generate_equations(require_annotations)?;
-        let prod_priority_map = transitions_group.build_prod_priority_map();
         let prod_to_state_map = Self::reverse_state_eq_map(&state_eq_map, true)?;
         let (leftmost_extent, rightmost_extent) =
             Self::compute_rule_range(&prod_to_state_map);
@@ -75,9 +77,14 @@ impl MultiTapeAutomata {
             leftmost_extent,
             rightmost_extent,
             transitions_group,
-            state_eq_map,
-            prod_priority_map
+            state_eq_map
         })
+    }
+
+    pub fn get_prod_priority_map(&self) -> &HashMap<
+        MultiTapeProduct, TransitionPriority
+    > {
+        &self.transitions_group.prod_priority_map
     }
 
     /// Python `__getitem__`; `None` when the tape has not been allocated yet.

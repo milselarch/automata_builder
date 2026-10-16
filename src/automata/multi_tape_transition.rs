@@ -7,10 +7,7 @@ use serde::{Deserialize, Serialize};
 use crate::automata::rule_generator::{HALT_STATE, VOID_STATE};
 use crate::automata::rule_generator_multitape::AutomataError;
 use crate::automata::terms::CellState;
-use crate::automata::terms_multitape::{
-    MultiTapeExpression, MultiTapeProduct, MultiTapeProductFactory,
-    MultiTapeState, MultiTapeTerm, TapeNo
-};
+use crate::automata::terms_multitape::{AbstractMultiTapeExpression, MultiTapeExpression, MultiTapeProduct, MultiTapeProductFactory, MultiTapeState, MultiTapeTerm, TapeNo};
 
 pub type TransitionPriority = u32;
 
@@ -42,6 +39,18 @@ impl MultiTapeTransition {
     }
 }
 
+impl fmt::Display for MultiTapeTransition {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(
+            f, "MultiTapeTransition {{ \
+                input_terms: {}, output_state: {:?}, \
+                annotation: {:?}, priority: {} }}",
+            self.to_product().to_string(),
+            self.output_state, self.annotation, self.priority
+        )
+    }
+}
+
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub enum AddTransitionError {
     AnnotationExpected,
@@ -56,7 +65,36 @@ pub enum AddTransitionError {
 
 impl fmt::Display for AddTransitionError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", self.to_string())
+        match self {
+            AddTransitionError::AnnotationExpected => {
+                write!(f, "Cannot add transition without annotation")
+            }
+            AddTransitionError::AllTermsAreVoid => {
+                write!(f, "Cannot add transition with void-only input terms")
+            }
+            AddTransitionError::HasHaltState => {
+                write!(f, "Cannot add transition with halt state")
+            }
+            AddTransitionError::MultipleTransitionPriorities {
+                existing_transitions,
+                existing_priority,
+                new_priority,
+            } => {
+                let existing_transitions_str = existing_transitions
+                    .iter()
+                    .map(|t| t.to_string())
+                    .collect::<Vec<String>>()
+                    .join(", ");
+
+                write!(
+                    f,
+                    "Cannot add transition with priority {} because \
+                    there are already transitions {} with priority {}",
+                    new_priority, existing_transitions_str,
+                    existing_priority
+                )
+            }
+        }
     }
 }
 

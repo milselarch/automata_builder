@@ -204,19 +204,20 @@ impl PyMultiTapeTransitionsGroup {
             py_term.get_term().clone()
         }).collect::<Vec<MultiTapeTerm>>();
 
-        self.inner
-            .add_transition(
-                rs_terms,
-                output_tape_no,
-                output_cell_state,
-                validate_void,
-                validate_halt,
-                annotation,
-                priority,
-            )
-            .map_err(|e|
-                PyValueError::new_err(e.to_string())
-            )
+        let insert_res = self.inner.add_transition(
+            rs_terms,
+            output_tape_no,
+            output_cell_state,
+            validate_void,
+            validate_halt,
+            annotation,
+            priority,
+        );
+        insert_res.map_err(|e| {
+            // eprintln!("PY FAILED TO INSERT TRANSITION {}", e);
+            PyValueError::new_err(e.to_string())
+        })?;
+        Ok(())
     }
 
     pub fn __or__(
