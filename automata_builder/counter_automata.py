@@ -243,7 +243,8 @@ class CounterAutomataBuilder(object):
                     ),
                     output_tape_no=CARRY_TAPE,
                     output_cell_state=CT_DATA,
-                    annotation=f'LM_SPAWN_CARRY'
+                    annotation=f'LM_SPAWN_CARRY',
+                    priority=1
                 )
             else:
                 # move digit leftwards and increment by 1
@@ -256,7 +257,8 @@ class CounterAutomataBuilder(object):
                     ),
                     output_tape_no=SIGNALS_TAPE,
                     output_cell_state=paused_counter(digit + 1),
-                    annotation=f'LM_LEFT_{digit}_AND_INC'
+                    annotation=f'LM_LEFT_{digit}_AND_INC',
+                    priority=1
                 )
 
         for no_increment_state in no_increment_states:

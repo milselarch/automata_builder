@@ -1048,6 +1048,23 @@ class MultiTapeBuilder(object):
         prod_priority_map: dict[PyMultiTapeProduct, int],
         product_writes_map: ProductWritesMap
     ) -> set[PyMultiTapeProduct]:
+        """
+        The purpose of constructing extended products for a source_product
+        is to avoid the situation where two or more (more ambiguously defined)
+        products simultaneously satisfy some arrangement of states that
+        appear in the automata tapes and lead to conflicting writes.
+
+        TODO: ^ add an example lmao
+        :param source_product:
+        :param overlaps:
+        :param product_exclusions:
+        :param prod_priority_map:
+        :param product_writes_map:
+        :return:
+        """
+        source_write_priority = prod_priority_map[source_product]
+        higher_priority_products: set[PyMultiTapeProduct] = set()
+        lower_priority_products: set[PyMultiTapeProduct] = set()
         annotation = source_product.get_annotation()
         product_path = product_exclusions.group_path_from_product(
             product=source_product
@@ -1080,9 +1097,6 @@ class MultiTapeBuilder(object):
                     )
 
         all_writes: dict[TapeNo, TapeCellState] = {}
-        write_priority_by_tape: defaultdict[
-            TapeNo, int | float
-        ] = defaultdict(lambda: -float('inf'))
         # all products whose input terms could be satisfied
         # when the source_product's input terms are satisfied too
         writing_products = [source_product]
@@ -1099,11 +1113,18 @@ class MultiTapeBuilder(object):
                 tape_cell_state = written_multi_tape_state.tape_cell_state
                 current_write_state = all_writes.get(tape_no, tape_cell_state)
 
-                if current_write_state == tape_cell_state:
-                    pass
-                elif write_priority > write_priority_by_tape[tape_no]:
-                    pass
-                else:
+                if write_priority > source_write_priority:
+                    # TODO: infer transition priority based on
+                    #   occurrences across FSM
+                    # TODO: use overriding_products in
+                    #   build_full_group_paths_satisfying
+                    higher_priority_products.add(product)
+                    continue
+                if write_priority < source_write_priority:
+                    lower_priority_products.add(product)
+                    continue
+
+                if current_write_state != tape_cell_state:
                     raise ValueError(
                         f'{source_product=} '
                         f'[{source_product.get_annotation()}] and '
@@ -1113,8 +1134,6 @@ class MultiTapeBuilder(object):
                         f'{current_write_state} vs {tape_cell_state}'
                     )
 
-                assert write_priority >= write_priority_by_tape[tape_no]
-                write_priority_by_tape[tape_no] = write_priority
                 all_writes[tape_no] = tape_cell_state
 
         overlapping_product_offsets = product_exclusions.search_all_offsets()
@@ -1122,12 +1141,23 @@ class MultiTapeBuilder(object):
         extended_products: set[PyMultiTapeProduct] = set()
         group_path_combos = cls.build_full_group_paths_satisfying(
             overlaps=overlaps, offsets=offsets,
-            requirements_by_offset=requirements_by_offset
+            requirements_by_offset=requirements_by_offset,
         )
         for pre_group_path_combo in group_path_combos:
             extended_product = offset_group_path_to_product(
                 offset_group_path=pre_group_path_combo
             )
+            # TODO: exit earlier in build_full_group_paths_satisfying?
+            is_overriding_product = False
+            for overriding_product in higher_priority_products:
+                if extended_product.is_satisfiable_with(overriding_product):
+                    is_overriding_product = True
+                    break
+
+            if is_overriding_product:
+                # raise RuntimeError
+                continue
+
             new_annotation = annotation + f'_({extended_product})'
             extended_products.add(extended_product.with_annotation(
                 annotation=new_annotation
@@ -1608,7 +1638,7 @@ class MultiTapeBuilder(object):
     ) -> list[list[OffsetGroupedTerms]]:
         group_paths = cls._build_full_group_paths_satisfying(
             offset_index=0, offsets=offsets, overlaps=overlaps,
-            requirements_by_offset=requirements_by_offset
+            requirements_by_offset=requirements_by_offset,
         )
         return group_paths
 
@@ -1644,7 +1674,7 @@ class MultiTapeBuilder(object):
         sub_group_paths = cls._build_full_group_paths_satisfying(
             offset_index=offset_index + 1,
             offsets=offsets, overlaps=overlaps,
-            requirements_by_offset=requirements_by_offset
+            requirements_by_offset=requirements_by_offset,
         )
 
         for multi_tape_state_combo in multi_tape_state_combos:

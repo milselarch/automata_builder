@@ -45,7 +45,7 @@ impl fmt::Display for MultiTapeTransition {
             f, "MultiTapeTransition {{ \
                 input_terms: {}, output_state: {:?}, \
                 annotation: {:?}, priority: {} }}",
-            self.to_product().to_string(),
+            self.to_product()._to_string("D"),
             self.output_state, self.annotation, self.priority
         )
     }
@@ -59,7 +59,7 @@ pub enum AddTransitionError {
     MultipleTransitionPriorities {
         existing_transitions: Vec<MultiTapeTransition>,
         existing_priority: TransitionPriority,
-        new_priority: TransitionPriority,
+        new_transition: MultiTapeTransition,
     }
 }
 
@@ -78,7 +78,7 @@ impl fmt::Display for AddTransitionError {
             AddTransitionError::MultipleTransitionPriorities {
                 existing_transitions,
                 existing_priority,
-                new_priority,
+                new_transition,
             } => {
                 let existing_transitions_str = existing_transitions
                     .iter()
@@ -86,11 +86,13 @@ impl fmt::Display for AddTransitionError {
                     .collect::<Vec<String>>()
                     .join(", ");
 
+                let new_priority = new_transition.priority;
                 write!(
                     f,
-                    "Cannot add transition with priority {} because \
+                    "Cannot add transition {new_transition} \
+                    with priority {new_priority} because \
                     there are already transitions {} with priority {}",
-                    new_priority, existing_transitions_str,
+                    existing_transitions_str,
                     existing_priority
                 )
             }
@@ -191,6 +193,11 @@ impl MultiTapeTransitionsGroup {
         :param annotation:
         :param priority:
         :return:
+
+        TODO: priority is a bit of a hack to deal with products
+            that are simultaneously satisfiable given some relevant
+            combination of input terms - it might be possible to
+            reduce / remove it being necessary by analyzing tape overlaps FSM
          */
         if self.require_annotation && annotation.is_empty() {
             return Err(AddTransitionError::AnnotationExpected)
@@ -238,7 +245,7 @@ impl MultiTapeTransitionsGroup {
             return Err(AddTransitionError::MultipleTransitionPriorities {
                 existing_transitions,
                 existing_priority,
-                new_priority: transition.priority,
+                new_transition: transition
             })
         }
         self.transitions.push(transition.clone());
