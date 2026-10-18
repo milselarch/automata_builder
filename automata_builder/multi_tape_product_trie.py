@@ -3,6 +3,8 @@ from __future__ import annotations
 import dataclasses
 
 from collections import defaultdict
+from typing import Self
+
 from automata_builder._rust import PyMultiTapeProduct, D
 
 
@@ -81,7 +83,7 @@ class OffsetGroupedTerms(object):
 
 
 def offset_group_path_to_product(
-        offset_group_path: list[OffsetGroupedTerms]
+    offset_group_path: list[OffsetGroupedTerms]
 ) -> PyMultiTapeProduct:
     flat_terms: list[D] = []
     for group in offset_group_path:
@@ -100,9 +102,6 @@ class MultiTapeProductTrie(object):
     end_products: set[PyMultiTapeProduct] = dataclasses.field(
         default_factory=set
     )
-    # whether any nested trie contains an end product
-    # TODO: this could just be a computable property I think
-    has_nested_products: bool = False
     next_groups: defaultdict[
         OffsetGroupedTerms, MultiTapeProductTrie
     ] = dataclasses.field(
@@ -112,12 +111,49 @@ class MultiTapeProductTrie(object):
     def __repr__(self) -> str:
         return self.__class__.__name__ + f'#{id(self)}'
 
+    def without_end_products(
+        self, products_to_exclude: set[PyMultiTapeProduct]
+    ) -> Self:
+        new_end_products: set[PyMultiTapeProduct] = set()
+        for end_product in self.end_products:
+            if end_product in products_to_exclude:
+                continue
+
+            new_end_products.add(end_product)
+
+        new_prod_trie = self.__class__(
+            offset=self.offset,
+            end_products=new_end_products
+        )
+        for offset_group in self.next_groups:
+            sub_prod_trie = self.next_groups[offset_group]
+            new_sub_prod_trie = sub_prod_trie.without_end_products(
+                products_to_exclude=products_to_exclude
+            )
+            if not new_sub_prod_trie.has_products:
+                continue
+
+            new_prod_trie.insert(
+                offset_group=offset_group,
+                trie_exclusion=new_sub_prod_trie
+            )
+
+        return new_prod_trie
+
     def remove_end_product(self, product: PyMultiTapeProduct) -> bool:
         if product in self.end_products:
             self.end_products.remove(product)
             return True
         else:
             return False
+
+    @property
+    def has_nested_products(self):
+        """
+        whether any nested trie contains an end product
+        :return:
+        """
+        return len(self.next_groups) > 0
 
     @classmethod
     def merge(cls, tries: list[MultiTapeProductTrie]) -> MultiTapeProductTrie:
@@ -149,9 +185,6 @@ class MultiTapeProductTrie(object):
             )
 
         end_products = self.end_products | other.end_products
-        has_nested_products = (
-                self.has_nested_products | other.has_nested_products
-        )
         next_groups: defaultdict[
             OffsetGroupedTerms, MultiTapeProductTrie
         ] = defaultdict(MultiTapeProductTrie)
@@ -160,13 +193,12 @@ class MultiTapeProductTrie(object):
             next_groups[offset_group] = self.next_groups[offset_group]
         for offset_group in other.next_groups:
             next_groups[offset_group] = (
-                    next_groups[offset_group] | other.next_groups[offset_group]
+                next_groups[offset_group] | other.next_groups[offset_group]
             )
 
         return MultiTapeProductTrie(
             offset=offset,
             end_products=end_products,
-            has_nested_products=has_nested_products,
             next_groups=next_groups
         )
 
@@ -183,8 +215,6 @@ class MultiTapeProductTrie(object):
             )
 
         end_products = self.end_products & other.end_products
-        has_nested_products: bool = False
-
         next_groups: defaultdict[
             OffsetGroupedTerms, MultiTapeProductTrie
         ] = defaultdict(MultiTapeProductTrie)
@@ -195,19 +225,17 @@ class MultiTapeProductTrie(object):
 
             next_trie = self.next_groups[group] & other.next_groups[group]
             if next_trie.has_end_product:
-                has_nested_products = True
                 next_groups[group] = next_trie
 
         return MultiTapeProductTrie(
             offset=offset,
             end_products=end_products,
-            has_nested_products=has_nested_products,
             next_groups=next_groups
         )
 
     def insert(
-            self, offset_group: OffsetGroupedTerms,
-            trie_exclusion: MultiTapeProductTrie
+        self, offset_group: OffsetGroupedTerms,
+        trie_exclusion: MultiTapeProductTrie
     ):
         """
         Insert an offset group -> trie exclusion into own trie exclusions.
@@ -219,8 +247,6 @@ class MultiTapeProductTrie(object):
         assert offset == trie_exclusion.offset
         if offset is None:
             return
-
-        self.has_nested_products |= trie_exclusion.has_products
 
         for next_offset_group in self.next_groups:
             if next_offset_group.offset == offset:
@@ -237,13 +263,12 @@ class MultiTapeProductTrie(object):
         return MultiTapeProductTrie(
             offset=self.offset,
             end_products=self.end_products.copy(),
-            has_nested_products=self.has_nested_products,
             next_groups=self.next_groups.copy()
         )
 
     @classmethod
     def spawn_root(cls):
-        return cls(offset=None, has_nested_products=True)
+        return cls(offset=None)
 
     def get_next_offsets(self) -> set[int | None]:
         offsets = set()
@@ -274,13 +299,12 @@ class MultiTapeProductTrie(object):
         return MultiTapeProductTrie(
             offset=self.offset,
             end_products=self.end_products.copy(),
-            has_nested_products=has_nested_products,
             next_groups=next_groups
         )
 
     def advance_exclusions(
-            self, source_offset_group: OffsetGroupedTerms,
-            merge_from_adjacent_offsets: bool = True,
+        self, source_offset_group: OffsetGroupedTerms,
+        merge_from_adjacent_offsets: bool = True,
     ) -> MultiTapeProductTrie:
         assert source_offset_group.offset is not None
         matching_groups = self.match_offset_groups_for(
@@ -330,8 +354,8 @@ class MultiTapeProductTrie(object):
         return next_exclusions
 
     def match_offset_groups_for(
-            self, target_group: OffsetGroupedTerms,
-            insert_blank: bool = True,
+        self, target_group: OffsetGroupedTerms,
+        insert_blank: bool = True,
     ) -> set[OffsetGroupedTerms]:
         matching_groups: set[OffsetGroupedTerms] = set()
 
@@ -346,7 +370,10 @@ class MultiTapeProductTrie(object):
 
     @property
     def has_products(self) -> bool:
-        # whether this trie or any nested trie contains an end product
+        """
+        whether this trie or any nested trie contains an end product
+        :return:
+        """
         return self.has_end_product or self.has_nested_products
 
     @staticmethod
@@ -368,7 +395,7 @@ class MultiTapeProductTrie(object):
             return -prev_index
 
     def next(
-            self, group: OffsetGroupedTerms
+        self, group: OffsetGroupedTerms
     ) -> MultiTapeProductTrie:
         if group not in self.next_groups:
             return MultiTapeProductTrie()
@@ -406,8 +433,8 @@ class MultiTapeProductTrie(object):
         for k, term in enumerate(sorted_terms):
             offset = term.get_position()
             flush_group = (
-                    (len(offset_grouped_terms) > 0) and
-                    (offset != prev_offset)
+                (len(offset_grouped_terms) > 0) and
+                (offset != prev_offset)
             )
 
             if flush_group:
@@ -433,7 +460,7 @@ class MultiTapeProductTrie(object):
 
     @classmethod
     def group_path_from_product(
-            cls, product: PyMultiTapeProduct
+        cls, product: PyMultiTapeProduct
     ) -> list[OffsetGroupedTerms]:
         return cls.create_group_path(product.get_flat_terms())
 
@@ -443,8 +470,8 @@ class MultiTapeProductTrie(object):
         return cls._create_group_path(sorted_terms)
 
     def _insert_group_path(
-            self, group_path: list[OffsetGroupedTerms],
-            product: PyMultiTapeProduct
+        self, group_path: list[OffsetGroupedTerms],
+        product: PyMultiTapeProduct
     ) -> MultiTapeProductTrie:
         """
         :param group_path:
@@ -465,7 +492,6 @@ class MultiTapeProductTrie(object):
             next_trie = self.next_groups[current_group]
 
         next_trie._insert_group_path(next_groups, product=product)
-        self.has_nested_products = True
         return next_trie
 
     def _has_group_path(self, group_path: list[OffsetGroupedTerms]) -> bool:
@@ -479,19 +505,19 @@ class MultiTapeProductTrie(object):
         return self.next_groups[current_group]._has_group_path(next_groups)
 
     def load_matching_products(
-            self, product: PyMultiTapeProduct
+        self, product: PyMultiTapeProduct
     ) -> set[PyMultiTapeProduct]:
         terms = product.get_flat_terms()
         return self.load_matching_products_for_terms(terms=terms)
 
     def load_matching_products_for_terms(
-            self, terms: list[D]
+        self, terms: list[D]
     ) -> set[PyMultiTapeProduct]:
         group_path = self.create_group_path(terms)
         return self._load_matching_products(group_path=group_path)
 
     def _load_matching_products(
-            self, group_path: list[OffsetGroupedTerms]
+        self, group_path: list[OffsetGroupedTerms]
     ) -> set[PyMultiTapeProduct]:
         all_products: set[PyMultiTapeProduct] = self.end_products.copy()
         if not group_path:
@@ -520,13 +546,13 @@ class MultiTapeProductTrie(object):
         return term_path
 
     def _insert_term_path(
-            self, terms: list[D], product: PyMultiTapeProduct
+        self, terms: list[D], product: PyMultiTapeProduct
     ) -> MultiTapeProductTrie:
         group_path = self.create_group_path(terms)
         return self._insert_group_path(group_path, product=product)
 
     def insert_product(
-            self, product: PyMultiTapeProduct
+        self, product: PyMultiTapeProduct
     ) -> MultiTapeProductTrie:
         terms = product.get_flat_terms()
         return self._insert_term_path(terms, product=product)
