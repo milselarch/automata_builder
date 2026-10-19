@@ -3,6 +3,8 @@ from __future__ import annotations
 import copy
 import dataclasses
 
+import overrides
+
 from automata_builder import utils
 
 from result import Result, Ok, Err
@@ -57,6 +59,19 @@ def generate_prod_priority_map(
 
     return prod_priority_map
 """
+
+
+class DummyMultiTapeProductTrie(MultiTapeProductTrie):
+    @property
+    @overrides.override
+    def has_end_product(self) -> bool:
+        return False
+
+    @property
+    @overrides.override
+    def has_nested_products(self) -> bool:
+        return True
+
 
 
 class MultiTapeRuleGenerator(object):
@@ -1691,6 +1706,16 @@ class MultiTapeBuilder(object):
 
         return group_paths
 
+    def build_self_writes_map(
+        self, global_overlaps: TapeOverlaps
+    ) -> ProductWritesMap:
+        self_writes_map = self.build_product_same_writes_map(
+            overlaps=global_overlaps, current_product_path=[],
+            product_exclusions=DummyMultiTapeProductTrie.spawn_root()
+            # MultiTapeProductTrie.spawn_root()
+        )
+        return self_writes_map
+
     def compile_tapes(
         self, verbose: bool = True
     ) -> CompileTapesResult:
@@ -1771,10 +1796,7 @@ class MultiTapeBuilder(object):
         of term states along the write position offset to itself, 
         (so no change from input to output) 
         """
-        self_writes_map = self.build_product_same_writes_map(
-            overlaps=global_overlaps, current_product_path=[],
-            product_exclusions=MultiTapeProductTrie.spawn_root()
-        )
+        self_writes_map = self.build_self_writes_map(global_overlaps)
         covering_product_writes_map = self.build_product_same_writes_map(
             overlaps=global_overlaps, current_product_path=[],
             product_exclusions=preexisting_products_trie
