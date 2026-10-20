@@ -1,5 +1,6 @@
-use std::collections::{HashMap, HashSet};
+use std::collections::HashSet;
 use std::hash::{DefaultHasher, Hash, Hasher};
+use indexmap::{IndexMap, IndexSet};
 use pyo3::{pyclass, pymethods, PyResult};
 use pyo3::exceptions::PyValueError;
 use pyo3_stub_gen::define_stub_info_gatherer;
@@ -240,7 +241,7 @@ impl PyMultiTapeTransitionsGroup {
     #[pyo3(signature=(require_annotations=false))]
     pub fn generate_equations(
         &self, require_annotations: bool
-    ) -> PyResult<HashMap<
+    ) -> PyResult<IndexMap<
         PyMultiTapeState, PyMultiTapeExpression
     >> {
         let equations_map_res = self.inner.generate_equations(require_annotations);
@@ -251,9 +252,9 @@ impl PyMultiTapeTransitionsGroup {
             }
         };
 
-        let mut py_equations_map: HashMap<
+        let mut py_equations_map: IndexMap<
             PyMultiTapeState, PyMultiTapeExpression
-        > = HashMap::new();
+        > = IndexMap::new();
 
         for (multi_tape_state, expression) in equations_map.into_iter() {
             let py_multi_tape_state = PyMultiTapeState::from(multi_tape_state);
@@ -265,12 +266,12 @@ impl PyMultiTapeTransitionsGroup {
         Ok(py_equations_map)
     }
 
-    pub fn build_prod_priority_map(&self) -> PyResult<HashMap<
+    pub fn build_prod_priority_map(&self) -> PyResult<IndexMap<
         PyMultiTapeProduct, TransitionPriority
     >> {
-        let mut py_prod_priority_map: HashMap<
+        let mut py_prod_priority_map: IndexMap<
             PyMultiTapeProduct, TransitionPriority
-        > = HashMap::new();
+        > = IndexMap::new();
 
         let prod_priority_map = self.inner.prod_priority_map.clone();
         for (product, priority) in prod_priority_map.into_iter() {
@@ -281,6 +282,7 @@ impl PyMultiTapeTransitionsGroup {
     }
 
     pub fn get_all_states(&self) -> PyResult<HashSet<PyMultiTapeState>> {
+        // TODO: go and implement IntoPyObject for IndexSet
         let all_states = self.inner.get_all_states();
         let mut py_all_states: HashSet<PyMultiTapeState> = HashSet::new();
 

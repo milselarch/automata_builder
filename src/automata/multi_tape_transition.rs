@@ -137,8 +137,8 @@ pub struct MultiTapeTransitionsGroup {
     map D[] -> (output tape_no, output state)
     */
     pub transitions: Vec<MultiTapeTransition>,
-    pub prod_to_transitions: HashMap<MultiTapeProduct, HashSet<MultiTapeTransition>>,
-    pub prod_priority_map: HashMap<MultiTapeProduct, TransitionPriority>,
+    pub prod_to_transitions: IndexMap<MultiTapeProduct, IndexSet<MultiTapeTransition>>,
+    pub prod_priority_map: IndexMap<MultiTapeProduct, TransitionPriority>,
     pub require_annotation: bool,
 }
 
@@ -250,7 +250,7 @@ impl MultiTapeTransitionsGroup {
         }
         self.transitions.push(transition.clone());
         self.prod_to_transitions.entry(product.clone())
-            .or_insert_with(HashSet::new).insert(transition);
+            .or_insert_with(IndexSet::new).insert(transition);
         self.prod_priority_map.insert(product, transition_product);
         Ok(())
     }

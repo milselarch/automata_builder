@@ -13,7 +13,7 @@ from automata_builder.rule_generator import BLANK_INT
 
 """
 python -m automata_builder.tests.run_compiled_tapes_test
-python -m automata_builder.tests.run_compiled_tapes_test -n 2
+python -m automata_builder.tests.run_compiled_tapes_test -b 2
 python -m automata_builder.tests.run_compiled_tapes_test -b 6
 python -m automata_builder.tests.run_compiled_tapes_test -a -b 6
 python -m automata_builder.tests.run_compiled_tapes_test -a -b 2 \

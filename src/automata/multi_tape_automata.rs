@@ -81,7 +81,7 @@ impl MultiTapeAutomata {
         })
     }
 
-    pub fn get_prod_priority_map(&self) -> &HashMap<
+    pub fn get_prod_priority_map(&self) -> &IndexMap<
         MultiTapeProduct, TransitionPriority
     > {
         &self.transitions_group.prod_priority_map

@@ -1385,7 +1385,7 @@ class MultiTapeBuilder(object):
         return False
 
     def build_transitions_for_product(
-        self, multi_tape_prod: PyMultiTapeProduct,
+        self, source_multi_tape_product: PyMultiTapeProduct,
         product_writes_map: FrozenProductWritesMap,
         all_tape_states_per_tape: MultiTapeStatesMap,
         global_overlaps: TapeOverlaps,
@@ -1402,9 +1402,9 @@ class MultiTapeBuilder(object):
         """
         transitions_group = TapeTransitionsGroup.spawn_new(None)
         all_tape_nos = sorted(self.get_tape_nos())
-        product_terms = multi_tape_prod.get_flat_terms()
+        product_terms = source_multi_tape_product.get_flat_terms()
         # tape writes that the multi_tape_product produces as output
-        product_writes = product_writes_map[multi_tape_prod]
+        product_writes = product_writes_map[source_multi_tape_product]
         product_term_positions_set: set[int] = set()
         """
         map position_offset -> tape_no -> choice of possible tape states 
@@ -1548,7 +1548,8 @@ class MultiTapeBuilder(object):
         Get every specific combination of term states that could satisfy 
         the current product's input terms
         """
-        specific_combos = utils.cartesian_product(product_pos_combos)
+        # specific_combos = utils.cartesian_product(product_pos_combos)
+        specific_combos = list(utils.cartesian_product(product_pos_combos))
 
         for remapped_product_input_terms in specific_combos:
             current_product_writes = product_writes.to_unfrozen()
@@ -1556,6 +1557,7 @@ class MultiTapeBuilder(object):
                 terms=remapped_product_input_terms
             ).unwrap()
 
+            # TODO: remove counter_terms once representable-ness is sorted out
             counter_terms = [
                 term for term in multi_tape_prod.get_flat_terms() if
                 term.get_tape_no() == SIGNALS_TAPE and
@@ -1799,7 +1801,9 @@ class MultiTapeBuilder(object):
         self_writes_map = self.build_self_writes_map(global_overlaps)
         covering_product_writes_map = self.build_product_same_writes_map(
             overlaps=global_overlaps, current_product_path=[],
-            product_exclusions=preexisting_products_trie
+            # TODO: was there a reason to have been using
+            #  preexisting_products_trie previously?
+            product_exclusions=extended_preexisting_products_trie
         )
         product_writes_map = ProductWritesMap()
         product_writes_map.merge(extended_preexisting_products)
@@ -1824,7 +1828,7 @@ class MultiTapeBuilder(object):
             )
             """
             product_transitions_group = self.build_transitions_for_product(
-                multi_tape_prod=multi_tape_product,
+                source_multi_tape_product=multi_tape_product,
                 product_writes_map=frozen_product_writes_map,
                 all_tape_states_per_tape=all_tape_states_per_tape,
                 global_overlaps=global_overlaps,
