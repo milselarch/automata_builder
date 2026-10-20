@@ -354,6 +354,9 @@ impl MultiTapeProduct {
     pub fn get_annotation(&self) -> &String {
         &self._annotation
     }
+    pub fn set_annotation(&mut self, annotation: String) {
+        self._annotation = annotation
+    }
     pub(crate) fn _get_term(&self, index: usize) -> Option<&MultiTapeTerm> {
         self._terms.get(index)
     }

@@ -97,6 +97,9 @@ class TapeOverlapsFSM(object):
             product=multi_tape_product
         )
 
+    def search_all_nested_products(self) -> set[PyMultiTapeProduct]:
+        return self._all_products_trie.search_all_nested_products()
+
     @classmethod
     def spawn_prod_to_fsm_states(
         cls, initial_fsm_state: TapeOverlapsFSMState

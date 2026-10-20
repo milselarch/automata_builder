@@ -334,7 +334,7 @@ class MultiTapeStatePathRemap(object):
         return remap_states
 
     def remap_single_tape_terms(
-        self, terms: Sequence[A]
+        self, terms: Sequence[A], annotation: str = ''
     ) -> Result[PyMultiTapeProduct, TapeCellState]:
         sub_products: list[PyMultiTapeProduct] = []
         covered_offsets: set[int] = set()
@@ -349,7 +349,9 @@ class MultiTapeStatePathRemap(object):
             sub_products.append(sub_product)
             covered_offsets.add(term.get_position())
 
-        combined_product = PyMultiTapeProduct.merge(sub_products)
+        combined_product = PyMultiTapeProduct.merge(
+            sub_products, annotation=annotation
+        )
         return Ok(combined_product)
 
     def remap_term_to_multi_tape(
@@ -1081,7 +1083,7 @@ class MultiTapeBuilder(object):
         higher_priority_products: set[PyMultiTapeProduct] = set()
         lower_priority_products: set[PyMultiTapeProduct] = set()
         annotation = source_product.get_annotation()
-        product_path = product_exclusions.group_path_from_product(
+        product_path = MultiTapeProductTrie.group_path_from_product(
             product=source_product
         )
         for offset_group in product_path:
@@ -1371,9 +1373,22 @@ class MultiTapeBuilder(object):
         prod_multi_tape_states = set([
             MultiTapeState.from_term(term) for term in product_terms
         ])
+
+        all_products = tape_overlaps_fsm.search_all_nested_products()
+        matching_products: set[PyMultiTapeProduct] = set()
+
+        for product in all_products:
+            if product.is_satisfiable_with(multi_tape_product):
+                matching_products.add(product)
+
+        # TODO: load_matching_products doesn't match when input product
+        #   doesn't contain all the offsets present in the tree
+        #   (EXP_REDUCE_START)
+        """
         matching_products = tape_overlaps_fsm.load_matching_products(
             multi_tape_product=multi_tape_product
         )
+        """
         for matching_product in matching_products:
             fsm_states_prod_is_in = tape_overlaps_fsm[matching_product]
 
@@ -1400,6 +1415,7 @@ class MultiTapeBuilder(object):
         and then determine all fully formed term combinations that
         could satisfy the multi_tape_product
         """
+        source_annotation = source_multi_tape_product.get_annotation()
         transitions_group = TapeTransitionsGroup.spawn_new(None)
         all_tape_nos = sorted(self.get_tape_nos())
         product_terms = source_multi_tape_product.get_flat_terms()
@@ -1554,7 +1570,8 @@ class MultiTapeBuilder(object):
         for remapped_product_input_terms in specific_combos:
             current_product_writes = product_writes.to_unfrozen()
             multi_tape_prod = global_state_path_remap.remap_single_tape_terms(
-                terms=remapped_product_input_terms
+                terms=remapped_product_input_terms,
+                annotation=source_annotation
             ).unwrap()
 
             # TODO: remove counter_terms once representable-ness is sorted out
