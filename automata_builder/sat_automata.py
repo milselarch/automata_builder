@@ -6,13 +6,13 @@ import re
 from dataclasses import dataclass
 from typing import Callable, Final
 
-from automata_builder._rust import D, PyMultiTapeAutomata, PyProcessStepResult
+from automata_builder._rust import (
+    D, PyMultiTapeAutomata, PyProcessStepResult, PyMultiTapeTransitionsGroup
+)
 
 from automata_builder.rule_generator import BLANK_INT
 from automata_builder.rule_generator_multitape import (
-    MultiTapeRuleGenerator,
     MultiTapeState,
-    MultiTapeTransitionsGroup,
     TapeCellState,
     TapeNo,
     VOID_STATE,
@@ -231,8 +231,8 @@ class ThreeSATAutomataBuilder(object):
         return scan_state(clause_sat=new_clause_sat, formula_sat=formula_sat)
 
     def build_scan_transitions_group(
-        self, transitions_group: MultiTapeTransitionsGroup | None = None
-    ) -> MultiTapeTransitionsGroup:
+        self, transitions_group: PyMultiTapeTransitionsGroup | None = None
+    ) -> PyMultiTapeTransitionsGroup:
         """
         Builds the rules that spawn a scan accumulator on the rightmost
         clause block cell and move it leftwards by one cell per timestep,
@@ -244,7 +244,7 @@ class ThreeSATAutomataBuilder(object):
         if transitions_group is not None:
             _transitions_group = transitions_group
         else:
-            _transitions_group = MultiTapeTransitionsGroup(
+            _transitions_group = PyMultiTapeTransitionsGroup(
                 require_annotation=True
             )
 
@@ -319,8 +319,8 @@ class ThreeSATAutomataBuilder(object):
 
     @classmethod
     def build_verdict_transitions_group(
-        cls, transitions_group: MultiTapeTransitionsGroup | None = None
-    ) -> MultiTapeTransitionsGroup:
+        cls, transitions_group: PyMultiTapeTransitionsGroup | None = None
+    ) -> PyMultiTapeTransitionsGroup:
         """
         Builds the rules that resolve the pending verdict cell once the
         scan accumulator has run past the leftmost clause block cell,
@@ -332,7 +332,7 @@ class ThreeSATAutomataBuilder(object):
         if transitions_group is not None:
             _transitions_group = transitions_group
         else:
-            _transitions_group = MultiTapeTransitionsGroup(
+            _transitions_group = PyMultiTapeTransitionsGroup(
                 require_annotation=True
             )
 
@@ -360,7 +360,7 @@ class ThreeSATAutomataBuilder(object):
         )
         return _transitions_group
 
-    def build_transitions_group(self) -> MultiTapeTransitionsGroup:
+    def build_transitions_group(self) -> PyMultiTapeTransitionsGroup:
         transitions_group = self.build_scan_transitions_group()
         transitions_group = self.build_verdict_transitions_group(
             transitions_group=transitions_group
@@ -611,10 +611,8 @@ class ThreeSATAutomataRunner(object):
 
         self.builder = ThreeSATAutomataBuilder()
         self.transitions_group = self.builder.build_transitions_group()
-        self.state_eq_map = MultiTapeRuleGenerator.generate_equations(
-            self.transitions_group
-        )
-        self.multi_tape_automata = PyMultiTapeAutomata(self.state_eq_map)
+        self.state_eq_map = self.transitions_group.generate_equations()
+        self.multi_tape_automata = PyMultiTapeAutomata(self.transitions_group)
         self.multi_tape_automata.init_tapes(
             tape_nos=[
                 LITERALS_TAPE, ASSIGNMENTS_TAPE, CLAUSES_TAPE,

@@ -117,7 +117,7 @@ if __name__ == '__main__':
             from_counter_state(term.get_cell_state())[1]
             for term in counter_terms
         ]
-        if len(set(paused_list)) <= 1:
+        if len(set(paused_list)) > 1:
             num_pause_incomparable_transitions += 1
 
     print(f'{num_pause_incomparable_transitions=}')

@@ -362,3 +362,11 @@ impl MultiTapeTransitionsGroup {
         Ok(state_eq_map)
     }
 }
+
+impl PartialEq for MultiTapeTransitionsGroup {
+    fn eq(&self, other: &Self) -> bool {
+        self.transitions == other.transitions &&
+        self.prod_to_transitions == other.prod_to_transitions &&
+        self.prod_priority_map == other.prod_priority_map
+    }
+}

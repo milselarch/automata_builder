@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import copy
 import dataclasses
-
 import overrides
 
 from automata_builder import utils
@@ -11,8 +10,6 @@ from result import Result, Ok, Err
 from collections import defaultdict
 from typing import Sequence
 
-from automata_builder.counter_automata import SIGNALS_TAPE
-from automata_builder.counter_states import from_counter_state
 from automata_builder.multi_tape_product_trie import (
     MultiTapeProductTrie, OffsetGroupedTerms,
     offset_group_path_to_product
@@ -400,6 +397,7 @@ class TransitionOptimizations(object):
 class CompileTapesResult(object):
     transitions_group: TapeTransitionsGroup
     state_remap: MultiTapeStatePathRemap
+    num_unrepresentable_products: int
 
     def get_transition_at(self, index: int) -> tuple[PyProduct, int]:
         return self.transitions_group[index]
@@ -472,6 +470,12 @@ class CompileTapesResult(object):
         return self.state_remap.remap_term_to_multi_tape(
             input_term=input_term
         )
+
+
+@dataclasses.dataclass
+class BuildTransitionsForProductResult(object):
+    transitions_group: TapeTransitionsGroup
+    unrepresentable_products: set[PyMultiTapeProduct]
 
 
 class MultiTapeBuilder(object):
@@ -1407,7 +1411,7 @@ class MultiTapeBuilder(object):
         tape_overlaps_fsm: TapeOverlapsFSM,
         global_state_path_remap: MultiTapeStatePathRemap,
         preexisting_products: MultiTapeProductTrie
-    ) -> TapeTransitionsGroup:
+    ) -> BuildTransitionsForProductResult:
         """
         For every position that is covered by the current product,
         we want to know which states could be present in the product
@@ -1566,6 +1570,7 @@ class MultiTapeBuilder(object):
         """
         # specific_combos = utils.cartesian_product(product_pos_combos)
         specific_combos = list(utils.cartesian_product(product_pos_combos))
+        unrepresentable_products: set[PyMultiTapeProduct] = set()
 
         for remapped_product_input_terms in specific_combos:
             current_product_writes = product_writes.to_unfrozen()
@@ -1574,6 +1579,15 @@ class MultiTapeBuilder(object):
                 annotation=source_annotation
             ).unwrap()
 
+            representable = self.is_multi_tape_product_representable(
+                multi_tape_product=multi_tape_prod,
+                tape_overlaps_fsm=tape_overlaps_fsm
+            )
+            if not representable:
+                unrepresentable_products.add(multi_tape_prod)
+                continue
+
+            """
             # TODO: remove counter_terms once representable-ness is sorted out
             counter_terms = [
                 term for term in multi_tape_prod.get_flat_terms() if
@@ -1588,17 +1602,9 @@ class MultiTapeBuilder(object):
             ]
             is_pause_incomparable_transition = len(set(paused_list)) > 1
 
-            representable = self.is_multi_tape_product_representable(
-                multi_tape_product=multi_tape_prod,
-                tape_overlaps_fsm=tape_overlaps_fsm
-            )
-            if not representable:
-                # TODO: there should be a lot more unrepresentable
-                #   products than there are now
-                continue
-
             if is_pause_incomparable_transition:
                 assert not representable
+            """
 
             matching_products = preexisting_products.load_matching_products(
                 product=multi_tape_prod
@@ -1663,7 +1669,10 @@ class MultiTapeBuilder(object):
                 ban_halt_state=True
             )
 
-        return transitions_group
+        return BuildTransitionsForProductResult(
+            transitions_group=transitions_group,
+            unrepresentable_products=unrepresentable_products
+        )
 
     @classmethod
     def build_full_group_paths_satisfying(
@@ -1832,6 +1841,7 @@ class MultiTapeBuilder(object):
             product_writes_map=self_writes_map,
             overlaps=global_overlaps
         )
+        all_unrepresentable_products: set[PyMultiTapeProduct] = set()
         # input-output pairs for the final combined automata
         global_transitions_group = TapeTransitionsGroup(
             num_states=None, transitions=[]
@@ -1844,7 +1854,7 @@ class MultiTapeBuilder(object):
                 f'{multi_tape_product.get_annotation()}'
             )
             """
-            product_transitions_group = self.build_transitions_for_product(
+            build_res = self.build_transitions_for_product(
                 source_multi_tape_product=multi_tape_product,
                 product_writes_map=frozen_product_writes_map,
                 all_tape_states_per_tape=all_tape_states_per_tape,
@@ -1853,9 +1863,17 @@ class MultiTapeBuilder(object):
                 preexisting_products=extended_preexisting_products_trie,
                 tape_overlaps_fsm=tape_overlaps_fsm
             )
+
+            product_transitions_group = build_res.transitions_group
+            unrepresentable_products = build_res.unrepresentable_products
+            all_unrepresentable_products.update(unrepresentable_products)
             global_transitions_group.merge(product_transitions_group)
+
+        num_unrepresentable_products = len(all_unrepresentable_products)
+        log(f'{len(all_unrepresentable_products)=}')
 
         return CompileTapesResult(
             transitions_group=global_transitions_group,
-            state_remap=global_state_path_remap
+            state_remap=global_state_path_remap,
+            num_unrepresentable_products=num_unrepresentable_products
         )

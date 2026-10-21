@@ -1,3 +1,4 @@
+use std::cmp::PartialEq;
 use std::collections::HashSet;
 use std::hash::{DefaultHasher, Hash, Hasher};
 use indexmap::{IndexMap, IndexSet};
@@ -12,7 +13,9 @@ use crate::automata::py_terms_multitape::{
     PyMultiTapeExpression, PyMultiTapeProduct, D
 };
 use crate::automata::terms::CellState;
-use crate::automata::terms_multitape::{MultiTapeState, MultiTapeTerm, TapeNo};
+use crate::automata::terms_multitape::{
+    MultiTapeProductFactory, MultiTapeState, MultiTapeTerm, TapeNo
+};
 
 // PyO3 wrapper classes
 #[gen_stub_pyclass]
@@ -118,11 +121,15 @@ impl PyMultiTapeTransition {
     }
 
     pub fn __repr__(&self) -> String {
+        let product = MultiTapeProductFactory::new(
+            self.inner.input_terms.clone()
+        ).to_product();
+        // let py_prod = PyMultiTapeProduct::from(product);
         format!(
             "MultiTapeTransition(\
                 input_terms={}, output_state={}, annotation='{}', priority={}\
             )",
-            self.inner.input_terms.len(),
+            product.to_string(),
             format!(
                 "MultiTapeState(tape_no={}, tape_cell_state={})",
                 self.inner.output_state.tape_no,
@@ -132,6 +139,10 @@ impl PyMultiTapeTransition {
             self.inner.priority
         )
     }
+
+    pub fn __eq__(&self, other: &Self) -> bool {
+        self.inner == other.inner
+    }
 }
 
 #[gen_stub_pyclass]
@@ -139,6 +150,7 @@ impl PyMultiTapeTransition {
 pub struct PyMultiTapeTransitionsGroup {
     pub inner: MultiTapeTransitionsGroup,
 }
+
 #[gen_stub_pymethods]
 #[pymethods]
 impl PyMultiTapeTransitionsGroup {
@@ -159,6 +171,11 @@ impl PyMultiTapeTransitionsGroup {
             self.inner.require_annotation
         )
     }
+
+    pub fn __eq__(&self, other: &PyMultiTapeTransitionsGroup) -> bool {
+        self.inner == other.inner
+    }
+
     #[getter]
     pub fn transitions(&self) -> Vec<PyMultiTapeTransition> {
         self.inner

@@ -350,7 +350,6 @@ class MultiTapeProductTrie(object):
         next_exclusions = next_exclusions.without_nested_offsets(
             offsets={source_offset_group.offset}
         )
-
         return next_exclusions
 
     def match_offset_groups_for(
@@ -594,3 +593,10 @@ class MultiTapeProductTrie(object):
             all_offsets |= sub_offsets
 
         return all_offsets
+
+
+@dataclasses.dataclass
+class DirtyMultiTapeProductTrie(object):
+    # TODO: implement
+    products_trie: MultiTapeProductTrie
+    traversed_offsets: set[int] = dataclasses.field(default_factory=set)

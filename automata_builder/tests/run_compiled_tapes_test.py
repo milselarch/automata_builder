@@ -94,6 +94,8 @@ if __name__ == '__main__':
     transitions = runner.transitions_group.transitions
     print(f'num transitions = {len(transitions)}')
 
+    num_representable_products = runner.num_unrepresentable_products
+    print(f'{num_representable_products=}')
     num_pause_incomparable_transitions = 0
 
     for transition in tqdm(transitions):
@@ -118,7 +120,7 @@ if __name__ == '__main__':
             from_counter_state(term.get_cell_state())[1]
             for term in counter_terms
         ]
-        if len(set(paused_list)) <= 1:
+        if len(set(paused_list)) > 1:
             num_pause_incomparable_transitions += 1
 
     print(f'{num_pause_incomparable_transitions=}')

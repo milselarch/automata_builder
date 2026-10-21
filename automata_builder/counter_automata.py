@@ -12,7 +12,8 @@ from automata_builder.counter_states import (
     ST_REDUCE_START, DT_LEFT, ST_MID, ST_RIGHT, DT_DATA, ST_LEFT, DT_MID,
     SIGNALS_TAPE, paused_counter, active_counter, CARRY_TAPE, CT_DATA,
     CT_MID, DT_RIGHT, REDUCER_DATA, REDUCER_LEFT,
-    REDUCER_MID, REDUCER_PAUSED_DATA, REDUCER_TAPE, REDUCER_RIGHT, DATA_TAPE, from_counter_state
+    REDUCER_MID, REDUCER_PAUSED_DATA, REDUCER_TAPE, REDUCER_RIGHT,
+    DATA_TAPE, from_counter_state
 )
 from automata_builder.rule_generator import BLANK_INT
 from automata_builder.rule_generator_multitape import (
@@ -54,7 +55,7 @@ class CounterAutomataBuilder(object):
             input_terms=(
                 ST_LEFT(VOID_STATE), DT_LEFT(DT_DATA),
                 DT_MID(VOID_STATE), ST_MID(VOID_STATE),
-                # ST_RIGHT(VOID_STATE)  # <- inserted for compilability
+                # ST_RIGHT(VOID_STATE) # <- inserted for compilability
             ),
             output_tape_no=SIGNALS_TAPE, output_cell_state=ST_REDUCE_START,
             annotation='EXP_REDUCE_START'
@@ -69,7 +70,7 @@ class CounterAutomataBuilder(object):
             ),
             output_tape_no=SIGNALS_TAPE,
             output_cell_state=paused_counter(1),
-            annotation=f'COUNTER_ACC_START'
+            annotation=f'COUNTER_ACC_START',
         )
 
         # apply carry cells to counter-cells
@@ -85,7 +86,7 @@ class CounterAutomataBuilder(object):
                     ),
                     output_tape_no=SIGNALS_TAPE,
                     output_cell_state=paused_counter(right_digit),
-                    annotation=f'SHL_{mid_digit}_{right_digit}_NO_CARRY'
+                    annotation=f'SHL_{mid_digit}_{right_digit}_NO_CARRY',
                 )
                 if right_digit < max_counter_digit:
                     # carry but no overflow (right counter-digit < base)
@@ -99,14 +100,14 @@ class CounterAutomataBuilder(object):
                         input_terms=carry_no_overflow_combo,
                         output_tape_no=SIGNALS_TAPE,
                         output_cell_state=paused_counter(right_digit + 1),
-                        annotation=f'SHL_{right_digit}_INC'
+                        annotation=f'SHL_{right_digit}_INC',
                     )
                     # overflow right_digit to 0 and move left, cancel carry
                     _transitions_group.add_transition(
                         input_terms=carry_no_overflow_combo,
                         output_tape_no=CARRY_TAPE,
                         output_cell_state=VOID_STATE,
-                        annotation=f'CANCEL_CARRY'
+                        annotation=f'CANCEL_CARRY',
                     )
                 else:
                     # overflow to 0 and move left, carry stays for next digit
@@ -134,13 +135,13 @@ class CounterAutomataBuilder(object):
                 input_terms=right_overflow_combo,
                 output_tape_no=SIGNALS_TAPE,
                 output_cell_state=paused_counter(1),
-                annotation=f'RIGHT_OVERFLOW_INC'
+                annotation=f'RIGHT_OVERFLOW_INC',
             )
             _transitions_group.add_transition(
                 input_terms=right_overflow_combo,
                 output_tape_no=CARRY_TAPE,
                 output_cell_state=VOID_STATE,
-                annotation=f'RIGHT_OVERFLOW_CARRY_CANCEL'
+                annotation=f'RIGHT_OVERFLOW_CARRY_CANCEL',
             )
 
         # clear rightmost counter cell if no carry
@@ -155,7 +156,7 @@ class CounterAutomataBuilder(object):
                 ),
                 output_tape_no=SIGNALS_TAPE,
                 output_cell_state=counter_right_state,
-                annotation=f'CLEAR_RIGHTMOST_{digit}'
+                annotation=f'CLEAR_RIGHTMOST_{digit}',
             )
             # if cell next to rightmost (signals tape) counter cell
             # is reduction start marker
@@ -167,7 +168,7 @@ class CounterAutomataBuilder(object):
                 ),
                 output_tape_no=SIGNALS_TAPE,
                 output_cell_state=counter_right_state,
-                annotation=f'CLEAR_RIGHTMOST_{digit}_ST'
+                annotation=f'CLEAR_RIGHTMOST_{digit}_ST',
             )
 
         # paused counter states will transition to unpause
@@ -306,14 +307,14 @@ class CounterAutomataBuilder(object):
             input_terms=(
                 DT_LEFT(VOID_STATE),
                 DT_MID(DT_DATA),
-                ST_MID(VOID_STATE),  # <- inserted for compilability
+                ST_MID(VOID_STATE), # <- inserted for compilability
                 REDUCER_LEFT(VOID_STATE),
                 REDUCER_MID(VOID_STATE),
-                ST_RIGHT(VOID_STATE)  # <- inserted for compilability
+                ST_RIGHT(VOID_STATE) # <- inserted for compilability
             ),
             output_tape_no=REDUCER_TAPE,
             output_cell_state=REDUCER_PAUSED_DATA,
-            annotation='REDUCER_SPAWN_LEFT_END'
+            annotation='REDUCER_SPAWN_LEFT_END',
         )
         # spread the data state rightwards while overlapping with input data
         _transitions_group.add_transition(
@@ -321,34 +322,34 @@ class CounterAutomataBuilder(object):
                 REDUCER_LEFT(REDUCER_DATA),
                 DT_MID(DT_DATA),
                 REDUCER_MID(VOID_STATE),
-                ST_RIGHT(VOID_STATE)  # <- inserted for compilability
+                ST_RIGHT(VOID_STATE) # <- inserted for compilability
             ),
             output_tape_no=REDUCER_TAPE,
             output_cell_state=REDUCER_PAUSED_DATA,
-            annotation='REDUCER_DATA_SPREAD_RIGHT'
+            annotation='REDUCER_DATA_SPREAD_RIGHT',
         )
         # spread the data state leftwards (regardless of input data overlap)
         _transitions_group.add_transition(
             input_terms=(
-                REDUCER_LEFT(VOID_STATE),  # <- inserted for compilability rs
+                REDUCER_LEFT(VOID_STATE), # <- inserted for compilability rs
                 REDUCER_MID(VOID_STATE),
                 REDUCER_RIGHT(REDUCER_DATA),
             ),
             output_tape_no=REDUCER_TAPE,
             output_cell_state=REDUCER_PAUSED_DATA,
-            annotation='REDUCER_DATA_SPREAD_LEFT'
+            annotation='REDUCER_DATA_SPREAD_LEFT',
         )
         # convert the paused half-data tape state to an active state
         _transitions_group.add_transition(
             input_terms=(
-                DT_MID(DT_DATA),  # <- inserted for compilability
-                ST_MID(VOID_STATE),  # <- inserted for compilability
-                ST_RIGHT(VOID_STATE),  # <- inserted for compilability
+                DT_MID(DT_DATA), # <- inserted for compilability
+                ST_MID(VOID_STATE), # <- inserted for compilability
+                ST_RIGHT(VOID_STATE), # <- inserted for compilability
                 REDUCER_MID(REDUCER_PAUSED_DATA),
             ),
             output_tape_no=REDUCER_TAPE,
             output_cell_state=REDUCER_DATA,
-            annotation=f'REDUCER_PAUSE_TO_UNPAUSE'
+            annotation=f'REDUCER_PAUSE_TO_UNPAUSE',
         )
         return _transitions_group
 
