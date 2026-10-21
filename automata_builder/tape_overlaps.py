@@ -21,7 +21,7 @@ class MultiTapeState(object):
     """
     This represents the state of a cell in a specific tape of
     a multi-tape automaton
-    Also this is technically the same as D, but without term position
+    Also, this is tech nically the same as D, but without term position
     """
     tape_no: TapeNo
     tape_cell_state: TapeCellState

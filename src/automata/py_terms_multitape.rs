@@ -1,7 +1,6 @@
 use std::cmp::PartialEq;
 use std::collections::{HashMap, HashSet};
-use std::hash::{Hash, Hasher};
-use std::collections::hash_map::DefaultHasher;
+use std::hash::{Hash};
 
 use pyo3::{pyclass, pymethods, PyResult};
 use pyo3::exceptions::{PyIndexError, PyTypeError, PyValueError};
@@ -342,6 +341,9 @@ impl PyMultiTapeProduct {
         let product = MultiTapeProductFactory::new(rust_terms.clone()).to_product();
         Self::new_from_product(product)
     }
+    pub fn from(product: MultiTapeProduct) -> Self {
+        Self::new_from_product(product)
+    }
     pub fn new_from_product(product: MultiTapeProduct) -> Self {
         Self { product }
     }
@@ -390,16 +392,18 @@ impl PyMultiTapeProduct {
         self.product.is_satisfiable_with(&other.product)
     }
     #[classmethod]
+    #[pyo3(signature=(products, annotation=String::new()))]
     pub fn merge(
-        _cls: &Bound<'_, PyType>, products: Vec<PyRef<PyMultiTapeProduct>>
+        _cls: &Bound<'_, PyType>, products: Vec<PyRef<PyMultiTapeProduct>>,
+        annotation: String
     ) -> Self {
         let rs_products = products.into_iter().map(|product_ref| {
             return product_ref.product.clone();
         }).collect();
 
-        PyMultiTapeProduct::new_from_product(
-            MultiTapeProduct::merge_products(rs_products)
-        )
+        let mut merged_product = MultiTapeProduct::merge_products(rs_products);
+        merged_product.set_annotation(annotation);
+        PyMultiTapeProduct::new_from_product(merged_product)
     }
 
     // TODO: expose method to merge multi products

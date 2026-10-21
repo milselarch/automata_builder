@@ -7,12 +7,13 @@ from tqdm import tqdm
 from automata_builder.compiled_counter_automata import (
     CompiledCounterAutomataRunner, CounterAutomataSettings
 )
-from automata_builder.counter_automata import SIGNALS_TAPE, from_counter_state
+from automata_builder.counter_automata import SIGNALS_TAPE
+from automata_builder.counter_states import from_counter_state
 from automata_builder.rule_generator import BLANK_INT
 
 """
 python -m automata_builder.tests.run_compiled_tapes_test
-python -m automata_builder.tests.run_compiled_tapes_test -n 2
+python -m automata_builder.tests.run_compiled_tapes_test -b 2
 python -m automata_builder.tests.run_compiled_tapes_test -b 6
 python -m automata_builder.tests.run_compiled_tapes_test -a -b 6
 python -m automata_builder.tests.run_compiled_tapes_test -a -b 2 \
@@ -93,6 +94,8 @@ if __name__ == '__main__':
     transitions = runner.transitions_group.transitions
     print(f'num transitions = {len(transitions)}')
 
+    num_representable_products = runner.num_unrepresentable_products
+    print(f'{num_representable_products=}')
     num_pause_incomparable_transitions = 0
 
     for transition in tqdm(transitions):
@@ -117,7 +120,7 @@ if __name__ == '__main__':
             from_counter_state(term.get_cell_state())[1]
             for term in counter_terms
         ]
-        if len(set(paused_list)) <= 1:
+        if len(set(paused_list)) > 1:
             num_pause_incomparable_transitions += 1
 
     print(f'{num_pause_incomparable_transitions=}')

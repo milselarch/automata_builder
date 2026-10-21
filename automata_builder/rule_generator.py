@@ -227,70 +227,6 @@ class RuleGenerator(object):
         return result.to_py_expression()
 
     @classmethod
-    def to_ruleset(
-        cls, transitions_group: TapeTransitionsGroup,
-        require_consistent_flat_term_offsets: bool = True,
-        require_annotations: bool = True,
-        pad_lengths: bool = True,
-        verbose: bool = False
-    ) -> AutomataRuleSet:
-        equations = cls.generate_equations(
-            transitions_group, pad_product_length=pad_lengths,
-            require_annotations=require_annotations,
-            pad_expr_length=pad_lengths, verbose=verbose
-        )
-        max_flat_terms = 0
-        base_num_products = 0
-        base_terms_per_product = 0
-        base_flat_term_offsets = []
-
-        for state in sorted(equations.keys()):
-            assert isinstance(equations[state], PyExpression)
-            flat_terms = equations[state].get_flat_terms()
-            flat_term_offsets = [term.get_position() for term in flat_terms]
-
-            if not base_flat_term_offsets:
-                base_flat_term_offsets = flat_term_offsets
-            elif require_consistent_flat_term_offsets:
-                assert flat_term_offsets == base_flat_term_offsets, (
-                    f'Inconsistent flat term offsets for state {state}: '
-                    f'{flat_term_offsets} != {base_flat_term_offsets}'
-                )
-
-            assert isinstance(flat_terms, list)
-            num_flat_terms = len(flat_terms)
-            if pad_lengths and max_flat_terms != 0:
-                assert num_flat_terms == max_flat_terms
-
-            base_num_products = len(equations[state])
-            max_flat_terms = max(max_flat_terms, num_flat_terms)
-
-            for product in equations[state]:
-                assert isinstance(product, PyProduct)
-                base_terms_per_product = product.get_num_terms()
-                """
-                if require_annotations:
-                    assert product.get_annotation()
-                """
-                for term in product:
-                    assert isinstance(term, A)
-
-        assert max_flat_terms > 0
-
-        num_states = transitions_group.num_states
-        if num_states is None:
-            num_states = max(transitions_group.get_all_states())
-
-        return AutomataRuleSet(
-            num_states=num_states,
-            flat_term_offsets=tuple(base_flat_term_offsets),
-            expansion_map=equations,
-            num_flat_terms=max_flat_terms,
-            base_num_products=base_num_products,
-            base_terms_per_product=base_terms_per_product
-        )
-
-    @classmethod
     def generate_equations(
         cls, transitions_group: TapeTransitionsGroup,
         pad_product_length: bool = True,
@@ -404,6 +340,70 @@ class RuleGenerator(object):
                 assert state in state_eq_terms_map, err
 
         return state_eq_map
+
+    @classmethod
+    def to_ruleset(
+        cls, transitions_group: TapeTransitionsGroup,
+        require_consistent_flat_term_offsets: bool = True,
+        require_annotations: bool = True,
+        pad_lengths: bool = True,
+        verbose: bool = False
+    ) -> AutomataRuleSet:
+        equations = cls.generate_equations(
+            transitions_group, pad_product_length=pad_lengths,
+            require_annotations=require_annotations,
+            pad_expr_length=pad_lengths, verbose=verbose
+        )
+        max_flat_terms = 0
+        base_num_products = 0
+        base_terms_per_product = 0
+        base_flat_term_offsets = []
+
+        for state in sorted(equations.keys()):
+            assert isinstance(equations[state], PyExpression)
+            flat_terms = equations[state].get_flat_terms()
+            flat_term_offsets = [term.get_position() for term in flat_terms]
+
+            if not base_flat_term_offsets:
+                base_flat_term_offsets = flat_term_offsets
+            elif require_consistent_flat_term_offsets:
+                assert flat_term_offsets == base_flat_term_offsets, (
+                    f'Inconsistent flat term offsets for state {state}: '
+                    f'{flat_term_offsets} != {base_flat_term_offsets}'
+                )
+
+            assert isinstance(flat_terms, list)
+            num_flat_terms = len(flat_terms)
+            if pad_lengths and max_flat_terms != 0:
+                assert num_flat_terms == max_flat_terms
+
+            base_num_products = len(equations[state])
+            max_flat_terms = max(max_flat_terms, num_flat_terms)
+
+            for product in equations[state]:
+                assert isinstance(product, PyProduct)
+                base_terms_per_product = product.get_num_terms()
+                """
+                if require_annotations:
+                    assert product.get_annotation()
+                """
+                for term in product:
+                    assert isinstance(term, A)
+
+        assert max_flat_terms > 0
+
+        num_states = transitions_group.num_states
+        if num_states is None:
+            num_states = max(transitions_group.get_all_states())
+
+        return AutomataRuleSet(
+            num_states=num_states,
+            flat_term_offsets=tuple(base_flat_term_offsets),
+            expansion_map=equations,
+            num_flat_terms=max_flat_terms,
+            base_num_products=base_num_products,
+            base_terms_per_product=base_terms_per_product
+        )
 
 
 if __name__ == "__main__":

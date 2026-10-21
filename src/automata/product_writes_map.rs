@@ -4,11 +4,9 @@ use std::fmt;
 use indexmap::IndexMap;
 use indexmap::IndexSet;
 use crate::automata::rule_generator::VOID_STATE;
-use crate::automata::tape_overlaps::{MultiTapeState, TapeOverlaps};
+use crate::automata::tape_overlaps::{TapeOverlaps};
 use crate::automata::terms::CellState;
-use crate::automata::terms_multitape::{
-    AbstractMultiTapeExpression, MultiTapeProduct, MultiTapeTerm, TapeNo
-};
+use crate::automata::terms_multitape::{AbstractMultiTapeExpression, MultiTapeProduct, MultiTapeState, MultiTapeTerm, TapeNo};
 
 /// Writes performed by a single product: `tape_no -> output tape cell state`.
 /// `BTreeMap` so iteration is deterministic (ascending `TapeNo`).

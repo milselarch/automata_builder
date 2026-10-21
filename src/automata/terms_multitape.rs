@@ -1,14 +1,49 @@
 use rayon::iter::ParallelIterator;
 use std::cmp::Ordering;
 use std::collections::{HashMap, HashSet};
+use std::fmt;
 use std::hash::{Hash, Hasher};
 use std::ops::{BitOr, Mul};
 use indexmap::IndexSet;
 use rayon::iter::IntoParallelRefIterator;
-use crate::automata::terms::{clip_after_space, CellState, ExprDebugInfo, ExprPosition};
+use serde::{Deserialize, Serialize};
+use crate::automata::terms::{
+    clip_after_space, CellState, ExprDebugInfo, ExprPosition
+};
 
 pub type TapeNo = u16;
 pub type MultiTapeCellState = (TapeNo, CellState);
+
+#[derive(
+    Debug, Clone, Copy, Eq, PartialEq, Ord, PartialOrd,
+    Hash, Serialize, Deserialize
+)]
+pub struct MultiTapeState {
+    pub tape_no: TapeNo,
+    pub tape_cell_state: CellState,
+}
+
+impl MultiTapeState {
+    pub fn new(tape_no: TapeNo, tape_cell_state: CellState) -> Self {
+        Self {
+            tape_no,
+            tape_cell_state,
+        }
+    }
+    pub fn from_term(term: MultiTapeTerm) -> Self {
+        let (tape_no, tape_cell_state) = term.state;
+        Self::new(tape_no, tape_cell_state)
+    }
+    pub fn to_multi_tape_cell_state(&self) -> MultiTapeCellState {
+        (self.tape_no, self.tape_cell_state)
+    }
+}
+
+impl fmt::Display for MultiTapeState {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "MultiTapeState({}, {})", self.tape_no, self.tape_cell_state)
+    }
+}
 
 pub trait AbstractMultiTapeExpression: Mul + BitOr + Eq + Sized {
     fn copy(&self) -> Self;
@@ -28,7 +63,7 @@ pub trait AbstractMultiTapeExpression: Mul + BitOr + Eq + Sized {
     fn _assign_indexes_as_base(&mut self);
 }
 
-#[derive(Clone, Debug, Eq)]
+#[derive(Clone, Debug, Eq, Serialize, Deserialize)]
 pub struct MultiTapeTerm {
     // position within the cellular automata tape
     pub (crate) position: i64,
@@ -319,6 +354,9 @@ impl MultiTapeProduct {
     pub fn get_annotation(&self) -> &String {
         &self._annotation
     }
+    pub fn set_annotation(&mut self, annotation: String) {
+        self._annotation = annotation
+    }
     pub(crate) fn _get_term(&self, index: usize) -> Option<&MultiTapeTerm> {
         self._terms.get(index)
     }
@@ -408,12 +446,15 @@ impl MultiTapeProduct {
                 &(position, tape_no)
             ).unwrap_or(&cell_state);
 
-            if (existing_write != cell_state) {
+            if existing_write != cell_state {
                 return false
             }
         }
 
         true
+    }
+    pub fn to_string(&self) -> String {
+        self._to_string(&*MultiTapeTerm::_get_name())
     }
 }
 
@@ -592,10 +633,10 @@ impl AbstractMultiTapeExpression for MultiTapeProduct {
     fn to_expression(&self) -> MultiTapeExpression {
         MultiTapeExpression::new(vec![self.copy()])
     }
-    fn _to_string(&self, name: &str) -> String {
+    fn _to_string(&self, term_name: &str) -> String {
         self._terms
             .iter()
-            .map(|term| term._to_string(name))
+            .map(|term| term._to_string(term_name))
             .collect::<Vec<String>>()
             .join("*")
     }

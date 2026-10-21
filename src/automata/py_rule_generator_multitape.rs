@@ -1,5 +1,3 @@
-use indexmap::IndexMap;
-
 use pyo3::exceptions::{PyIndexError, PyTypeError, PyValueError};
 use pyo3::prelude::*;
 use pyo3::types::PyDict;
@@ -7,7 +5,7 @@ use pyo3::{pyclass, pymethods, PyResult};
 use pyo3_stub_gen::define_stub_info_gatherer;
 use pyo3_stub_gen::derive::{gen_stub_pyclass, gen_stub_pymethods};
 use crate::automata::multi_tape_automata::{
-    MultiTapeAutomata, ProcessStepResult, WriteRecord
+    ProcessStepResult, WriteRecord
 };
 use crate::automata::py_terms::py_hash;
 use crate::automata::py_terms_multitape::{
@@ -15,18 +13,19 @@ use crate::automata::py_terms_multitape::{
 };
 use crate::automata::renderer::RenderFrame;
 use crate::automata::rule_generator::{BidirectionalTape, TapeError};
-use crate::automata::rule_generator_multitape::{AutomataError, BiDirectionalMultiTape, MultiTapeDataRegion};
-use crate::automata::tape_overlaps::MultiTapeState;
+use crate::automata::rule_generator_multitape::{
+    AutomataError, BiDirectionalMultiTape, MultiTapeDataRegion
+};
 use crate::automata::terms::CellState;
 use crate::automata::terms_multitape::{
-    AbstractMultiTapeExpression, MultiTapeExpression, TapeNo,
+    AbstractMultiTapeExpression, MultiTapeExpression, MultiTapeState, TapeNo
 };
 
 /// `BLANK_INT` sentinel used by the python side to mean
 /// "derive the cell width automatically".
 pub const BLANK_INT: i64 = -1;
 
-fn automata_err(err: AutomataError) -> PyErr {
+pub(crate) fn automata_err(err: AutomataError) -> PyErr {
     PyValueError::new_err(err.to_string())
 }
 fn tape_err(err: TapeError) -> PyErr {
@@ -34,7 +33,7 @@ fn tape_err(err: TapeError) -> PyErr {
 }
 
 /// `cell_width == BLANK_INT` -> `None` (auto-derive from the largest state)
-fn to_cell_width(cell_width: i64) -> PyResult<Option<usize>> {
+pub(crate) fn to_cell_width(cell_width: i64) -> PyResult<Option<usize>> {
     if cell_width == BLANK_INT {
         return Ok(None);
     }
@@ -562,202 +561,6 @@ impl PyProcessStepResult {
         format!(
             "ProcessStepResult(active_writes={})",
             self.result.active_writes.len()
-        )
-    }
-}
-
-#[gen_stub_pyclass]
-#[pyclass]
-pub struct PyMultiTapeAutomata {
-    automata: MultiTapeAutomata,
-}
-impl PyMultiTapeAutomata {
-    pub fn get_automata(&self) -> &MultiTapeAutomata {
-        &self.automata
-    }
-    pub fn get_automata_mut(&mut self) -> &mut MultiTapeAutomata {
-        &mut self.automata
-    }
-}
-
-#[gen_stub_pymethods]
-#[pymethods]
-impl PyMultiTapeAutomata {
-    /// `state_eq_map`: `dict[MultiTapeState, PyMultiTapeExpression]`
-    #[new]
-    pub fn new(state_eq_map: &Bound<'_, PyDict>) -> PyResult<Self> {
-        let mut rs_state_eq_map: IndexMap<MultiTapeState, MultiTapeExpression> =
-            IndexMap::with_capacity(state_eq_map.len());
-
-        for (key, value) in state_eq_map.iter() {
-            let multi_tape_state = extract_multi_tape_state(&key)?;
-            let expression = extract_expression(&value)?;
-            rs_state_eq_map.insert(multi_tape_state, expression);
-        }
-
-        let automata = MultiTapeAutomata::new(rs_state_eq_map).map_err(automata_err)?;
-        Ok(PyMultiTapeAutomata { automata })
-    }
-
-    /// Python `__getitem__` -> snapshot of the requested tape.
-    fn __getitem__(&self, tape_no: TapeNo) -> PyResult<PyBidirectionalTape> {
-        match self.automata.get_tape(tape_no) {
-            Some(tape) => Ok(PyBidirectionalTape::from_tape(tape.clone())),
-            None => Err(PyIndexError::new_err(format!("No tape {}", tape_no))),
-        }
-    }
-
-    pub fn get_tape(&self, tape_no: TapeNo) -> Option<PyBidirectionalTape> {
-        self.automata
-            .get_tape(tape_no)
-            .map(|tape| PyBidirectionalTape::from_tape(tape.clone()))
-    }
-
-    pub fn get_tape_nos(&self) -> Vec<TapeNo> {
-        self.automata.get_tape_nos()
-    }
-
-    pub fn get_multi_tape(&self) -> PyBiDirectionalMultiTape {
-        PyBiDirectionalMultiTape::from_multi_tape(self.automata.get_multi_tape().clone())
-    }
-
-    #[getter]
-    pub fn leftmost_extent(&self) -> i64 {
-        self.automata.leftmost_extent()
-    }
-    #[getter]
-    pub fn rightmost_extent(&self) -> i64 {
-        self.automata.rightmost_extent()
-    }
-    pub fn get_rule_range(&self) -> (i64, i64) {
-        self.automata.get_rule_range()
-    }
-    /// Inclusive `(min_pos, max_pos)` range of allocated cells across all tapes.
-    pub fn get_range(&self) -> (i64, i64) {
-        self.automata.get_multi_tape().get_range()
-    }
-
-    /// `product -> {tape_no: output tape cell state}` as a list of pairs
-    /// (products are not hashable-friendly dict keys across the FFI boundary
-    /// in every python version, so a list of pairs is returned instead).
-    pub fn get_prod_to_state_map(
-        &self,
-    ) -> Vec<(PyMultiTapeProduct, std::collections::BTreeMap<TapeNo, CellState>)> {
-        self.automata
-            .get_prod_to_state_map()
-            .iter()
-            .map(|(product, writes)| {
-                (PyMultiTapeProduct::from_product(product.copy()), writes.clone())
-            })
-            .collect()
-    }
-
-    pub fn get_state_eq_map(&self) -> Vec<(PyMultiTapeState, PyMultiTapeExpression)> {
-        self.automata
-            .get_state_eq_map()
-            .into_iter()
-            .map(|(state, expr)| {
-                (PyMultiTapeState::from_state(state), PyMultiTapeExpression::new(expr))
-            })
-            .collect()
-    }
-
-    pub fn get_num_products(&self) -> usize {
-        self.automata.get_prod_to_state_map().len()
-    }
-
-    #[pyo3(signature = (tape_nos))]
-    pub fn init_tapes(&mut self, tape_nos: Vec<TapeNo>) -> PyResult<()> {
-        self.automata.init_tapes(&tape_nos).map_err(automata_err)
-    }
-
-    /// Populate the automata cells from `position` to `end_position`
-    /// (inclusive) using `data` as a repeating pattern.
-    #[pyo3(signature = (position, end_position, data))]
-    pub fn write_region(
-        &mut self,
-        position: i64,
-        end_position: i64,
-        data: Vec<Bound<'_, PyAny>>,
-    ) -> PyResult<()> {
-        let mut states: Vec<MultiTapeState> = Vec::with_capacity(data.len());
-        for item in data.iter() {
-            states.push(extract_multi_tape_state(item)?);
-        }
-        self.automata
-            .write_region(position, end_position, &states)
-            .map_err(automata_err)
-    }
-
-    pub fn write_cell(
-        &mut self, tape_no: TapeNo, position: i64, value: CellState,
-    ) -> PyResult<()> {
-        let state = MultiTapeState::new(tape_no, value);
-        self.automata
-            .write_region(position, position, &[state])
-            .map_err(automata_err)
-    }
-
-    pub fn read_cell(&self, tape_no: TapeNo, position: i64) -> CellState {
-        self.automata
-            .get_tape(tape_no)
-            .map(|tape| tape.read(position))
-            .unwrap_or(crate::automata::rule_generator::VOID_STATE)
-    }
-
-    pub fn get_minimal_data_region(&mut self) -> PyMultiTapeDataRegion {
-        let minimal_region = self.automata.get_multi_tape().get_minimal_data_region();
-        PyMultiTapeDataRegion::from_region(minimal_region)
-    }
-
-    /// Minimal contiguous region of the tape containing all non-void states.
-    pub fn get_minimal_data_region_for(&self, tape_no: TapeNo) -> Vec<CellState> {
-        match self.automata.get_tape(tape_no) {
-            Some(tape) => tape.clone().get_minimal_data_region(),
-            None => vec![],
-        }
-    }
-
-    #[pyo3(signature = (start_position, length, cell_width = BLANK_INT))]
-    pub fn render_tapes(
-        &self, start_position: i64, length: usize, cell_width: i64,
-    ) -> PyResult<PyRenderFrame> {
-        let cell_width = to_cell_width(cell_width)?;
-        let frame = self
-            .automata
-            .render_tapes(start_position, length, cell_width)
-            .map_err(automata_err)?;
-        Ok(PyRenderFrame::from_frame(frame))
-    }
-
-    pub fn product_satisfies(
-        &self, product: PyMultiTapeProduct, position: i64,
-    ) -> bool {
-        self.automata.product_satisfies(&product.product, position)
-    }
-
-    /// Compute the next step without mutating the automata.
-    #[pyo3(signature = (log_active_writes = true))]
-    pub fn process_step(&self, log_active_writes: bool) -> PyResult<PyProcessStepResult> {
-        let result = self.automata.process_step(log_active_writes).map_err(automata_err)?;
-        Ok(PyProcessStepResult::from_result(result))
-    }
-
-    /// Advance the automata a single timestep.
-    #[pyo3(signature = (verbose = false))]
-    pub fn step(&mut self, verbose: bool) -> PyResult<PyProcessStepResult> {
-        let result = self.automata.step(verbose).map_err(automata_err)?;
-        Ok(PyProcessStepResult::from_result(result))
-    }
-
-    fn __repr__(&self) -> String {
-        let (leftmost, rightmost) = self.automata.get_rule_range();
-        format!(
-            "MultiTapeAutomata(tape_nos={:?}, rule_range=({}, {}), num_products={})",
-            self.automata.get_tape_nos(),
-            leftmost,
-            rightmost,
-            self.automata.get_prod_to_state_map().len()
         )
     }
 }

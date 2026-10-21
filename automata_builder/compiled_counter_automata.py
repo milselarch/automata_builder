@@ -103,12 +103,16 @@ class CompiledCounterAutomataRunner(object):
         )
         self.assert_tapes_consistency()
 
-    def count_unique_states(self):
-        return self.compile_result.count_unique_states()
+    @property
+    def num_unrepresentable_products(self) -> int:
+        return self.compile_result.num_unrepresentable_products
 
     @property
     def transitions_group(self):
         return self.compile_result.transitions_group
+
+    def count_unique_states(self):
+        return self.compile_result.count_unique_states()
 
     def read_multi_tape_signal_value(self) -> int:
         return self.multi_tape_runner.read_signals_tape_value()

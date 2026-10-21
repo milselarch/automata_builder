@@ -1,8 +1,8 @@
 import unittest
 
+from automata_builder.counter_states import build_st_counter_state
 from automata_builder.counter_automata import (
     active_counter,
-    build_st_counter_state,
     from_counter_state,
     paused_counter,
 )

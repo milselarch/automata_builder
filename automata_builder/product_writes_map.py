@@ -245,14 +245,15 @@ class ProductWritesMap(Freezable):
                 f"Product {product} is not in {self._prod_to_state_map}"
             )
 
+        """
         if product.get_annotation() == 'EXP_REDUCE_START':
             print("TOMATO")
-
+        """
         has_transition_to_unsatisfiability = False
         has_input_terms_along_output_offset = False
         product_writes = self._prod_to_state_map[product]
-
         input_terms = product.get_flat_terms()
+
         for input_term in input_terms:
             input_multi_tape_state = MultiTapeState.from_term(input_term)
             input_term_attrs = state_attributes_map[input_multi_tape_state]
@@ -317,8 +318,10 @@ class ProductWritesMap(Freezable):
                 in_out_neq
             )
 
+        """
         if (1, 8) in product_writes.items():
             print("POTATO")
+        """
 
         if not has_input_terms_along_output_offset:
             """
@@ -435,7 +438,7 @@ class ProductWritesMap(Freezable):
                     """
                     source_state_written = True
 
-            # whether product writes to same tape as target_state
+            # whether product writes to same tape as target_state,
             # and the written TapeCellState is different from target_state
             writes_away_from_target_state = False
             # whether the product transitions cells
@@ -735,7 +738,7 @@ class ProductWritesMap(Freezable):
     ) -> set[TapeCellState]:
         """
         Get all the states that the source_state will transition to
-        (i.e. what the state could be at the same position after a timestep)
+        (i.e., what the state could be at the same position after a timestep)
         :param source_state:
         :param tape_overlaps:
         :return:
@@ -839,6 +842,8 @@ class ProductWritesMap(Freezable):
             transitioned_states.add(source_tape_cell_state)
 
         if source_tape_cell_state not in transitioned_states:
+            # this means that all instances of source_state transition
+            # to some other tape cell state after the current time step
             print("NO PATH TO SAME STATE", source_state, transitioned_states)
             pass
 

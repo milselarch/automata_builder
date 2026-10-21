@@ -5,11 +5,8 @@ use std::fmt;
 use crate::automata::product_writes_map::ProductWritesError;
 use crate::automata::renderer::{RenderFrame, TapeRenderFrame};
 use crate::automata::rule_generator::{BidirectionalTape, TapeError, VOID_STATE};
-use crate::automata::tape_overlaps::MultiTapeState;
 use crate::automata::terms::CellState;
-use crate::automata::terms_multitape::{
-    MultiTapeProduct, MultiTapeTerm, TapeNo
-};
+use crate::automata::terms_multitape::{MultiTapeProduct, MultiTapeState, MultiTapeTerm, TapeNo};
 
 #[derive(Debug, Clone, Default)]
 pub struct MultiTapeDataRegion {
@@ -271,19 +268,22 @@ pub enum AutomataError {
     Writes(ProductWritesError),
     /// A product made purely out of void states would make the simulation
     /// range infinite, so it is rejected up-front.
-    VoidProduct { product: String, output: MultiTapeState },
+    VoidProduct { product: MultiTapeProduct, output: MultiTapeState },
     /// `require_annotations` was set, but the product carried no annotation.
-    EmptyAnnotation { product: String },
+    EmptyAnnotation { product: MultiTapeProduct },
     /// Two different products want to write different states to the same cell.
     ConflictingWrite {
         tape_no: TapeNo,
         position: i64,
-        product: String,
+        product: MultiTapeProduct,
         annotation: String,
         previous: CellState,
         incoming: CellState,
         previous_annotations: Vec<String>,
     },
+    NoProductsForState {
+        state: MultiTapeState
+    }
 }
 
 impl From<TapeError> for AutomataError {
@@ -304,25 +304,31 @@ impl fmt::Display for AutomataError {
             AutomataError::Writes(err) => write!(f, "{}", err),
             AutomataError::VoidProduct { product, output } => write!(
                 f,
-                "Product {} transitions void states to non-void state {}, \
+                "Product {:?} transitions void states to non-void state {}, \
                  which is not allowed since it would make the simulation \
                  range infinite",
                 product, output
             ),
             AutomataError::EmptyAnnotation { product } => {
-                write!(f, "EMPTY ANNOTATION product={}", product)
+                write!(f, "EMPTY ANNOTATION product={:?}", product)
             }
             AutomataError::ConflictingWrite {
                 tape_no, position, product, annotation,
                 previous, incoming, previous_annotations,
             } => write!(
                 f,
-                "Conflicting writes to tape {} from matching_product={} \
+                "Conflicting writes to tape {} from matching_product={:?} \
                  annotation={:?} at position {}: {} vs {} \
                  (prev_annotations={:?})",
                 tape_no, product, annotation, position,
                 previous, incoming, previous_annotations
             ),
+            AutomataError::NoProductsForState { state } => {
+                write!(
+                    f, "Output state {:?} has no products in its expression",
+                    state
+                )
+            }
         }
     }
 }
