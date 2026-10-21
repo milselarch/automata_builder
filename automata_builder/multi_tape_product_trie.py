@@ -597,6 +597,328 @@ class MultiTapeProductTrie(object):
 
 @dataclasses.dataclass
 class DirtyMultiTapeProductTrie(object):
-    # TODO: implement
+    """
+    A wrapper around MultiTapeProductTrie that lazily tracks offsets
+    that have already been traversed via ``advance_exclusions``.
+
+    Instead of eagerly calling ``without_nested_offsets`` after every
+    advance (which recursively rebuilds the whole trie), the set of
+    traversed offsets is accumulated and used to skip irrelevant
+    groups during matching/iteration.  Call ``clean()`` when a real
+    ``MultiTapeProductTrie`` without traversed-offset groups is needed.
+    """
     products_trie: MultiTapeProductTrie
     traversed_offsets: set[int] = dataclasses.field(default_factory=set)
+
+    # ------------------------------------------------------------------
+    # factory helpers
+    # ------------------------------------------------------------------
+
+    @classmethod
+    def spawn_root(cls) -> DirtyMultiTapeProductTrie:
+        return cls(products_trie=MultiTapeProductTrie.spawn_root())
+
+    @classmethod
+    def from_trie(
+        cls,
+        products_trie: MultiTapeProductTrie,
+        traversed_offsets: set[int] | None = None,
+    ) -> DirtyMultiTapeProductTrie:
+        return cls(
+            products_trie=products_trie,
+            traversed_offsets=(
+                traversed_offsets.copy()
+                if traversed_offsets is not None
+                else set()
+            ),
+        )
+
+    def copy(self) -> DirtyMultiTapeProductTrie:
+        return DirtyMultiTapeProductTrie(
+            products_trie=self.products_trie.copy(),
+            traversed_offsets=self.traversed_offsets.copy(),
+        )
+
+    # ------------------------------------------------------------------
+    # passthrough properties
+    # ------------------------------------------------------------------
+
+    def __repr__(self) -> str:
+        return (
+            self.__class__.__name__
+            + f'(trie={self.products_trie!r},'
+            + f' traversed={self.traversed_offsets})'
+        )
+
+    def __bool__(self) -> bool:
+        return self.has_products
+
+    @property
+    def offset(self) -> int | None:
+        return self.products_trie.offset
+
+    @property
+    def end_products(self) -> set[PyMultiTapeProduct]:
+        return self.products_trie.end_products
+
+    @property
+    def next_groups(self):
+        """Underlying next_groups (unfiltered – use with care)."""
+        return self.products_trie.next_groups
+
+    @property
+    def has_end_product(self) -> bool:
+        return self.products_trie.has_end_product
+
+    @property
+    def has_nested_products(self) -> bool:
+        for offset_group in self.products_trie.next_groups:
+            if offset_group.offset in self.traversed_offsets:
+                continue
+
+            return True
+
+        return False
+
+    @property
+    def has_products(self) -> bool:
+        return self.has_end_product or self.has_nested_products
+
+    # ------------------------------------------------------------------
+    # filtered iteration helpers
+    # ------------------------------------------------------------------
+
+    def _iter_active_groups(self):
+        """Yield (offset_group, sub_trie) pairs whose offset has not
+        been traversed yet."""
+        for offset_group, sub_trie in self.products_trie.next_groups.items():
+            if offset_group.offset in self.traversed_offsets:
+                continue
+            yield offset_group, sub_trie
+
+    def clean(self) -> MultiTapeProductTrie:
+        """Return a real ``MultiTapeProductTrie`` with all traversed
+        offset groups recursively removed."""
+        return self.products_trie.without_nested_offsets(
+            offsets=self.traversed_offsets
+        )
+
+    # ------------------------------------------------------------------
+    # matching / navigation
+    # ------------------------------------------------------------------
+
+    def match_offset_groups_for(
+        self,
+        target_group: OffsetGroupedTerms,
+        insert_blank: bool = True,
+    ) -> set[OffsetGroupedTerms]:
+        matching_groups: set[OffsetGroupedTerms] = set()
+        for offset_group, _ in self._iter_active_groups():
+            if offset_group.satisfiable_with(target_group):
+                matching_groups.add(offset_group)
+        if insert_blank and not matching_groups:
+            return {OffsetGroupedTerms.blank()}
+        return matching_groups
+
+    def next(
+        self, group: OffsetGroupedTerms
+    ) -> DirtyMultiTapeProductTrie:
+        if group not in self.products_trie.next_groups:
+            return DirtyMultiTapeProductTrie(
+                products_trie=MultiTapeProductTrie(),
+                traversed_offsets=self.traversed_offsets.copy(),
+            )
+
+        return DirtyMultiTapeProductTrie(
+            products_trie=self.products_trie.next_groups[group],
+            traversed_offsets=self.traversed_offsets.copy(),
+        )
+
+    # ------------------------------------------------------------------
+    # insertion
+    # ------------------------------------------------------------------
+
+    def insert(
+        self,
+        offset_group: OffsetGroupedTerms,
+        trie_exclusion: MultiTapeProductTrie | DirtyMultiTapeProductTrie,
+    ):
+        if isinstance(trie_exclusion, DirtyMultiTapeProductTrie):
+            trie_exclusion = trie_exclusion.clean()
+        self.products_trie.insert(
+            offset_group=offset_group,
+            trie_exclusion=trie_exclusion,
+        )
+
+    def insert_product(
+        self, product: PyMultiTapeProduct
+    ) -> DirtyMultiTapeProductTrie:
+        self.products_trie.insert_product(product)
+        return self
+
+    # ------------------------------------------------------------------
+    # merge
+    # ------------------------------------------------------------------
+
+    def __or__(
+        self, other: DirtyMultiTapeProductTrie
+    ) -> DirtyMultiTapeProductTrie:
+        merged_trie = self.products_trie | other.products_trie
+        merged_traversed = (
+            self.traversed_offsets | other.traversed_offsets
+        )
+        return DirtyMultiTapeProductTrie(
+            products_trie=merged_trie,
+            traversed_offsets=merged_traversed,
+        )
+
+    @classmethod
+    def merge(
+        cls, tries: list[DirtyMultiTapeProductTrie]
+    ) -> DirtyMultiTapeProductTrie:
+        assert len(tries) > 0
+        if len(tries) == 1:
+            return tries[0].copy()
+
+        merged = tries[0]
+        for t in tries[1:]:
+            merged = merged | t
+
+        return merged
+
+    # ------------------------------------------------------------------
+    # product queries (traversed-aware)
+    # ------------------------------------------------------------------
+
+    def load_matching_products(
+        self, product: PyMultiTapeProduct
+    ) -> set[PyMultiTapeProduct]:
+        terms = product.get_flat_terms()
+        group_path = MultiTapeProductTrie.create_group_path(terms)
+        return self._load_matching_products(group_path=group_path)
+
+    def _load_matching_products(
+        self, group_path: list[OffsetGroupedTerms]
+    ) -> set[PyMultiTapeProduct]:
+        all_products: set[PyMultiTapeProduct] = (
+            self.products_trie.end_products.copy()
+        )
+        if not group_path:
+            return all_products
+
+        current_group, next_groups = group_path[0], group_path[1:]
+        if current_group.offset is None:
+            raise ValueError("Blank groups are not allowed")
+
+        matching_groups = self.match_offset_groups_for(
+            target_group=current_group
+        )
+        for matching_group in matching_groups:
+            next_dirty = self.next(group=matching_group)
+            sub_products = next_dirty._load_matching_products(
+                group_path=next_groups
+            )
+            all_products |= sub_products
+
+        return all_products
+
+    def has_product(self, product: PyMultiTapeProduct) -> bool:
+        terms = product.get_flat_terms()
+        group_path = MultiTapeProductTrie.create_group_path(terms)
+        return self._has_group_path(group_path=group_path)
+
+    def _has_group_path(
+        self, group_path: list[OffsetGroupedTerms]
+    ) -> bool:
+        if not group_path:
+            return self.has_end_product
+
+        current_group, next_groups = group_path[0], group_path[1:]
+        matching_groups = self.match_offset_groups_for(
+            target_group=current_group
+        )
+        for matching_group in matching_groups:
+            if matching_group not in self.products_trie.next_groups:
+                continue
+            next_dirty = self.next(group=matching_group)
+            if next_dirty._has_group_path(group_path=next_groups):
+                return True
+        return False
+
+    def search_all_products(self) -> set[PyMultiTapeProduct]:
+        all_products: set[PyMultiTapeProduct] = (
+            self.products_trie.end_products.copy()
+        )
+        for _, _ in self._iter_active_groups():
+            # delegate through .next() so children stay dirty-aware
+            pass
+        # The loop above is a placeholder — we iterate explicitly below
+        for offset_group, _ in self._iter_active_groups():
+            next_dirty = self.next(group=offset_group)
+            all_products |= next_dirty.search_all_products()
+        return all_products
+
+    def search_all_offsets(self) -> set[int]:
+        if self.products_trie.offset is None:
+            all_offsets: set[int] = set()
+        else:
+            all_offsets: set[int] = {self.products_trie.offset}
+        for offset_group, _ in self._iter_active_groups():
+            next_dirty = self.next(group=offset_group)
+            all_offsets |= next_dirty.search_all_offsets()
+        return all_offsets
+
+    # ------------------------------------------------------------------
+    # the optimised advance
+    # ------------------------------------------------------------------
+
+    def advance_exclusions(
+        self, source_offset_group: OffsetGroupedTerms,
+        merge_from_adjacent_offsets: bool = True,
+    ) -> DirtyMultiTapeProductTrie:
+        assert source_offset_group.offset is not None
+
+        # Accumulate the newly traversed offset into the dirty set
+        # instead of calling without_nested_offsets.
+        new_traversed_offsets: set[int] = (
+            self.traversed_offsets | {source_offset_group.offset}
+        )
+
+        matching_groups = self.match_offset_groups_for(
+            target_group=source_offset_group
+        )
+        matching_exclusions: list[MultiTapeProductTrie] = []
+        for match_offset_group in matching_groups:
+            # Sub-tries are raw MultiTapeProductTrie objects; they may
+            # still contain groups at traversed offsets, but those will
+            # be filtered lazily by the dirty wrapper.
+            matching_exclusions.append(
+                self.products_trie.next(group=match_offset_group)
+            )
+
+        next_exclusions = MultiTapeProductTrie.merge(
+            tries=matching_exclusions
+        )
+
+        if merge_from_adjacent_offsets:
+            for offset_group, adjacent_exclusions in (
+                self.products_trie.next_groups.items()
+            ):
+                if offset_group.offset == source_offset_group.offset:
+                    continue
+
+                # Skip groups whose offset was already traversed in a
+                # previous advance — these would have been stripped by
+                # without_nested_offsets in the non-dirty version.
+                if offset_group.offset in new_traversed_offsets:
+                    continue
+
+                next_exclusions.insert(
+                    offset_group=offset_group,
+                    trie_exclusion=adjacent_exclusions,
+                )
+
+        return DirtyMultiTapeProductTrie(
+            products_trie=next_exclusions,
+            traversed_offsets=new_traversed_offsets,
+        )
