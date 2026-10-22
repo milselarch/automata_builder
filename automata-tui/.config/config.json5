@@ -4,7 +4,22 @@
       "<q>": "Quit", // Quit the application
       "<Ctrl-d>": "Quit", // Another way to quit
       "<Ctrl-c>": "Quit", // Yet another way to quit
-      "<Ctrl-z>": "Suspend" // Suspend the application
+      "<Ctrl-z>": "Suspend", // Suspend the application
+      "<space>": "TogglePlay", // Start/stop the simulation
+      "<n>": "StepForward", // Advance the simulation by one generation
+      "<r>": "Restart", // Reset the simulation to its initial state
+      "<left>": "MoveCursorLeft", // Move the selected cell left
+      "<right>": "MoveCursorRight", // Move the selected cell right
+      "<up>": "MoveCursorUp", // Select the tape above
+      "<down>": "MoveCursorDown", // Select the tape below
+      "<pageup>": "PageCursorLeft", // Move the selected cell a screen left
+      "<pagedown>": "PageCursorRight", // Move the selected cell a screen right
+      "<c>": "CenterOnCursor", // Center the view on the selected cell
+      "<tab>": "NextWrite", // Select the next product write
+      "<backtab>": "PrevWrite", // Select the previous product write
+      "<enter>": "SelectWriteCell", // Select the cell of the selected write
+      "<+>": "SpeedUp", // Simulate more generations per second
+      "<minus>": "SpeedDown" // Simulate fewer generations per second
     },
   }
 }
