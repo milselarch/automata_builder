@@ -94,8 +94,8 @@ if __name__ == '__main__':
     transitions = runner.transitions_group.transitions
     print(f'num transitions = {len(transitions)}')
 
-    num_representable_products = runner.num_unrepresentable_products
-    print(f'{num_representable_products=}')
+    num_unrepresentable_products = runner.num_unrepresentable_products
+    print(f'{num_unrepresentable_products=}')
     num_pause_incomparable_transitions = 0
 
     for transition in tqdm(transitions):
