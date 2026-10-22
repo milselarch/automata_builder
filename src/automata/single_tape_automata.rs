@@ -2,30 +2,30 @@ use std::collections::{BTreeSet, HashMap};
 use std::fmt;
 
 use indexmap::{IndexMap, IndexSet};
-
+use num_traits::{abs};
 use crate::automata::renderer::RenderFrame;
 use crate::automata::rule_generator::{BidirectionalTape, TapeError, VOID_STATE};
-use crate::automata::terms::{AbstractExpression, CellState, Expression, Product};
+use crate::automata::terms::{AbstractExpression, CellState, Expression, Product, Term};
 
 #[derive(Debug, Clone)]
 pub enum SingleTapeAutomataError {
     Tape(TapeError),
     /// The same product wants to write two different output states.
     ConflictingOutput {
-        product: String,
+        product: Product,
         existing: CellState,
         incoming: CellState,
     },
     /// A product made purely out of void states would make the simulation
     /// range infinite, so it is rejected up-front.
-    VoidProduct { product: String, output: CellState },
+    VoidProduct { product: Product, output: CellState },
     /// Two different products want to write different states to the same cell.
     ConflictingWrite {
         position: i64,
-        product: String,
+        product: Product,
         previous: CellState,
         incoming: CellState,
-        previous_products: Vec<String>,
+        previous_products: Vec<Product>,
     },
 }
 
@@ -55,16 +55,143 @@ impl fmt::Display for SingleTapeAutomataError {
             ),
             SingleTapeAutomataError::ConflictingWrite {
                 position, product, previous, incoming, previous_products,
-            } => write!(
-                f,
-                "Conflicting writes from matching_product={} at position {}: \
-                 {} vs {} (prev_products={:?})",
-                product, position, previous, incoming, previous_products
-            ),
+            } => {
+                let product_strings = previous_products.iter().map(
+                    |p| p._to_string_with_annotation("A")
+                ).collect::<Vec<_>>();
+                write!(
+                    f,
+                    "Conflicting writes from matching_product={} at position {}: \
+                    {} vs {} (prev_products={:?})",
+                    product._to_string_with_annotation("A"), position,
+                    previous, incoming, product_strings
+                )
+            },
         }
     }
 }
 impl std::error::Error for SingleTapeAutomataError {}
+
+pub fn is_void_product(product: &Product) -> bool {
+    for term in product._terms.iter() {
+        if term.state != VOID_STATE {
+            return false
+        }
+    };
+    true
+}
+
+
+#[derive(Debug, Clone, Ord, Eq, PartialEq, PartialOrd)]
+pub struct TermSortEntry {
+    abs_pos: u64,
+    is_negative: bool,
+    cell_state: CellState,
+}
+
+#[derive(Debug, Clone, Default)]
+pub struct ProductWritesTrie {
+    offset_state: Option<(i64, CellState)>,
+    write_opt: Option<(Product, CellState)>,
+    // map from (term position, cell_state) -> nested product trie
+    children: HashMap<(i64, CellState), ProductWritesTrie>,
+}
+impl ProductWritesTrie {
+    pub fn new() -> Self {
+        Self {
+            offset_state: None,
+            write_opt: None,
+            children: HashMap::new()
+        }
+    }
+
+    pub fn sort_term_path(
+        unsorted_term_path: Vec<(i64, CellState)>
+    ) -> Vec<(i64, CellState)> {
+        let mut sorted_term_path = unsorted_term_path;
+        sorted_term_path.sort_by_key(|(pos_ref, cell_state_ref)| {
+            let pos = *pos_ref;
+            let cell_state = *cell_state_ref;
+            // zigzag sort by position, then by cell state
+            TermSortEntry {
+                abs_pos: u64::try_from(abs(pos)).unwrap(),
+                is_negative: pos < 0,
+                cell_state,
+            }
+        });
+        sorted_term_path
+    }
+
+    pub fn create_term_path(terms: Vec<Term>) -> Vec<(i64, CellState)> {
+        let unsorted_term_path = terms.into_iter()
+            .map(|term| (term.position, term.state)).collect();
+        Self::sort_term_path(unsorted_term_path)
+    }
+
+    pub fn insert(
+        &mut self, product: Product, write_state: CellState
+    ) -> Result<(), SingleTapeAutomataError> {
+        let terms = product.to_flat_terms();
+        let term_path = Self::create_term_path(terms);
+        self._insert_term_path(
+            &*term_path, product, write_state
+        )
+    }
+
+    fn _insert_term_path(
+        &mut self, term_path: &[(i64, CellState)],
+        product: Product, write_state: CellState
+    ) -> Result<(), SingleTapeAutomataError> {
+        let first_term_opt = term_path.first();
+
+        match first_term_opt {
+            // Base case: no more terms, this node is the end of the path.
+            None => {
+                match &self.write_opt {
+                    None => {},
+                    Some(existing_write) => {
+                        let (_, existing_output_state) = *existing_write;
+
+                        return Err(SingleTapeAutomataError::ConflictingOutput {
+                            product,
+                            incoming: write_state,
+                            existing: existing_output_state,
+                        })
+                    }
+                }
+
+                self.write_opt = Some((product, write_state));
+                Ok(())
+            }
+            // Recursive case: descend into (or create) the child for this key,
+            // then recurse on the rest of the slice.
+            Some(&key) => {
+                let child = self.children.entry(key).or_insert(ProductWritesTrie {
+                    offset_state: key.clone().into(),
+                    write_opt: None,
+                    children: Default::default(),
+                });
+
+                match &child.write_opt {
+                    Some((matching_product, existing_write_state)) => {
+                        return Err(SingleTapeAutomataError::ConflictingWrite {
+                            position: 0,
+                            product,
+                            previous_products: vec![matching_product.clone()],
+                            incoming: write_state,
+                            previous: *existing_write_state
+                        })
+                    }
+                    _ => {}
+                }
+                child._insert_term_path(
+                    &term_path[1..], product, write_state
+                )
+            }
+        }
+    }
+}
+
 
 /// Single-tape analogue of `ProductWritesMap`.
 ///
@@ -121,7 +248,7 @@ impl ProductWriteMap {
         if self.frozen {
             // mirrors ProductWritesError::Frozen
             return Err(SingleTapeAutomataError::ConflictingOutput {
-                product: product._to_string("A"),
+                product,
                 existing: output_state,
                 incoming: output_state,
             });
@@ -130,7 +257,7 @@ impl ProductWriteMap {
         if let Some(&existing) = self.prod_to_state_map.get(&product) {
             if existing != output_state {
                 return Err(SingleTapeAutomataError::ConflictingOutput {
-                    product: product._to_string("A"),
+                    product,
                     existing,
                     incoming: output_state,
                 });
@@ -218,8 +345,9 @@ pub struct ProcessStepResult {
 pub struct SingleTapeAutomata {
     tape: BidirectionalTape,
     prod_to_state_map: ProductWriteMap,
-    leftmost_extent: i64,
-    rightmost_extent: i64,
+    product_writes_trie: ProductWritesTrie,
+    leftmost_extent: i64,  // this must be negative or zero
+    rightmost_extent: i64,  // this must be positive or zero
     state_eq_map: IndexMap<CellState, Expression>,
 }
 
@@ -229,10 +357,15 @@ impl SingleTapeAutomata {
     ) -> Result<SingleTapeAutomata, SingleTapeAutomataError> {
         let prod_to_state_map = Self::reverse_state_eq_map(&state_eq_map)?;
         let (leftmost_extent, rightmost_extent) = Self::compute_rule_range(&prod_to_state_map);
+        let mut product_writes_trie = ProductWritesTrie::new();
+        for (product, write_state) in prod_to_state_map.iter() {
+            product_writes_trie.insert(product.clone(), *write_state)?
+        }
 
         Ok(SingleTapeAutomata {
             tape: BidirectionalTape::default(),
             prod_to_state_map,
+            product_writes_trie,
             leftmost_extent,
             rightmost_extent,
             state_eq_map,
@@ -302,9 +435,10 @@ impl SingleTapeAutomata {
 
     /// `cell_width == None` is the `BLANK_INT` sentinel on the Python side.
     pub fn render_tape(
-        &self, start_position: i64, length: usize, cell_width: Option<usize>,
+        &self, start_position: i64, length: usize,
+        header_tag: &str, cell_width: Option<usize>,
     ) -> Result<RenderFrame, SingleTapeAutomataError> {
-        let left_tab = "Tape: ".to_string();
+        let left_tab = format!("Tape {}: ", header_tag);
         let left_sidebar = RenderFrame::from_padded_lines(vec![left_tab]);
         let content_width = length.saturating_sub(left_sidebar.get_width());
 
@@ -355,10 +489,16 @@ impl SingleTapeAutomata {
                 */
                 let product_is_void =
                     product.to_flat_terms().iter().all(|term| term.state == VOID_STATE);
+                let output_is_void = *output_state == VOID_STATE;
 
-                if product_is_void {
+                if product_is_void && !output_is_void {
+                    /*
+                    Product transitions a contiguous region of void
+                    to a non-void state. This can't be allowed because
+                    it would make the simulation range infinite.
+                    */
                     return Err(SingleTapeAutomataError::VoidProduct {
-                        product: product._to_string("A"),
+                        product: product.copy(),
                         output: *output_state,
                     });
                 }
@@ -380,6 +520,57 @@ impl SingleTapeAutomata {
         true
     }
 
+    pub fn seek_trie_match(
+        &self, write_position: i64
+    ) -> Result<Option<(Product, CellState)>, SingleTapeAutomataError> {
+        self._seek_trie_match(write_position, &self.product_writes_trie)
+    }
+
+    pub fn _seek_trie_match(
+        &self, write_position: i64, trie: &ProductWritesTrie
+    ) -> Result<Option<(Product, CellState)>, SingleTapeAutomataError> {
+        /*
+        Returns a writing product that matches the tape states at the
+        current position, along with the writing state produced
+        */
+        if let Some(matched_product_and_state) = &trie.write_opt {
+            return Ok(Some(matched_product_and_state.clone()))
+        }
+        let mut matched_write: Option<(Product, CellState)> = None;
+        for (match_cond, next_trie) in trie.children.iter() {
+            let (next_offset, required_state) = *match_cond;
+            let match_position = write_position + next_offset;
+            let cond_matches = self.tape.is_state_eq(match_position, required_state);
+            if !cond_matches { continue }
+
+            let match_res = self._seek_trie_match(write_position, next_trie)?;
+            match match_res {
+                Some(new_match) => {
+                    let (new_product, new_write_state) = new_match.clone();
+
+                    match matched_write {
+                        None => {
+                            matched_write = Some(new_match)
+                        }
+                        Some(existing_write) => {
+                            let (existing_product, existing_state) = existing_write;
+
+                            return Err(SingleTapeAutomataError::ConflictingWrite {
+                                position: write_position,
+                                product: new_product,
+                                previous: existing_state,
+                                incoming: new_write_state,
+                                previous_products: vec![existing_product],
+                            });
+                        }
+                    }
+                }
+                None => {}
+            }
+        }
+        Ok(matched_write)
+    }
+
     pub fn process_step(
         &self, log_active_writes: bool,
     ) -> Result<ProcessStepResult, SingleTapeAutomataError> {
@@ -389,60 +580,49 @@ impl SingleTapeAutomata {
         let scan_end = max_pos + self.rightmost_extent + 1;
 
         let mut writes_map: HashMap<i64, CellState> = HashMap::new();
-        let mut origins_map: HashMap<i64, BTreeSet<String>> = HashMap::new();
+        let mut origins_map: HashMap<i64, BTreeSet<Product>> = HashMap::new();
         let mut active_writes: Vec<WriteRecord> = Vec::new();
 
         for position in scan_start..scan_end {
-            let mut written = false;
+            let write_res = self.seek_trie_match(position);
 
-            for (matching_product, output_state) in self.prod_to_state_map.iter() {
-                if !self.product_satisfies(matching_product, position) {
-                    continue;
+            let (matching_product, output_state) = match write_res {
+                Err(err) => { return Err(err) }
+                Ok(Some(write)) => { write }
+                Ok(None) => {
+                    /* TODO: throw error if no writes? */
+                    new_tape.write(position, self.tape.read(position));
+                    continue
                 }
+            };
 
-                let output_state = *output_state;
-                let prev_write = writes_map.get(&position).copied().unwrap_or(output_state);
-
-                if prev_write != output_state {
-                    let previous_products = origins_map
-                        .get(&position)
-                        .map(|products| products.iter().cloned().collect::<Vec<String>>())
-                        .unwrap_or_default();
-
-                    return Err(SingleTapeAutomataError::ConflictingWrite {
-                        position,
-                        product: matching_product._to_string("A"),
-                        previous: prev_write,
-                        incoming: output_state,
-                        previous_products,
-                    });
-                }
-
-                let write_record = WriteRecord {
-                    origin_product: matching_product.copy(),
-                    position,
-                    cell_state: output_state,
-                };
-                if log_active_writes {
+            if !self.product_satisfies(&matching_product, position) {
+                panic!(
+                    "Product does not satisfy condition: {} [{}] at {}",
+                    &matching_product, matching_product._annotation, position
+                );
+            }
+            let write_record = WriteRecord {
+                origin_product: matching_product.copy(),
+                position,
+                cell_state: output_state,
+            };
+            if log_active_writes {
+                if is_void_product(&matching_product) {
+                    assert_eq!(output_state, VOID_STATE)
+                } else {
                     write_record.log();
                 }
-                active_writes.push(write_record);
-
-                writes_map.insert(position, output_state);
-                origins_map
-                    .entry(position)
-                    .or_default()
-                    .insert(matching_product._to_string("A"));
-
-                new_tape.write(position, output_state);
-                debug_assert_eq!(new_tape.read(position), output_state);
-                written = true;
             }
+            active_writes.push(write_record);
+            writes_map.insert(position, output_state);
+            origins_map
+                .entry(position)
+                .or_default()
+                .insert(matching_product.copy());
 
-            // copy over the unchanged cell if no rule matched here
-            if !written {
-                new_tape.write(position, self.tape.read(position));
-            }
+            new_tape.write(position, output_state);
+            debug_assert_eq!(new_tape.read(position), output_state);
         }
 
         Ok(ProcessStepResult {

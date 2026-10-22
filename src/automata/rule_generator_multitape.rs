@@ -1,15 +1,44 @@
-use std::collections::{BTreeMap, BTreeSet, HashMap};
+use indexmap::IndexSet;
+use std::collections::BTreeMap;
 use std::fmt;
-use indexmap::{IndexMap, IndexSet};
 
-use crate::automata::product_writes_map::{ProductWritesError, ProductWritesMap};
+use crate::automata::product_writes_map::ProductWritesError;
 use crate::automata::renderer::{RenderFrame, TapeRenderFrame};
 use crate::automata::rule_generator::{BidirectionalTape, TapeError, VOID_STATE};
-use crate::automata::tape_overlaps::MultiTapeState;
 use crate::automata::terms::CellState;
-use crate::automata::terms_multitape::{
-    AbstractMultiTapeExpression, MultiTapeExpression, MultiTapeProduct, TapeNo,
-};
+use crate::automata::terms_multitape::{MultiTapeProduct, MultiTapeState, MultiTapeTerm, TapeNo};
+
+#[derive(Debug, Clone, Default)]
+pub struct MultiTapeDataRegion {
+    pub start_position: i64,
+    pub length: usize,
+    pub tape_regions: BTreeMap<TapeNo, Vec<CellState>>,
+}
+impl MultiTapeDataRegion {
+    pub fn new(start_position: i64, length: usize) -> MultiTapeDataRegion {
+        MultiTapeDataRegion { start_position, length, tape_regions: BTreeMap::new() }
+    }
+    pub fn add_tape_region(&mut self, tape_no: TapeNo, region: Vec<CellState>) {
+        assert_eq!(region.len(), self.length);
+        self.tape_regions.insert(tape_no, region);
+    }
+    pub fn get_product_slice_at(&self, index: usize) -> MultiTapeProduct {
+        let position = self.start_position + index as i64;
+        let mut terms: Vec<MultiTapeTerm> = vec![];
+
+        for tape_no in self.tape_regions.keys() {
+            let tape_region = self.tape_regions.get(tape_no).unwrap();
+            let cell_state = tape_region[index];
+            terms.push(MultiTapeTerm::new(
+                position, (*tape_no, cell_state),
+                false,
+            ));
+        }
+
+        MultiTapeProduct::new(terms)
+    }
+}
+
 
 #[derive(Debug, Clone, Default)]
 pub struct BiDirectionalMultiTape {
@@ -190,6 +219,47 @@ impl BiDirectionalMultiTape {
         }
         (min_pos, max_pos)
     }
+
+    pub fn get_minimal_data_range(&self) -> Option<(i64, i64)> {
+        /*
+        Returns the smallest range of positions for which
+        all the non-VOID cells are contained across all individual tapes.
+        */
+        let mut start_pos: Option<i64> = None;
+        let mut end_pos: Option<i64> = None;
+
+        for (_, tape) in self.tapes.iter() {
+            if let Some((tape_start, tape_end)) = tape.get_minimal_data_range() {
+                start_pos = Some(start_pos.map_or(tape_start, |s| s.min(tape_start)));
+                end_pos = Some(end_pos.map_or(tape_end, |e| e.max(tape_end)));
+            }
+        }
+        start_pos.zip(end_pos)
+    }
+
+    pub fn get_minimal_data_region(&self) -> MultiTapeDataRegion {
+        let minimal_data_range_res = self.get_minimal_data_range();
+        let mut data_length: usize = 0;
+        let mut start_pos = 0;
+
+        match minimal_data_range_res {
+            Some((min_pos, max_pos)) => {
+                start_pos = min_pos;
+                data_length = (max_pos - min_pos + 1) as usize;
+            }
+            _ => {}
+        }
+
+        let mut multi_tape_data_region =
+            MultiTapeDataRegion::new(start_pos, data_length);
+        for (tape_no, tape) in self.tapes.iter() {
+            let tape_minimal_data_region = tape.read_region(start_pos, data_length);
+            multi_tape_data_region.add_tape_region(
+                *tape_no, tape_minimal_data_region
+            );
+        }
+        multi_tape_data_region
+    }
 }
 
 #[derive(Debug, Clone)]
@@ -198,19 +268,22 @@ pub enum AutomataError {
     Writes(ProductWritesError),
     /// A product made purely out of void states would make the simulation
     /// range infinite, so it is rejected up-front.
-    VoidProduct { product: String, output: MultiTapeState },
+    VoidProduct { product: MultiTapeProduct, output: MultiTapeState },
     /// `require_annotations` was set, but the product carried no annotation.
-    EmptyAnnotation { product: String },
+    EmptyAnnotation { product: MultiTapeProduct },
     /// Two different products want to write different states to the same cell.
     ConflictingWrite {
         tape_no: TapeNo,
         position: i64,
-        product: String,
+        product: MultiTapeProduct,
         annotation: String,
         previous: CellState,
         incoming: CellState,
         previous_annotations: Vec<String>,
     },
+    NoProductsForState {
+        state: MultiTapeState
+    }
 }
 
 impl From<TapeError> for AutomataError {
@@ -231,25 +304,31 @@ impl fmt::Display for AutomataError {
             AutomataError::Writes(err) => write!(f, "{}", err),
             AutomataError::VoidProduct { product, output } => write!(
                 f,
-                "Product {} transitions void states to non-void state {}, \
+                "Product {:?} transitions void states to non-void state {}, \
                  which is not allowed since it would make the simulation \
                  range infinite",
                 product, output
             ),
             AutomataError::EmptyAnnotation { product } => {
-                write!(f, "EMPTY ANNOTATION product={}", product)
+                write!(f, "EMPTY ANNOTATION product={:?}", product)
             }
             AutomataError::ConflictingWrite {
                 tape_no, position, product, annotation,
                 previous, incoming, previous_annotations,
             } => write!(
                 f,
-                "Conflicting writes to tape {} from matching_product={} \
+                "Conflicting writes to tape {} from matching_product={:?} \
                  annotation={:?} at position {}: {} vs {} \
                  (prev_annotations={:?})",
                 tape_no, product, annotation, position,
                 previous, incoming, previous_annotations
             ),
+            AutomataError::NoProductsForState { state } => {
+                write!(
+                    f, "Output state {:?} has no products in its expression",
+                    state
+                )
+            }
         }
     }
 }

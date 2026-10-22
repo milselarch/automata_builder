@@ -11,9 +11,9 @@ use crate::automata::py_rule_generator_multitape::{
     PyBidirectionalTape, PyRenderFrame, BLANK_INT,
 };
 use crate::automata::py_terms::{PyExpression, PyProduct, A};
-use crate::automata::rule_generator::VOID_STATE;
 use crate::automata::single_tape_automata::{
-    ProcessStepResult, SingleTapeAutomata, SingleTapeAutomataError, WriteRecord,
+    ProcessStepResult, SingleTapeAutomata, SingleTapeAutomataError,
+    WriteRecord,
 };
 use crate::automata::terms::{AbstractExpression, CellState, Expression};
 
@@ -252,14 +252,17 @@ impl PySingleTapeAutomata {
         self.automata.get_tape().get_all_states().into_iter().collect()
     }
 
-    #[pyo3(signature = (start_position, length, cell_width = BLANK_INT))]
+    #[pyo3(signature = (
+        start_position, length, header_tag="", cell_width = BLANK_INT
+    ))]
     pub fn render_tape(
-        &self, start_position: i64, length: usize, cell_width: i64,
+        &self, start_position: i64, length: usize,
+        header_tag: &str, cell_width: i64,
     ) -> PyResult<PyRenderFrame> {
         let cell_width = to_cell_width(cell_width)?;
         let frame = self
             .automata
-            .render_tape(start_position, length, cell_width)
+            .render_tape(start_position, length, header_tag, cell_width)
             .map_err(automata_err)?;
         Ok(PyRenderFrame::from_frame(frame))
     }

@@ -3,7 +3,7 @@
 Tooling to construct and simulate 1D cellular automata.
 
 The automata code is split into two importable libraries:
-- a python package - `automata_builder` (pure python code plus the
+- a python package - `automata_builder` (pure Python code plus the
   compiled `automata_builder._rust` extension module)
 - a rust crate - `automata_builder` (the `automata_builder::automata` module)
 
@@ -46,8 +46,8 @@ use automata_builder::automata::single_tape_automata::SingleTapeAutomata;
 1. Run test scripts for automata builder like as follows
    - Make sure to run `python -m pip install -e .` to install 
      `automata_builder` as an editable package first
-   - Run `python -m automata_builder.tests.compose_tapes_test` to
-     execute `automata_builder/tests/compose_tapes_test.py`
+   - Run `python -m automata_builder.tests.compile_tapes_test` to
+     execute `automata_builder/tests/compile_tapes_test.py`
 2. Execute counter automata unittests with
    - `python -m unittest discover -s unittests`
 

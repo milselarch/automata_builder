@@ -6,9 +6,9 @@ from automata_builder._rust import A, PyProduct
 from tqdm import tqdm
 
 from automata_builder.counter_automata import (
-    CounterAutomataRunner, DT_DATA, DATA_TAPE, SIGNALS_TAPE,
-    from_counter_state
+    CounterAutomataRunner, DT_DATA, DATA_TAPE, SIGNALS_TAPE
 )
+from automata_builder.counter_states import from_counter_state
 from automata_builder.rule_generator_multitape import (
     MultiTapeBuilder, MultiTapeState
 )
@@ -37,11 +37,11 @@ parser.add_argument(
 
 if __name__ == '__main__':
     """
-    python -m automata_builder.tests.compose_tapes_test
+    python -m automata_builder.tests.compile_tapes_test
     # build half-reduced tapes for base 6
-    python -m automata_builder.tests.compose_tapes_test -a -b 6
+    python -m automata_builder.tests.compile_tapes_test -a -b 6
     # build half-reduced tapes for base 8
-    python -m automata_builder.tests.compose_tapes_test -a -b 8
+    python -m automata_builder.tests.compile_tapes_test -a -b 8
     """
     args = parser.parse_args()
     runner = CounterAutomataRunner(
@@ -58,7 +58,7 @@ if __name__ == '__main__':
     )
 
     start_stamp = time.time()
-    compose_result = multi_tape_builder.compose_tapes()
+    compose_result = multi_tape_builder.compile_tapes()
     end_stamp = time.time()
     duration = end_stamp - start_stamp
 
@@ -96,7 +96,8 @@ if __name__ == '__main__':
     """
 
     for transition in tqdm(transitions):
-        input_terms, output_state = transition
+        input_terms = transition.input_terms
+        output_state = transition.output_state
         input_product = PyProduct(input_terms)
         input_multi_term_prod_res = compose_result.remap_prod_to_multi_tape(
             input_product=input_product
@@ -116,13 +117,14 @@ if __name__ == '__main__':
             from_counter_state(term.get_cell_state())[1]
             for term in counter_terms
         ]
-        if len(set(paused_list)) <= 1:
+        if len(set(paused_list)) > 1:
             num_pause_incomparable_transitions += 1
 
     print(f'{num_pause_incomparable_transitions=}')
 
     for k, transition in enumerate(transitions[:args.display_transitions]):
-        input_terms, output_state = transition
+        input_terms = transition.input_terms
+        output_state = transition.output_state
         input_product = PyProduct(input_terms)
         print(f'[{k}]: {input_product} -> {output_state}')
 

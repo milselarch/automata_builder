@@ -4,6 +4,9 @@ from automata_builder.firing_squad_automata import FiringSquadAutomataRunner
 from automata_builder.rule_generator import BLANK_INT
 
 if __name__ == '__main__':
+    """
+    python -m automata_builder.tests.run_firing_squad
+    """
     parser = argparse.ArgumentParser(
         description='Run the firing squad automata simulation.'
     )

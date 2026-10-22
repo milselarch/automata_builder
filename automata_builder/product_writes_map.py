@@ -49,6 +49,30 @@ class ProductWritesMap(Freezable):
         if prod_to_state_map is not None:
             self._prod_to_state_map = prod_to_state_map
 
+    def get_stub_writes_str_for(self, product: PyMultiTapeProduct) -> str:
+        writes = self._prod_to_state_map[product]
+        stub_writes_str = ''
+
+        for tape_no, tape_cell_state in sorted(list(writes.items())):
+            stub_writes_str += f'T{tape_no}:{tape_cell_state}'
+
+        return stub_writes_str
+
+    def get_multi_tape_writes_for(
+        self, product: PyMultiTapeProduct
+    ) -> set[MultiTapeState]:
+        writes: set[MultiTapeState] = set()
+        writes_map = self._prod_to_state_map[product]
+
+        for tape_no in writes_map:
+            tape_cell_state = writes_map[tape_no]
+            multi_tape_state = MultiTapeState(
+                tape_no=tape_no, tape_cell_state=tape_cell_state
+            )
+            writes.add(multi_tape_state)
+
+        return writes
+
     def _freeze(self) -> None:
         self._prod_to_state_map.freeze()
 
@@ -195,6 +219,9 @@ class ProductWritesMap(Freezable):
             prod_to_state_map=self._prod_to_state_map.to_frozen()
         )
 
+    def __len__(self) -> int:
+        return len(self._prod_to_state_map)
+
     def __iter__(self) -> typing.Iterator[PyMultiTapeProduct]:
         return iter(self._prod_to_state_map.keys())
 
@@ -218,14 +245,15 @@ class ProductWritesMap(Freezable):
                 f"Product {product} is not in {self._prod_to_state_map}"
             )
 
+        """
         if product.get_annotation() == 'EXP_REDUCE_START':
             print("TOMATO")
-
+        """
         has_transition_to_unsatisfiability = False
         has_input_terms_along_output_offset = False
         product_writes = self._prod_to_state_map[product]
-
         input_terms = product.get_flat_terms()
+
         for input_term in input_terms:
             input_multi_tape_state = MultiTapeState.from_term(input_term)
             input_term_attrs = state_attributes_map[input_multi_tape_state]
@@ -290,8 +318,10 @@ class ProductWritesMap(Freezable):
                 in_out_neq
             )
 
+        """
         if (1, 8) in product_writes.items():
             print("POTATO")
+        """
 
         if not has_input_terms_along_output_offset:
             """
@@ -408,7 +438,7 @@ class ProductWritesMap(Freezable):
                     """
                     source_state_written = True
 
-            # whether product writes to same tape as target_state
+            # whether product writes to same tape as target_state,
             # and the written TapeCellState is different from target_state
             writes_away_from_target_state = False
             # whether the product transitions cells
@@ -555,6 +585,14 @@ class ProductWritesMap(Freezable):
     def __getitem__(self, item: PyMultiTapeProduct):
         return copy.copy(self._prod_to_state_map[item])
 
+    def get(
+        self, item: PyMultiTapeProduct,
+        default: FreezableDict[TapeNo, TapeCellState]
+    ):
+        return copy.copy(self._prod_to_state_map.get(
+            item, default
+        ))
+
     @classmethod
     def get_zero_terms_from_path(cls, product_path: list[D]) -> list[D]:
         zero_terms = []
@@ -575,14 +613,15 @@ class ProductWritesMap(Freezable):
 
     def insert_neutral_product(self, product: PyMultiTapeProduct):
         """
-        Insert a product whose outputs rewrite the input terms
-        that have an offset = 0 to have the same state
+        Insert a product whose output is idempotent.
+        I.e., products where their outputs rewrite the input terms
+        at an offset = 0 to be at the same state as the input terms
         :param product:
         :return:
         """
-        zero_terms = self.get_zero_terms_from_product(product)
+        offset_zero_terms = self.get_zero_terms_from_product(product)
 
-        for zero_term in zero_terms:
+        for zero_term in offset_zero_terms:
             zero_state = MultiTapeState.from_term(zero_term)
             self.insert(product=product, tape_output=zero_state)
 
@@ -614,11 +653,20 @@ class ProductWritesMap(Freezable):
             write_tape_no, write_tape_cell_state
         )
         if existing_tape_write_state != write_tape_cell_state:
+            matched_existing_product = [
+               _existing_prod
+               for _existing_prod in self._prod_to_state_map
+               if _existing_prod == product
+            ][0]
+
+            matched_annotation = matched_existing_product.get_annotation()
+            new_annotation = product.get_annotation()
+
             raise ValueError(
-                f"Conflicting output states for {product=} "
-                f"on tape {write_tape_no}: "
+                f"Conflicting output states for {matched_existing_product=} "
+                f"[{matched_annotation}] on tape {write_tape_no}: "
                 f"{existing_tape_write_state} vs "
-                f"{write_tape_cell_state}"
+                f"{write_tape_cell_state} for {product=} [{new_annotation}]"
             )
 
         writes_map[write_tape_no] = write_tape_cell_state
@@ -690,7 +738,7 @@ class ProductWritesMap(Freezable):
     ) -> set[TapeCellState]:
         """
         Get all the states that the source_state will transition to
-        (i.e. what the state could be at the same position after a timestep)
+        (i.e., what the state could be at the same position after a timestep)
         :param source_state:
         :param tape_overlaps:
         :return:
@@ -794,6 +842,8 @@ class ProductWritesMap(Freezable):
             transitioned_states.add(source_tape_cell_state)
 
         if source_tape_cell_state not in transitioned_states:
+            # this means that all instances of source_state transition
+            # to some other tape cell state after the current time step
             print("NO PATH TO SAME STATE", source_state, transitioned_states)
             pass
 
