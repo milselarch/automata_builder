@@ -365,7 +365,7 @@ class FreezableSet(FreezableDict[V, V], Generic[V]):
                 value.freeze()
 
     def _encode(self) -> tuple[V, ...]:
-        return tuple(list(self._data))
+        return tuple(sorted(self._data))
 
     @classmethod
     def _decode(cls, data: tuple[V, ...]) -> typing.Self:
