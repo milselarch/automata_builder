@@ -14,3 +14,7 @@ pub mod py_single_tape_automata;
 pub mod multi_tape_transition;
 pub mod py_multi_tape_transition;
 pub mod py_multi_tape_automata;
+pub mod multi_tape_product_trie;
+pub mod tape_overlaps_fsm;
+pub mod multi_tape_builder;
+pub mod py_multi_tape_builder;

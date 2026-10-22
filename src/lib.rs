@@ -1,5 +1,9 @@
 use pyo3::prelude::*;
 use crate::automata::py_multi_tape_automata::PyMultiTapeAutomata;
+use crate::automata::py_multi_tape_builder::{
+    PyCompileTapesResult, PyMultiTapeBuilder, PyMultiTapeStatePathRemap,
+    PyTapeOverlaps, PyTapeOverlapsFSM
+};
 use crate::automata::py_multi_tape_transition::{
     PyMultiTapeTransition, PyMultiTapeTransitionsGroup
 };
@@ -55,5 +59,11 @@ fn _rust(module: &Bound<'_, PyModule>) -> PyResult<()> {
     module.add_class::<PySingleTapeProcessStepResult>()?;
     module.add_class::<PySingleTapeAutomata>()?;
     module.add_class::<PyMultiTapeDataRegion>()?;
+
+    module.add_class::<PyTapeOverlaps>()?;
+    module.add_class::<PyTapeOverlapsFSM>()?;
+    module.add_class::<PyMultiTapeStatePathRemap>()?;
+    module.add_class::<PyCompileTapesResult>()?;
+    module.add_class::<PyMultiTapeBuilder>()?;
     Ok(())
 }

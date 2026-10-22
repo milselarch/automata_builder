@@ -72,6 +72,16 @@ pub struct ProductWritesMap {
     frozen: bool,
 }
 
+/// Equality only compares the `product -> writes` mappings
+/// (insertion order and frozen-ness are ignored), mirroring the python
+/// `encode` based equality.
+impl PartialEq for ProductWritesMap {
+    fn eq(&self, other: &Self) -> bool {
+        self.prod_to_state_map == other.prod_to_state_map
+    }
+}
+impl Eq for ProductWritesMap {}
+
 impl ProductWritesMap {
     pub fn new() -> Self {
         Self { prod_to_state_map: IndexMap::new(), frozen: false }
@@ -197,6 +207,32 @@ impl ProductWritesMap {
             .iter()
             .map(|(tape_no, cell_state)| MultiTapeState::new(*tape_no, *cell_state))
             .collect())
+    }
+
+    /// Python `get_multi_tape_writes_for` (empty if product is missing).
+    pub fn get_multi_tape_writes_for(
+        &self, product: &MultiTapeProduct,
+    ) -> BTreeSet<MultiTapeState> {
+        self.get(product)
+            .map(|writes| {
+                writes
+                    .iter()
+                    .map(|(tape_no, cell_state)| MultiTapeState::new(*tape_no, *cell_state))
+                    .collect()
+            })
+            .unwrap_or_default()
+    }
+
+    /// Python `get_stub_writes_str_for`, e.g. `T0:3T1:2`
+    pub fn get_stub_writes_str_for(&self, product: &MultiTapeProduct) -> String {
+        self.get(product)
+            .map(|writes| {
+                writes
+                    .iter()
+                    .map(|(tape_no, cell_state)| format!("T{}:{}", tape_no, cell_state))
+                    .collect::<String>()
+            })
+            .unwrap_or_default()
     }
 
     /// All (input) states referenced by the products in this map.

@@ -42,6 +42,32 @@ automata_builder = { git = "https://github.com/milselarch/automata_builder" }
 use automata_builder::automata::single_tape_automata::SingleTapeAutomata;
 ```
 
+### Multi-tape to single-tape compiler
+Transitions are declared in python (`counter_automata.py`) and the
+compilation is orchestrated from python (`compiled_counter_automata.py`),
+but the `compile_tapes` pipeline itself
+(tape overlaps FSM, product extension, state path remapping and
+transition generation) runs in rust:
+```python
+from automata_builder.rule_generator_multitape import (
+    MultiTapeBuilder, MultiTapeState
+)
+
+builder = MultiTapeBuilder(multi_tape_automata=multi_tape_automata)
+builder.declare_initial_group_overlaps(
+    overlap_states={MultiTapeState(tape_no=1, tape_cell_state=2)}
+)
+result = builder.compile_tapes()  # python CompileTapesResult
+raw_result = builder.compile_tapes_rust()  # rust PyCompileTapesResult
+```
+- `MultiTapeBuilder` wraps `automata_builder._rust.PyMultiTapeBuilder`
+  (`src/automata/py_multi_tape_builder.rs`) and converts its result to the
+  python `CompileTapesResult`. The rust implementation lives in
+  `src/automata/multi_tape_builder.rs`, `tape_overlaps.rs`,
+  `tape_overlaps_fsm.rs` and `multi_tape_product_trie.rs`
+- `PythonMultiTapeBuilder` is the original pure python implementation,
+  kept as a (much slower) reference
+
 ### Automata Builder
 1. Run test scripts for automata builder like as follows
    - Make sure to run `python -m pip install -e .` to install 
@@ -60,3 +86,4 @@ use automata_builder::automata::single_tape_automata::SingleTapeAutomata;
 # DONE
 - multi-tape to single-tape cellular automata compiler
 - port cellular automata simulator to rust
+- port multi-tape to single-tape compiler (`compile_tapes`) to rust
