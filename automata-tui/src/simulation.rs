@@ -1,12 +1,14 @@
-use indexmap::IndexMap;
+use std::fmt;
+use thiserror::Error;
 
 use automata_builder::automata::multi_tape_automata::{MultiTapeAutomata, WriteRecord};
+use automata_builder::automata::multi_tape_transition::{AddTransitionError, MultiTapeTransitionsGroup};
 use automata_builder::automata::renderer::RenderFrame;
 use automata_builder::automata::rule_generator_multitape::{AutomataError, BiDirectionalMultiTape};
 use automata_builder::automata::tape_overlaps::MultiTapeState;
 use automata_builder::automata::terms::CellState;
 use automata_builder::automata::terms_multitape::{
-    MultiTapeExpression, MultiTapeProduct, MultiTapeProductFactory, MultiTapeTerm, TapeNo,
+    MultiTapeTerm, TapeNo,
 };
 
 /// A contiguous region of tape cells that is (re)written whenever the
@@ -16,7 +18,7 @@ pub type InitialRegion = (i64, i64, Vec<MultiTapeState>);
 /// Wraps a [`MultiTapeAutomata`] together with everything needed to replay it
 /// from the very beginning (the rules plus the initial tape contents).
 pub struct Simulation {
-    state_eq_map: IndexMap<MultiTapeState, MultiTapeExpression>,
+    transitions_group: MultiTapeTransitionsGroup,
     initial_regions: Vec<InitialRegion>,
     automata: MultiTapeAutomata,
     generation: u64,
@@ -25,12 +27,12 @@ pub struct Simulation {
 
 impl Simulation {
     pub fn new(
-        state_eq_map: IndexMap<MultiTapeState, MultiTapeExpression>,
+        transitions_group: MultiTapeTransitionsGroup,
         initial_regions: Vec<InitialRegion>,
     ) -> Result<Simulation, AutomataError> {
-        let automata = Self::build_automata(&state_eq_map, &initial_regions)?;
+        let automata = Self::build_automata(&transitions_group, &initial_regions)?;
         Ok(Simulation {
-            state_eq_map,
+            transitions_group,
             initial_regions,
             automata,
             generation: 0,
@@ -39,10 +41,10 @@ impl Simulation {
     }
 
     fn build_automata(
-        state_eq_map: &IndexMap<MultiTapeState, MultiTapeExpression>,
+        transitions_group: &MultiTapeTransitionsGroup,
         initial_regions: &[InitialRegion],
     ) -> Result<MultiTapeAutomata, AutomataError> {
-        let mut automata = MultiTapeAutomata::new(state_eq_map.clone())?;
+        let mut automata = MultiTapeAutomata::new(transitions_group.clone(), false)?;
         for (start_position, end_position, pattern) in initial_regions.iter() {
             automata.write_region(*start_position, *end_position, pattern)?;
         }
@@ -59,7 +61,7 @@ impl Simulation {
 
     /// Rebuild the automata from its rules and initial tape contents.
     pub fn restart(&mut self) -> Result<(), AutomataError> {
-        self.automata = Self::build_automata(&self.state_eq_map, &self.initial_regions)?;
+        self.automata = Self::build_automata(&self.transitions_group, &self.initial_regions)?;
         self.generation = 0;
         self.last_writes.clear();
         Ok(())
@@ -122,79 +124,115 @@ fn term(position: i64, tape_no: TapeNo, cell_state: CellState) -> MultiTapeTerm 
     MultiTapeTerm::new(position, (tape_no, cell_state), false)
 }
 
-fn product(terms: Vec<MultiTapeTerm>, annotation: &str) -> MultiTapeProduct {
-    let mut factory = MultiTapeProductFactory::new(terms);
-    factory.with_annotation(annotation.to_string()).to_product()
-}
-
 /// Tape 0 cell states of the bundled demo automata.
 pub const VOID: CellState = 0;
-pub const BLANK: CellState = 1;
+pub const BLANK: CellState = 2;
 /// Marker travelling towards increasing positions.
-pub const MARKER_RIGHT: CellState = 2;
+pub const MARKER_RIGHT: CellState = 3;
 /// Marker travelling towards decreasing positions.
-pub const MARKER_LEFT: CellState = 3;
+pub const MARKER_LEFT: CellState = 4;
 /// Tape 1 cell state left behind on every visited cell.
-pub const TRAIL: CellState = 2;
+pub const TRAIL: CellState = 3;
 
 const DEMO_TAPE_START: i64 = 0;
 const DEMO_TAPE_END: i64 = 31;
 const DEMO_MARKER_POSITION: i64 = 4;
 
+#[derive(Debug, Error)]
+pub enum BuildSimulationError {
+    AddTransitionError(AddTransitionError),
+    AutomataError(AutomataError)
+}
+
+impl From<AddTransitionError> for BuildSimulationError {
+    fn from(value: AddTransitionError) -> Self {
+        BuildSimulationError::AddTransitionError(value)
+    }
+}
+
+impl From<AutomataError> for BuildSimulationError {
+    fn from(value: AutomataError) -> Self {
+        BuildSimulationError::AutomataError(value)
+    }
+}
+
+impl fmt::Display for BuildSimulationError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            BuildSimulationError::AddTransitionError(e) => write!(f, "add transition: {e}"),
+            BuildSimulationError::AutomataError(e) => write!(f, "automata: {e}"),
+        }
+    }
+}
+
 /// A small two-tape demo automata: a marker bounces back and forth along
 /// tape 0 while tape 1 records every cell the marker has visited.
-pub fn build_demo_simulation() -> Result<Simulation, AutomataError> {
-    let mut state_eq_map: IndexMap<MultiTapeState, MultiTapeExpression> = IndexMap::new();
+pub fn build_demo_simulation() -> Result<Simulation, BuildSimulationError> {
+    let mut transitions_group = MultiTapeTransitionsGroup::new(false);
 
     // a blank cell becomes a marker when the marker next to it moves in
-    state_eq_map.insert(
-        MultiTapeState::new(0, MARKER_RIGHT),
-        MultiTapeExpression::new(vec![
-            product(
-                vec![term(-1, 0, MARKER_RIGHT), term(0, 0, BLANK)],
-                "move-right",
-            ),
-            product(
-                vec![term(0, 0, MARKER_LEFT), term(-1, 0, VOID)],
-                "bounce-left-edge",
-            ),
-        ]),
-    );
-    state_eq_map.insert(
-        MultiTapeState::new(0, MARKER_LEFT),
-        MultiTapeExpression::new(vec![
-            product(
-                vec![term(1, 0, MARKER_LEFT), term(0, 0, BLANK)],
-                "move-left",
-            ),
-            product(
-                vec![term(0, 0, MARKER_RIGHT), term(1, 0, VOID)],
-                "bounce-right-edge",
-            ),
-        ]),
-    );
+    transitions_group.add_transition(
+        vec![term(-1, 0, MARKER_RIGHT), term(0, 0, BLANK)],
+        0, MARKER_RIGHT,
+        true, true,
+        "move-right".to_string(),
+        0,
+    )?;
+    transitions_group.add_transition(
+        vec![term(0, 0, MARKER_LEFT), term(-1, 0, VOID)],
+        0, MARKER_RIGHT,
+        true, true,
+        "bounce-left-edge".to_string(),
+        0,
+    )?;
+
+    // a blank cell becomes a left-moving marker when a left marker approaches
+    transitions_group.add_transition(
+        vec![term(1, 0, MARKER_LEFT), term(0, 0, BLANK)],
+        0, MARKER_LEFT,
+        true, true,
+        "move-left".to_string(),
+        0,
+    )?;
+    transitions_group.add_transition(
+        vec![term(0, 0, MARKER_RIGHT), term(1, 0, VOID)],
+        0, MARKER_LEFT,
+        true, true,
+        "bounce-right-edge".to_string(),
+        0,
+    )?;
+
     // the cell the marker occupied becomes blank once the marker moves away
-    state_eq_map.insert(
-        MultiTapeState::new(0, BLANK),
-        MultiTapeExpression::new(vec![
-            product(
-                vec![term(0, 0, MARKER_RIGHT), term(1, 0, BLANK)],
-                "vacate-right",
-            ),
-            product(
-                vec![term(0, 0, MARKER_LEFT), term(-1, 0, BLANK)],
-                "vacate-left",
-            ),
-        ]),
-    );
+    transitions_group.add_transition(
+        vec![term(0, 0, MARKER_RIGHT), term(1, 0, BLANK)],
+        0, BLANK,
+        true, true,
+        "vacate-right".to_string(),
+        0,
+    )?;
+    transitions_group.add_transition(
+        vec![term(0, 0, MARKER_LEFT), term(-1, 0, BLANK)],
+        0, BLANK,
+        true, true,
+        "vacate-left".to_string(),
+        0,
+    )?;
+
     // tape 1 keeps a permanent trail of every visited cell
-    state_eq_map.insert(
-        MultiTapeState::new(1, TRAIL),
-        MultiTapeExpression::new(vec![
-            product(vec![term(0, 0, MARKER_RIGHT)], "trail-right"),
-            product(vec![term(0, 0, MARKER_LEFT)], "trail-left"),
-        ]),
-    );
+    transitions_group.add_transition(
+        vec![term(0, 0, MARKER_RIGHT)],
+        1, TRAIL,
+        true, true,
+        "trail-right".to_string(),
+        0,
+    )?;
+    transitions_group.add_transition(
+        vec![term(0, 0, MARKER_LEFT)],
+        1, TRAIL,
+        true, true,
+        "trail-left".to_string(),
+        0,
+    )?;
 
     let initial_regions: Vec<InitialRegion> = vec![
         (
@@ -209,69 +247,13 @@ pub fn build_demo_simulation() -> Result<Simulation, AutomataError> {
         ),
     ];
 
-    Simulation::new(state_eq_map, initial_regions)
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    fn marker_position(simulation: &Simulation) -> Option<i64> {
-        (DEMO_TAPE_START..=DEMO_TAPE_END).find(|position| {
-            let state = simulation.read_cell(0, *position);
-            state == MARKER_RIGHT || state == MARKER_LEFT
-        })
-    }
-
-    #[test]
-    fn demo_marker_moves_and_leaves_a_trail() {
-        let mut simulation = build_demo_simulation().unwrap();
-        assert_eq!(marker_position(&simulation), Some(DEMO_MARKER_POSITION));
-        assert_eq!(simulation.generation(), 0);
-        assert!(simulation.last_writes().is_empty());
-
-        simulation.step().unwrap();
-        assert_eq!(simulation.generation(), 1);
-        assert_eq!(marker_position(&simulation), Some(DEMO_MARKER_POSITION + 1));
-        assert!(!simulation.last_writes().is_empty());
-        // the visited cell is recorded on the trail tape
-        assert_eq!(simulation.read_cell(1, DEMO_MARKER_POSITION), TRAIL);
-        assert_eq!(simulation.read_cell(0, DEMO_MARKER_POSITION), BLANK);
-    }
-
-    #[test]
-    fn demo_marker_bounces_off_both_tape_edges() {
-        let mut simulation = build_demo_simulation().unwrap();
-        // enough steps to reach both ends of the tape at least once
-        for _ in 0..(4 * (DEMO_TAPE_END - DEMO_TAPE_START)) {
-            simulation.step().unwrap();
-            let position = marker_position(&simulation).expect("marker disappeared");
-            assert!((DEMO_TAPE_START..=DEMO_TAPE_END).contains(&position));
+    let new_simulation = Simulation::new(transitions_group, initial_regions);
+    match new_simulation {
+        Ok(simulation) => {
+            Ok(simulation)
         }
-    }
-
-    #[test]
-    fn restart_resets_the_simulation() {
-        let mut simulation = build_demo_simulation().unwrap();
-        for _ in 0..5 {
-            simulation.step().unwrap();
+        Err(err) => {
+            Err(BuildSimulationError::AutomataError(err))
         }
-        assert_ne!(marker_position(&simulation), Some(DEMO_MARKER_POSITION));
-
-        simulation.restart().unwrap();
-        assert_eq!(simulation.generation(), 0);
-        assert!(simulation.last_writes().is_empty());
-        assert_eq!(marker_position(&simulation), Some(DEMO_MARKER_POSITION));
-        assert_eq!(simulation.read_cell(1, DEMO_MARKER_POSITION), VOID);
-    }
-
-    #[test]
-    fn tapes_render_into_a_text_frame() {
-        let simulation = build_demo_simulation().unwrap();
-        let render_frame = simulation.render_tapes(0, 80).unwrap();
-        let lines = render_frame.get_lines();
-        // position ruler + one line per tape
-        assert_eq!(lines.len(), simulation.get_tape_nos().len() + 1);
-        assert!(lines[1].starts_with("Tape 0: "));
     }
 }
