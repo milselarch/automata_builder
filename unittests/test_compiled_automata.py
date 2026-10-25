@@ -39,7 +39,7 @@ class TestHalfCounterAutomataConvergence(unittest.TestCase):
         return runner.read_signals_tape_value()
 
     def test_encoded_value_equals_half_cells_filled_after_2n_steps(
-            self, num_tests: int = 100, seed: int = 42
+        self, num_tests: int = 100, seed: int = 42
     ) -> None:
         random.seed(seed)
         pbar = tqdm.tqdm(range(num_tests))

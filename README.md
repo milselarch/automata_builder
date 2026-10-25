@@ -81,9 +81,10 @@ raw_result = builder.compile_tapes_rust()  # rust PyCompileTapesResult
 - design counter automata that operates within data range
 - add unittest for single-tape compiled automata
 - implement web automata visualizer tool
-- implement TUI for automata visualization
 
 # DONE
+- interactive TUI automata player (`automata-tui`, run with `cargo run` inside
+  `automata-tui/` - see [automata-tui/README.md](automata-tui/README.md))
 - multi-tape to single-tape cellular automata compiler
 - port cellular automata simulator to rust
 - port multi-tape to single-tape compiler (`compile_tapes`) to rust
