@@ -17,14 +17,26 @@ use crate::automata::renderer::RenderError;
 use crate::automata::renderer::TapeRenderFrame;
 use crate::automata::terms_multitape::TapeNo;
 
+/// A single `input terms -> output state` transition
+/// (port of the python `TapeTransition`)
+#[derive(Debug, Clone, Eq, PartialEq)]
+pub struct AutomataTransition {
+    pub input_terms: Vec<Term>,
+    pub output_state: CellState,
+    pub annotation: String,
+}
+
 /// Contains a set of transitions for a cellular automaton,
 /// defined as a mapping from input states to output state:
 /// `A[] -> output state`
+/// (port of the python `TapeTransitionsGroup`)
 #[derive(Debug, Clone, Default)]
 pub struct AutomataTransitionsGroup {
     pub num_states: Option<usize>,
+    /// maps input terms -> index of the transition in `transitions`
     pub transitions_map: HashMap<Vec<Term>, usize>,
-    pub transitions: Vec<(Vec<Term>, usize)>,
+    /// list of transitions in the order they were added
+    pub transitions: Vec<AutomataTransition>,
 }
 
 impl AutomataTransitionsGroup {
@@ -37,13 +49,28 @@ impl AutomataTransitionsGroup {
         }
     }
 
+    pub fn len(&self) -> usize {
+        self.transitions.len()
+    }
+
+    pub fn is_empty(&self) -> bool {
+        self.transitions.is_empty()
+    }
+
     /// Equivalent of Python's `__getitem__`.
     /// Returns the input terms (wrapped as a `PyProduct`) and the output state
     /// at the given index.
-    pub fn get(&self, index: usize) -> (Product, usize) {
-        let (input_terms, output_state) = &self.transitions[index];
-        let input_product = Product::new(input_terms.clone());
-        (input_product, *output_state)
+    pub fn get(&self, index: usize) -> (Product, CellState) {
+        let transition = &self.transitions[index];
+        let input_product = Product::new(transition.input_terms.clone());
+        (input_product, transition.output_state)
+    }
+
+    /// Output state of the transition with exactly the given input terms
+    pub fn get_output_state(&self, input_terms: &[Term]) -> Option<CellState> {
+        self.transitions_map
+            .get(input_terms)
+            .map(|index| self.transitions[*index].output_state)
     }
 
     /// Attempts to add a new transition.
@@ -54,46 +81,72 @@ impl AutomataTransitionsGroup {
     pub fn add_transition(
         &mut self,
         input_terms: Vec<Term>,
-        output_state: usize,
+        output_state: CellState,
         ban_halt_state: bool,
+        annotation: String,
     ) -> Result<bool, String> {
-        if let Some(&existing_state) = self.transitions_map.get(&input_terms) {
-            if existing_state == output_state {
+        if let Some(&existing_index) = self.transitions_map.get(&input_terms) {
+            let existing_transition = &self.transitions[existing_index];
+            if existing_transition.output_state == output_state {
+                // block duplicate transitions
                 return Ok(false);
             }
             return Err(format!(
-                "Conflicting transition for input terms {input_terms:?}: \
-                 {output_state} vs {existing_state}"
+                "Conflicting transition for input terms {}: \
+                 {output_state} [{annotation}] vs {} [{}]",
+                Self::terms_to_string(&input_terms),
+                existing_transition.output_state,
+                existing_transition.annotation
             ));
         }
 
         let num_states = self.num_states.unwrap_or(usize::MAX);
-        assert!(output_state < num_states);
+        if (output_state as usize) >= num_states {
+            return Err(format!(
+                "Output state {output_state} exceeds number of states {num_states}"
+            ));
+        }
 
         for term in &input_terms {
-            let state = term.state;
-            assert!(state < num_states as u32);
-
+            if (term.state as usize) >= num_states {
+                return Err(format!(
+                    "Input state {} exceeds number of states {num_states}",
+                    term.state
+                ));
+            }
             if ban_halt_state && is_halt_state(term) {
                 return Err(format!(
-                    "Cannot add transition with halt state term: {term:?}"
+                    "Cannot add transition with halt state term: A({},{})",
+                    term.position, term.state
                 ));
             }
         }
 
-        self.transitions.push((input_terms.clone(), output_state));
-        self.transitions_map.insert(input_terms, output_state);
+        self.transitions_map.insert(input_terms.clone(), self.transitions.len());
+        self.transitions.push(AutomataTransition {
+            input_terms, output_state, annotation,
+        });
         Ok(true)
     }
 
-    /// Merges another group's transitions into this one, consuming `self`
-    /// to allow fluent chaining (mirrors Python's `-> Self` return).
-    pub fn merge(mut self, other: AutomataTransitionsGroup) -> Self {
-        for (input_terms, output_state) in other.transitions {
-            self.add_transition(input_terms, output_state, false)
-                .expect("conflicting transition encountered during merge");
+    /// Merges another group's transitions into this one
+    pub fn merge(&mut self, other: AutomataTransitionsGroup) -> Result<(), String> {
+        for transition in other.transitions {
+            self.add_transition(
+                transition.input_terms, transition.output_state,
+                false, transition.annotation,
+            )?;
         }
-        self
+        Ok(())
+    }
+
+    fn terms_to_string(terms: &[Term]) -> String {
+        let terms_str = terms
+            .iter()
+            .map(|term| format!("A({},{})", term.position, term.state))
+            .collect::<Vec<String>>()
+            .join(", ");
+        format!("({})", terms_str)
     }
 }
 
