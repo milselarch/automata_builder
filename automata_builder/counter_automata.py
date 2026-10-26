@@ -13,7 +13,7 @@ from automata_builder.counter_states import (
     SIGNALS_TAPE, paused_counter, active_counter, CARRY_TAPE, CT_DATA,
     CT_MID, DT_RIGHT, REDUCER_DATA, REDUCER_LEFT,
     REDUCER_MID, REDUCER_PAUSED_DATA, REDUCER_TAPE, REDUCER_RIGHT,
-    DATA_TAPE, from_counter_state
+    DATA_TAPE, from_counter_state, CT_LEFT, CT_RIGHT
 )
 from automata_builder.rule_generator import BLANK_INT
 from automata_builder.rule_generator_multitape import (
@@ -282,6 +282,69 @@ class CounterAutomataBuilder(object):
         return _transitions_group
 
     @classmethod
+    def build_ct_reducer_transitions_group(
+        cls, transitions_group: PyMultiTapeTransitionsGroup | None = None
+    ):
+        if transitions_group is not None:
+            _transitions_group = transitions_group
+        else:
+            _transitions_group = PyMultiTapeTransitionsGroup(
+                require_annotation=True
+            )
+
+        # spawn data to the left of the
+        # left end of initial data of the data tape, on the carry tape
+        _transitions_group.add_transition(
+            input_terms=(
+                DT_LEFT(VOID_STATE),
+                DT_MID(DT_DATA),
+                ST_MID(VOID_STATE), # <- inserted for compilability
+                CT_LEFT(VOID_STATE),
+                CT_MID(VOID_STATE),
+                ST_RIGHT(VOID_STATE) # <- inserted for compilability
+            ),
+            output_tape_no=CARRY_TAPE,
+            output_cell_state=REDUCER_PAUSED_DATA,
+            annotation='REDUCER_SPAWN_LEFT_END',
+        )
+        # spread the data state rightwards while overlapping with input data
+        _transitions_group.add_transition(
+            input_terms=(
+                CT_LEFT(REDUCER_DATA),
+                DT_MID(DT_DATA),
+                CT_MID(VOID_STATE),
+                ST_RIGHT(VOID_STATE) # <- inserted for compilability
+            ),
+            output_tape_no=REDUCER_TAPE,
+            output_cell_state=REDUCER_PAUSED_DATA,
+            annotation='REDUCER_DATA_SPREAD_RIGHT',
+        )
+        # spread the data state leftwards (regardless of input data overlap)
+        _transitions_group.add_transition(
+            input_terms=(
+                CT_LEFT(VOID_STATE), # <- inserted for compilability rs
+                CT_MID(VOID_STATE),
+                CT_RIGHT(REDUCER_DATA),
+            ),
+            output_tape_no=REDUCER_TAPE,
+            output_cell_state=REDUCER_PAUSED_DATA,
+            annotation='REDUCER_DATA_SPREAD_LEFT',
+        )
+        # convert the paused half-data tape state to an active state
+        _transitions_group.add_transition(
+            input_terms=(
+                DT_MID(DT_DATA), # <- inserted for compilability
+                ST_MID(VOID_STATE), # <- inserted for compilability
+                ST_RIGHT(VOID_STATE), # <- inserted for compilability
+                CT_MID(REDUCER_PAUSED_DATA),
+            ),
+            output_tape_no=REDUCER_TAPE,
+            output_cell_state=REDUCER_DATA,
+            annotation=f'REDUCER_PAUSE_TO_UNPAUSE',
+        )
+        return _transitions_group
+
+    @classmethod
     def build_reducer_transitions_group(
         cls, transitions_group: PyMultiTapeTransitionsGroup | None = None
     ) -> PyMultiTapeTransitionsGroup:
@@ -424,12 +487,37 @@ class CounterAutomataBuilder(object):
         )
         return transitions_group
 
+    def build_ct_reduced_transitions_group(self) -> PyMultiTapeTransitionsGroup:
+        base_transitions_group = self.build_base_transitions_group()
+        transitions_group = self.build_ct_reducer_transitions_group(
+            transitions_group=base_transitions_group
+        )
+        """
+        The presence of a data cell on the 
+        reducer tape is a signal to not increment the counter.
+        
+        Since reduction signal and counter are on opposite ends of 
+        the data tape positionally, and they move at half speed, we 
+        should expect that only half of the data tape cells will 
+        contribute to counter increments.
+        """
+        transitions_group = self.build_increment_transitions_group(
+            transitions_group=transitions_group,
+            increment_trigger_term=CT_MID(VOID_STATE),
+            no_increment_states=(
+                CT_MID(REDUCER_DATA),
+                CT_MID(REDUCER_PAUSED_DATA),
+            )
+        )
+        return transitions_group
+
 
 class CounterAutomataRunner(object):
     def __init__(
         self, base: int = 8, initial_write_start: int = 0,
         initial_write_end: int = 20,
-        apply_reduction: bool = False
+        apply_reduction: bool = False,
+        collapse_reduction_tape: bool = False
     ):
         """
         Counter-automata instance with initial cells populated
@@ -443,7 +531,11 @@ class CounterAutomataRunner(object):
         self.apply_reduction = apply_reduction
         self.builder = CounterAutomataBuilder(base=base)
 
-        if apply_reduction:
+        if apply_reduction and collapse_reduction_tape:
+            transitions_group = (
+                self.builder.build_ct_reduced_transitions_group()
+            )
+        elif apply_reduction:
             transitions_group = self.builder.build_reduced_transitions_group()
         else:
             transitions_group = self.builder.build_transitions_group()
@@ -457,7 +549,7 @@ class CounterAutomataRunner(object):
         self.multi_tape_automata = PyMultiTapeAutomata(self.transitions_group)
 
         self.init_tapes = [DATA_TAPE, SIGNALS_TAPE, CARRY_TAPE]
-        if apply_reduction:
+        if apply_reduction and not collapse_reduction_tape:
             self.init_tapes.append(REDUCER_TAPE)
 
         self.multi_tape_automata.init_tapes(tape_nos=self.init_tapes)

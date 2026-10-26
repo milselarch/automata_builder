@@ -25,6 +25,7 @@ INPUT_DATA_STATE = MultiTapeState(tape_no=DATA_TAPE, tape_cell_state=DT_DATA)
 class CounterAutomataSettings(object):
     base: int = 8
     apply_reduction: bool = False
+    collapse_reduction_tape: bool = False
 
 
 class CachedCounterAutomataCompiler(object):
@@ -55,17 +56,21 @@ class CompiledCounterAutomataRunner(object):
         cache: CachedCounterAutomataCompiler | None = None,
         verbose: bool = False
     ):
+        self._cache = cache
         self.base = automata_settings.base
         self.initial_write_start = initial_write_start
         self.initial_write_end = initial_write_end
         self.apply_reduction = automata_settings.apply_reduction
-        self._cache = cache
+        self.collapse_reduction_tape = (
+            automata_settings.collapse_reduction_tape
+        )
 
         self.multi_tape_runner = CounterAutomataRunner(
             base=self.base,
             initial_write_start=self.initial_write_start,
             initial_write_end=self.initial_write_end,
-            apply_reduction=self.apply_reduction
+            apply_reduction=self.apply_reduction,
+            collapse_reduction_tape=self.collapse_reduction_tape,
         )
         self.multi_tape_builder = MultiTapeBuilder(
             multi_tape_automata=self.multi_tape_runner.multi_tape_automata

@@ -64,6 +64,11 @@ parser.add_argument(
     help='Use a automata ruleset with half-reduction'
 )
 parser.add_argument(
+    '--collapse-reduction-tape', '-c',
+    action='store_true',
+    help='Collapse the reduction tape into the carry tape'
+)
+parser.add_argument(
     '--verbose', '-v',
     action='store_true',
     help='Show verbose logs for tapes compilation'
@@ -81,7 +86,8 @@ if __name__ == '__main__':
         initial_write_end=args.write_end,
         verbose=args.verbose,
         automata_settings=CounterAutomataSettings(
-            base=args.base, apply_reduction=args.apply_reduction
+            base=args.base, apply_reduction=args.apply_reduction,
+            collapse_reduction_tape=args.collapse_reduction_tape,
         )
     )
 
