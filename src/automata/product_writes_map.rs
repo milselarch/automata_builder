@@ -1,4 +1,4 @@
-use std::collections::{BTreeMap, BTreeSet};
+use std::collections::{BTreeMap, BTreeSet, HashMap};
 use std::fmt;
 
 use indexmap::IndexMap;
@@ -6,7 +6,10 @@ use indexmap::IndexSet;
 use crate::automata::rule_generator::VOID_STATE;
 use crate::automata::tape_overlaps::{TapeOverlaps};
 use crate::automata::terms::CellState;
-use crate::automata::terms_multitape::{AbstractMultiTapeExpression, MultiTapeProduct, MultiTapeState, MultiTapeTerm, TapeNo};
+use crate::automata::terms_multitape::{
+    AbstractMultiTapeExpression, MultiTapeProduct,
+    MultiTapeState, MultiTapeTerm, TapeNo
+};
 
 /// Writes performed by a single product: `tape_no -> output tape cell state`.
 /// `BTreeMap` so iteration is deterministic (ascending `TapeNo`).
@@ -20,6 +23,7 @@ pub enum ProductWritesError {
         tape_no: TapeNo,
         existing: CellState,
         incoming: CellState,
+        annotations: Vec<String>,
     },
     /// Mutating a frozen map.
     Frozen,
@@ -31,11 +35,13 @@ impl fmt::Display for ProductWritesError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             ProductWritesError::ConflictingOutput {
-                product, tape_no, existing, incoming,
+                product, tape_no, existing,
+                incoming, annotations
             } => write!(
                 f,
-                "Conflicting output states for product={} on tape {}: {} vs {}",
-                product, tape_no, existing, incoming
+                "Conflicting output states for product={} on tape {}: {} vs {} \
+                - Annotations: {:?}",
+                product, tape_no, existing, incoming, annotations
             ),
             ProductWritesError::Frozen => {
                 write!(f, "Cannot modify ProductWritesMap when frozen")
@@ -61,6 +67,76 @@ pub struct MultiTapeStateAttributes {
 
 pub type StateAttributesMap = BTreeMap<MultiTapeState, MultiTapeStateAttributes>;
 
+#[derive(Debug, Clone, Default, PartialEq)]
+pub struct ProductToStateMap {
+    prod_to_state_map: IndexMap<MultiTapeProduct, TapeWrites>,
+    // self-reference for products, so that we can look up
+    // product annotations for pre-existing products
+    products: HashMap<MultiTapeProduct, MultiTapeProduct>,
+}
+
+impl ProductToStateMap {
+    pub fn new() -> Self {
+        Self {
+            prod_to_state_map: IndexMap::new(),
+            products: HashMap::new(),
+        }
+    }
+    pub fn len(&self) -> usize {
+        self.prod_to_state_map.len()
+    }
+    pub fn is_empty(&self) -> bool {
+        self.prod_to_state_map.is_empty()
+    }
+    pub fn iter(&self) -> indexmap::map::Iter<'_, MultiTapeProduct, TapeWrites> {
+        self.prod_to_state_map.iter()
+    }
+    pub fn get(&self, product: &MultiTapeProduct) -> Option<&TapeWrites> {
+        self.prod_to_state_map.get(product)
+    }
+    pub fn contains_key(&self, product: &MultiTapeProduct) -> bool {
+        self.prod_to_state_map.contains_key(product)
+    }
+    pub fn shift_remove(&mut self, product: &MultiTapeProduct) -> Option<TapeWrites> {
+        self.prod_to_state_map.shift_remove(product)
+    }
+    pub fn keys(&self) -> indexmap::map::Keys<'_, MultiTapeProduct, TapeWrites> {
+        self.prod_to_state_map.keys()
+    }
+    pub fn insert(
+        &mut self,
+        product: MultiTapeProduct,
+        write_tape_no: TapeNo,
+        write_tape_cell_state: CellState,
+    ) -> Result<(), ProductWritesError> {
+        let product_repr = product._to_string("D");
+        let writes_map = self.prod_to_state_map.entry(product.clone()).or_default();
+        let existing = writes_map
+            .get(&write_tape_no)
+            .copied()
+            .unwrap_or(write_tape_cell_state);
+
+        if existing != write_tape_cell_state {
+            let existing_product = &self.products[&product];
+            let annotations = vec![
+                existing_product.get_annotation().clone(),
+                product.get_annotation().clone()
+            ];
+            return Err(ProductWritesError::ConflictingOutput {
+                product: product_repr,
+                tape_no: write_tape_no,
+                existing,
+                incoming: write_tape_cell_state,
+                annotations
+            });
+        }
+
+        writes_map.insert(write_tape_no, write_tape_cell_state);
+        self.products.insert(product.clone(), product);
+        Ok(())
+    }
+}
+
 
 /// map `product -> tape_no -> output tape cell state`
 ///
@@ -68,7 +144,7 @@ pub type StateAttributesMap = BTreeMap<MultiTapeState, MultiTapeStateAttributes>
 /// Python `dict`-backed implementation.
 #[derive(Debug, Clone, Default)]
 pub struct ProductWritesMap {
-    prod_to_state_map: IndexMap<MultiTapeProduct, TapeWrites>,
+    prod_to_state_map: ProductToStateMap,
     frozen: bool,
 }
 
@@ -84,7 +160,7 @@ impl Eq for ProductWritesMap {}
 
 impl ProductWritesMap {
     pub fn new() -> Self {
-        Self { prod_to_state_map: IndexMap::new(), frozen: false }
+        Self { prod_to_state_map: ProductToStateMap::new(), frozen: false }
     }
 
     pub fn freeze(&mut self) {
@@ -151,25 +227,11 @@ impl ProductWritesMap {
         if self.frozen {
             return Err(ProductWritesError::Frozen);
         }
-
-        let product_repr = product._to_string("D");
-        let writes_map = self.prod_to_state_map.entry(product).or_default();
-        let existing = writes_map
-            .get(&write_tape_no)
-            .copied()
-            .unwrap_or(write_tape_cell_state);
-
-        if existing != write_tape_cell_state {
-            return Err(ProductWritesError::ConflictingOutput {
-                product: product_repr,
-                tape_no: write_tape_no,
-                existing,
-                incoming: write_tape_cell_state,
-            });
-        }
-
-        writes_map.insert(write_tape_no, write_tape_cell_state);
-        Ok(())
+        self.prod_to_state_map.insert(
+            product,
+            write_tape_no,
+            write_tape_cell_state,
+        )
     }
 
     /// Insert a product whose outputs rewrite the input terms with offset 0

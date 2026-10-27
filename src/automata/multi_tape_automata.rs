@@ -36,7 +36,7 @@ impl fmt::Display for WriteRecord {
         let (tape_no, position) = self.write_target;
         write!(
             f,
-            "{} | ({}, {}) -> {} ({})",
+            "{} | [tape {}, pos {}] -> {} [{}]",
             self.origin_product._to_string("D"),
             tape_no, position, self.tape_cell_state, self.annotation
         )

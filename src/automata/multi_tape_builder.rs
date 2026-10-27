@@ -20,6 +20,8 @@
 //! Unlike the python implementation (whose results depend on `set`
 //! iteration order), every collection here is iterated in a deterministic
 //! (sorted / insertion) order, so compilation results are reproducible.
+
+use std::backtrace::Backtrace;
 use std::collections::{BTreeMap, BTreeSet, HashMap, HashSet};
 use std::fmt;
 
@@ -224,16 +226,19 @@ impl MultiTapeStatePathRemap {
         if Self::is_void_path(state_path) {
             return Ok(VOID_STATE);
         }
+
+        let state_path_str = state_path
+            .iter()
+            .map(|state| state.to_string())
+            .collect::<Vec<String>>()
+            .join(", ");
+
         self.tape_state_path_remap
             .get(state_path)
             .copied()
             .ok_or_else(|| CompileTapesError::MissingRemap(format!(
-                "no remap for state path [{}]",
-                state_path
-                    .iter()
-                    .map(|state| state.to_string())
-                    .collect::<Vec<String>>()
-                    .join(", ")
+                "no remap for state path [{}] - backtrace: \n{}",
+                state_path_str, Backtrace::capture()
             )))
     }
 

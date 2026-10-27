@@ -271,7 +271,7 @@ class CounterAutomataBuilder(object):
                         no_increment_state,
                         ST_MID(VOID_STATE),
                         ST_RIGHT(active_counter(digit)),
-                        CT_MID(VOID_STATE)
+                        # CT_MID(VOID_STATE)
                     ),
                     output_tape_no=SIGNALS_TAPE,
                     output_cell_state=paused_counter(digit),
