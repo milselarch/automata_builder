@@ -19,7 +19,7 @@ pub type TapeWrites = BTreeMap<TapeNo, CellState>;
 pub enum ProductWritesError {
     /// The same product wants to write two different states to the same tape.
     ConflictingOutput {
-        product: String,
+        product: MultiTapeProduct,
         tape_no: TapeNo,
         existing: CellState,
         incoming: CellState,
@@ -37,12 +37,15 @@ impl fmt::Display for ProductWritesError {
             ProductWritesError::ConflictingOutput {
                 product, tape_no, existing,
                 incoming, annotations
-            } => write!(
-                f,
-                "Conflicting output states for product={} on tape {}: {} vs {} \
-                - Annotations: {:?}",
-                product, tape_no, existing, incoming, annotations
-            ),
+            } => {
+                let product_repr = product._to_string("D");
+                write!(
+                    f,
+                    "Conflicting output states for product={} on tape {}: {} vs {} \
+                    - Annotations: {:?}",
+                    product_repr, tape_no, existing, incoming, annotations
+                )
+            },
             ProductWritesError::Frozen => {
                 write!(f, "Cannot modify ProductWritesMap when frozen")
             }
@@ -109,7 +112,7 @@ impl ProductToStateMap {
         write_tape_no: TapeNo,
         write_tape_cell_state: CellState,
     ) -> Result<(), ProductWritesError> {
-        let product_repr = product._to_string("D");
+        // let product_repr = product._to_string("D");
         let writes_map = self.prod_to_state_map.entry(product.clone()).or_default();
         let existing = writes_map
             .get(&write_tape_no)
@@ -123,7 +126,7 @@ impl ProductToStateMap {
                 product.get_annotation().clone()
             ];
             return Err(ProductWritesError::ConflictingOutput {
-                product: product_repr,
+                product,
                 tape_no: write_tape_no,
                 existing,
                 incoming: write_tape_cell_state,

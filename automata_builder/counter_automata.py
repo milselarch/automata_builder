@@ -315,7 +315,7 @@ class CounterAutomataBuilder(object):
                 CT_MID(VOID_STATE),
                 ST_RIGHT(VOID_STATE) # <- inserted for compilability
             ),
-            output_tape_no=REDUCER_TAPE,
+            output_tape_no=CARRY_TAPE,
             output_cell_state=REDUCER_PAUSED_DATA,
             annotation='REDUCER_DATA_SPREAD_RIGHT',
         )
@@ -326,7 +326,7 @@ class CounterAutomataBuilder(object):
                 CT_MID(VOID_STATE),
                 CT_RIGHT(REDUCER_DATA),
             ),
-            output_tape_no=REDUCER_TAPE,
+            output_tape_no=CARRY_TAPE,
             output_cell_state=REDUCER_PAUSED_DATA,
             annotation='REDUCER_DATA_SPREAD_LEFT',
         )
@@ -338,7 +338,7 @@ class CounterAutomataBuilder(object):
                 ST_RIGHT(VOID_STATE), # <- inserted for compilability
                 CT_MID(REDUCER_PAUSED_DATA),
             ),
-            output_tape_no=REDUCER_TAPE,
+            output_tape_no=CARRY_TAPE,
             output_cell_state=REDUCER_DATA,
             annotation=f'REDUCER_PAUSE_TO_UNPAUSE',
         )

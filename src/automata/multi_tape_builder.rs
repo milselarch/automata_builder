@@ -69,6 +69,10 @@ fn terms_repr(terms: &[Term]) -> String {
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub enum CompileTapesError {
     ProductWrites(ProductWritesError),
+    ExtendedProductConflictingOutput(
+        matching_source_products: MultiTapeProduct,
+        
+    ),
     Trie(TrieError),
     OverlapsFSM(TapeOverlapsFSMError),
     /// a remap lookup for a tape state path / remapped state failed
@@ -1436,8 +1440,33 @@ impl MultiTapeBuilder {
             let writes = preexisting_writes_map.get_multi_tape_writes_for(product);
             for extended_product in product_extensions.iter() {
                 for write_multi_tape_state in writes.iter() {
-                    extended_preexisting_products
-                        .insert(extended_product.clone(), *write_multi_tape_state)?;
+                    let insert_res = extended_preexisting_products.insert(
+                        extended_product.clone(), *write_multi_tape_state
+                    );
+                    match insert_res {
+                        Ok(_) => {},
+                        Err(err @ ProductWritesError::ConflictingOutput {
+                            ..
+                        }) => {
+                            let product = match &err {
+                                ProductWritesError::ConflictingOutput {
+                                    product, ..
+                                } => product.clone(),
+                                _ => { panic!("Unexpected error variant") }
+                            };
+                            let mut matching_products: IndexSet<MultiTapeProduct> = IndexSet::new();
+                            for source_product in preexisting_writes_map.products() {
+                                if *source_product == product {
+                                    matching_products.insert(source_product.clone());
+                                }
+                            }
+                            // `err` moved last — no clone needed
+                            return Err(CompileTapesError::from(err));
+                        },
+                        Err(err) => {
+                            return Err(CompileTapesError::from(err));
+                        },
+                    };
                     extended_preexisting_products_trie.insert_product(extended_product);
                 }
             }

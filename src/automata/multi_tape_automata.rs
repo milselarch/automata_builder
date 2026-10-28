@@ -138,6 +138,27 @@ impl MultiTapeAutomata {
     }
 
     pub fn init_tapes(&mut self, tape_nos: &[TapeNo]) -> Result<(), AutomataError> {
+        let transitions = &self.transitions_group.transitions;
+
+        for transition in transitions.iter() {
+            let output_tape: TapeNo = transition.output_state.tape_no;
+
+            if (!tape_nos.contains(&output_tape)) {
+                return Err(AutomataError::InvalidInputOrOutputTape {
+                    tape_no: output_tape, transition: transition.clone()
+                })
+            }
+
+            let input_terms = &transition.input_terms;
+            for term in input_terms.iter() {
+                let input_tape_no = term.get_tape_no();
+                if (!tape_nos.contains(&input_tape_no)) {
+                    return Err(AutomataError::InvalidInputOrOutputTape {
+                        tape_no: input_tape_no, transition: transition.clone()
+                    })
+                }
+            }
+        }
         self.multi_tape.init_tapes(tape_nos, false)?;
         Ok(())
     }

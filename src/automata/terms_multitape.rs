@@ -105,6 +105,18 @@ impl MultiTapeTerm {
         }
     }
 
+    pub fn get_state(&self) -> MultiTapeCellState {
+        self.state
+    }
+    pub fn get_tape_no(&self) -> TapeNo {
+        let (tape_no, _) = self.state;
+        tape_no
+    }
+    pub fn get_tape_cell_state(&self) -> CellState {
+        let (_, cell_state) = self.state;
+        cell_state
+    }
+
     pub fn shift(&self, offset: i64) -> Self {
         MultiTapeTerm {
             position: self.position + offset,

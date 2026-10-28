@@ -1,10 +1,11 @@
 use indexmap::IndexSet;
 use std::collections::BTreeMap;
 use std::fmt;
-
+use crate::automata::multi_tape_transition::MultiTapeTransition;
 use crate::automata::product_writes_map::ProductWritesError;
 use crate::automata::renderer::{RenderFrame, TapeRenderFrame};
 use crate::automata::rule_generator::{BidirectionalTape, TapeError, VOID_STATE};
+use crate::automata::rule_generator_multitape::AutomataError::InvalidInputOrOutputTape;
 use crate::automata::terms::CellState;
 use crate::automata::terms_multitape::{MultiTapeProduct, MultiTapeState, MultiTapeTerm, TapeNo};
 
@@ -283,6 +284,10 @@ pub enum AutomataError {
     },
     NoProductsForState {
         state: MultiTapeState
+    },
+    InvalidInputOrOutputTape {
+        tape_no: TapeNo,
+        transition: MultiTapeTransition
     }
 }
 
@@ -327,6 +332,13 @@ impl fmt::Display for AutomataError {
                 write!(
                     f, "Output state {:?} has no products in its expression",
                     state
+                )
+            }
+            InvalidInputOrOutputTape { tape_no, transition } => {
+                write!(
+                    f, "Invalid tape_no {tape_no} used or written in transition {:?} \
+                    (i.e. tape {tape_no} not declared in init_tapes)",
+                    transition
                 )
             }
         }
