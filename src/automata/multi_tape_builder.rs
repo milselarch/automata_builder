@@ -69,10 +69,10 @@ fn terms_repr(terms: &[Term]) -> String {
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub enum CompileTapesError {
     ProductWrites(ProductWritesError),
-    ExtendedProductConflictingOutput(
-        matching_source_products: MultiTapeProduct,
-        
-    ),
+    ExtendedProductConflictingOutput {
+        matching_source_products: Vec<MultiTapeProduct>,
+        product_writes_error: ProductWritesError
+    },
     Trie(TrieError),
     OverlapsFSM(TapeOverlapsFSMError),
     /// a remap lookup for a tape state path / remapped state failed
@@ -1454,10 +1454,14 @@ impl MultiTapeBuilder {
                                 } => product.clone(),
                                 _ => { panic!("Unexpected error variant") }
                             };
-                            let mut matching_products: IndexSet<MultiTapeProduct> = IndexSet::new();
+
+                            let mut matching_source_writes: IndexMap<
+                                MultiTapeProduct, TapeWrites
+                            > = IndexMap::new();
+
                             for source_product in preexisting_writes_map.products() {
-                                if *source_product == product {
-                                    matching_products.insert(source_product.clone());
+                                if (*source_product).is_satisfiable_with(&product) {
+                                    matching_source_writes.insert(source_product.clone());
                                 }
                             }
                             // `err` moved last — no clone needed
