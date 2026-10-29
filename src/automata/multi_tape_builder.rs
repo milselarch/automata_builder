@@ -33,7 +33,7 @@ use crate::automata::multi_tape_product_trie::{
     offset_group_path_to_product, terms_satisfiable_with, MultiTapeProductTrie,
     OffsetGroupedTerms, TrieError,
 };
-use crate::automata::multi_tape_transition::TransitionPriority;
+use crate::automata::multi_tape_transition::{MultiTapeTransition, MultiTapeTransitionsGroup, TransitionPriority};
 use crate::automata::product_writes_map::{ProductWritesError, ProductWritesMap, TapeWrites};
 use crate::automata::rule_generator::{AutomataTransitionsGroup, HALT_STATE, VOID_STATE};
 use crate::automata::tape_overlaps::{
@@ -69,8 +69,13 @@ fn terms_repr(terms: &[Term]) -> String {
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub enum CompileTapesError {
     ProductWrites(ProductWritesError),
-    ExtendedProductConflictingOutput {
-        matching_source_products: Vec<MultiTapeProduct>,
+    ExtendedProductOutputConflict {
+        /*
+        We record transitions rather than products so that we can
+        disambiguate between multiple semantically equivalent products
+        (i.e., same input terms) that have different annotations
+        */
+        writing_transitions: IndexMap<MultiTapeTransition, TapeWrites>,
         product_writes_error: ProductWritesError
     },
     Trie(TrieError),
@@ -93,6 +98,54 @@ impl fmt::Display for CompileTapesError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             CompileTapesError::ProductWrites(err) => write!(f, "{}", err),
+            CompileTapesError::ExtendedProductOutputConflict {
+                writing_transitions: source_product_writes, product_writes_error
+            } => {
+                write!(f, "Conflicting writes in extended product output\n")?;
+                let mut tape_write_to_prods: IndexMap<
+                    TapeNo, Vec<(MultiTapeProduct, CellState)>
+                > = IndexMap::new();
+
+                let mut states_written_by_tape: IndexMap<
+                    TapeNo, IndexSet<CellState>
+                > = IndexMap::new();
+
+                for (transition, tape_writes) in source_product_writes.iter() {
+                    let product = transition.to_product();
+                    for (tape_no, cell_state) in tape_writes.iter() {
+                        states_written_by_tape
+                            .entry(*tape_no).or_default().insert(*cell_state);
+                        tape_write_to_prods.entry(*tape_no).or_default().push(
+                            (product.clone(), *cell_state)
+                        );
+                    }
+                }
+                for (tape_no, products) in tape_write_to_prods.iter() {
+                    let tape_writes = states_written_by_tape.get(tape_no).unwrap();
+                    let has_conflict = tape_writes.len() > 1;
+                    let conflict_stub = if has_conflict { "[HAS_CONFLICT]" } else { "" };
+
+                    let writes_stub = products.iter()
+                        .map(|(product, cell_state_written)| {
+                            return format!(
+                                "{} -> {}",
+                                product.to_annotated_stub(),
+                                cell_state_written
+                            )
+                        })
+                        .collect::<Vec<String>>()
+                        .join("\n- ");
+
+                    write!(f,
+                       "Tape {} writes {conflict_stub}: \n- {} \n",
+                       tape_no, writes_stub
+                    )?;
+                }
+                write!(f,
+                    "Original product writes error:\n{}",
+                    product_writes_error.to_string()
+                )
+            }
             CompileTapesError::Trie(err) => write!(f, "{}", err),
             CompileTapesError::OverlapsFSM(err) => write!(f, "{}", err),
             CompileTapesError::MissingRemap(msg) => write!(f, "Missing remap: {}", msg),
@@ -443,6 +496,7 @@ fn cartesian_product<T: Clone>(sequences: &[Vec<T>]) -> Vec<Vec<T>> {
 pub struct MultiTapeBuilder {
     prod_to_state_map: ProductWritesMap,
     prod_priority_map: IndexMap<MultiTapeProduct, TransitionPriority>,
+    transitions_group: MultiTapeTransitionsGroup,
     tape_nos: Vec<TapeNo>,
     leftmost_extent: i64,
     rightmost_extent: i64,
@@ -455,6 +509,7 @@ impl MultiTapeBuilder {
         Self::from_parts(
             automata.get_prod_to_state_map(),
             automata.get_prod_priority_map().clone(),
+            automata.get_transitions_group().clone(),
             automata.get_tape_nos(),
             automata.leftmost_extent(),
             automata.rightmost_extent(),
@@ -464,6 +519,7 @@ impl MultiTapeBuilder {
     pub fn from_parts(
         prod_to_state_map: ProductWritesMap,
         prod_priority_map: IndexMap<MultiTapeProduct, TransitionPriority>,
+        transitions_group: MultiTapeTransitionsGroup,
         tape_nos: Vec<TapeNo>,
         leftmost_extent: i64,
         rightmost_extent: i64,
@@ -471,6 +527,7 @@ impl MultiTapeBuilder {
         let mut builder = Self {
             prod_to_state_map,
             prod_priority_map,
+            transitions_group,
             tape_nos,
             leftmost_extent,
             rightmost_extent,
@@ -1304,7 +1361,17 @@ impl MultiTapeBuilder {
 
             let mut position_remapped_terms: Vec<Term> = Vec::new();
             for state_path in position_combos.iter() {
-                let remapped_cell_state = ctx.global_state_path_remap.remap(state_path)?;
+                let remapped_cell_state = ctx.global_state_path_remap
+                    .remap(&state_path)
+                    .map_err(|err| match err {
+                        CompileTapesError::MissingRemap(msg) => CompileTapesError::MissingRemap(format!(
+                            "{} | product: {} [{}]",
+                            msg,
+                            product_repr(source_multi_tape_product),
+                            source_multi_tape_product.get_annotation()
+                        )),
+                        other => other,
+                    })?;
                 let remapped_term = Term::new(*product_term_position, remapped_cell_state, false);
                 if position_remapped_terms.contains(&remapped_term) {
                     continue;
@@ -1448,24 +1515,39 @@ impl MultiTapeBuilder {
                         Err(err @ ProductWritesError::ConflictingOutput {
                             ..
                         }) => {
-                            let product = match &err {
+                            /*
+                            lookup the source products that led to the
+                            cell write conflict and return a new error containing
+                            said source products and their writes for easier debugging
+                            TODO: refactor out extended_preexisting_products
+                                propagation to new method
+                            */
+                            let _extended_product = match &err {
                                 ProductWritesError::ConflictingOutput {
                                     product, ..
                                 } => product.clone(),
                                 _ => { panic!("Unexpected error variant") }
                             };
 
-                            let mut matching_source_writes: IndexMap<
-                                MultiTapeProduct, TapeWrites
+                            let mut writing_transitions: IndexMap<
+                                MultiTapeTransition, TapeWrites
                             > = IndexMap::new();
 
-                            for source_product in preexisting_writes_map.products() {
-                                if (*source_product).is_satisfiable_with(&product) {
-                                    matching_source_writes.insert(source_product.clone());
+                            for transition in self.transitions_group.iter_transitions() {
+                                let source_product = &transition.to_product();
+
+                                if (*source_product).is_satisfiable_with(&_extended_product) {
+                                    let tape_writes =
+                                        self.prod_to_state_map.get(source_product).unwrap();
+                                    writing_transitions.insert(
+                                        transition.clone(), tape_writes.clone()
+                                    );
                                 }
                             }
-                            // `err` moved last — no clone needed
-                            return Err(CompileTapesError::from(err));
+                            return Err(CompileTapesError::ExtendedProductOutputConflict {
+                                writing_transitions,
+                                product_writes_error: err
+                            });
                         },
                         Err(err) => {
                             return Err(CompileTapesError::from(err));
@@ -1515,7 +1597,7 @@ impl MultiTapeBuilder {
                 .map(|product| Self::build_transitions_for_product(&ctx, product))
                 .collect();
 
-        // input-output pairs for the final combined automata
+        // input-output pairs for the final combined (single-tape) automata
         let mut global_transitions_group = AutomataTransitionsGroup::spawn_new(None);
         let mut all_unrepresentable_products: HashSet<MultiTapeProduct> = HashSet::new();
         for build_result in build_results.into_iter() {
@@ -1528,7 +1610,10 @@ impl MultiTapeBuilder {
 
         let num_unrepresentable_products = all_unrepresentable_products.len();
         if verbose {
-            println!("len(all_unrepresentable_products)={}", num_unrepresentable_products);
+            println!(
+                "len(all_unrepresentable_products)={}",
+                num_unrepresentable_products
+            );
         }
 
         Ok(CompileTapesResult {

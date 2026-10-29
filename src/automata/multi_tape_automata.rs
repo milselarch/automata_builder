@@ -81,6 +81,10 @@ impl MultiTapeAutomata {
         })
     }
 
+    pub fn get_transitions_group(&self) -> &MultiTapeTransitionsGroup {
+        &self.transitions_group
+    }
+
     pub fn get_prod_priority_map(&self) -> &IndexMap<
         MultiTapeProduct, TransitionPriority
     > {

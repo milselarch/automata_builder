@@ -240,7 +240,8 @@ class CounterAutomataBuilder(object):
                     input_terms=(
                         increment_trigger_term,
                         ST_MID(VOID_STATE),
-                        ST_RIGHT(active_counter(max_counter_digit))
+                        ST_RIGHT(active_counter(max_counter_digit)),
+                        CT_RIGHT(VOID_STATE)  # CT-reducer collapse compat
                     ),
                     output_tape_no=CARRY_TAPE,
                     output_cell_state=CT_DATA,

@@ -14,6 +14,8 @@ use crate::automata::terms::{
 pub type TapeNo = u16;
 pub type MultiTapeCellState = (TapeNo, CellState);
 
+pub const MULTI_TAPE_TERM_SHORT_NAME: &str = "D";
+
 #[derive(
     Debug, Clone, Copy, Eq, PartialEq, Ord, PartialOrd,
     Hash, Serialize, Deserialize
@@ -59,6 +61,9 @@ pub trait AbstractMultiTapeExpression: Mul + BitOr + Eq + Sized {
     ) -> MultiTapeExpression;
     fn to_expression(&self) -> MultiTapeExpression;
     fn _to_string(&self, name: &str) -> String;
+    fn _to_short_string(&self) -> String {
+        self._to_string(MULTI_TAPE_TERM_SHORT_NAME)
+    }
     fn _get_num_terms(&self) -> usize;
     fn _assign_indexes_as_base(&mut self);
 }
@@ -465,8 +470,10 @@ impl MultiTapeProduct {
 
         true
     }
-    pub fn to_string(&self) -> String {
-        self._to_string(&*MultiTapeTerm::_get_name())
+    pub fn to_annotated_stub(&self) -> String {
+        let short_string = self._to_short_string();
+        let annotation = self.get_annotation();
+        format!("{short_string}:{annotation}")
     }
 }
 

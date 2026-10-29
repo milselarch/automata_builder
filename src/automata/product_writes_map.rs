@@ -1,3 +1,4 @@
+use std::fmt::Write;
 use std::collections::{BTreeMap, BTreeSet, HashMap};
 use std::fmt;
 
@@ -14,6 +15,14 @@ use crate::automata::terms_multitape::{
 /// Writes performed by a single product: `tape_no -> output tape cell state`.
 /// `BTreeMap` so iteration is deterministic (ascending `TapeNo`).
 pub type TapeWrites = BTreeMap<TapeNo, CellState>;
+
+pub fn tape_writes_to_str(product_writes: &TapeWrites) -> String {
+    product_writes
+        .iter()
+        .map(|(tape_no, state)| format!("T{}:{}", tape_no, state))
+        .collect::<Vec<_>>()
+        .join(" ")
+}
 
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub enum ProductWritesError {

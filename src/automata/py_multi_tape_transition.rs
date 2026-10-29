@@ -13,9 +13,7 @@ use crate::automata::py_terms_multitape::{
     PyMultiTapeExpression, PyMultiTapeProduct, D
 };
 use crate::automata::terms::CellState;
-use crate::automata::terms_multitape::{
-    MultiTapeProductFactory, MultiTapeState, MultiTapeTerm, TapeNo
-};
+use crate::automata::terms_multitape::{AbstractMultiTapeExpression, MultiTapeProductFactory, MultiTapeState, MultiTapeTerm, TapeNo};
 
 // PyO3 wrapper classes
 #[gen_stub_pyclass]
@@ -129,7 +127,7 @@ impl PyMultiTapeTransition {
             "MultiTapeTransition(\
                 input_terms={}, output_state={}, annotation='{}', priority={}\
             )",
-            product.to_string(),
+            product._to_short_string(),
             format!(
                 "MultiTapeState(tape_no={}, tape_cell_state={})",
                 self.inner.output_state.tape_no,

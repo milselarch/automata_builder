@@ -151,6 +151,10 @@ impl MultiTapeTransitionsGroup {
             require_annotation,
         }
     }
+    
+    pub fn iter_transitions(&self) -> impl Iterator<Item = &MultiTapeTransition> {
+        self.transitions.iter()
+    }
 
     pub fn len(&self) -> usize {
         self.transitions.len()
@@ -158,6 +162,12 @@ impl MultiTapeTransitionsGroup {
 
     pub fn is_empty(&self) -> bool {
         self.transitions.is_empty()
+    }
+
+    pub fn get_transitions_for_product(
+        &self, product: &MultiTapeProduct
+    ) -> Option<&IndexSet<MultiTapeTransition>> {
+        self.prod_to_transitions.get(product)
     }
 
     pub fn get_all_states(&self) -> IndexSet<MultiTapeState> {
