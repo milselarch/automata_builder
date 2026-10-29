@@ -1492,6 +1492,7 @@ impl MultiTapeBuilder {
             preexisting_products.iter().zip(all_product_extensions.into_iter())
         {
             let product_extensions = product_extensions?;
+            /*
             if verbose {
                 println!(
                     "\nBuilding extensions for: {} {} -> {}",
@@ -1503,7 +1504,7 @@ impl MultiTapeBuilder {
                     println!("{}", extended_product.get_annotation());
                 }
             }
-
+            */
             let writes = preexisting_writes_map.get_multi_tape_writes_for(product);
             for extended_product in product_extensions.iter() {
                 for write_multi_tape_state in writes.iter() {
