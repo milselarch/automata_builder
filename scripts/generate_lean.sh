@@ -68,6 +68,8 @@ mkdir -p "$BUILD_DIR"
 # - `-Wl,--undefined-version`: Charon does not generate code, so the pyo3
 #   `PyInit__rust` symbol exported by the cdylib does not exist at link time
 # - `Iterator::{copied,cloned}` signatures crash Aeneas, so they are excluded
+# - rayon's parallel iterator traits are mutually recursive, which Aeneas does
+#   not support, so rayon is excluded (functions using it become axioms)
 "$AENEAS_DIR/charon" cargo --preset=aeneas \
     --rustc-arg=-Clink-arg=-Wl,--undefined-version \
     "${start_from[@]}" \
@@ -83,7 +85,7 @@ mkdir -p "$BUILD_DIR"
 mkdir -p "$LEAN_OUT_DIR"
 aeneas_log="$BUILD_DIR/aeneas.log"
 set +e
-"$AENEAS_DIR/aeneas" -backend lean -split-files -no-progress-bar \
+"$AENEAS_DIR/aeneas" -backend lean -split-files -no-progress-bar -filter-trait-methods \
     -dest "$LEAN_OUT_DIR" "$LLBC_FILE" > "$aeneas_log" 2>&1
 aeneas_status=$?
 set -e

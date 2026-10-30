@@ -248,103 +248,9 @@ impl_def core.iter.adapters.cloned.Cloned.Insts.CoreIterTraitsIteratorIterator
   next :=
     core.iter.adapters.cloned.Cloned.Insts.CoreIterTraitsIteratorIterator.next
     traitsiteratorIteratorISharedATInst cloneCloneInst
-  count := core.iter.traits.iterator.Iterator.count.default
-    (core.iter.adapters.cloned.Cloned.Insts.CoreIterTraitsIteratorIterator
-    traitsiteratorIteratorISharedATInst cloneCloneInst)
-  chain := fun {U : Type} {Clause0_IntoIter : Type} (collectIntoIteratorInst :
-    core.iter.traits.collect.IntoIterator U T Clause0_IntoIter) =>
-    core.iter.traits.iterator.Iterator.chain.default
-    (core.iter.adapters.cloned.Cloned.Insts.CoreIterTraitsIteratorIterator
-    traitsiteratorIteratorISharedATInst cloneCloneInst) collectIntoIteratorInst
-  zip := fun {U : Type} {Clause0_Item : Type} {Clause0_IntoIter : Type}
-    (collectIntoIteratorInst : core.iter.traits.collect.IntoIterator U
-    Clause0_Item Clause0_IntoIter) =>
-    core.iter.traits.iterator.Iterator.zip.trait_default
-    (core.iter.adapters.cloned.Cloned.Insts.CoreIterTraitsIteratorIterator
-    traitsiteratorIteratorISharedATInst cloneCloneInst) collectIntoIteratorInst
-  map := fun {B : Type} {F : Type} (opsfunctionFnMutPTupleFPInst :
-    core.ops.function.FnMut F T B) =>
-    core.iter.traits.iterator.Iterator.map.default
-    (core.iter.adapters.cloned.Cloned.Insts.CoreIterTraitsIteratorIterator
-    traitsiteratorIteratorISharedATInst cloneCloneInst)
-    opsfunctionFnMutPTupleFPInst
-  for_each := fun {F : Type} (opsfunctionFnMutPTuplePTupleInst :
-    core.ops.function.FnMut F T Unit) =>
-    core.iter.traits.iterator.Iterator.for_each.default
-    (core.iter.adapters.cloned.Cloned.Insts.CoreIterTraitsIteratorIterator
-    traitsiteratorIteratorISharedATInst cloneCloneInst)
-    opsfunctionFnMutPTuplePTupleInst
-  filter := fun {P : Type} (opsfunctionFnMutPTupleSharedPBoolInst :
-    core.ops.function.FnMut P T Bool) =>
-    core.iter.traits.iterator.Iterator.filter.default
-    (core.iter.adapters.cloned.Cloned.Insts.CoreIterTraitsIteratorIterator
-    traitsiteratorIteratorISharedATInst cloneCloneInst)
-    opsfunctionFnMutPTupleSharedPBoolInst
   enumerate := core.iter.traits.iterator.Iterator.enumerate.trait_default
     (core.iter.adapters.cloned.Cloned.Insts.CoreIterTraitsIteratorIterator
     traitsiteratorIteratorISharedATInst cloneCloneInst)
-  skip := core.iter.traits.iterator.Iterator.skip.default
-    (core.iter.adapters.cloned.Cloned.Insts.CoreIterTraitsIteratorIterator
-    traitsiteratorIteratorISharedATInst cloneCloneInst)
-  flat_map := fun {U : Type} {F : Type} {Clause0_Item : Type} {Clause0_IntoIter
-    : Type} (collectIntoIteratorInst : core.iter.traits.collect.IntoIterator U
-    Clause0_Item Clause0_IntoIter) (opsfunctionFnMutPTupleFPInst :
-    core.ops.function.FnMut F T U) =>
-    core.iter.traits.iterator.Iterator.flat_map.default
-    (core.iter.adapters.cloned.Cloned.Insts.CoreIterTraitsIteratorIterator
-    traitsiteratorIteratorISharedATInst cloneCloneInst) collectIntoIteratorInst
-    opsfunctionFnMutPTupleFPInst
-  flatten := fun {Clause0_Item : Type} {Clause0_IntoIter : Type}
-    (collectIntoIteratorInst : core.iter.traits.collect.IntoIterator T
-    Clause0_Item Clause0_IntoIter) =>
-    core.iter.traits.iterator.Iterator.flatten.default
-    (core.iter.adapters.cloned.Cloned.Insts.CoreIterTraitsIteratorIterator
-    traitsiteratorIteratorISharedATInst cloneCloneInst) collectIntoIteratorInst
-  collect := fun {B : Type} (collectFromIteratorInst :
-    core.iter.traits.collect.FromIterator B T) =>
-    core.iter.traits.iterator.Iterator.collect.default
-    (core.iter.adapters.cloned.Cloned.Insts.CoreIterTraitsIteratorIterator
-    traitsiteratorIteratorISharedATInst cloneCloneInst) collectFromIteratorInst
-  all := fun {F : Type} (opsfunctionFnMutPTuplePBoolInst :
-    core.ops.function.FnMut F T Bool) =>
-    core.iter.traits.iterator.Iterator.all.default
-    (core.iter.adapters.cloned.Cloned.Insts.CoreIterTraitsIteratorIterator
-    traitsiteratorIteratorISharedATInst cloneCloneInst)
-    opsfunctionFnMutPTuplePBoolInst
-  any := fun {F : Type} (opsfunctionFnMutPTuplePBoolInst :
-    core.ops.function.FnMut F T Bool) =>
-    core.iter.traits.iterator.Iterator.any.default
-    (core.iter.adapters.cloned.Cloned.Insts.CoreIterTraitsIteratorIterator
-    traitsiteratorIteratorISharedATInst cloneCloneInst)
-    opsfunctionFnMutPTuplePBoolInst
-  find := fun {P : Type} (opsfunctionFnMutPTupleShared0PBoolInst :
-    core.ops.function.FnMut P T Bool) =>
-    core.iter.traits.iterator.Iterator.find.default
-    (core.iter.adapters.cloned.Cloned.Insts.CoreIterTraitsIteratorIterator
-    traitsiteratorIteratorISharedATInst cloneCloneInst)
-    opsfunctionFnMutPTupleShared0PBoolInst
-  position := fun {P : Type} (opsfunctionFnMutPTuplePBoolInst :
-    core.ops.function.FnMut P T Bool) =>
-    core.iter.traits.iterator.Iterator.position.default
-    (core.iter.adapters.cloned.Cloned.Insts.CoreIterTraitsIteratorIterator
-    traitsiteratorIteratorISharedATInst cloneCloneInst)
-    opsfunctionFnMutPTuplePBoolInst
-  max := fun (cmpOrdInst : core.cmp.Ord T) =>
-    core.iter.traits.iterator.Iterator.max.default
-    (core.iter.adapters.cloned.Cloned.Insts.CoreIterTraitsIteratorIterator
-    traitsiteratorIteratorISharedATInst cloneCloneInst) cmpOrdInst
-  rev := fun {Clause0_Clause0_Item : Type}
-    (double_endedDoubleEndedIteratorClonedPInst :
-    core.iter.traits.double_ended.DoubleEndedIterator
-    (core.iter.adapters.cloned.Cloned I) Clause0_Clause0_Item) =>
-    core.iter.traits.iterator.Iterator.rev.trait_default
-    (core.iter.adapters.cloned.Cloned.Insts.CoreIterTraitsIteratorIterator
-    traitsiteratorIteratorISharedATInst cloneCloneInst)
-    double_endedDoubleEndedIteratorClonedPInst
-  sum := fun {S : Type} (accumSumInst : core.iter.traits.accum.Sum S T) =>
-    core.iter.traits.iterator.Iterator.sum.default
-    (core.iter.adapters.cloned.Cloned.Insts.CoreIterTraitsIteratorIterator
-    traitsiteratorIteratorISharedATInst cloneCloneInst) accumSumInst
 }
 
 /-- Trait implementation: [core::iter::adapters::filter::{impl core::iter::traits::iterator::Iterator<Clause0_Item> for core::iter::adapters::filter::Filter<I, P>}]
@@ -361,120 +267,10 @@ impl_def core.iter.adapters.filter.Filter.Insts.CoreIterTraitsIteratorIterator
   next :=
     core.iter.adapters.filter.Filter.Insts.CoreIterTraitsIteratorIterator.next
     traitsiteratorIteratorInst opsfunctionFnMutPTupleSharedClause0_ItemBoolInst
-  count :=
-    core.iter.adapters.filter.Filter.Insts.CoreIterTraitsIteratorIterator.count
-    traitsiteratorIteratorInst opsfunctionFnMutPTupleSharedClause0_ItemBoolInst
-  chain := fun {U : Type} {Clause0_IntoIter : Type} (collectIntoIteratorInst :
-    core.iter.traits.collect.IntoIterator U Clause0_Item Clause0_IntoIter) =>
-    core.iter.traits.iterator.Iterator.chain.default
-    (core.iter.adapters.filter.Filter.Insts.CoreIterTraitsIteratorIterator
-    traitsiteratorIteratorInst
-    opsfunctionFnMutPTupleSharedClause0_ItemBoolInst) collectIntoIteratorInst
-  zip := fun {U : Type} {Clause0_Item1 : Type} {Clause0_IntoIter : Type}
-    (collectIntoIteratorInst : core.iter.traits.collect.IntoIterator U
-    Clause0_Item1 Clause0_IntoIter) =>
-    core.iter.traits.iterator.Iterator.zip.trait_default
-    (core.iter.adapters.filter.Filter.Insts.CoreIterTraitsIteratorIterator
-    traitsiteratorIteratorInst
-    opsfunctionFnMutPTupleSharedClause0_ItemBoolInst) collectIntoIteratorInst
-  map := fun {B : Type} {F : Type} (opsfunctionFnMutPTuplePPInst :
-    core.ops.function.FnMut F Clause0_Item B) =>
-    core.iter.traits.iterator.Iterator.map.default
-    (core.iter.adapters.filter.Filter.Insts.CoreIterTraitsIteratorIterator
-    traitsiteratorIteratorInst
-    opsfunctionFnMutPTupleSharedClause0_ItemBoolInst)
-    opsfunctionFnMutPTuplePPInst
-  for_each := fun {F : Type} (opsfunctionFnMutPTuplePTupleInst :
-    core.ops.function.FnMut F Clause0_Item Unit) =>
-    core.iter.traits.iterator.Iterator.for_each.default
-    (core.iter.adapters.filter.Filter.Insts.CoreIterTraitsIteratorIterator
-    traitsiteratorIteratorInst
-    opsfunctionFnMutPTupleSharedClause0_ItemBoolInst)
-    opsfunctionFnMutPTuplePTupleInst
-  filter := fun {P1 : Type} (opsfunctionFnMutPTupleSharedPBoolInst :
-    core.ops.function.FnMut P1 Clause0_Item Bool) =>
-    core.iter.traits.iterator.Iterator.filter.default
-    (core.iter.adapters.filter.Filter.Insts.CoreIterTraitsIteratorIterator
-    traitsiteratorIteratorInst
-    opsfunctionFnMutPTupleSharedClause0_ItemBoolInst)
-    opsfunctionFnMutPTupleSharedPBoolInst
   enumerate := core.iter.traits.iterator.Iterator.enumerate.trait_default
     (core.iter.adapters.filter.Filter.Insts.CoreIterTraitsIteratorIterator
     traitsiteratorIteratorInst
     opsfunctionFnMutPTupleSharedClause0_ItemBoolInst)
-  skip := core.iter.traits.iterator.Iterator.skip.default
-    (core.iter.adapters.filter.Filter.Insts.CoreIterTraitsIteratorIterator
-    traitsiteratorIteratorInst
-    opsfunctionFnMutPTupleSharedClause0_ItemBoolInst)
-  flat_map := fun {U : Type} {F : Type} {Clause0_Item1 : Type}
-    {Clause0_IntoIter : Type} (collectIntoIteratorInst :
-    core.iter.traits.collect.IntoIterator U Clause0_Item1 Clause0_IntoIter)
-    (opsfunctionFnMutPTupleClause0_ItemPInst : core.ops.function.FnMut F
-    Clause0_Item U) => core.iter.traits.iterator.Iterator.flat_map.default
-    (core.iter.adapters.filter.Filter.Insts.CoreIterTraitsIteratorIterator
-    traitsiteratorIteratorInst
-    opsfunctionFnMutPTupleSharedClause0_ItemBoolInst) collectIntoIteratorInst
-    opsfunctionFnMutPTupleClause0_ItemPInst
-  flatten := fun {Clause0_Item1 : Type} {Clause0_IntoIter : Type}
-    (collectIntoIteratorInst : core.iter.traits.collect.IntoIterator
-    Clause0_Item Clause0_Item1 Clause0_IntoIter) =>
-    core.iter.traits.iterator.Iterator.flatten.default
-    (core.iter.adapters.filter.Filter.Insts.CoreIterTraitsIteratorIterator
-    traitsiteratorIteratorInst
-    opsfunctionFnMutPTupleSharedClause0_ItemBoolInst) collectIntoIteratorInst
-  collect := fun {B : Type} (collectFromIteratorInst :
-    core.iter.traits.collect.FromIterator B Clause0_Item) =>
-    core.iter.traits.iterator.Iterator.collect.default
-    (core.iter.adapters.filter.Filter.Insts.CoreIterTraitsIteratorIterator
-    traitsiteratorIteratorInst
-    opsfunctionFnMutPTupleSharedClause0_ItemBoolInst) collectFromIteratorInst
-  all := fun {F : Type} (opsfunctionFnMutPTuplePBoolInst :
-    core.ops.function.FnMut F Clause0_Item Bool) =>
-    core.iter.traits.iterator.Iterator.all.default
-    (core.iter.adapters.filter.Filter.Insts.CoreIterTraitsIteratorIterator
-    traitsiteratorIteratorInst
-    opsfunctionFnMutPTupleSharedClause0_ItemBoolInst)
-    opsfunctionFnMutPTuplePBoolInst
-  any := fun {F : Type} (opsfunctionFnMutPTuplePBoolInst :
-    core.ops.function.FnMut F Clause0_Item Bool) =>
-    core.iter.traits.iterator.Iterator.any.default
-    (core.iter.adapters.filter.Filter.Insts.CoreIterTraitsIteratorIterator
-    traitsiteratorIteratorInst
-    opsfunctionFnMutPTupleSharedClause0_ItemBoolInst)
-    opsfunctionFnMutPTuplePBoolInst
-  find := fun {P1 : Type} (opsfunctionFnMutPTupleShared0PBoolInst :
-    core.ops.function.FnMut P1 Clause0_Item Bool) =>
-    core.iter.traits.iterator.Iterator.find.default
-    (core.iter.adapters.filter.Filter.Insts.CoreIterTraitsIteratorIterator
-    traitsiteratorIteratorInst
-    opsfunctionFnMutPTupleSharedClause0_ItemBoolInst)
-    opsfunctionFnMutPTupleShared0PBoolInst
-  position := fun {P1 : Type} (opsfunctionFnMutPTuplePBoolInst :
-    core.ops.function.FnMut P1 Clause0_Item Bool) =>
-    core.iter.traits.iterator.Iterator.position.default
-    (core.iter.adapters.filter.Filter.Insts.CoreIterTraitsIteratorIterator
-    traitsiteratorIteratorInst
-    opsfunctionFnMutPTupleSharedClause0_ItemBoolInst)
-    opsfunctionFnMutPTuplePBoolInst
-  max := fun (cmpOrdInst : core.cmp.Ord Clause0_Item) =>
-    core.iter.traits.iterator.Iterator.max.default
-    (core.iter.adapters.filter.Filter.Insts.CoreIterTraitsIteratorIterator
-    traitsiteratorIteratorInst
-    opsfunctionFnMutPTupleSharedClause0_ItemBoolInst) cmpOrdInst
-  rev := fun {Clause0_Clause0_Item : Type}
-    (double_endedDoubleEndedIteratorFilterPInst :
-    core.iter.traits.double_ended.DoubleEndedIterator
-    (core.iter.adapters.filter.Filter I P) Clause0_Clause0_Item) =>
-    core.iter.traits.iterator.Iterator.rev.trait_default
-    (core.iter.adapters.filter.Filter.Insts.CoreIterTraitsIteratorIterator
-    traitsiteratorIteratorInst
-    opsfunctionFnMutPTupleSharedClause0_ItemBoolInst)
-    double_endedDoubleEndedIteratorFilterPInst
-  sum := fun {S : Type} (accumSumInst : core.iter.traits.accum.Sum S
-    Clause0_Item) => core.iter.traits.iterator.Iterator.sum.default
-    (core.iter.adapters.filter.Filter.Insts.CoreIterTraitsIteratorIterator
-    traitsiteratorIteratorInst
-    opsfunctionFnMutPTupleSharedClause0_ItemBoolInst) accumSumInst
 }
 
 /-- Trait implementation: [core::iter::adapters::flatten::{impl core::iter::traits::iterator::Iterator<Clause1_Item> for core::iter::adapters::flatten::FlatMap<I, U, F, Clause1_Item, Clause1_IntoIter>}]
@@ -496,117 +292,10 @@ impl_def
     core.iter.adapters.flatten.FlatMap.Insts.CoreIterTraitsIteratorIterator.next
     traitsiteratorIteratorInst traitscollectIntoIteratorInst
     opsfunctionFnMutFTupleClause0_ItemUInst
-  count :=
-    core.iter.adapters.flatten.FlatMap.Insts.CoreIterTraitsIteratorIterator.count
-    traitsiteratorIteratorInst traitscollectIntoIteratorInst
-    opsfunctionFnMutFTupleClause0_ItemUInst
-  chain := fun {U1 : Type} {Clause0_IntoIter : Type} (collectIntoIteratorInst :
-    core.iter.traits.collect.IntoIterator U1 Clause1_Item Clause0_IntoIter) =>
-    core.iter.traits.iterator.Iterator.chain.default
-    (core.iter.adapters.flatten.FlatMap.Insts.CoreIterTraitsIteratorIterator
-    traitsiteratorIteratorInst traitscollectIntoIteratorInst
-    opsfunctionFnMutFTupleClause0_ItemUInst) collectIntoIteratorInst
-  zip := fun {U1 : Type} {Clause0_Item1 : Type} {Clause0_IntoIter : Type}
-    (collectIntoIteratorInst : core.iter.traits.collect.IntoIterator U1
-    Clause0_Item1 Clause0_IntoIter) =>
-    core.iter.traits.iterator.Iterator.zip.trait_default
-    (core.iter.adapters.flatten.FlatMap.Insts.CoreIterTraitsIteratorIterator
-    traitsiteratorIteratorInst traitscollectIntoIteratorInst
-    opsfunctionFnMutFTupleClause0_ItemUInst) collectIntoIteratorInst
-  map := fun {B : Type} {F1 : Type} (opsfunctionFnMutPTuplePPInst :
-    core.ops.function.FnMut F1 Clause1_Item B) =>
-    core.iter.traits.iterator.Iterator.map.default
-    (core.iter.adapters.flatten.FlatMap.Insts.CoreIterTraitsIteratorIterator
-    traitsiteratorIteratorInst traitscollectIntoIteratorInst
-    opsfunctionFnMutFTupleClause0_ItemUInst) opsfunctionFnMutPTuplePPInst
-  for_each := fun {F1 : Type} (opsfunctionFnMutPTuplePTupleInst :
-    core.ops.function.FnMut F1 Clause1_Item Unit) =>
-    core.iter.traits.iterator.Iterator.for_each.default
-    (core.iter.adapters.flatten.FlatMap.Insts.CoreIterTraitsIteratorIterator
-    traitsiteratorIteratorInst traitscollectIntoIteratorInst
-    opsfunctionFnMutFTupleClause0_ItemUInst) opsfunctionFnMutPTuplePTupleInst
-  filter := fun {P : Type} (opsfunctionFnMutPTupleSharedPBoolInst :
-    core.ops.function.FnMut P Clause1_Item Bool) =>
-    core.iter.traits.iterator.Iterator.filter.default
-    (core.iter.adapters.flatten.FlatMap.Insts.CoreIterTraitsIteratorIterator
-    traitsiteratorIteratorInst traitscollectIntoIteratorInst
-    opsfunctionFnMutFTupleClause0_ItemUInst)
-    opsfunctionFnMutPTupleSharedPBoolInst
   enumerate := core.iter.traits.iterator.Iterator.enumerate.trait_default
     (core.iter.adapters.flatten.FlatMap.Insts.CoreIterTraitsIteratorIterator
     traitsiteratorIteratorInst traitscollectIntoIteratorInst
     opsfunctionFnMutFTupleClause0_ItemUInst)
-  skip := core.iter.traits.iterator.Iterator.skip.default
-    (core.iter.adapters.flatten.FlatMap.Insts.CoreIterTraitsIteratorIterator
-    traitsiteratorIteratorInst traitscollectIntoIteratorInst
-    opsfunctionFnMutFTupleClause0_ItemUInst)
-  flat_map := fun {U1 : Type} {F1 : Type} {Clause0_Item1 : Type}
-    {Clause0_IntoIter : Type} (collectIntoIteratorInst :
-    core.iter.traits.collect.IntoIterator U1 Clause0_Item1 Clause0_IntoIter)
-    (opsfunctionFnMutPTuplePPInst : core.ops.function.FnMut F1 Clause1_Item U1)
-    => core.iter.traits.iterator.Iterator.flat_map.default
-    (core.iter.adapters.flatten.FlatMap.Insts.CoreIterTraitsIteratorIterator
-    traitsiteratorIteratorInst traitscollectIntoIteratorInst
-    opsfunctionFnMutFTupleClause0_ItemUInst) collectIntoIteratorInst
-    opsfunctionFnMutPTuplePPInst
-  flatten := fun {Clause0_Item1 : Type} {Clause0_IntoIter : Type}
-    (collectIntoIteratorInst : core.iter.traits.collect.IntoIterator
-    Clause1_Item Clause0_Item1 Clause0_IntoIter) =>
-    core.iter.traits.iterator.Iterator.flatten.default
-    (core.iter.adapters.flatten.FlatMap.Insts.CoreIterTraitsIteratorIterator
-    traitsiteratorIteratorInst traitscollectIntoIteratorInst
-    opsfunctionFnMutFTupleClause0_ItemUInst) collectIntoIteratorInst
-  collect := fun {B : Type} (collectFromIteratorInst :
-    core.iter.traits.collect.FromIterator B Clause1_Item) =>
-    core.iter.traits.iterator.Iterator.collect.default
-    (core.iter.adapters.flatten.FlatMap.Insts.CoreIterTraitsIteratorIterator
-    traitsiteratorIteratorInst traitscollectIntoIteratorInst
-    opsfunctionFnMutFTupleClause0_ItemUInst) collectFromIteratorInst
-  all := fun {F1 : Type} (opsfunctionFnMutPTuplePBoolInst :
-    core.ops.function.FnMut F1 Clause1_Item Bool) =>
-    core.iter.traits.iterator.Iterator.all.default
-    (core.iter.adapters.flatten.FlatMap.Insts.CoreIterTraitsIteratorIterator
-    traitsiteratorIteratorInst traitscollectIntoIteratorInst
-    opsfunctionFnMutFTupleClause0_ItemUInst) opsfunctionFnMutPTuplePBoolInst
-  any := fun {F1 : Type} (opsfunctionFnMutPTuplePBoolInst :
-    core.ops.function.FnMut F1 Clause1_Item Bool) =>
-    core.iter.traits.iterator.Iterator.any.default
-    (core.iter.adapters.flatten.FlatMap.Insts.CoreIterTraitsIteratorIterator
-    traitsiteratorIteratorInst traitscollectIntoIteratorInst
-    opsfunctionFnMutFTupleClause0_ItemUInst) opsfunctionFnMutPTuplePBoolInst
-  find := fun {P : Type} (opsfunctionFnMutPTupleShared0PBoolInst :
-    core.ops.function.FnMut P Clause1_Item Bool) =>
-    core.iter.traits.iterator.Iterator.find.default
-    (core.iter.adapters.flatten.FlatMap.Insts.CoreIterTraitsIteratorIterator
-    traitsiteratorIteratorInst traitscollectIntoIteratorInst
-    opsfunctionFnMutFTupleClause0_ItemUInst)
-    opsfunctionFnMutPTupleShared0PBoolInst
-  position := fun {P : Type} (opsfunctionFnMutPTuplePBoolInst :
-    core.ops.function.FnMut P Clause1_Item Bool) =>
-    core.iter.traits.iterator.Iterator.position.default
-    (core.iter.adapters.flatten.FlatMap.Insts.CoreIterTraitsIteratorIterator
-    traitsiteratorIteratorInst traitscollectIntoIteratorInst
-    opsfunctionFnMutFTupleClause0_ItemUInst) opsfunctionFnMutPTuplePBoolInst
-  max := fun (cmpOrdInst : core.cmp.Ord Clause1_Item) =>
-    core.iter.traits.iterator.Iterator.max.default
-    (core.iter.adapters.flatten.FlatMap.Insts.CoreIterTraitsIteratorIterator
-    traitsiteratorIteratorInst traitscollectIntoIteratorInst
-    opsfunctionFnMutFTupleClause0_ItemUInst) cmpOrdInst
-  rev := fun {Clause0_Clause0_Item : Type}
-    (double_endedDoubleEndedIteratorFlatMapPInst :
-    core.iter.traits.double_ended.DoubleEndedIterator
-    (core.iter.adapters.flatten.FlatMap I U F Clause1_Item Clause1_IntoIter)
-    Clause0_Clause0_Item) =>
-    core.iter.traits.iterator.Iterator.rev.trait_default
-    (core.iter.adapters.flatten.FlatMap.Insts.CoreIterTraitsIteratorIterator
-    traitsiteratorIteratorInst traitscollectIntoIteratorInst
-    opsfunctionFnMutFTupleClause0_ItemUInst)
-    double_endedDoubleEndedIteratorFlatMapPInst
-  sum := fun {S : Type} (accumSumInst : core.iter.traits.accum.Sum S
-    Clause1_Item) => core.iter.traits.iterator.Iterator.sum.default
-    (core.iter.adapters.flatten.FlatMap.Insts.CoreIterTraitsIteratorIterator
-    traitsiteratorIteratorInst traitscollectIntoIteratorInst
-    opsfunctionFnMutFTupleClause0_ItemUInst) accumSumInst
 }
 
 /-- Trait implementation: [core::iter::adapters::map::{impl core::iter::traits::iterator::Iterator<B> for core::iter::adapters::map::Map<I, F>}]
@@ -622,109 +311,9 @@ impl_def core.iter.adapters.map.Map.Insts.CoreIterTraitsIteratorIterator {B :
   core.iter.traits.iterator.Iterator (core.iter.adapters.map.Map I F) B := {
   next := core.iter.adapters.map.Map.Insts.CoreIterTraitsIteratorIterator.next
     traitsiteratorIteratorInst opsfunctionFnMutFTupleClause0_ItemBInst
-  count := core.iter.traits.iterator.Iterator.count.default
-    (core.iter.adapters.map.Map.Insts.CoreIterTraitsIteratorIterator
-    traitsiteratorIteratorInst opsfunctionFnMutFTupleClause0_ItemBInst)
-  chain := fun {U : Type} {Clause0_IntoIter : Type} (collectIntoIteratorInst :
-    core.iter.traits.collect.IntoIterator U B Clause0_IntoIter) =>
-    core.iter.traits.iterator.Iterator.chain.default
-    (core.iter.adapters.map.Map.Insts.CoreIterTraitsIteratorIterator
-    traitsiteratorIteratorInst opsfunctionFnMutFTupleClause0_ItemBInst)
-    collectIntoIteratorInst
-  zip := fun {U : Type} {Clause0_Item1 : Type} {Clause0_IntoIter : Type}
-    (collectIntoIteratorInst : core.iter.traits.collect.IntoIterator U
-    Clause0_Item1 Clause0_IntoIter) =>
-    core.iter.traits.iterator.Iterator.zip.trait_default
-    (core.iter.adapters.map.Map.Insts.CoreIterTraitsIteratorIterator
-    traitsiteratorIteratorInst opsfunctionFnMutFTupleClause0_ItemBInst)
-    collectIntoIteratorInst
-  map := fun {B1 : Type} {F1 : Type} (opsfunctionFnMutPTupleBPInst :
-    core.ops.function.FnMut F1 B B1) =>
-    core.iter.traits.iterator.Iterator.map.default
-    (core.iter.adapters.map.Map.Insts.CoreIterTraitsIteratorIterator
-    traitsiteratorIteratorInst opsfunctionFnMutFTupleClause0_ItemBInst)
-    opsfunctionFnMutPTupleBPInst
-  for_each := fun {F1 : Type} (opsfunctionFnMutPTupleFTupleInst :
-    core.ops.function.FnMut F1 B Unit) =>
-    core.iter.traits.iterator.Iterator.for_each.default
-    (core.iter.adapters.map.Map.Insts.CoreIterTraitsIteratorIterator
-    traitsiteratorIteratorInst opsfunctionFnMutFTupleClause0_ItemBInst)
-    opsfunctionFnMutPTupleFTupleInst
-  filter := fun {P : Type} (opsfunctionFnMutPTupleSharedPBoolInst :
-    core.ops.function.FnMut P B Bool) =>
-    core.iter.traits.iterator.Iterator.filter.default
-    (core.iter.adapters.map.Map.Insts.CoreIterTraitsIteratorIterator
-    traitsiteratorIteratorInst opsfunctionFnMutFTupleClause0_ItemBInst)
-    opsfunctionFnMutPTupleSharedPBoolInst
   enumerate := core.iter.traits.iterator.Iterator.enumerate.trait_default
     (core.iter.adapters.map.Map.Insts.CoreIterTraitsIteratorIterator
     traitsiteratorIteratorInst opsfunctionFnMutFTupleClause0_ItemBInst)
-  skip := core.iter.traits.iterator.Iterator.skip.default
-    (core.iter.adapters.map.Map.Insts.CoreIterTraitsIteratorIterator
-    traitsiteratorIteratorInst opsfunctionFnMutFTupleClause0_ItemBInst)
-  flat_map := fun {U : Type} {F1 : Type} {Clause0_Item1 : Type}
-    {Clause0_IntoIter : Type} (collectIntoIteratorInst :
-    core.iter.traits.collect.IntoIterator U Clause0_Item1 Clause0_IntoIter)
-    (opsfunctionFnMutPTupleUPInst : core.ops.function.FnMut F1 B U) =>
-    core.iter.traits.iterator.Iterator.flat_map.default
-    (core.iter.adapters.map.Map.Insts.CoreIterTraitsIteratorIterator
-    traitsiteratorIteratorInst opsfunctionFnMutFTupleClause0_ItemBInst)
-    collectIntoIteratorInst opsfunctionFnMutPTupleUPInst
-  flatten := fun {Clause0_Item1 : Type} {Clause0_IntoIter : Type}
-    (collectIntoIteratorInst : core.iter.traits.collect.IntoIterator B
-    Clause0_Item1 Clause0_IntoIter) =>
-    core.iter.traits.iterator.Iterator.flatten.default
-    (core.iter.adapters.map.Map.Insts.CoreIterTraitsIteratorIterator
-    traitsiteratorIteratorInst opsfunctionFnMutFTupleClause0_ItemBInst)
-    collectIntoIteratorInst
-  collect := fun {B1 : Type} (collectFromIteratorInst :
-    core.iter.traits.collect.FromIterator B1 B) =>
-    core.iter.traits.iterator.Iterator.collect.default
-    (core.iter.adapters.map.Map.Insts.CoreIterTraitsIteratorIterator
-    traitsiteratorIteratorInst opsfunctionFnMutFTupleClause0_ItemBInst)
-    collectFromIteratorInst
-  all := fun {F1 : Type} (opsfunctionFnMutPTupleFBoolInst :
-    core.ops.function.FnMut F1 B Bool) =>
-    core.iter.traits.iterator.Iterator.all.default
-    (core.iter.adapters.map.Map.Insts.CoreIterTraitsIteratorIterator
-    traitsiteratorIteratorInst opsfunctionFnMutFTupleClause0_ItemBInst)
-    opsfunctionFnMutPTupleFBoolInst
-  any := fun {F1 : Type} (opsfunctionFnMutPTupleFBoolInst :
-    core.ops.function.FnMut F1 B Bool) =>
-    core.iter.traits.iterator.Iterator.any.default
-    (core.iter.adapters.map.Map.Insts.CoreIterTraitsIteratorIterator
-    traitsiteratorIteratorInst opsfunctionFnMutFTupleClause0_ItemBInst)
-    opsfunctionFnMutPTupleFBoolInst
-  find := fun {P : Type} (opsfunctionFnMutPTupleShared0PBoolInst :
-    core.ops.function.FnMut P B Bool) =>
-    core.iter.traits.iterator.Iterator.find.default
-    (core.iter.adapters.map.Map.Insts.CoreIterTraitsIteratorIterator
-    traitsiteratorIteratorInst opsfunctionFnMutFTupleClause0_ItemBInst)
-    opsfunctionFnMutPTupleShared0PBoolInst
-  position := fun {P : Type} (opsfunctionFnMutPTuplePBoolInst :
-    core.ops.function.FnMut P B Bool) =>
-    core.iter.traits.iterator.Iterator.position.default
-    (core.iter.adapters.map.Map.Insts.CoreIterTraitsIteratorIterator
-    traitsiteratorIteratorInst opsfunctionFnMutFTupleClause0_ItemBInst)
-    opsfunctionFnMutPTuplePBoolInst
-  max := fun (cmpOrdInst : core.cmp.Ord B) =>
-    core.iter.traits.iterator.Iterator.max.default
-    (core.iter.adapters.map.Map.Insts.CoreIterTraitsIteratorIterator
-    traitsiteratorIteratorInst opsfunctionFnMutFTupleClause0_ItemBInst)
-    cmpOrdInst
-  rev := fun {Clause0_Clause0_Item : Type}
-    (double_endedDoubleEndedIteratorMapPInst :
-    core.iter.traits.double_ended.DoubleEndedIterator
-    (core.iter.adapters.map.Map I F) Clause0_Clause0_Item) =>
-    core.iter.traits.iterator.Iterator.rev.trait_default
-    (core.iter.adapters.map.Map.Insts.CoreIterTraitsIteratorIterator
-    traitsiteratorIteratorInst opsfunctionFnMutFTupleClause0_ItemBInst)
-    double_endedDoubleEndedIteratorMapPInst
-  sum := fun {S : Type} (accumSumInst : core.iter.traits.accum.Sum S B) =>
-    core.iter.traits.iterator.Iterator.sum.default
-    (core.iter.adapters.map.Map.Insts.CoreIterTraitsIteratorIterator
-    traitsiteratorIteratorInst opsfunctionFnMutFTupleClause0_ItemBInst)
-    accumSumInst
 }
 
 /-- Trait implementation: [core::iter::traits::accum::{impl core::iter::traits::accum::Sum<usize> for usize}]
@@ -932,83 +521,8 @@ impl_def core.slice.iter.IterMut.Insts.CoreIterTraitsIteratorIteratorMutAT (T :
   Type _) : core.iter.traits.iterator.Iterator (core.slice.iter.IterMut T) T
   := {
   next := core.slice.iter.IteratorIterMut.next
-  count :=
-    core.slice.iter.IterMut.Insts.CoreIterTraitsIteratorIteratorMutAT.count
-  chain := fun {U : Type} {Clause0_IntoIter : Type}
-    (collectIntoIteratorPMutUPInst : core.iter.traits.collect.IntoIterator U T
-    Clause0_IntoIter) => core.iter.traits.iterator.Iterator.chain.default
-    (core.slice.iter.IterMut.Insts.CoreIterTraitsIteratorIteratorMutAT T)
-    collectIntoIteratorPMutUPInst
-  zip := fun {U : Type} {Clause0_Item : Type} {Clause0_IntoIter : Type}
-    (collectIntoIteratorInst : core.iter.traits.collect.IntoIterator U
-    Clause0_Item Clause0_IntoIter) =>
-    core.iter.traits.iterator.Iterator.zip.trait_default
-    (core.slice.iter.IterMut.Insts.CoreIterTraitsIteratorIteratorMutAT T)
-    collectIntoIteratorInst
-  map := fun {B : Type} {F : Type} (opsfunctionFnMutPTupleMutBPInst :
-    core.ops.function.FnMut F T B) =>
-    core.iter.traits.iterator.Iterator.map.default
-    (core.slice.iter.IterMut.Insts.CoreIterTraitsIteratorIteratorMutAT T)
-    opsfunctionFnMutPTupleMutBPInst
-  for_each := fun {F : Type} (opsfunctionFnMutPTupleMutFTupleInst :
-    core.ops.function.FnMut F T Unit) =>
-    core.slice.iter.IterMut.Insts.CoreIterTraitsIteratorIteratorMutAT.for_each
-    opsfunctionFnMutPTupleMutFTupleInst
-  filter := fun {P : Type} (opsfunctionFnMutPTupleSharedMutPBoolInst :
-    core.ops.function.FnMut P T Bool) =>
-    core.iter.traits.iterator.Iterator.filter.default
-    (core.slice.iter.IterMut.Insts.CoreIterTraitsIteratorIteratorMutAT T)
-    opsfunctionFnMutPTupleSharedMutPBoolInst
   enumerate := core.iter.traits.iterator.Iterator.enumerate.trait_default
     (core.slice.iter.IterMut.Insts.CoreIterTraitsIteratorIteratorMutAT T)
-  skip := core.iter.traits.iterator.Iterator.skip.default
-    (core.slice.iter.IterMut.Insts.CoreIterTraitsIteratorIteratorMutAT T)
-  flat_map := fun {U : Type} {F : Type} {Clause0_Item : Type} {Clause0_IntoIter
-    : Type} (collectIntoIteratorInst : core.iter.traits.collect.IntoIterator U
-    Clause0_Item Clause0_IntoIter) (opsfunctionFnMutPTupleMutUPInst :
-    core.ops.function.FnMut F T U) =>
-    core.iter.traits.iterator.Iterator.flat_map.default
-    (core.slice.iter.IterMut.Insts.CoreIterTraitsIteratorIteratorMutAT T)
-    collectIntoIteratorInst opsfunctionFnMutPTupleMutUPInst
-  flatten := fun {Clause0_Item : Type} {Clause0_IntoIter : Type}
-    (collectIntoIteratorMutClause0_ItemPPInst :
-    core.iter.traits.collect.IntoIterator T Clause0_Item Clause0_IntoIter) =>
-    core.iter.traits.iterator.Iterator.flatten.default
-    (core.slice.iter.IterMut.Insts.CoreIterTraitsIteratorIteratorMutAT T)
-    collectIntoIteratorMutClause0_ItemPPInst
-  collect := fun {B : Type} (collectFromIteratorPMutBInst :
-    core.iter.traits.collect.FromIterator B T) =>
-    core.iter.traits.iterator.Iterator.collect.default
-    (core.slice.iter.IterMut.Insts.CoreIterTraitsIteratorIteratorMutAT T)
-    collectFromIteratorPMutBInst
-  all := fun {F : Type} (opsfunctionFnMutPTupleMut0FBoolInst :
-    core.ops.function.FnMut F T Bool) =>
-    core.slice.iter.IterMut.Insts.CoreIterTraitsIteratorIteratorMutAT.all
-    opsfunctionFnMutPTupleMut0FBoolInst
-  any := fun {F : Type} (opsfunctionFnMutPTupleMut0FBoolInst :
-    core.ops.function.FnMut F T Bool) =>
-    core.slice.iter.IterMut.Insts.CoreIterTraitsIteratorIteratorMutAT.any
-    opsfunctionFnMutPTupleMut0FBoolInst
-  sorry
-  position := fun {P : Type} (opsfunctionFnMutPTupleMut0PBoolInst :
-    core.ops.function.FnMut P T Bool) =>
-    core.slice.iter.IterMut.Insts.CoreIterTraitsIteratorIteratorMutAT.position
-    opsfunctionFnMutPTupleMut0PBoolInst
-  max := fun (cmpOrdMutPInst : core.cmp.Ord T) =>
-    core.iter.traits.iterator.Iterator.max.default
-    (core.slice.iter.IterMut.Insts.CoreIterTraitsIteratorIteratorMutAT T)
-    cmpOrdMutPInst
-  rev := fun {Clause0_Clause0_Item : Type}
-    (double_endedDoubleEndedIteratorIterMutPInst :
-    core.iter.traits.double_ended.DoubleEndedIterator (core.slice.iter.IterMut
-    T) Clause0_Clause0_Item) =>
-    core.iter.traits.iterator.Iterator.rev.trait_default
-    (core.slice.iter.IterMut.Insts.CoreIterTraitsIteratorIteratorMutAT T)
-    double_endedDoubleEndedIteratorIterMutPInst
-  sum := fun {S : Type} (accumSumPMutSInst : core.iter.traits.accum.Sum S T) =>
-    core.iter.traits.iterator.Iterator.sum.default
-    (core.slice.iter.IterMut.Insts.CoreIterTraitsIteratorIteratorMutAT T)
-    accumSumPMutSInst
 }
 
 /-- Trait implementation: [core::slice::iter::{impl core::iter::traits::iterator::Iterator<&'a [T]> for core::slice::iter::Windows<'a, T>}]
@@ -1022,94 +536,9 @@ impl_def
   (Slice T) := {
   next :=
     core.slice.iter.Windows.Insts.CoreIterTraitsIteratorIteratorSharedASlice.next
-  count :=
-    core.slice.iter.Windows.Insts.CoreIterTraitsIteratorIteratorSharedASlice.count
-  chain := fun {U : Type} {Clause0_IntoIter : Type}
-    (collectIntoIteratorPSharedSlicePInst :
-    core.iter.traits.collect.IntoIterator U (Slice T) Clause0_IntoIter) =>
-    core.iter.traits.iterator.Iterator.chain.default
-    (core.slice.iter.Windows.Insts.CoreIterTraitsIteratorIteratorSharedASlice
-    T) collectIntoIteratorPSharedSlicePInst
-  zip := fun {U : Type} {Clause0_Item : Type} {Clause0_IntoIter : Type}
-    (collectIntoIteratorInst : core.iter.traits.collect.IntoIterator U
-    Clause0_Item Clause0_IntoIter) =>
-    core.iter.traits.iterator.Iterator.zip.trait_default
-    (core.slice.iter.Windows.Insts.CoreIterTraitsIteratorIteratorSharedASlice
-    T) collectIntoIteratorInst
-  map := fun {B : Type} {F : Type} (opsfunctionFnMutPTupleSharedSlicePInst :
-    core.ops.function.FnMut F (Slice T) B) =>
-    core.iter.traits.iterator.Iterator.map.default
-    (core.slice.iter.Windows.Insts.CoreIterTraitsIteratorIteratorSharedASlice
-    T) opsfunctionFnMutPTupleSharedSlicePInst
-  for_each := fun {F : Type} (opsfunctionFnMutPTupleSharedSliceTupleInst :
-    core.ops.function.FnMut F (Slice T) Unit) =>
-    core.iter.traits.iterator.Iterator.for_each.default
-    (core.slice.iter.Windows.Insts.CoreIterTraitsIteratorIteratorSharedASlice
-    T) opsfunctionFnMutPTupleSharedSliceTupleInst
-  filter := fun {P : Type} (opsfunctionFnMutPTupleSharedSharedSliceBoolInst :
-    core.ops.function.FnMut P (Slice T) Bool) =>
-    core.iter.traits.iterator.Iterator.filter.default
-    (core.slice.iter.Windows.Insts.CoreIterTraitsIteratorIteratorSharedASlice
-    T) opsfunctionFnMutPTupleSharedSharedSliceBoolInst
   enumerate := core.iter.traits.iterator.Iterator.enumerate.trait_default
     (core.slice.iter.Windows.Insts.CoreIterTraitsIteratorIteratorSharedASlice
     T)
-  skip := core.iter.traits.iterator.Iterator.skip.default
-    (core.slice.iter.Windows.Insts.CoreIterTraitsIteratorIteratorSharedASlice
-    T)
-  flat_map := fun {U : Type} {F : Type} {Clause0_Item : Type} {Clause0_IntoIter
-    : Type} (collectIntoIteratorInst : core.iter.traits.collect.IntoIterator U
-    Clause0_Item Clause0_IntoIter) (opsfunctionFnMutPTupleSharedSlicePInst :
-    core.ops.function.FnMut F (Slice T) U) =>
-    core.iter.traits.iterator.Iterator.flat_map.default
-    (core.slice.iter.Windows.Insts.CoreIterTraitsIteratorIteratorSharedASlice
-    T) collectIntoIteratorInst opsfunctionFnMutPTupleSharedSlicePInst
-  flatten := fun {Clause0_Item : Type} {Clause0_IntoIter : Type}
-    (collectIntoIteratorSharedSlicePPInst :
-    core.iter.traits.collect.IntoIterator (Slice T) Clause0_Item
-    Clause0_IntoIter) => core.iter.traits.iterator.Iterator.flatten.default
-    (core.slice.iter.Windows.Insts.CoreIterTraitsIteratorIteratorSharedASlice
-    T) collectIntoIteratorSharedSlicePPInst
-  collect := fun {B : Type} (collectFromIteratorPSharedSliceInst :
-    core.iter.traits.collect.FromIterator B (Slice T)) =>
-    core.iter.traits.iterator.Iterator.collect.default
-    (core.slice.iter.Windows.Insts.CoreIterTraitsIteratorIteratorSharedASlice
-    T) collectFromIteratorPSharedSliceInst
-  all := fun {F : Type} (opsfunctionFnMutPTupleShared0SliceBoolInst :
-    core.ops.function.FnMut F (Slice T) Bool) =>
-    core.iter.traits.iterator.Iterator.all.default
-    (core.slice.iter.Windows.Insts.CoreIterTraitsIteratorIteratorSharedASlice
-    T) opsfunctionFnMutPTupleShared0SliceBoolInst
-  any := fun {F : Type} (opsfunctionFnMutPTupleShared0SliceBoolInst :
-    core.ops.function.FnMut F (Slice T) Bool) =>
-    core.iter.traits.iterator.Iterator.any.default
-    (core.slice.iter.Windows.Insts.CoreIterTraitsIteratorIteratorSharedASlice
-    T) opsfunctionFnMutPTupleShared0SliceBoolInst
-  find := fun {P : Type} (opsfunctionFnMutPTupleShared0Shared0SliceBoolInst :
-    core.ops.function.FnMut P (Slice T) Bool) =>
-    core.iter.traits.iterator.Iterator.find.default
-    (core.slice.iter.Windows.Insts.CoreIterTraitsIteratorIteratorSharedASlice
-    T) opsfunctionFnMutPTupleShared0Shared0SliceBoolInst
-  position := fun {P : Type} (opsfunctionFnMutPTupleShared0SliceBoolInst :
-    core.ops.function.FnMut P (Slice T) Bool) =>
-    core.iter.traits.iterator.Iterator.position.default
-    (core.slice.iter.Windows.Insts.CoreIterTraitsIteratorIteratorSharedASlice
-    T) opsfunctionFnMutPTupleShared0SliceBoolInst
-  max := fun (cmpOrdSharedSliceInst : core.cmp.Ord (Slice T)) =>
-    core.iter.traits.iterator.Iterator.max.default
-    (core.slice.iter.Windows.Insts.CoreIterTraitsIteratorIteratorSharedASlice
-    T) cmpOrdSharedSliceInst
-  rev := fun {Clause0_Clause0_Item : Type}
-    (double_endedDoubleEndedIteratorWindowsPInst :
-    core.iter.traits.double_ended.DoubleEndedIterator (core.slice.iter.Windows
-    T) Clause0_Clause0_Item) =>
-    core.iter.traits.iterator.Iterator.rev.trait_default
-    (core.slice.iter.Windows.Insts.CoreIterTraitsIteratorIteratorSharedASlice
-    T) double_endedDoubleEndedIteratorWindowsPInst
-  sum := fun {S : Type} (accumSumPSharedSliceInst : core.iter.traits.accum.Sum
-    S (Slice T)) => core.iter.traits.iterator.Iterator.sum.default
-    (core.slice.iter.Windows.Insts.CoreIterTraitsIteratorIteratorSharedASlice
-    T) accumSumPSharedSliceInst
 }
 
 /-- Trait implementation: [core::tuple::{impl core::cmp::PartialEq<(U, T)> for (U, T)}]
@@ -1227,98 +656,9 @@ impl_def
   (alloc.collections.btree.map.Iter K V) (K × V) := {
   next :=
     alloc.collections.btree.map.Iter.Insts.CoreIterTraitsIteratorIteratorPairSharedAKSharedAV.next
-  count := core.iter.traits.iterator.Iterator.count.default
-    (alloc.collections.btree.map.Iter.Insts.CoreIterTraitsIteratorIteratorPairSharedAKSharedAV
-    K V)
-  chain := fun {U : Type} {Clause0_IntoIter : Type}
-    (collectIntoIteratorPPairSharedUSharedClause0_IntoIterPInst :
-    core.iter.traits.collect.IntoIterator U (K × V) Clause0_IntoIter) =>
-    core.iter.traits.iterator.Iterator.chain.default
-    (alloc.collections.btree.map.Iter.Insts.CoreIterTraitsIteratorIteratorPairSharedAKSharedAV
-    K V) collectIntoIteratorPPairSharedUSharedClause0_IntoIterPInst
-  zip := fun {U : Type} {Clause0_Item : Type} {Clause0_IntoIter : Type}
-    (collectIntoIteratorInst : core.iter.traits.collect.IntoIterator U
-    Clause0_Item Clause0_IntoIter) =>
-    core.iter.traits.iterator.Iterator.zip.trait_default
-    (alloc.collections.btree.map.Iter.Insts.CoreIterTraitsIteratorIteratorPairSharedAKSharedAV
-    K V) collectIntoIteratorInst
-  map := fun {B : Type} {F : Type}
-    (opsfunctionFnMutPTuplePairSharedBSharedFPInst : core.ops.function.FnMut F
-    (K × V) B) => core.iter.traits.iterator.Iterator.map.default
-    (alloc.collections.btree.map.Iter.Insts.CoreIterTraitsIteratorIteratorPairSharedAKSharedAV
-    K V) opsfunctionFnMutPTuplePairSharedBSharedFPInst
-  for_each := fun {F : Type} (opsfunctionFnMutPTuplePairSharedFSharedPTupleInst
-    : core.ops.function.FnMut F (K × V) Unit) =>
-    core.iter.traits.iterator.Iterator.for_each.default
-    (alloc.collections.btree.map.Iter.Insts.CoreIterTraitsIteratorIteratorPairSharedAKSharedAV
-    K V) opsfunctionFnMutPTuplePairSharedFSharedPTupleInst
-  filter := fun {P : Type}
-    (opsfunctionFnMutPTupleSharedPairSharedPSharedPBoolInst :
-    core.ops.function.FnMut P (K × V) Bool) =>
-    core.iter.traits.iterator.Iterator.filter.default
-    (alloc.collections.btree.map.Iter.Insts.CoreIterTraitsIteratorIteratorPairSharedAKSharedAV
-    K V) opsfunctionFnMutPTupleSharedPairSharedPSharedPBoolInst
   enumerate := core.iter.traits.iterator.Iterator.enumerate.trait_default
     (alloc.collections.btree.map.Iter.Insts.CoreIterTraitsIteratorIteratorPairSharedAKSharedAV
     K V)
-  skip := core.iter.traits.iterator.Iterator.skip.default
-    (alloc.collections.btree.map.Iter.Insts.CoreIterTraitsIteratorIteratorPairSharedAKSharedAV
-    K V)
-  flat_map := fun {U : Type} {F : Type} {Clause0_Item : Type} {Clause0_IntoIter
-    : Type} (collectIntoIteratorInst : core.iter.traits.collect.IntoIterator U
-    Clause0_Item Clause0_IntoIter)
-    (opsfunctionFnMutPTuplePairSharedUSharedFPInst : core.ops.function.FnMut F
-    (K × V) U) => core.iter.traits.iterator.Iterator.flat_map.default
-    (alloc.collections.btree.map.Iter.Insts.CoreIterTraitsIteratorIteratorPairSharedAKSharedAV
-    K V) collectIntoIteratorInst opsfunctionFnMutPTuplePairSharedUSharedFPInst
-  flatten := fun {Clause0_Item : Type} {Clause0_IntoIter : Type}
-    (collectIntoIteratorPairSharedClause0_ItemSharedClause0_IntoIterPPInst :
-    core.iter.traits.collect.IntoIterator (K × V) Clause0_Item
-    Clause0_IntoIter) => core.iter.traits.iterator.Iterator.flatten.default
-    (alloc.collections.btree.map.Iter.Insts.CoreIterTraitsIteratorIteratorPairSharedAKSharedAV
-    K V) collectIntoIteratorPairSharedClause0_ItemSharedClause0_IntoIterPPInst
-  collect := fun {B : Type} (collectFromIteratorPPairSharedBSharedPInst :
-    core.iter.traits.collect.FromIterator B (K × V)) =>
-    core.iter.traits.iterator.Iterator.collect.default
-    (alloc.collections.btree.map.Iter.Insts.CoreIterTraitsIteratorIteratorPairSharedAKSharedAV
-    K V) collectFromIteratorPPairSharedBSharedPInst
-  all := fun {F : Type} (opsfunctionFnMutPTuplePairShared0FShared0PBoolInst :
-    core.ops.function.FnMut F (K × V) Bool) =>
-    core.iter.traits.iterator.Iterator.all.default
-    (alloc.collections.btree.map.Iter.Insts.CoreIterTraitsIteratorIteratorPairSharedAKSharedAV
-    K V) opsfunctionFnMutPTuplePairShared0FShared0PBoolInst
-  any := fun {F : Type} (opsfunctionFnMutPTuplePairShared0FShared0PBoolInst :
-    core.ops.function.FnMut F (K × V) Bool) =>
-    core.iter.traits.iterator.Iterator.any.default
-    (alloc.collections.btree.map.Iter.Insts.CoreIterTraitsIteratorIteratorPairSharedAKSharedAV
-    K V) opsfunctionFnMutPTuplePairShared0FShared0PBoolInst
-  find := fun {P : Type}
-    (opsfunctionFnMutPTupleShared0PairShared0PShared0PBoolInst :
-    core.ops.function.FnMut P (K × V) Bool) =>
-    core.iter.traits.iterator.Iterator.find.default
-    (alloc.collections.btree.map.Iter.Insts.CoreIterTraitsIteratorIteratorPairSharedAKSharedAV
-    K V) opsfunctionFnMutPTupleShared0PairShared0PShared0PBoolInst
-  position := fun {P : Type}
-    (opsfunctionFnMutPTuplePairShared0PShared0PBoolInst :
-    core.ops.function.FnMut P (K × V) Bool) =>
-    core.iter.traits.iterator.Iterator.position.default
-    (alloc.collections.btree.map.Iter.Insts.CoreIterTraitsIteratorIteratorPairSharedAKSharedAV
-    K V) opsfunctionFnMutPTuplePairShared0PShared0PBoolInst
-  max := fun (corecmpOrdPairSharedPSharedPInst : core.cmp.Ord (K × V)) =>
-    alloc.collections.btree.map.Iter.Insts.CoreIterTraitsIteratorIteratorPairSharedAKSharedAV.max
-    corecmpOrdPairSharedPSharedPInst
-  rev := fun {Clause0_Clause0_Item : Type}
-    (double_endedDoubleEndedIteratorIterPInst :
-    core.iter.traits.double_ended.DoubleEndedIterator
-    (alloc.collections.btree.map.Iter K V) Clause0_Clause0_Item) =>
-    core.iter.traits.iterator.Iterator.rev.trait_default
-    (alloc.collections.btree.map.Iter.Insts.CoreIterTraitsIteratorIteratorPairSharedAKSharedAV
-    K V) double_endedDoubleEndedIteratorIterPInst
-  sum := fun {S : Type} (accumSumPPairSharedSSharedPInst :
-    core.iter.traits.accum.Sum S (K × V)) =>
-    core.iter.traits.iterator.Iterator.sum.default
-    (alloc.collections.btree.map.Iter.Insts.CoreIterTraitsIteratorIteratorPairSharedAKSharedAV
-    K V) accumSumPPairSharedSSharedPInst
 }
 
 /-- Trait implementation: [alloc::collections::btree::map::{impl core::iter::traits::iterator::Iterator<&'a K> for alloc::collections::btree::map::Keys<'a, K, V>}]
@@ -1332,93 +672,9 @@ impl_def
   (alloc.collections.btree.map.Keys K V) K := {
   next :=
     alloc.collections.btree.map.Keys.Insts.CoreIterTraitsIteratorIteratorSharedAK.next
-  count := core.iter.traits.iterator.Iterator.count.default
-    (alloc.collections.btree.map.Keys.Insts.CoreIterTraitsIteratorIteratorSharedAK
-    K V)
-  chain := fun {U : Type} {Clause0_IntoIter : Type}
-    (collectIntoIteratorPSharedUPInst : core.iter.traits.collect.IntoIterator U
-    K Clause0_IntoIter) => core.iter.traits.iterator.Iterator.chain.default
-    (alloc.collections.btree.map.Keys.Insts.CoreIterTraitsIteratorIteratorSharedAK
-    K V) collectIntoIteratorPSharedUPInst
-  zip := fun {U : Type} {Clause0_Item : Type} {Clause0_IntoIter : Type}
-    (collectIntoIteratorInst : core.iter.traits.collect.IntoIterator U
-    Clause0_Item Clause0_IntoIter) =>
-    core.iter.traits.iterator.Iterator.zip.trait_default
-    (alloc.collections.btree.map.Keys.Insts.CoreIterTraitsIteratorIteratorSharedAK
-    K V) collectIntoIteratorInst
-  map := fun {B : Type} {F : Type} (opsfunctionFnMutPTupleSharedBPInst :
-    core.ops.function.FnMut F K B) =>
-    core.iter.traits.iterator.Iterator.map.default
-    (alloc.collections.btree.map.Keys.Insts.CoreIterTraitsIteratorIteratorSharedAK
-    K V) opsfunctionFnMutPTupleSharedBPInst
-  for_each := fun {F : Type} (opsfunctionFnMutPTupleSharedFTupleInst :
-    core.ops.function.FnMut F K Unit) =>
-    core.iter.traits.iterator.Iterator.for_each.default
-    (alloc.collections.btree.map.Keys.Insts.CoreIterTraitsIteratorIteratorSharedAK
-    K V) opsfunctionFnMutPTupleSharedFTupleInst
-  filter := fun {P : Type} (opsfunctionFnMutPTupleSharedSharedPBoolInst :
-    core.ops.function.FnMut P K Bool) =>
-    core.iter.traits.iterator.Iterator.filter.default
-    (alloc.collections.btree.map.Keys.Insts.CoreIterTraitsIteratorIteratorSharedAK
-    K V) opsfunctionFnMutPTupleSharedSharedPBoolInst
   enumerate := core.iter.traits.iterator.Iterator.enumerate.trait_default
     (alloc.collections.btree.map.Keys.Insts.CoreIterTraitsIteratorIteratorSharedAK
     K V)
-  skip := core.iter.traits.iterator.Iterator.skip.default
-    (alloc.collections.btree.map.Keys.Insts.CoreIterTraitsIteratorIteratorSharedAK
-    K V)
-  flat_map := fun {U : Type} {F : Type} {Clause0_Item : Type} {Clause0_IntoIter
-    : Type} (collectIntoIteratorInst : core.iter.traits.collect.IntoIterator U
-    Clause0_Item Clause0_IntoIter) (opsfunctionFnMutPTupleSharedUPInst :
-    core.ops.function.FnMut F K U) =>
-    core.iter.traits.iterator.Iterator.flat_map.default
-    (alloc.collections.btree.map.Keys.Insts.CoreIterTraitsIteratorIteratorSharedAK
-    K V) collectIntoIteratorInst opsfunctionFnMutPTupleSharedUPInst
-  flatten := fun {Clause0_Item : Type} {Clause0_IntoIter : Type}
-    (collectIntoIteratorSharedClause0_ItemPPInst :
-    core.iter.traits.collect.IntoIterator K Clause0_Item Clause0_IntoIter) =>
-    core.iter.traits.iterator.Iterator.flatten.default
-    (alloc.collections.btree.map.Keys.Insts.CoreIterTraitsIteratorIteratorSharedAK
-    K V) collectIntoIteratorSharedClause0_ItemPPInst
-  collect := fun {B : Type} (collectFromIteratorPSharedBInst :
-    core.iter.traits.collect.FromIterator B K) =>
-    core.iter.traits.iterator.Iterator.collect.default
-    (alloc.collections.btree.map.Keys.Insts.CoreIterTraitsIteratorIteratorSharedAK
-    K V) collectFromIteratorPSharedBInst
-  all := fun {F : Type} (opsfunctionFnMutPTupleShared0FBoolInst :
-    core.ops.function.FnMut F K Bool) =>
-    core.iter.traits.iterator.Iterator.all.default
-    (alloc.collections.btree.map.Keys.Insts.CoreIterTraitsIteratorIteratorSharedAK
-    K V) opsfunctionFnMutPTupleShared0FBoolInst
-  any := fun {F : Type} (opsfunctionFnMutPTupleShared0FBoolInst :
-    core.ops.function.FnMut F K Bool) =>
-    core.iter.traits.iterator.Iterator.any.default
-    (alloc.collections.btree.map.Keys.Insts.CoreIterTraitsIteratorIteratorSharedAK
-    K V) opsfunctionFnMutPTupleShared0FBoolInst
-  find := fun {P : Type} (opsfunctionFnMutPTupleShared0Shared0PBoolInst :
-    core.ops.function.FnMut P K Bool) =>
-    core.iter.traits.iterator.Iterator.find.default
-    (alloc.collections.btree.map.Keys.Insts.CoreIterTraitsIteratorIteratorSharedAK
-    K V) opsfunctionFnMutPTupleShared0Shared0PBoolInst
-  position := fun {P : Type} (opsfunctionFnMutPTupleShared0PBoolInst :
-    core.ops.function.FnMut P K Bool) =>
-    core.iter.traits.iterator.Iterator.position.default
-    (alloc.collections.btree.map.Keys.Insts.CoreIterTraitsIteratorIteratorSharedAK
-    K V) opsfunctionFnMutPTupleShared0PBoolInst
-  max := fun (corecmpOrdSharedPInst : core.cmp.Ord K) =>
-    alloc.collections.btree.map.Keys.Insts.CoreIterTraitsIteratorIteratorSharedAK.max
-    corecmpOrdSharedPInst
-  rev := fun {Clause0_Clause0_Item : Type}
-    (double_endedDoubleEndedIteratorKeysPInst :
-    core.iter.traits.double_ended.DoubleEndedIterator
-    (alloc.collections.btree.map.Keys K V) Clause0_Clause0_Item) =>
-    core.iter.traits.iterator.Iterator.rev.trait_default
-    (alloc.collections.btree.map.Keys.Insts.CoreIterTraitsIteratorIteratorSharedAK
-    K V) double_endedDoubleEndedIteratorKeysPInst
-  sum := fun {S : Type} (accumSumPSharedSInst : core.iter.traits.accum.Sum S K)
-    => core.iter.traits.iterator.Iterator.sum.default
-    (alloc.collections.btree.map.Keys.Insts.CoreIterTraitsIteratorIteratorSharedAK
-    K V) accumSumPSharedSInst
 }
 
 /-- Trait implementation: [alloc::collections::btree::map::{impl core::iter::traits::iterator::Iterator<&'a V> for alloc::collections::btree::map::Values<'a, K, V>}]
@@ -1432,95 +688,9 @@ impl_def
   (alloc.collections.btree.map.Values K V) V := {
   next :=
     alloc.collections.btree.map.Values.Insts.CoreIterTraitsIteratorIteratorSharedAV.next
-  count := core.iter.traits.iterator.Iterator.count.default
-    (alloc.collections.btree.map.Values.Insts.CoreIterTraitsIteratorIteratorSharedAV
-    K V)
-  chain := fun {U : Type} {Clause0_IntoIter : Type}
-    (collectIntoIteratorPSharedClause0_IntoIterPInst :
-    core.iter.traits.collect.IntoIterator U V Clause0_IntoIter) =>
-    core.iter.traits.iterator.Iterator.chain.default
-    (alloc.collections.btree.map.Values.Insts.CoreIterTraitsIteratorIteratorSharedAV
-    K V) collectIntoIteratorPSharedClause0_IntoIterPInst
-  zip := fun {U : Type} {Clause0_Item : Type} {Clause0_IntoIter : Type}
-    (collectIntoIteratorInst : core.iter.traits.collect.IntoIterator U
-    Clause0_Item Clause0_IntoIter) =>
-    core.iter.traits.iterator.Iterator.zip.trait_default
-    (alloc.collections.btree.map.Values.Insts.CoreIterTraitsIteratorIteratorSharedAV
-    K V) collectIntoIteratorInst
-  map := fun {B : Type} {F : Type} (opsfunctionFnMutPTupleSharedFPInst :
-    core.ops.function.FnMut F V B) =>
-    core.iter.traits.iterator.Iterator.map.default
-    (alloc.collections.btree.map.Values.Insts.CoreIterTraitsIteratorIteratorSharedAV
-    K V) opsfunctionFnMutPTupleSharedFPInst
-  for_each := fun {F : Type} (opsfunctionFnMutPTupleSharedPTupleInst :
-    core.ops.function.FnMut F V Unit) =>
-    core.iter.traits.iterator.Iterator.for_each.default
-    (alloc.collections.btree.map.Values.Insts.CoreIterTraitsIteratorIteratorSharedAV
-    K V) opsfunctionFnMutPTupleSharedPTupleInst
-  filter := fun {P : Type} (opsfunctionFnMutPTupleSharedSharedPBoolInst :
-    core.ops.function.FnMut P V Bool) =>
-    core.iter.traits.iterator.Iterator.filter.default
-    (alloc.collections.btree.map.Values.Insts.CoreIterTraitsIteratorIteratorSharedAV
-    K V) opsfunctionFnMutPTupleSharedSharedPBoolInst
   enumerate := core.iter.traits.iterator.Iterator.enumerate.trait_default
     (alloc.collections.btree.map.Values.Insts.CoreIterTraitsIteratorIteratorSharedAV
     K V)
-  skip := core.iter.traits.iterator.Iterator.skip.default
-    (alloc.collections.btree.map.Values.Insts.CoreIterTraitsIteratorIteratorSharedAV
-    K V)
-  flat_map := fun {U : Type} {F : Type} {Clause0_Item : Type} {Clause0_IntoIter
-    : Type} (collectIntoIteratorInst : core.iter.traits.collect.IntoIterator U
-    Clause0_Item Clause0_IntoIter) (opsfunctionFnMutPTupleSharedFPInst :
-    core.ops.function.FnMut F V U) =>
-    core.iter.traits.iterator.Iterator.flat_map.default
-    (alloc.collections.btree.map.Values.Insts.CoreIterTraitsIteratorIteratorSharedAV
-    K V) collectIntoIteratorInst opsfunctionFnMutPTupleSharedFPInst
-  flatten := fun {Clause0_Item : Type} {Clause0_IntoIter : Type}
-    (collectIntoIteratorSharedClause0_IntoIterPPInst :
-    core.iter.traits.collect.IntoIterator V Clause0_Item Clause0_IntoIter) =>
-    core.iter.traits.iterator.Iterator.flatten.default
-    (alloc.collections.btree.map.Values.Insts.CoreIterTraitsIteratorIteratorSharedAV
-    K V) collectIntoIteratorSharedClause0_IntoIterPPInst
-  collect := fun {B : Type} (collectFromIteratorPSharedPInst :
-    core.iter.traits.collect.FromIterator B V) =>
-    core.iter.traits.iterator.Iterator.collect.default
-    (alloc.collections.btree.map.Values.Insts.CoreIterTraitsIteratorIteratorSharedAV
-    K V) collectFromIteratorPSharedPInst
-  all := fun {F : Type} (opsfunctionFnMutPTupleShared0PBoolInst :
-    core.ops.function.FnMut F V Bool) =>
-    core.iter.traits.iterator.Iterator.all.default
-    (alloc.collections.btree.map.Values.Insts.CoreIterTraitsIteratorIteratorSharedAV
-    K V) opsfunctionFnMutPTupleShared0PBoolInst
-  any := fun {F : Type} (opsfunctionFnMutPTupleShared0PBoolInst :
-    core.ops.function.FnMut F V Bool) =>
-    core.iter.traits.iterator.Iterator.any.default
-    (alloc.collections.btree.map.Values.Insts.CoreIterTraitsIteratorIteratorSharedAV
-    K V) opsfunctionFnMutPTupleShared0PBoolInst
-  find := fun {P : Type} (opsfunctionFnMutPTupleShared0Shared0PBoolInst :
-    core.ops.function.FnMut P V Bool) =>
-    core.iter.traits.iterator.Iterator.find.default
-    (alloc.collections.btree.map.Values.Insts.CoreIterTraitsIteratorIteratorSharedAV
-    K V) opsfunctionFnMutPTupleShared0Shared0PBoolInst
-  position := fun {P : Type} (opsfunctionFnMutPTupleShared0PBoolInst :
-    core.ops.function.FnMut P V Bool) =>
-    core.iter.traits.iterator.Iterator.position.default
-    (alloc.collections.btree.map.Values.Insts.CoreIterTraitsIteratorIteratorSharedAV
-    K V) opsfunctionFnMutPTupleShared0PBoolInst
-  max := fun (cmpOrdSharedPInst : core.cmp.Ord V) =>
-    core.iter.traits.iterator.Iterator.max.default
-    (alloc.collections.btree.map.Values.Insts.CoreIterTraitsIteratorIteratorSharedAV
-    K V) cmpOrdSharedPInst
-  rev := fun {Clause0_Clause0_Item : Type}
-    (double_endedDoubleEndedIteratorValuesPInst :
-    core.iter.traits.double_ended.DoubleEndedIterator
-    (alloc.collections.btree.map.Values K V) Clause0_Clause0_Item) =>
-    core.iter.traits.iterator.Iterator.rev.trait_default
-    (alloc.collections.btree.map.Values.Insts.CoreIterTraitsIteratorIteratorSharedAV
-    K V) double_endedDoubleEndedIteratorValuesPInst
-  sum := fun {S : Type} (accumSumPSharedPInst : core.iter.traits.accum.Sum S V)
-    => core.iter.traits.iterator.Iterator.sum.default
-    (alloc.collections.btree.map.Values.Insts.CoreIterTraitsIteratorIteratorSharedAV
-    K V) accumSumPSharedPInst
 }
 
 /-- Trait implementation: [alloc::collections::btree::map::{impl core::iter::traits::iterator::Iterator<V> for alloc::collections::btree::map::IntoValues<K, V, A>}]
@@ -1536,96 +706,9 @@ impl_def
   next :=
     alloc.collections.btree.map.IntoValues.Insts.CoreIterTraitsIteratorIterator.next
     coreallocAllocatorCloneInst
-  count := core.iter.traits.iterator.Iterator.count.default
-    (alloc.collections.btree.map.IntoValues.Insts.CoreIterTraitsIteratorIterator
-    K V coreallocAllocatorCloneInst)
-  chain := fun {U : Type} {Clause0_IntoIter : Type} (collectIntoIteratorInst :
-    core.iter.traits.collect.IntoIterator U V Clause0_IntoIter) =>
-    core.iter.traits.iterator.Iterator.chain.default
-    (alloc.collections.btree.map.IntoValues.Insts.CoreIterTraitsIteratorIterator
-    K V coreallocAllocatorCloneInst) collectIntoIteratorInst
-  zip := fun {U : Type} {Clause0_Item : Type} {Clause0_IntoIter : Type}
-    (collectIntoIteratorInst : core.iter.traits.collect.IntoIterator U
-    Clause0_Item Clause0_IntoIter) =>
-    core.iter.traits.iterator.Iterator.zip.trait_default
-    (alloc.collections.btree.map.IntoValues.Insts.CoreIterTraitsIteratorIterator
-    K V coreallocAllocatorCloneInst) collectIntoIteratorInst
-  map := fun {B : Type} {F : Type} (opsfunctionFnMutPTupleFPInst :
-    core.ops.function.FnMut F V B) =>
-    core.iter.traits.iterator.Iterator.map.default
-    (alloc.collections.btree.map.IntoValues.Insts.CoreIterTraitsIteratorIterator
-    K V coreallocAllocatorCloneInst) opsfunctionFnMutPTupleFPInst
-  for_each := fun {F : Type} (opsfunctionFnMutPTuplePTupleInst :
-    core.ops.function.FnMut F V Unit) =>
-    core.iter.traits.iterator.Iterator.for_each.default
-    (alloc.collections.btree.map.IntoValues.Insts.CoreIterTraitsIteratorIterator
-    K V coreallocAllocatorCloneInst) opsfunctionFnMutPTuplePTupleInst
-  filter := fun {P : Type} (opsfunctionFnMutPTupleSharedPBoolInst :
-    core.ops.function.FnMut P V Bool) =>
-    core.iter.traits.iterator.Iterator.filter.default
-    (alloc.collections.btree.map.IntoValues.Insts.CoreIterTraitsIteratorIterator
-    K V coreallocAllocatorCloneInst) opsfunctionFnMutPTupleSharedPBoolInst
   enumerate := core.iter.traits.iterator.Iterator.enumerate.trait_default
     (alloc.collections.btree.map.IntoValues.Insts.CoreIterTraitsIteratorIterator
     K V coreallocAllocatorCloneInst)
-  skip := core.iter.traits.iterator.Iterator.skip.default
-    (alloc.collections.btree.map.IntoValues.Insts.CoreIterTraitsIteratorIterator
-    K V coreallocAllocatorCloneInst)
-  flat_map := fun {U : Type} {F : Type} {Clause0_Item : Type} {Clause0_IntoIter
-    : Type} (collectIntoIteratorInst : core.iter.traits.collect.IntoIterator U
-    Clause0_Item Clause0_IntoIter) (opsfunctionFnMutPTupleFPInst :
-    core.ops.function.FnMut F V U) =>
-    core.iter.traits.iterator.Iterator.flat_map.default
-    (alloc.collections.btree.map.IntoValues.Insts.CoreIterTraitsIteratorIterator
-    K V coreallocAllocatorCloneInst) collectIntoIteratorInst
-    opsfunctionFnMutPTupleFPInst
-  flatten := fun {Clause0_Item : Type} {Clause0_IntoIter : Type}
-    (collectIntoIteratorInst : core.iter.traits.collect.IntoIterator V
-    Clause0_Item Clause0_IntoIter) =>
-    core.iter.traits.iterator.Iterator.flatten.default
-    (alloc.collections.btree.map.IntoValues.Insts.CoreIterTraitsIteratorIterator
-    K V coreallocAllocatorCloneInst) collectIntoIteratorInst
-  collect := fun {B : Type} (collectFromIteratorInst :
-    core.iter.traits.collect.FromIterator B V) =>
-    core.iter.traits.iterator.Iterator.collect.default
-    (alloc.collections.btree.map.IntoValues.Insts.CoreIterTraitsIteratorIterator
-    K V coreallocAllocatorCloneInst) collectFromIteratorInst
-  all := fun {F : Type} (opsfunctionFnMutPTuplePBoolInst :
-    core.ops.function.FnMut F V Bool) =>
-    core.iter.traits.iterator.Iterator.all.default
-    (alloc.collections.btree.map.IntoValues.Insts.CoreIterTraitsIteratorIterator
-    K V coreallocAllocatorCloneInst) opsfunctionFnMutPTuplePBoolInst
-  any := fun {F : Type} (opsfunctionFnMutPTuplePBoolInst :
-    core.ops.function.FnMut F V Bool) =>
-    core.iter.traits.iterator.Iterator.any.default
-    (alloc.collections.btree.map.IntoValues.Insts.CoreIterTraitsIteratorIterator
-    K V coreallocAllocatorCloneInst) opsfunctionFnMutPTuplePBoolInst
-  find := fun {P : Type} (opsfunctionFnMutPTupleShared0PBoolInst :
-    core.ops.function.FnMut P V Bool) =>
-    core.iter.traits.iterator.Iterator.find.default
-    (alloc.collections.btree.map.IntoValues.Insts.CoreIterTraitsIteratorIterator
-    K V coreallocAllocatorCloneInst) opsfunctionFnMutPTupleShared0PBoolInst
-  position := fun {P : Type} (opsfunctionFnMutPTuplePBoolInst :
-    core.ops.function.FnMut P V Bool) =>
-    core.iter.traits.iterator.Iterator.position.default
-    (alloc.collections.btree.map.IntoValues.Insts.CoreIterTraitsIteratorIterator
-    K V coreallocAllocatorCloneInst) opsfunctionFnMutPTuplePBoolInst
-  max := fun (cmpOrdInst : core.cmp.Ord V) =>
-    core.iter.traits.iterator.Iterator.max.default
-    (alloc.collections.btree.map.IntoValues.Insts.CoreIterTraitsIteratorIterator
-    K V coreallocAllocatorCloneInst) cmpOrdInst
-  rev := fun {Clause0_Clause0_Item : Type}
-    (double_endedDoubleEndedIteratorIntoValuesPInst :
-    core.iter.traits.double_ended.DoubleEndedIterator
-    (alloc.collections.btree.map.IntoValues K V A) Clause0_Clause0_Item) =>
-    core.iter.traits.iterator.Iterator.rev.trait_default
-    (alloc.collections.btree.map.IntoValues.Insts.CoreIterTraitsIteratorIterator
-    K V coreallocAllocatorCloneInst)
-    double_endedDoubleEndedIteratorIntoValuesPInst
-  sum := fun {S : Type} (accumSumInst : core.iter.traits.accum.Sum S V) =>
-    core.iter.traits.iterator.Iterator.sum.default
-    (alloc.collections.btree.map.IntoValues.Insts.CoreIterTraitsIteratorIterator
-    K V coreallocAllocatorCloneInst) accumSumInst
 }
 
 /-- Trait implementation: [alloc::collections::btree::map::{impl core::default::Default for alloc::collections::btree::map::BTreeMap<K, V, alloc::alloc::Global>}]
@@ -1732,95 +815,9 @@ impl_def
   next :=
     alloc.collections.btree.set.IntoIter.Insts.CoreIterTraitsIteratorIterator.next
     coreallocAllocatorCloneInst
-  count := core.iter.traits.iterator.Iterator.count.default
-    (alloc.collections.btree.set.IntoIter.Insts.CoreIterTraitsIteratorIterator
-    T coreallocAllocatorCloneInst)
-  chain := fun {U : Type} {Clause0_IntoIter : Type} (collectIntoIteratorInst :
-    core.iter.traits.collect.IntoIterator U T Clause0_IntoIter) =>
-    core.iter.traits.iterator.Iterator.chain.default
-    (alloc.collections.btree.set.IntoIter.Insts.CoreIterTraitsIteratorIterator
-    T coreallocAllocatorCloneInst) collectIntoIteratorInst
-  zip := fun {U : Type} {Clause0_Item : Type} {Clause0_IntoIter : Type}
-    (collectIntoIteratorInst : core.iter.traits.collect.IntoIterator U
-    Clause0_Item Clause0_IntoIter) =>
-    core.iter.traits.iterator.Iterator.zip.trait_default
-    (alloc.collections.btree.set.IntoIter.Insts.CoreIterTraitsIteratorIterator
-    T coreallocAllocatorCloneInst) collectIntoIteratorInst
-  map := fun {B : Type} {F : Type} (opsfunctionFnMutPTupleBPInst :
-    core.ops.function.FnMut F T B) =>
-    core.iter.traits.iterator.Iterator.map.default
-    (alloc.collections.btree.set.IntoIter.Insts.CoreIterTraitsIteratorIterator
-    T coreallocAllocatorCloneInst) opsfunctionFnMutPTupleBPInst
-  for_each := fun {F : Type} (opsfunctionFnMutPTupleFTupleInst :
-    core.ops.function.FnMut F T Unit) =>
-    core.iter.traits.iterator.Iterator.for_each.default
-    (alloc.collections.btree.set.IntoIter.Insts.CoreIterTraitsIteratorIterator
-    T coreallocAllocatorCloneInst) opsfunctionFnMutPTupleFTupleInst
-  filter := fun {P : Type} (opsfunctionFnMutPTupleSharedPBoolInst :
-    core.ops.function.FnMut P T Bool) =>
-    core.iter.traits.iterator.Iterator.filter.default
-    (alloc.collections.btree.set.IntoIter.Insts.CoreIterTraitsIteratorIterator
-    T coreallocAllocatorCloneInst) opsfunctionFnMutPTupleSharedPBoolInst
   enumerate := core.iter.traits.iterator.Iterator.enumerate.trait_default
     (alloc.collections.btree.set.IntoIter.Insts.CoreIterTraitsIteratorIterator
     T coreallocAllocatorCloneInst)
-  skip := core.iter.traits.iterator.Iterator.skip.default
-    (alloc.collections.btree.set.IntoIter.Insts.CoreIterTraitsIteratorIterator
-    T coreallocAllocatorCloneInst)
-  flat_map := fun {U : Type} {F : Type} {Clause0_Item : Type} {Clause0_IntoIter
-    : Type} (collectIntoIteratorInst : core.iter.traits.collect.IntoIterator U
-    Clause0_Item Clause0_IntoIter) (opsfunctionFnMutPTupleUPInst :
-    core.ops.function.FnMut F T U) =>
-    core.iter.traits.iterator.Iterator.flat_map.default
-    (alloc.collections.btree.set.IntoIter.Insts.CoreIterTraitsIteratorIterator
-    T coreallocAllocatorCloneInst) collectIntoIteratorInst
-    opsfunctionFnMutPTupleUPInst
-  flatten := fun {Clause0_Item : Type} {Clause0_IntoIter : Type}
-    (collectIntoIteratorInst : core.iter.traits.collect.IntoIterator T
-    Clause0_Item Clause0_IntoIter) =>
-    core.iter.traits.iterator.Iterator.flatten.default
-    (alloc.collections.btree.set.IntoIter.Insts.CoreIterTraitsIteratorIterator
-    T coreallocAllocatorCloneInst) collectIntoIteratorInst
-  collect := fun {B : Type} (collectFromIteratorInst :
-    core.iter.traits.collect.FromIterator B T) =>
-    core.iter.traits.iterator.Iterator.collect.default
-    (alloc.collections.btree.set.IntoIter.Insts.CoreIterTraitsIteratorIterator
-    T coreallocAllocatorCloneInst) collectFromIteratorInst
-  all := fun {F : Type} (opsfunctionFnMutPTupleFBoolInst :
-    core.ops.function.FnMut F T Bool) =>
-    core.iter.traits.iterator.Iterator.all.default
-    (alloc.collections.btree.set.IntoIter.Insts.CoreIterTraitsIteratorIterator
-    T coreallocAllocatorCloneInst) opsfunctionFnMutPTupleFBoolInst
-  any := fun {F : Type} (opsfunctionFnMutPTupleFBoolInst :
-    core.ops.function.FnMut F T Bool) =>
-    core.iter.traits.iterator.Iterator.any.default
-    (alloc.collections.btree.set.IntoIter.Insts.CoreIterTraitsIteratorIterator
-    T coreallocAllocatorCloneInst) opsfunctionFnMutPTupleFBoolInst
-  find := fun {P : Type} (opsfunctionFnMutPTupleShared0PBoolInst :
-    core.ops.function.FnMut P T Bool) =>
-    core.iter.traits.iterator.Iterator.find.default
-    (alloc.collections.btree.set.IntoIter.Insts.CoreIterTraitsIteratorIterator
-    T coreallocAllocatorCloneInst) opsfunctionFnMutPTupleShared0PBoolInst
-  position := fun {P : Type} (opsfunctionFnMutPTuplePBoolInst :
-    core.ops.function.FnMut P T Bool) =>
-    core.iter.traits.iterator.Iterator.position.default
-    (alloc.collections.btree.set.IntoIter.Insts.CoreIterTraitsIteratorIterator
-    T coreallocAllocatorCloneInst) opsfunctionFnMutPTuplePBoolInst
-  max := fun (cmpOrdInst : core.cmp.Ord T) =>
-    core.iter.traits.iterator.Iterator.max.default
-    (alloc.collections.btree.set.IntoIter.Insts.CoreIterTraitsIteratorIterator
-    T coreallocAllocatorCloneInst) cmpOrdInst
-  rev := fun {Clause0_Clause0_Item : Type}
-    (double_endedDoubleEndedIteratorIntoIterPInst :
-    core.iter.traits.double_ended.DoubleEndedIterator
-    (alloc.collections.btree.set.IntoIter T A) Clause0_Clause0_Item) =>
-    core.iter.traits.iterator.Iterator.rev.trait_default
-    (alloc.collections.btree.set.IntoIter.Insts.CoreIterTraitsIteratorIterator
-    T coreallocAllocatorCloneInst) double_endedDoubleEndedIteratorIntoIterPInst
-  sum := fun {S : Type} (accumSumInst : core.iter.traits.accum.Sum S T) =>
-    core.iter.traits.iterator.Iterator.sum.default
-    (alloc.collections.btree.set.IntoIter.Insts.CoreIterTraitsIteratorIterator
-    T coreallocAllocatorCloneInst) accumSumInst
 }
 
 /-- Trait implementation: [alloc::collections::btree::set::{impl core::default::Default for alloc::collections::btree::set::BTreeSet<T, alloc::alloc::Global>}]
@@ -1860,93 +857,9 @@ impl_def
   (alloc.collections.btree.set.Iter T) T := {
   next :=
     alloc.collections.btree.set.Iter.Insts.CoreIterTraitsIteratorIteratorSharedAT.next
-  count := core.iter.traits.iterator.Iterator.count.default
-    (alloc.collections.btree.set.Iter.Insts.CoreIterTraitsIteratorIteratorSharedAT
-    T)
-  chain := fun {U : Type} {Clause0_IntoIter : Type}
-    (collectIntoIteratorPSharedUPInst : core.iter.traits.collect.IntoIterator U
-    T Clause0_IntoIter) => core.iter.traits.iterator.Iterator.chain.default
-    (alloc.collections.btree.set.Iter.Insts.CoreIterTraitsIteratorIteratorSharedAT
-    T) collectIntoIteratorPSharedUPInst
-  zip := fun {U : Type} {Clause0_Item : Type} {Clause0_IntoIter : Type}
-    (collectIntoIteratorInst : core.iter.traits.collect.IntoIterator U
-    Clause0_Item Clause0_IntoIter) =>
-    core.iter.traits.iterator.Iterator.zip.trait_default
-    (alloc.collections.btree.set.Iter.Insts.CoreIterTraitsIteratorIteratorSharedAT
-    T) collectIntoIteratorInst
-  map := fun {B : Type} {F : Type} (opsfunctionFnMutPTupleSharedBPInst :
-    core.ops.function.FnMut F T B) =>
-    core.iter.traits.iterator.Iterator.map.default
-    (alloc.collections.btree.set.Iter.Insts.CoreIterTraitsIteratorIteratorSharedAT
-    T) opsfunctionFnMutPTupleSharedBPInst
-  for_each := fun {F : Type} (opsfunctionFnMutPTupleSharedFTupleInst :
-    core.ops.function.FnMut F T Unit) =>
-    core.iter.traits.iterator.Iterator.for_each.default
-    (alloc.collections.btree.set.Iter.Insts.CoreIterTraitsIteratorIteratorSharedAT
-    T) opsfunctionFnMutPTupleSharedFTupleInst
-  filter := fun {P : Type} (opsfunctionFnMutPTupleSharedSharedPBoolInst :
-    core.ops.function.FnMut P T Bool) =>
-    core.iter.traits.iterator.Iterator.filter.default
-    (alloc.collections.btree.set.Iter.Insts.CoreIterTraitsIteratorIteratorSharedAT
-    T) opsfunctionFnMutPTupleSharedSharedPBoolInst
   enumerate := core.iter.traits.iterator.Iterator.enumerate.trait_default
     (alloc.collections.btree.set.Iter.Insts.CoreIterTraitsIteratorIteratorSharedAT
     T)
-  skip := core.iter.traits.iterator.Iterator.skip.default
-    (alloc.collections.btree.set.Iter.Insts.CoreIterTraitsIteratorIteratorSharedAT
-    T)
-  flat_map := fun {U : Type} {F : Type} {Clause0_Item : Type} {Clause0_IntoIter
-    : Type} (collectIntoIteratorInst : core.iter.traits.collect.IntoIterator U
-    Clause0_Item Clause0_IntoIter) (opsfunctionFnMutPTupleSharedUPInst :
-    core.ops.function.FnMut F T U) =>
-    core.iter.traits.iterator.Iterator.flat_map.default
-    (alloc.collections.btree.set.Iter.Insts.CoreIterTraitsIteratorIteratorSharedAT
-    T) collectIntoIteratorInst opsfunctionFnMutPTupleSharedUPInst
-  flatten := fun {Clause0_Item : Type} {Clause0_IntoIter : Type}
-    (collectIntoIteratorSharedClause0_ItemPPInst :
-    core.iter.traits.collect.IntoIterator T Clause0_Item Clause0_IntoIter) =>
-    core.iter.traits.iterator.Iterator.flatten.default
-    (alloc.collections.btree.set.Iter.Insts.CoreIterTraitsIteratorIteratorSharedAT
-    T) collectIntoIteratorSharedClause0_ItemPPInst
-  collect := fun {B : Type} (collectFromIteratorPSharedBInst :
-    core.iter.traits.collect.FromIterator B T) =>
-    core.iter.traits.iterator.Iterator.collect.default
-    (alloc.collections.btree.set.Iter.Insts.CoreIterTraitsIteratorIteratorSharedAT
-    T) collectFromIteratorPSharedBInst
-  all := fun {F : Type} (opsfunctionFnMutPTupleShared0FBoolInst :
-    core.ops.function.FnMut F T Bool) =>
-    core.iter.traits.iterator.Iterator.all.default
-    (alloc.collections.btree.set.Iter.Insts.CoreIterTraitsIteratorIteratorSharedAT
-    T) opsfunctionFnMutPTupleShared0FBoolInst
-  any := fun {F : Type} (opsfunctionFnMutPTupleShared0FBoolInst :
-    core.ops.function.FnMut F T Bool) =>
-    core.iter.traits.iterator.Iterator.any.default
-    (alloc.collections.btree.set.Iter.Insts.CoreIterTraitsIteratorIteratorSharedAT
-    T) opsfunctionFnMutPTupleShared0FBoolInst
-  find := fun {P : Type} (opsfunctionFnMutPTupleShared0Shared0PBoolInst :
-    core.ops.function.FnMut P T Bool) =>
-    core.iter.traits.iterator.Iterator.find.default
-    (alloc.collections.btree.set.Iter.Insts.CoreIterTraitsIteratorIteratorSharedAT
-    T) opsfunctionFnMutPTupleShared0Shared0PBoolInst
-  position := fun {P : Type} (opsfunctionFnMutPTupleShared0PBoolInst :
-    core.ops.function.FnMut P T Bool) =>
-    core.iter.traits.iterator.Iterator.position.default
-    (alloc.collections.btree.set.Iter.Insts.CoreIterTraitsIteratorIteratorSharedAT
-    T) opsfunctionFnMutPTupleShared0PBoolInst
-  max := fun (corecmpOrdSharedPInst : core.cmp.Ord T) =>
-    alloc.collections.btree.set.Iter.Insts.CoreIterTraitsIteratorIteratorSharedAT.max
-    corecmpOrdSharedPInst
-  rev := fun {Clause0_Clause0_Item : Type}
-    (double_endedDoubleEndedIteratorIterPInst :
-    core.iter.traits.double_ended.DoubleEndedIterator
-    (alloc.collections.btree.set.Iter T) Clause0_Clause0_Item) =>
-    core.iter.traits.iterator.Iterator.rev.trait_default
-    (alloc.collections.btree.set.Iter.Insts.CoreIterTraitsIteratorIteratorSharedAT
-    T) double_endedDoubleEndedIteratorIterPInst
-  sum := fun {S : Type} (accumSumPSharedSInst : core.iter.traits.accum.Sum S T)
-    => core.iter.traits.iterator.Iterator.sum.default
-    (alloc.collections.btree.set.Iter.Insts.CoreIterTraitsIteratorIteratorSharedAT
-    T) accumSumPSharedSInst
 }
 
 /-- Trait implementation: [alloc::slice::{impl core::borrow::Borrow<[T]> for alloc::vec::Vec<T>}]
@@ -2153,98 +1066,9 @@ impl_def
   (indexmap.map.iter.Iter K V) (K × V) := {
   next :=
     indexmap.map.iter.Iter.Insts.CoreIterTraitsIteratorIteratorPairSharedAKSharedAV.next
-  count :=
-    indexmap.map.iter.Iter.Insts.CoreIterTraitsIteratorIteratorPairSharedAKSharedAV.count
-  chain := fun {U : Type} {Clause0_IntoIter : Type}
-    (collectIntoIteratorPPairSharedUSharedClause0_IntoIterPInst :
-    core.iter.traits.collect.IntoIterator U (K × V) Clause0_IntoIter) =>
-    core.iter.traits.iterator.Iterator.chain.default
-    (indexmap.map.iter.Iter.Insts.CoreIterTraitsIteratorIteratorPairSharedAKSharedAV
-    K V) collectIntoIteratorPPairSharedUSharedClause0_IntoIterPInst
-  zip := fun {U : Type} {Clause0_Item : Type} {Clause0_IntoIter : Type}
-    (collectIntoIteratorInst : core.iter.traits.collect.IntoIterator U
-    Clause0_Item Clause0_IntoIter) =>
-    core.iter.traits.iterator.Iterator.zip.trait_default
-    (indexmap.map.iter.Iter.Insts.CoreIterTraitsIteratorIteratorPairSharedAKSharedAV
-    K V) collectIntoIteratorInst
-  map := fun {B : Type} {F : Type}
-    (opsfunctionFnMutPTuplePairSharedBSharedFPInst : core.ops.function.FnMut F
-    (K × V) B) => core.iter.traits.iterator.Iterator.map.default
-    (indexmap.map.iter.Iter.Insts.CoreIterTraitsIteratorIteratorPairSharedAKSharedAV
-    K V) opsfunctionFnMutPTuplePairSharedBSharedFPInst
-  for_each := fun {F : Type} (opsfunctionFnMutPTuplePairSharedFSharedPTupleInst
-    : core.ops.function.FnMut F (K × V) Unit) =>
-    core.iter.traits.iterator.Iterator.for_each.default
-    (indexmap.map.iter.Iter.Insts.CoreIterTraitsIteratorIteratorPairSharedAKSharedAV
-    K V) opsfunctionFnMutPTuplePairSharedFSharedPTupleInst
-  filter := fun {P : Type}
-    (opsfunctionFnMutPTupleSharedPairSharedPSharedPBoolInst :
-    core.ops.function.FnMut P (K × V) Bool) =>
-    core.iter.traits.iterator.Iterator.filter.default
-    (indexmap.map.iter.Iter.Insts.CoreIterTraitsIteratorIteratorPairSharedAKSharedAV
-    K V) opsfunctionFnMutPTupleSharedPairSharedPSharedPBoolInst
   enumerate := core.iter.traits.iterator.Iterator.enumerate.trait_default
     (indexmap.map.iter.Iter.Insts.CoreIterTraitsIteratorIteratorPairSharedAKSharedAV
     K V)
-  skip := core.iter.traits.iterator.Iterator.skip.default
-    (indexmap.map.iter.Iter.Insts.CoreIterTraitsIteratorIteratorPairSharedAKSharedAV
-    K V)
-  flat_map := fun {U : Type} {F : Type} {Clause0_Item : Type} {Clause0_IntoIter
-    : Type} (collectIntoIteratorInst : core.iter.traits.collect.IntoIterator U
-    Clause0_Item Clause0_IntoIter)
-    (opsfunctionFnMutPTuplePairSharedUSharedFPInst : core.ops.function.FnMut F
-    (K × V) U) => core.iter.traits.iterator.Iterator.flat_map.default
-    (indexmap.map.iter.Iter.Insts.CoreIterTraitsIteratorIteratorPairSharedAKSharedAV
-    K V) collectIntoIteratorInst opsfunctionFnMutPTuplePairSharedUSharedFPInst
-  flatten := fun {Clause0_Item : Type} {Clause0_IntoIter : Type}
-    (collectIntoIteratorPairSharedClause0_ItemSharedClause0_IntoIterPPInst :
-    core.iter.traits.collect.IntoIterator (K × V) Clause0_Item
-    Clause0_IntoIter) => core.iter.traits.iterator.Iterator.flatten.default
-    (indexmap.map.iter.Iter.Insts.CoreIterTraitsIteratorIteratorPairSharedAKSharedAV
-    K V) collectIntoIteratorPairSharedClause0_ItemSharedClause0_IntoIterPPInst
-  collect := fun {B : Type}
-    (coreitertraitscollectFromIteratorPPairSharedBSharedPInst :
-    core.iter.traits.collect.FromIterator B (K × V)) =>
-    indexmap.map.iter.Iter.Insts.CoreIterTraitsIteratorIteratorPairSharedAKSharedAV.collect
-    coreitertraitscollectFromIteratorPPairSharedBSharedPInst
-  all := fun {F : Type} (opsfunctionFnMutPTuplePairShared0FShared0PBoolInst :
-    core.ops.function.FnMut F (K × V) Bool) =>
-    core.iter.traits.iterator.Iterator.all.default
-    (indexmap.map.iter.Iter.Insts.CoreIterTraitsIteratorIteratorPairSharedAKSharedAV
-    K V) opsfunctionFnMutPTuplePairShared0FShared0PBoolInst
-  any := fun {F : Type} (opsfunctionFnMutPTuplePairShared0FShared0PBoolInst :
-    core.ops.function.FnMut F (K × V) Bool) =>
-    core.iter.traits.iterator.Iterator.any.default
-    (indexmap.map.iter.Iter.Insts.CoreIterTraitsIteratorIteratorPairSharedAKSharedAV
-    K V) opsfunctionFnMutPTuplePairShared0FShared0PBoolInst
-  find := fun {P : Type}
-    (opsfunctionFnMutPTupleShared0PairShared0PShared0PBoolInst :
-    core.ops.function.FnMut P (K × V) Bool) =>
-    core.iter.traits.iterator.Iterator.find.default
-    (indexmap.map.iter.Iter.Insts.CoreIterTraitsIteratorIteratorPairSharedAKSharedAV
-    K V) opsfunctionFnMutPTupleShared0PairShared0PShared0PBoolInst
-  position := fun {P : Type}
-    (opsfunctionFnMutPTuplePairShared0PShared0PBoolInst :
-    core.ops.function.FnMut P (K × V) Bool) =>
-    core.iter.traits.iterator.Iterator.position.default
-    (indexmap.map.iter.Iter.Insts.CoreIterTraitsIteratorIteratorPairSharedAKSharedAV
-    K V) opsfunctionFnMutPTuplePairShared0PShared0PBoolInst
-  max := fun (cmpOrdPairSharedPSharedPInst : core.cmp.Ord (K × V)) =>
-    core.iter.traits.iterator.Iterator.max.default
-    (indexmap.map.iter.Iter.Insts.CoreIterTraitsIteratorIteratorPairSharedAKSharedAV
-    K V) cmpOrdPairSharedPSharedPInst
-  rev := fun {Clause0_Clause0_Item : Type}
-    (double_endedDoubleEndedIteratorIterPInst :
-    core.iter.traits.double_ended.DoubleEndedIterator (indexmap.map.iter.Iter K
-    V) Clause0_Clause0_Item) =>
-    core.iter.traits.iterator.Iterator.rev.trait_default
-    (indexmap.map.iter.Iter.Insts.CoreIterTraitsIteratorIteratorPairSharedAKSharedAV
-    K V) double_endedDoubleEndedIteratorIterPInst
-  sum := fun {S : Type} (accumSumPPairSharedSSharedPInst :
-    core.iter.traits.accum.Sum S (K × V)) =>
-    core.iter.traits.iterator.Iterator.sum.default
-    (indexmap.map.iter.Iter.Insts.CoreIterTraitsIteratorIteratorPairSharedAKSharedAV
-    K V) accumSumPPairSharedSSharedPInst
 }
 
 /-- Trait implementation: [indexmap::map::iter::{impl core::iter::traits::iterator::Iterator<&'a K> for indexmap::map::iter::Keys<'a, K, V>}]
@@ -2257,90 +1081,8 @@ impl_def indexmap.map.iter.Keys.Insts.CoreIterTraitsIteratorIteratorSharedAK (K
   (indexmap.map.iter.Keys K V) K := {
   next :=
     indexmap.map.iter.Keys.Insts.CoreIterTraitsIteratorIteratorSharedAK.next
-  count :=
-    indexmap.map.iter.Keys.Insts.CoreIterTraitsIteratorIteratorSharedAK.count
-  chain := fun {U : Type} {Clause0_IntoIter : Type}
-    (collectIntoIteratorPSharedUPInst : core.iter.traits.collect.IntoIterator U
-    K Clause0_IntoIter) => core.iter.traits.iterator.Iterator.chain.default
-    (indexmap.map.iter.Keys.Insts.CoreIterTraitsIteratorIteratorSharedAK K V)
-    collectIntoIteratorPSharedUPInst
-  zip := fun {U : Type} {Clause0_Item : Type} {Clause0_IntoIter : Type}
-    (collectIntoIteratorInst : core.iter.traits.collect.IntoIterator U
-    Clause0_Item Clause0_IntoIter) =>
-    core.iter.traits.iterator.Iterator.zip.trait_default
-    (indexmap.map.iter.Keys.Insts.CoreIterTraitsIteratorIteratorSharedAK K V)
-    collectIntoIteratorInst
-  map := fun {B : Type} {F : Type} (opsfunctionFnMutPTupleSharedBPInst :
-    core.ops.function.FnMut F K B) =>
-    core.iter.traits.iterator.Iterator.map.default
-    (indexmap.map.iter.Keys.Insts.CoreIterTraitsIteratorIteratorSharedAK K V)
-    opsfunctionFnMutPTupleSharedBPInst
-  for_each := fun {F : Type} (opsfunctionFnMutPTupleSharedFTupleInst :
-    core.ops.function.FnMut F K Unit) =>
-    core.iter.traits.iterator.Iterator.for_each.default
-    (indexmap.map.iter.Keys.Insts.CoreIterTraitsIteratorIteratorSharedAK K V)
-    opsfunctionFnMutPTupleSharedFTupleInst
-  filter := fun {P : Type} (opsfunctionFnMutPTupleSharedSharedPBoolInst :
-    core.ops.function.FnMut P K Bool) =>
-    core.iter.traits.iterator.Iterator.filter.default
-    (indexmap.map.iter.Keys.Insts.CoreIterTraitsIteratorIteratorSharedAK K V)
-    opsfunctionFnMutPTupleSharedSharedPBoolInst
   enumerate := core.iter.traits.iterator.Iterator.enumerate.trait_default
     (indexmap.map.iter.Keys.Insts.CoreIterTraitsIteratorIteratorSharedAK K V)
-  skip := core.iter.traits.iterator.Iterator.skip.default
-    (indexmap.map.iter.Keys.Insts.CoreIterTraitsIteratorIteratorSharedAK K V)
-  flat_map := fun {U : Type} {F : Type} {Clause0_Item : Type} {Clause0_IntoIter
-    : Type} (collectIntoIteratorInst : core.iter.traits.collect.IntoIterator U
-    Clause0_Item Clause0_IntoIter) (opsfunctionFnMutPTupleSharedUPInst :
-    core.ops.function.FnMut F K U) =>
-    core.iter.traits.iterator.Iterator.flat_map.default
-    (indexmap.map.iter.Keys.Insts.CoreIterTraitsIteratorIteratorSharedAK K V)
-    collectIntoIteratorInst opsfunctionFnMutPTupleSharedUPInst
-  flatten := fun {Clause0_Item : Type} {Clause0_IntoIter : Type}
-    (collectIntoIteratorSharedClause0_ItemPPInst :
-    core.iter.traits.collect.IntoIterator K Clause0_Item Clause0_IntoIter) =>
-    core.iter.traits.iterator.Iterator.flatten.default
-    (indexmap.map.iter.Keys.Insts.CoreIterTraitsIteratorIteratorSharedAK K V)
-    collectIntoIteratorSharedClause0_ItemPPInst
-  collect := fun {B : Type} (coreitertraitscollectFromIteratorPSharedBInst :
-    core.iter.traits.collect.FromIterator B K) =>
-    indexmap.map.iter.Keys.Insts.CoreIterTraitsIteratorIteratorSharedAK.collect
-    coreitertraitscollectFromIteratorPSharedBInst
-  all := fun {F : Type} (opsfunctionFnMutPTupleShared0FBoolInst :
-    core.ops.function.FnMut F K Bool) =>
-    core.iter.traits.iterator.Iterator.all.default
-    (indexmap.map.iter.Keys.Insts.CoreIterTraitsIteratorIteratorSharedAK K V)
-    opsfunctionFnMutPTupleShared0FBoolInst
-  any := fun {F : Type} (opsfunctionFnMutPTupleShared0FBoolInst :
-    core.ops.function.FnMut F K Bool) =>
-    core.iter.traits.iterator.Iterator.any.default
-    (indexmap.map.iter.Keys.Insts.CoreIterTraitsIteratorIteratorSharedAK K V)
-    opsfunctionFnMutPTupleShared0FBoolInst
-  find := fun {P : Type} (opsfunctionFnMutPTupleShared0Shared0PBoolInst :
-    core.ops.function.FnMut P K Bool) =>
-    core.iter.traits.iterator.Iterator.find.default
-    (indexmap.map.iter.Keys.Insts.CoreIterTraitsIteratorIteratorSharedAK K V)
-    opsfunctionFnMutPTupleShared0Shared0PBoolInst
-  position := fun {P : Type} (opsfunctionFnMutPTupleShared0PBoolInst :
-    core.ops.function.FnMut P K Bool) =>
-    core.iter.traits.iterator.Iterator.position.default
-    (indexmap.map.iter.Keys.Insts.CoreIterTraitsIteratorIteratorSharedAK K V)
-    opsfunctionFnMutPTupleShared0PBoolInst
-  max := fun (cmpOrdSharedPInst : core.cmp.Ord K) =>
-    core.iter.traits.iterator.Iterator.max.default
-    (indexmap.map.iter.Keys.Insts.CoreIterTraitsIteratorIteratorSharedAK K V)
-    cmpOrdSharedPInst
-  rev := fun {Clause0_Clause0_Item : Type}
-    (double_endedDoubleEndedIteratorKeysPInst :
-    core.iter.traits.double_ended.DoubleEndedIterator (indexmap.map.iter.Keys K
-    V) Clause0_Clause0_Item) =>
-    core.iter.traits.iterator.Iterator.rev.trait_default
-    (indexmap.map.iter.Keys.Insts.CoreIterTraitsIteratorIteratorSharedAK K V)
-    double_endedDoubleEndedIteratorKeysPInst
-  sum := fun {S : Type} (accumSumPSharedSInst : core.iter.traits.accum.Sum S K)
-    => core.iter.traits.iterator.Iterator.sum.default
-    (indexmap.map.iter.Keys.Insts.CoreIterTraitsIteratorIteratorSharedAK K V)
-    accumSumPSharedSInst
 }
 
 /-- Trait implementation: [indexmap::map::{impl core::fmt::Debug for indexmap::map::IndexMap<K, V, S>}]
@@ -2364,90 +1106,8 @@ impl_def indexmap.set.iter.IntoIter.Insts.CoreIterTraitsIteratorIterator (T :
   Type _) : core.iter.traits.iterator.Iterator (indexmap.set.iter.IntoIter T) T
   := {
   next := indexmap.set.iter.IntoIter.Insts.CoreIterTraitsIteratorIterator.next
-  count :=
-    indexmap.set.iter.IntoIter.Insts.CoreIterTraitsIteratorIterator.count
-  chain := fun {U : Type} {Clause0_IntoIter : Type} (collectIntoIteratorInst :
-    core.iter.traits.collect.IntoIterator U T Clause0_IntoIter) =>
-    core.iter.traits.iterator.Iterator.chain.default
-    (indexmap.set.iter.IntoIter.Insts.CoreIterTraitsIteratorIterator T)
-    collectIntoIteratorInst
-  zip := fun {U : Type} {Clause0_Item : Type} {Clause0_IntoIter : Type}
-    (collectIntoIteratorInst : core.iter.traits.collect.IntoIterator U
-    Clause0_Item Clause0_IntoIter) =>
-    core.iter.traits.iterator.Iterator.zip.trait_default
-    (indexmap.set.iter.IntoIter.Insts.CoreIterTraitsIteratorIterator T)
-    collectIntoIteratorInst
-  map := fun {B : Type} {F : Type} (opsfunctionFnMutPTupleBPInst :
-    core.ops.function.FnMut F T B) =>
-    core.iter.traits.iterator.Iterator.map.default
-    (indexmap.set.iter.IntoIter.Insts.CoreIterTraitsIteratorIterator T)
-    opsfunctionFnMutPTupleBPInst
-  for_each := fun {F : Type} (opsfunctionFnMutPTupleFTupleInst :
-    core.ops.function.FnMut F T Unit) =>
-    core.iter.traits.iterator.Iterator.for_each.default
-    (indexmap.set.iter.IntoIter.Insts.CoreIterTraitsIteratorIterator T)
-    opsfunctionFnMutPTupleFTupleInst
-  filter := fun {P : Type} (opsfunctionFnMutPTupleSharedPBoolInst :
-    core.ops.function.FnMut P T Bool) =>
-    core.iter.traits.iterator.Iterator.filter.default
-    (indexmap.set.iter.IntoIter.Insts.CoreIterTraitsIteratorIterator T)
-    opsfunctionFnMutPTupleSharedPBoolInst
   enumerate := core.iter.traits.iterator.Iterator.enumerate.trait_default
     (indexmap.set.iter.IntoIter.Insts.CoreIterTraitsIteratorIterator T)
-  skip := core.iter.traits.iterator.Iterator.skip.default
-    (indexmap.set.iter.IntoIter.Insts.CoreIterTraitsIteratorIterator T)
-  flat_map := fun {U : Type} {F : Type} {Clause0_Item : Type} {Clause0_IntoIter
-    : Type} (collectIntoIteratorInst : core.iter.traits.collect.IntoIterator U
-    Clause0_Item Clause0_IntoIter) (opsfunctionFnMutPTupleUPInst :
-    core.ops.function.FnMut F T U) =>
-    core.iter.traits.iterator.Iterator.flat_map.default
-    (indexmap.set.iter.IntoIter.Insts.CoreIterTraitsIteratorIterator T)
-    collectIntoIteratorInst opsfunctionFnMutPTupleUPInst
-  flatten := fun {Clause0_Item : Type} {Clause0_IntoIter : Type}
-    (collectIntoIteratorInst : core.iter.traits.collect.IntoIterator T
-    Clause0_Item Clause0_IntoIter) =>
-    core.iter.traits.iterator.Iterator.flatten.default
-    (indexmap.set.iter.IntoIter.Insts.CoreIterTraitsIteratorIterator T)
-    collectIntoIteratorInst
-  collect := fun {B : Type} (coreitertraitscollectFromIteratorInst :
-    core.iter.traits.collect.FromIterator B T) =>
-    indexmap.set.iter.IntoIter.Insts.CoreIterTraitsIteratorIterator.collect
-    coreitertraitscollectFromIteratorInst
-  all := fun {F : Type} (opsfunctionFnMutPTupleFBoolInst :
-    core.ops.function.FnMut F T Bool) =>
-    core.iter.traits.iterator.Iterator.all.default
-    (indexmap.set.iter.IntoIter.Insts.CoreIterTraitsIteratorIterator T)
-    opsfunctionFnMutPTupleFBoolInst
-  any := fun {F : Type} (opsfunctionFnMutPTupleFBoolInst :
-    core.ops.function.FnMut F T Bool) =>
-    core.iter.traits.iterator.Iterator.any.default
-    (indexmap.set.iter.IntoIter.Insts.CoreIterTraitsIteratorIterator T)
-    opsfunctionFnMutPTupleFBoolInst
-  find := fun {P : Type} (opsfunctionFnMutPTupleShared0PBoolInst :
-    core.ops.function.FnMut P T Bool) =>
-    core.iter.traits.iterator.Iterator.find.default
-    (indexmap.set.iter.IntoIter.Insts.CoreIterTraitsIteratorIterator T)
-    opsfunctionFnMutPTupleShared0PBoolInst
-  position := fun {P : Type} (opsfunctionFnMutPTuplePBoolInst :
-    core.ops.function.FnMut P T Bool) =>
-    core.iter.traits.iterator.Iterator.position.default
-    (indexmap.set.iter.IntoIter.Insts.CoreIterTraitsIteratorIterator T)
-    opsfunctionFnMutPTuplePBoolInst
-  max := fun (cmpOrdInst : core.cmp.Ord T) =>
-    core.iter.traits.iterator.Iterator.max.default
-    (indexmap.set.iter.IntoIter.Insts.CoreIterTraitsIteratorIterator T)
-    cmpOrdInst
-  rev := fun {Clause0_Clause0_Item : Type}
-    (double_endedDoubleEndedIteratorIntoIterPInst :
-    core.iter.traits.double_ended.DoubleEndedIterator
-    (indexmap.set.iter.IntoIter T) Clause0_Clause0_Item) =>
-    core.iter.traits.iterator.Iterator.rev.trait_default
-    (indexmap.set.iter.IntoIter.Insts.CoreIterTraitsIteratorIterator T)
-    double_endedDoubleEndedIteratorIntoIterPInst
-  sum := fun {S : Type} (accumSumInst : core.iter.traits.accum.Sum S T) =>
-    core.iter.traits.iterator.Iterator.sum.default
-    (indexmap.set.iter.IntoIter.Insts.CoreIterTraitsIteratorIterator T)
-    accumSumInst
 }
 
 /-- Trait implementation: [indexmap::set::iter::{impl core::iter::traits::collect::IntoIterator<T, indexmap::set::iter::IntoIter<T>> for indexmap::set::IndexSet<T, S>}]

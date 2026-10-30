@@ -99,8 +99,9 @@ The script (Linux x86_64 / aarch64 or macOS arm64; needs `rustup` and `curl`):
 - installs the nightly rust toolchain Charon was built for (with the
   `rustc-dev`, `llvm-tools`, `rust-src` and `miri` components)
 - runs Charon on the pure rust modules only - the pyo3 bindings (`py_*`
-  modules), serde derives and `Iterator::{copied,cloned}` (which crash
-  Aeneas) are excluded
+  modules), serde derives, `Iterator::{copied,cloned}` (which crash
+  Aeneas) and rayon (whose mutually recursive traits Aeneas does not
+  support) are excluded
 - runs Aeneas with the Lean backend and `-split-files`
 
 Generated files in `lean/AutomataBuilder/`:
@@ -111,7 +112,20 @@ Generated files in `lean/AutomataBuilder/`:
   bodies Aeneas could not translate
 - `TypesExternal.lean`, `FunsExternal.lean` - hand-maintained models of the
   external definitions. They are only seeded from the templates when
-  missing, so update them by hand when the templates change
+  missing, so update them by hand when the templates change. `HashMap`,
+  `IndexMap` and `Arc` are modelled as structures (instead of axioms) since
+  recursive rust types such as `MultiTapeProductTrie` nest through them,
+  which the Lean kernel only accepts for inductive types
+
+To type-check the generated definitions (needs
+[elan](https://github.com/leanprover/elan); `lean/lake-manifest.json` pins
+the Aeneas Lean library and its Mathlib dependency):
+```shell
+cd lean
+lake exe cache get  # download prebuilt Mathlib
+lake build
+```
+CI also runs `lake build` on the generated definitions.
 
 Aeneas only supports a subset of rust, so some functions are translated as
 axioms (Aeneas reports them as errors in `target/aeneas/aeneas.log`). Notably
