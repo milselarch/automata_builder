@@ -102,7 +102,10 @@ The script (Linux x86_64 / aarch64 or macOS arm64; needs `rustup` and `curl`):
   modules), serde derives, `Iterator::{copied,cloned}` (which crash
   Aeneas) and rayon (whose mutually recursive traits Aeneas does not
   support) are excluded
-- runs Aeneas with the Lean backend and `-split-files`
+- runs Aeneas with the Lean backend, `-split-files`, `-loops-to-rec`
+  (loops become recursive functions, which Lean can prove monotone inside
+  mutually recursive definitions) and `-filter-trait-methods` (trait impls
+  only fill in the methods modelled by the Aeneas Lean library)
 
 Generated files in `lean/AutomataBuilder/`:
 - `Types.lean`, `Funs.lean` - translated types and functions
@@ -123,14 +126,21 @@ the Aeneas Lean library and its Mathlib dependency):
 ```shell
 cd lean
 lake exe cache get  # download prebuilt Mathlib
-lake build
+lake build AutomataBuilder.Types AutomataBuilder.FunsExternal  # types
+lake build  # everything, including Funs.lean
 ```
-CI also runs `lake build` on the generated definitions.
+CI requires the types and external models to build. `Funs.lean` does not
+fully type-check yet, so CI builds it on a best-effort basis
+(`continue-on-error`).
 
 Aeneas only supports a subset of rust, so some functions are translated as
 axioms (Aeneas reports them as errors in `target/aeneas/aeneas.log`). Notably
 `break`/`continue` to outer loops and `return`s inside nested loops are not
-supported yet.
+supported yet. The remaining `Funs.lean` type errors come from the Aeneas
+Lean backend / standard library, e.g. `?` inside loops (`ControlFlow`
+projections), the missing `Iterator` instance for `slice::IterMut`,
+`Option::Some` used as a function (`.map(Some)`), and local variables named
+`automata` shadowing the generated `automata.*` namespace.
 
 To upgrade Aeneas, update `AENEAS_RELEASE` in `scripts/generate_lean.sh`
 (a tag from https://github.com/AeneasVerif/aeneas/releases), the `rev` in
