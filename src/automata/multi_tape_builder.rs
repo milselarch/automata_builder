@@ -1438,9 +1438,24 @@ impl MultiTapeBuilder {
             {
                 None => HALT_STATE,
                 Some(input_state_path) => {
-                    let output_state_path =
-                        Self::reassign_state_path(input_state_path, &current_product_writes);
-                    ctx.global_state_path_remap.remap(&output_state_path)?
+                    let output_state_path = Self::reassign_state_path(
+                        input_state_path, &current_product_writes
+                    );
+                    ctx.global_state_path_remap
+                        .remap(&output_state_path)
+                        .map_err(|err| match err {
+                            CompileTapesError::MissingRemap(msg) => CompileTapesError::MissingRemap(format!(
+                                "{} | output of input state path {:?} with writes {:?} \
+                                 | product: {} [{}] | expanded product: {}",
+                                msg,
+                                input_state_path,
+                                current_product_writes,
+                                product_repr(source_multi_tape_product),
+                                source_multi_tape_product.get_annotation(),
+                                product_repr(&multi_tape_prod),
+                            )),
+                            other => other,
+                        })?
                 }
             };
 

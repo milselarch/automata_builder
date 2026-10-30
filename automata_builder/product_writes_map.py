@@ -109,13 +109,13 @@ class ProductWritesMap(Freezable):
         :param target_product:
         :param offset_whitelist:
         :return:
-        All products which have the same form as the input product
-        but where all the input term offsets are shifted by some
-        constant offset (i.e. translational variants)
+        All products that have the same form as the input product
+        but where all the input term offsets are shifted by a
+        constant offset (i.e., translational variants)
 
-        e.g.
+        e.g.,
         D(0,1,1)*D(1,2,1) and D(1,1,1)*D(2,2,1) are translational variants
-        (second product is shifted by +1 offset)
+        (the second product is shifted from the first by a +1 offset)
         """
         if target_product not in self._prod_to_state_map:
             raise KeyError(
@@ -133,7 +133,16 @@ class ProductWritesMap(Freezable):
                 continue
 
             offset_diffs = set()
+
             for input_term, target_term in zip(input_terms, target_terms):
+                input_term_state = MultiTapeState.from_term(input_term)
+                target_term_state = MultiTapeState.from_term(target_term)
+
+                if input_term_state != target_term_state:
+                    # different states -> not a translational variant
+                    offset_diffs.clear()
+                    break
+
                 input_offset = input_term.get_position()
                 target_offset = target_term.get_position()
                 offset_diff = target_offset - input_offset

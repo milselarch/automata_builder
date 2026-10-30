@@ -401,18 +401,27 @@ impl ProductWritesMap {
             candidate_terms.sort();
 
             let mut offset_diffs: BTreeSet<i64> = BTreeSet::new();
+            // whether multi-tape states in candidate product are the same
+            // as the multi-tape states in the target_product
+            let mut same_states = true;
+
             for (source_term, candidate_term) in
                 source_terms.iter().zip(candidate_terms.iter())
             {
-                offset_diffs.insert(candidate_term.position - source_term.position);
+                if source_term.state != candidate_term.state {
+                    same_states = false;
+                    break;
+                }
+                offset_diffs.insert(
+                    candidate_term.position - source_term.position
+                );
             }
 
             // a single shared delta across every term == a pure translation
-            if offset_diffs.len() != 1 {
+            if !same_states || offset_diffs.len() != 1 {
                 continue;
             }
             let offset_diff = *offset_diffs.iter().next().unwrap();
-
             if let Some(whitelist) = offset_whitelist {
                 if !whitelist.is_empty() && !whitelist.contains(&offset_diff) {
                     continue;

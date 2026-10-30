@@ -144,9 +144,10 @@ class TestCompiledTapesScriptBases(unittest.TestCase):
                     write_end=write_end,
                 )
                 runner.run_simulation(
-                    num_timesteps=steps, render=False, assert_consistency=True
+                    num_timesteps=steps, render=False,
+                    assert_consistency=True
                 )
-                encoded = runner.read_signals_tape_value()
+                encoded = runner.read_signals_tape_value().unwrap()
                 self.assertEqual(
                     encoded,
                     cells_filled,
@@ -179,7 +180,7 @@ class TestCompiledTapesScriptBases(unittest.TestCase):
                 runner.run_simulation(
                     num_timesteps=steps, render=False, assert_consistency=True
                 )
-                encoded = runner.read_signals_tape_value()
+                encoded = runner.read_signals_tape_value().unwrap()
                 self.assertEqual(
                     encoded,
                     expected_value,

@@ -9,6 +9,7 @@ from automata_builder import utils
 from result import Result, Ok, Err
 from collections import defaultdict
 from typing import Sequence
+from abc import ABC, abstractmethod
 
 from automata_builder.multi_tape_product_trie import (
     MultiTapeProductTrie, OffsetGroupedTerms,
@@ -31,7 +32,7 @@ from automata_builder.tape_overlaps import (
 )
 from automata_builder._rust import (
     D, PyMultiTapeProduct, PyMultiTapeExpression,
-    A, PyProduct, PyMultiTapeAutomata, PyMultiTapeTransitionsGroup,
+    A, PyProduct, PyMultiTapeAutomata,
     PyMultiTapeBuilder, PyCompileTapesResult, PyMultiTapeStatePathRemap,
     PyTapeOverlapsFSM
 )
@@ -544,7 +545,21 @@ class BuildTransitionsForProductResult(object):
     unrepresentable_products: set[PyMultiTapeProduct]
 
 
-class PythonMultiTapeBuilder(object):
+class BaseMultiTapeBuilder(ABC):
+    @abstractmethod
+    def declare_initial_group_overlaps(
+        self, overlap_states: set[MultiTapeState]
+    ) -> None:
+        raise NotImplementedError
+
+    @abstractmethod
+    def compile_tapes(
+        self, verbose: bool = False
+    ) -> CompileTapesResult:
+        raise NotImplementedError
+
+
+class PythonMultiTapeBuilder(BaseMultiTapeBuilder):
     """
     Pure python reference implementation of the multi-tape to
     single tape compiler. MultiTapeBuilder (the rust backed
@@ -1950,7 +1965,7 @@ class PythonMultiTapeBuilder(object):
         )
 
 
-class MultiTapeBuilder(object):
+class MultiTapeBuilder(BaseMultiTapeBuilder):
     """
     Compiles a multi-tape automata into a single tape automata.
     The compile_tapes pipeline is implemented in rust

@@ -7,6 +7,7 @@ from automata_builder._rust import (
     D, PyMultiTapeAutomata, PyProcessStepResult, PyMultiTapeDataRegion,
     PyRenderFrame, PyMultiTapeTransitionsGroup, PyMultiTapeProduct
 )
+from result import Result, Ok, Err
 
 from automata_builder.counter_states import (
     ST_REDUCE_START, DT_LEFT, ST_MID, ST_RIGHT, DT_DATA, ST_LEFT, DT_MID,
@@ -25,6 +26,39 @@ class CounterAutomataBuilder(object):
     def __init__(self, base: int = 2):
         assert base >= 2, "Base must be at least 2"
         self.base = base
+
+    def build_shl_no_carry_transitions_group(
+        self, transitions_group: PyMultiTapeTransitionsGroup | None = None,
+        carry_tape_state: TapeCellState = VOID_STATE
+    ):
+        if transitions_group is not None:
+            _transitions_group = transitions_group
+        else:
+            _transitions_group = PyMultiTapeTransitionsGroup(
+                require_annotation=True
+            )
+
+        # apply carry cells to counter-cells
+        # carry cells stay stationary while counter-cells move left
+        for mid_digit in range(self.base):
+            for right_digit in range(self.base):
+                annotation = (
+                    f'SHL_{mid_digit}_{right_digit}_NO_CARRY'
+                    f'_OVER_{carry_tape_state}'
+                )
+                # when there is no carry state to apply, shift left
+                _transitions_group.add_transition(
+                    input_terms=(
+                        ST_MID(active_counter(mid_digit)),
+                        ST_RIGHT(active_counter(right_digit)),
+                        CT_MID(carry_tape_state)
+                    ),
+                    output_tape_no=SIGNALS_TAPE,
+                    output_cell_state=paused_counter(right_digit),
+                    annotation=annotation,
+                )
+
+        return _transitions_group
 
     def build_base_transitions_group(
         self, transitions_group: PyMultiTapeTransitionsGroup | None = None,
@@ -73,21 +107,13 @@ class CounterAutomataBuilder(object):
             annotation=f'COUNTER_ACC_START',
         )
 
+        _transitions_group = self.build_shl_no_carry_transitions_group(
+            transitions_group=_transitions_group,
+        )
         # apply carry cells to counter-cells
         # carry cells stay stationary while counter-cells move left
         for mid_digit in range(self.base):
             for right_digit in range(self.base):
-                # when there is no carry state to apply, shift left
-                _transitions_group.add_transition(
-                    input_terms=(
-                        ST_MID(active_counter(mid_digit)),
-                        ST_RIGHT(active_counter(right_digit)),
-                        CT_MID(VOID_STATE)
-                    ),
-                    output_tape_no=SIGNALS_TAPE,
-                    output_cell_state=paused_counter(right_digit),
-                    annotation=f'SHL_{mid_digit}_{right_digit}_NO_CARRY',
-                )
                 if right_digit < max_counter_digit:
                     # carry but no overflow (right counter-digit < base)
                     carry_no_overflow_combo = (
@@ -264,7 +290,7 @@ class CounterAutomataBuilder(object):
                 )
 
         for no_increment_state in no_increment_states:
-            # Bleed leftmost counter cell leftwards past data tape to void
+            # Bleed leftmost counter-cell leftwards past data tape to void
             # Unnecessary if we don't expect to leave data tape range
             for digit in range(self.base):
                 _transitions_group.add_transition(
@@ -282,9 +308,8 @@ class CounterAutomataBuilder(object):
 
         return _transitions_group
 
-    @classmethod
     def build_ct_reducer_transitions_group(
-        cls, transitions_group: PyMultiTapeTransitionsGroup | None = None
+        self, transitions_group: PyMultiTapeTransitionsGroup | None = None
     ):
         if transitions_group is not None:
             _transitions_group = transitions_group
@@ -293,6 +318,10 @@ class CounterAutomataBuilder(object):
                 require_annotation=True
             )
 
+        _transitions_group = self.build_shl_no_carry_transitions_group(
+            transitions_group=_transitions_group,
+            carry_tape_state=REDUCER_DATA
+        )
         # spawn data to the left of the
         # left end of initial data of the data tape, on the carry tape
         _transitions_group.add_transition(
@@ -573,7 +602,7 @@ class CounterAutomataRunner(object):
         assert set(data_region) == {DT_DATA}
         return len(data_region)
 
-    def read_signals_tape_value(self) -> int:
+    def read_signals_tape_value(self) -> Result[int, ValueError]:
         """
         :return:
         The equivalent n-ary numerical value encoded on the signals tape
@@ -584,10 +613,10 @@ class CounterAutomataRunner(object):
         signals_tape = self.multi_tape_automata[SIGNALS_TAPE]
         data_region = signals_tape.get_minimal_data_region()
         if not data_region:
-            return 0
+            return Ok(0)
 
         # print("DATA_REGION", data_region)
-        # The last cell in the signals tape is always an ST_REDUCE_START cell
+        # The last cell in the SIGNALS tape is always an ST_REDUCE_START cell
         assert data_region[-1] == ST_REDUCE_START
         digit_data_region = data_region[:-1]
 
@@ -596,7 +625,7 @@ class CounterAutomataRunner(object):
             digit_data_region.pop()
 
         # the remaining relevant_data_region should just encode
-        # the counter value in base {self.base}
+        # the counter-value in base {self.base}
         assert VOID_STATE not in digit_data_region
         counter_paused: bool | None = None
         encoded_number = 0
@@ -608,15 +637,16 @@ class CounterAutomataRunner(object):
 
             if counter_paused is None:
                 counter_paused = paused
-            else:
-                assert counter_paused == paused, (
+
+            if counter_paused != paused:
+                return Err(ValueError(
                     f'Inconsistent paused state in signals tape: '
                     f'{paused=} for {tape_cell_state=}'
-                )
+                ))
 
         assert encoded_number >= 0
         # TODO: consider unpropagated carry states
-        return encoded_number
+        return Ok(encoded_number)
 
     @staticmethod
     def resolve_terminal_width(terminal_width: int = BLANK_INT) -> int:
