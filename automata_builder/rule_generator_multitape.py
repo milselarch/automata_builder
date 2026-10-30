@@ -168,13 +168,13 @@ class MultiTapeStatePathRemap(object):
         compile_tapes implementation to its python equivalent
         """
         def to_path(
-            raw_path: list[tuple[int, int]]
+            _raw_path: list[tuple[int, int]]
         ) -> tuple[MultiTapeState, ...]:
             return tuple(
                 MultiTapeState(
                     tape_no=TapeNo(tape_no),
                     tape_cell_state=TapeCellState(tape_cell_state)
-                ) for tape_no, tape_cell_state in raw_path
+                ) for tape_no, tape_cell_state in _raw_path
             )
 
         state_remap = cls(remap_counter_start=TapeCellState(
@@ -424,6 +424,9 @@ class MultiTapeStatePathRemap(object):
         multi_tape_product = PyMultiTapeProduct(collected_global_terms)
         return Ok(multi_tape_product)
 
+    def get_max_state(self) -> TapeCellState:
+        return max(self.rev_state_path_remap)
+
 
 @dataclasses.dataclass
 class TransitionOptimizations(object):
@@ -437,6 +440,9 @@ class CompileTapesResult(object):
     transitions_group: TapeTransitionsGroup
     state_remap: MultiTapeStatePathRemap
     num_unrepresentable_products: int
+
+    def get_max_state(self) -> TapeCellState:
+        return self.state_remap.get_max_state()
 
     @classmethod
     def from_rust(cls, rust_result: PyCompileTapesResult) -> CompileTapesResult:

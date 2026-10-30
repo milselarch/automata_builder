@@ -77,15 +77,17 @@ class CompiledCounterAutomataRunner(object):
             collapse_reduction_tape=self.collapse_reduction_tape,
         )
 
+        self.compile_result: CompileTapesResult
+
         if cache is None:
             multi_tape_automata = self.multi_tape_runner.multi_tape_automata
-            self.compile_result: CompileTapesResult = self.compile_tapes_for(
+            self.compile_result = self.compile_tapes_for(
                 multi_tape_automata=multi_tape_automata,
                 use_py_implementation=automata_settings.use_python_builder,
                 verbose=verbose
             )
         else:
-            self.compile_result: CompileTapesResult = cache.compile_for(
+            self.compile_result = cache.compile_for(
                 settings=automata_settings, verbose=verbose
             )
 
@@ -214,18 +216,22 @@ class CompiledCounterAutomataRunner(object):
 
     def render(
         self, render_start: int = -5, terminal_width: int = BLANK_INT,
-        header: str = ''
+        cell_width: int = BLANK_INT, header: str = ''
     ) -> Result[int, ValueError]:
+        max_state = self.compile_result.get_max_state()
+        if cell_width == BLANK_INT:
+            cell_width = len(str(max_state))
+
         terminal_width = self.resolve_terminal_width(
             terminal_width=terminal_width
         )
         single_render_frame = self.single_tape_automata.render_tape(
             start_position=render_start, length=terminal_width,
-            header_tag='-', cell_width=2
+            header_tag='-', cell_width=cell_width
         )
         multi_render_frame = self.multi_tape_runner.render_tapes(
             start_position=render_start, length=terminal_width,
-            cell_width=2
+            cell_width=cell_width
         )
         # print(render_frame.get_dimensions())
         if header:
