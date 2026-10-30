@@ -2756,97 +2756,6 @@ axiom num_traits.sign.abs
   num_traits.sign.Signed T Clause0_Clause0_FromStrRadixErr) :
   T → Result T
 
-/-- [rayon::iter::ParallelIterator::collect]:
-    Source: '/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/rayon-1.11.0/src/iter/mod.rs', lines 2053:4-2055:44
-    Name pattern: [rayon::iter::ParallelIterator::collect]
-    Visibility: public -/
-@[trait_default, rust_fun "rayon::iter::ParallelIterator::collect"]
-axiom rayon.iter.ParallelIterator.collect.default
-  {Self : Type _} {C : Type _} {Clause0_Item : Type _} (ParallelIteratorInst :
-  rayon.iter.ParallelIterator Self Clause0_Item) (FromParallelIteratorInst :
-  rayon.iter.FromParallelIterator C Clause0_Item) :
-  Self → Result C
-
-/-- [rayon::iter::ParallelIterator::reduce]:
-    Source: '/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/rayon-1.11.0/src/iter/mod.rs', lines 982:4-985:45
-    Name pattern: [rayon::iter::ParallelIterator::reduce]
-    Visibility: public -/
-@[trait_default, rust_fun "rayon::iter::ParallelIterator::reduce"]
-axiom rayon.iter.ParallelIterator.reduce.default
-  {Self : Type _} {OP : Type _} {ID : Type _} {Clause0_Item : Type _}
-  (ParallelIteratorInst : rayon.iter.ParallelIterator Self Clause0_Item)
-  (coreopsfunctionFnOPPairClause0_ItemInst : core.ops.function.Fn OP
-  (Clause0_Item × Clause0_Item) Clause0_Item)
-  (coreopsfunctionFnIDTupleClause0_ItemInst : core.ops.function.Fn ID Unit
-  Clause0_Item) :
-  Self → ID → OP → Result Clause0_Item
-
-/-- [rayon::iter::ParallelIterator::map]:
-    Source: '/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/rayon-1.11.0/src/iter/mod.rs', lines 592:4-595:16
-    Name pattern: [rayon::iter::ParallelIterator::map]
-    Visibility: public -/
-@[trait_default, rust_fun "rayon::iter::ParallelIterator::map"]
-axiom rayon.iter.ParallelIterator.map.default
-  {Self : Type _} {F : Type _} {R : Type _} {Clause0_Item : Type _}
-  (ParallelIteratorInst : rayon.iter.ParallelIterator Self Clause0_Item)
-  (coreopsfunctionFnFTupleClause0_ItemRInst : core.ops.function.Fn F
-  Clause0_Item R) :
-  Self → F → Result (rayon.iter.map.Map Self F)
-
-/-- [rayon::iter::map::{impl rayon::iter::ParallelIterator<R> for rayon::iter::map::Map<I, F>}::drive_unindexed]:
-    Source: '/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/rayon-1.11.0/src/iter/map.rs', lines 40:4-42:41
-    Name pattern: [rayon::iter::map::{rayon::iter::ParallelIterator<rayon::iter::map::Map<@I, @F>, @R>}::drive_unindexed]
-    Visibility: public -/
-@[rust_fun
-  "rayon::iter::map::{rayon::iter::ParallelIterator<rayon::iter::map::Map<@I, @F>, @R>}::drive_unindexed"]
-axiom rayon.iter.map.Map.Insts.RayonIterParallelIterator.drive_unindexed
-  {I : Type _} {F : Type _} {R : Type _} {C : Type _} {Clause0_Item : Type _}
-  {Clause5_Clause0_Folder : Type _} {Clause5_Clause0_Reducer : Type _}
-  {Clause5_Clause0_Result : Type _} (ParallelIteratorInst :
-  rayon.iter.ParallelIterator I Clause0_Item)
-  (coreopsfunctionFnFTupleClause0_ItemRInst : core.ops.function.Fn F
-  Clause0_Item R) (plumbingUnindexedConsumerInst :
-  rayon.iter.plumbing.UnindexedConsumer C R Clause5_Clause0_Folder
-  Clause5_Clause0_Reducer Clause5_Clause0_Result) :
-  rayon.iter.map.Map I F → C → Result Clause5_Clause0_Result
-
-/-- [rayon::iter::{impl rayon::iter::IntoParallelRefIterator<'data, Clause0_Iter, Clause0_Item> for I}::par_iter]:
-    Source: '/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/rayon-1.11.0/src/iter/mod.rs', lines 294:4-294:42
-    Name pattern: [rayon::iter::{rayon::iter::IntoParallelRefIterator<'data, @I, @Clause0_Iter, @Clause0_Item>}::par_iter]
-    Visibility: public -/
-@[rust_fun
-  "rayon::iter::{rayon::iter::IntoParallelRefIterator<'data, @I, @Clause0_Iter, @Clause0_Item>}::par_iter"]
-axiom rayon.iter.IntoParallelRefIterator.Blanket.par_iter
-  {I : Type _} {Clause0_Iter : Type _} {Clause0_Item : Type _}
-  (IntoParallelIteratorSharedDataIClause0_IterClause0_ItemInst :
-  rayon.iter.IntoParallelIterator I Clause0_Iter Clause0_Item) :
-  I → Result Clause0_Iter
-
-/-- [rayon::slice::{impl rayon::iter::ParallelIterator<&'data T> for rayon::slice::Iter<'data, T>}::drive_unindexed]:
-    Source: '/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/rayon-1.11.0/src/slice/mod.rs', lines 814:4-816:41
-    Name pattern: [rayon::slice::{rayon::iter::ParallelIterator<rayon::slice::Iter<'data, @T>, &'data @T>}::drive_unindexed]
-    Visibility: public -/
-@[rust_fun
-  "rayon::slice::{rayon::iter::ParallelIterator<rayon::slice::Iter<'data, @T>, &'data @T>}::drive_unindexed"]
-axiom
-  rayon.slice.Iter.Insts.RayonIterParallelIteratorSharedDataT.drive_unindexed
-  {T : Type _} {C : Type _} {Clause1_Clause0_Folder : Type _}
-  {Clause1_Clause0_Reducer : Type _} {Clause1_Clause0_Result : Type _}
-  (iterplumbingUnindexedConsumerCSharedDataTClause1_Clause0_FolderClause1_Clause0_ReducerClause1_Clause0_ResultInst
-  : rayon.iter.plumbing.UnindexedConsumer C T Clause1_Clause0_Folder
-  Clause1_Clause0_Reducer Clause1_Clause0_Result) :
-  rayon.slice.Iter T → C → Result Clause1_Clause0_Result
-
-/-- [rayon::vec::{impl rayon::iter::IntoParallelIterator<rayon::slice::Iter<'data, T>, &'data T> for &'data alloc::vec::Vec<T>}::into_par_iter]:
-    Source: '/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/rayon-1.11.0/src/vec.rs', lines 22:4-22:40
-    Name pattern: [rayon::vec::{rayon::iter::IntoParallelIterator<&'data alloc::vec::Vec<@T>, rayon::slice::Iter<'data, @T>, &'data @T>}::into_par_iter]
-    Visibility: public -/
-@[rust_fun
-  "rayon::vec::{rayon::iter::IntoParallelIterator<&'data alloc::vec::Vec<@T>, rayon::slice::Iter<'data, @T>, &'data @T>}::into_par_iter"]
-axiom
-  SharedDataVec.Insts.RayonIterIntoParallelIteratorIterSharedDataT.into_par_iter
-  {T : Type _} : alloc.vec.Vec T → Result (rayon.slice.Iter T)
-
 /-- [automata_builder::automata::multi_tape_transition::{automata_builder::automata::multi_tape_transition::MultiTapeTransitionsGroup}::generate_equations]:
     Source: 'src/automata/multi_tape_transition.rs', lines 297:4-363:5
     Visibility: public -/
@@ -3221,4 +3130,26 @@ axiom automata.single_tape_automata.SingleTapeAutomata.reverse_state_eq_map
     std.hash.random.RandomState → Result (core.result.Result
     automata.single_tape_automata.ProductWriteMap
     automata.single_tape_automata.SingleTapeAutomataError)
+
+/-- [automata_builder::automata::terms::{impl automata_builder::automata::terms::AbstractExpression<automata_builder::automata::terms::Expression, automata_builder::automata::terms::Expression> for automata_builder::automata::terms::Expression}::_expand]:
+    Source: 'src/automata/terms.rs', lines 812:4-835:5
+    Visibility: public -/
+axiom
+  automata.terms.Expression.Insts.Automata_builderAutomataTermsAbstractExpressionExpressionExpression._expand
+  :
+  automata.terms.Expression → std.collections.hash.map.HashMap Std.U32
+    automata.terms.Expression std.hash.random.RandomState alloc.alloc.Global
+    → Bool → Bool → Result automata.terms.Expression
+
+/-- [automata_builder::automata::terms_multitape::{impl automata_builder::automata::terms_multitape::AbstractMultiTapeExpression<automata_builder::automata::terms_multitape::MultiTapeExpression, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeExpression}::_expand]:
+    Source: 'src/automata/terms_multitape.rs', lines 876:4-899:5
+    Visibility: public -/
+axiom
+  automata.terms_multitape.MultiTapeExpression.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeExpressionMultiTapeExpression._expand
+  :
+  automata.terms_multitape.MultiTapeExpression →
+    std.collections.hash.map.HashMap (Std.U16 × Std.U32)
+    automata.terms_multitape.MultiTapeExpression std.hash.random.RandomState
+    alloc.alloc.Global → Bool → Bool → Result
+    automata.terms_multitape.MultiTapeExpression
 

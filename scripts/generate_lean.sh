@@ -75,6 +75,7 @@ mkdir -p "$BUILD_DIR"
     --exclude '{impl serde_core::de::Deserialize for _}' \
     --exclude 'core::iter::traits::iterator::Iterator::copied' \
     --exclude 'core::iter::traits::iterator::Iterator::cloned' \
+    --exclude 'rayon' \
     --dest-file "$LLBC_FILE" \
     -- --lib
 

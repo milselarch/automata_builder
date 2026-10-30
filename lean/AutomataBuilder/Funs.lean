@@ -2596,87 +2596,6 @@ def I64.Insts.Num_traitsSignSignedParseIntError : num_traits.sign.Signed
   is_negative := I64.Insts.Num_traitsSignSignedParseIntError.is_negative
 }
 
-/-- Trait implementation: [rayon::iter::map::{impl rayon::iter::ParallelIterator<R> for rayon::iter::map::Map<I, F>}]
-    Source: '/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/rayon-1.11.0/src/iter/map.rs', lines 32:0-36:12
-    Name pattern: [rayon::iter::ParallelIterator<rayon::iter::map::Map<@I, @F>, @R>] -/
-@[reducible, rust_trait_impl
-  "rayon::iter::ParallelIterator<rayon::iter::map::Map<@I, @F>, @R>"]
-impl_def rayon.iter.map.Map.Insts.RayonIterParallelIterator {I : Type _} {F :
-  Type _} {R : Type _} {Clause0_Item : Type _} (ParallelIteratorInst :
-  rayon.iter.ParallelIterator I Clause0_Item)
-  (coreopsfunctionFnFTupleClause0_ItemRInst : core.ops.function.Fn F
-  Clause0_Item R) : rayon.iter.ParallelIterator (rayon.iter.map.Map I F) R := {
-  map := fun {F1 : Type} {R1 : Type} (coreopsfunctionFnPTuplePPInst :
-    core.ops.function.Fn F1 R R1) => rayon.iter.ParallelIterator.map.default
-    (rayon.iter.map.Map.Insts.RayonIterParallelIterator ParallelIteratorInst
-    coreopsfunctionFnFTupleClause0_ItemRInst) coreopsfunctionFnPTuplePPInst
-  reduce := fun {OP : Type} {ID : Type} (coreopsfunctionFnPPairPInst :
-    core.ops.function.Fn OP (R × R) R) (coreopsfunctionFnPTuplePInst :
-    core.ops.function.Fn ID Unit R) =>
-    rayon.iter.ParallelIterator.reduce.default
-    (rayon.iter.map.Map.Insts.RayonIterParallelIterator ParallelIteratorInst
-    coreopsfunctionFnFTupleClause0_ItemRInst) coreopsfunctionFnPPairPInst
-    coreopsfunctionFnPTuplePInst
-  collect := fun {C : Type} (FromParallelIteratorInst :
-    rayon.iter.FromParallelIterator C R) =>
-    rayon.iter.ParallelIterator.collect.default
-    (rayon.iter.map.Map.Insts.RayonIterParallelIterator ParallelIteratorInst
-    coreopsfunctionFnFTupleClause0_ItemRInst) FromParallelIteratorInst
-  drive_unindexed := fun {C : Type} {Clause0_Clause0_Folder : Type}
-    {Clause0_Clause0_Reducer : Type} {Clause0_Clause0_Result : Type}
-    (plumbingUnindexedConsumerInst : rayon.iter.plumbing.UnindexedConsumer C R
-    Clause0_Clause0_Folder Clause0_Clause0_Reducer Clause0_Clause0_Result) =>
-    rayon.iter.map.Map.Insts.RayonIterParallelIterator.drive_unindexed
-    ParallelIteratorInst coreopsfunctionFnFTupleClause0_ItemRInst
-    plumbingUnindexedConsumerInst
-}
-
-/-- Trait implementation: [rayon::slice::{impl rayon::iter::ParallelIterator<&'data T> for rayon::slice::Iter<'data, T>}]
-    Source: '/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/rayon-1.11.0/src/slice/mod.rs', lines 811:0-811:56
-    Name pattern: [rayon::iter::ParallelIterator<rayon::slice::Iter<'data, @T>, &'data @T>] -/
-@[reducible, rust_trait_impl
-  "rayon::iter::ParallelIterator<rayon::slice::Iter<'data, @T>, &'data @T>"]
-impl_def rayon.slice.Iter.Insts.RayonIterParallelIteratorSharedDataT (T :
-  Type _) : rayon.iter.ParallelIterator (rayon.slice.Iter T) T := {
-  map := fun {F : Type} {R : Type} (coreopsfunctionFnPTupleSharedFPInst :
-    core.ops.function.Fn F T R) => rayon.iter.ParallelIterator.map.default
-    (rayon.slice.Iter.Insts.RayonIterParallelIteratorSharedDataT T)
-    coreopsfunctionFnPTupleSharedFPInst
-  reduce := fun {OP : Type} {ID : Type}
-    (coreopsfunctionFnPPairSharedOPSharedOPSharedOPInst : core.ops.function.Fn
-    OP (T × T) T) (coreopsfunctionFnPTupleSharedOPInst : core.ops.function.Fn
-    ID Unit T) => rayon.iter.ParallelIterator.reduce.default
-    (rayon.slice.Iter.Insts.RayonIterParallelIteratorSharedDataT T)
-    coreopsfunctionFnPPairSharedOPSharedOPSharedOPInst
-    coreopsfunctionFnPTupleSharedOPInst
-  collect := fun {C : Type} (FromParallelIteratorPSharedCInst :
-    rayon.iter.FromParallelIterator C T) =>
-    rayon.iter.ParallelIterator.collect.default
-    (rayon.slice.Iter.Insts.RayonIterParallelIteratorSharedDataT T)
-    FromParallelIteratorPSharedCInst
-  drive_unindexed := fun {C : Type} {Clause0_Clause0_Folder : Type}
-    {Clause0_Clause0_Reducer : Type} {Clause0_Clause0_Result : Type}
-    (iterplumbingUnindexedConsumerPSharedCPPPInst :
-    rayon.iter.plumbing.UnindexedConsumer C T Clause0_Clause0_Folder
-    Clause0_Clause0_Reducer Clause0_Clause0_Result) =>
-    rayon.slice.Iter.Insts.RayonIterParallelIteratorSharedDataT.drive_unindexed
-    iterplumbingUnindexedConsumerPSharedCPPPInst
-}
-
-/-- Trait implementation: [rayon::vec::{impl rayon::iter::IntoParallelIterator<rayon::slice::Iter<'data, T>, &'data T> for &'data alloc::vec::Vec<T>}]
-    Source: '/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/rayon-1.11.0/src/vec.rs', lines 18:0-18:67
-    Name pattern: [rayon::iter::IntoParallelIterator<&'data alloc::vec::Vec<@T>, rayon::slice::Iter<'data, @T>, &'data @T>] -/
-@[reducible, rust_trait_impl
-  "rayon::iter::IntoParallelIterator<&'data alloc::vec::Vec<@T>, rayon::slice::Iter<'data, @T>, &'data @T>"]
-def SharedDataVec.Insts.RayonIterIntoParallelIteratorIterSharedDataT (T :
-  Type _) : rayon.iter.IntoParallelIterator (alloc.vec.Vec T) (rayon.slice.Iter
-  T) T := {
-  ParallelIteratorInst :=
-    rayon.slice.Iter.Insts.RayonIterParallelIteratorSharedDataT T
-  into_par_iter :=
-    SharedDataVec.Insts.RayonIterIntoParallelIteratorIterSharedDataT.into_par_iter
-}
-
 /-- [automata_builder::automata::terms::{impl core::fmt::Debug for automata_builder::automata::terms::ExprPosition}::fmt]:
     Source: 'src/automata/terms.rs', lines 34:16-34:21
     Visibility: public -/
@@ -28496,44 +28415,6 @@ def
     automata.terms.AbstractExpressionExpressionExpressionExpression._expand.closure.Insts.CoreOpsFunctionFnTupleShared0ProductExpression.call
 }
 
-/-- [automata_builder::automata::terms::{impl automata_builder::automata::terms::AbstractExpression<automata_builder::automata::terms::Expression, automata_builder::automata::terms::Expression> for automata_builder::automata::terms::Expression}::_expand]:
-    Source: 'src/automata/terms.rs', lines 812:4-835:5
-    Visibility: public -/
-def
-  automata.terms.Expression.Insts.Automata_builderAutomataTermsAbstractExpressionExpressionExpression._expand
-  (self : automata.terms.Expression)
-  (expansion_mapping : std.collections.hash.map.HashMap Std.U32
-  automata.terms.Expression std.hash.random.RandomState alloc.alloc.Global)
-  (include_debug_info : Bool) (fold : Bool) :
-  Result automata.terms.Expression
-  := do
-  let i ←
-    rayon.iter.IntoParallelRefIterator.Blanket.par_iter
-      (SharedDataVec.Insts.RayonIterIntoParallelIteratorIterSharedDataT
-      automata.terms.Product) self.products
-  let m ←
-    rayon.iter.ParallelIterator.map.default
-      (rayon.slice.Iter.Insts.RayonIterParallelIteratorSharedDataT
-      automata.terms.Product)
-      automata.terms.AbstractExpressionExpressionExpressionExpression._expand.closure.Insts.CoreOpsFunctionFnTupleShared0ProductExpression
-      i (expansion_mapping, include_debug_info, fold)
-  let result ←
-    rayon.iter.ParallelIterator.reduce.default
-      (rayon.iter.map.Map.Insts.RayonIterParallelIterator
-      (rayon.slice.Iter.Insts.RayonIterParallelIteratorSharedDataT
-      automata.terms.Product)
-      automata.terms.AbstractExpressionExpressionExpressionExpression._expand.closure.Insts.CoreOpsFunctionFnTupleShared0ProductExpression)
-      automata.terms.AbstractExpressionExpressionExpressionExpression._expand.closure_2.Insts.CoreOpsFunctionFnPairExpressionExpressionExpression
-      automata.terms.AbstractExpressionExpressionExpressionExpression._expand.closure_1.Insts.CoreOpsFunctionFnTupleExpression
-      m () ()
-  let result1 ←
-    if fold
-    then automata.terms.Expression.to_normalized result true
-    else ok result
-  if include_debug_info
-  then automata.terms.Expression._assign_expr_positions result1
-  else ok result1
-
 /-- [automata_builder::automata::terms::{impl automata_builder::automata::terms::AbstractExpression<automata_builder::automata::terms::Expression, automata_builder::automata::terms::Expression> for automata_builder::automata::terms::Expression}::copy]: loop body 0:
     Source: 'src/automata/terms.rs', lines 790:8-792:9
     Visibility: public -/
@@ -32369,45 +32250,6 @@ def
   call :=
     automata.terms_multitape.AbstractMultiTapeExpressionMultiTapeExpressionMultiTapeExpressionMultiTapeExpression._expand.closure.Insts.CoreOpsFunctionFnTupleShared0MultiTapeProductMultiTapeExpression.call
 }
-
-/-- [automata_builder::automata::terms_multitape::{impl automata_builder::automata::terms_multitape::AbstractMultiTapeExpression<automata_builder::automata::terms_multitape::MultiTapeExpression, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeExpression}::_expand]:
-    Source: 'src/automata/terms_multitape.rs', lines 876:4-899:5
-    Visibility: public -/
-def
-  automata.terms_multitape.MultiTapeExpression.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeExpressionMultiTapeExpression._expand
-  (self : automata.terms_multitape.MultiTapeExpression)
-  (expansion_mapping : std.collections.hash.map.HashMap (Std.U16 × Std.U32)
-  automata.terms_multitape.MultiTapeExpression std.hash.random.RandomState
-  alloc.alloc.Global) (include_debug_info : Bool) (fold : Bool) :
-  Result automata.terms_multitape.MultiTapeExpression
-  := do
-  let i ←
-    rayon.iter.IntoParallelRefIterator.Blanket.par_iter
-      (SharedDataVec.Insts.RayonIterIntoParallelIteratorIterSharedDataT
-      automata.terms_multitape.MultiTapeProduct) self.products
-  let m ←
-    rayon.iter.ParallelIterator.map.default
-      (rayon.slice.Iter.Insts.RayonIterParallelIteratorSharedDataT
-      automata.terms_multitape.MultiTapeProduct)
-      automata.terms_multitape.AbstractMultiTapeExpressionMultiTapeExpressionMultiTapeExpressionMultiTapeExpression._expand.closure.Insts.CoreOpsFunctionFnTupleShared0MultiTapeProductMultiTapeExpression
-      i (expansion_mapping, include_debug_info, fold)
-  let result ←
-    rayon.iter.ParallelIterator.reduce.default
-      (rayon.iter.map.Map.Insts.RayonIterParallelIterator
-      (rayon.slice.Iter.Insts.RayonIterParallelIteratorSharedDataT
-      automata.terms_multitape.MultiTapeProduct)
-      automata.terms_multitape.AbstractMultiTapeExpressionMultiTapeExpressionMultiTapeExpressionMultiTapeExpression._expand.closure.Insts.CoreOpsFunctionFnTupleShared0MultiTapeProductMultiTapeExpression)
-      automata.terms_multitape.AbstractMultiTapeExpressionMultiTapeExpressionMultiTapeExpressionMultiTapeExpression._expand.closure_2.Insts.CoreOpsFunctionFnPairMultiTapeExpressionMultiTapeExpressionMultiTapeExpression
-      automata.terms_multitape.AbstractMultiTapeExpressionMultiTapeExpressionMultiTapeExpressionMultiTapeExpression._expand.closure_1.Insts.CoreOpsFunctionFnTupleMultiTapeExpression
-      m () ()
-  let result1 ←
-    if fold
-    then automata.terms_multitape.MultiTapeExpression.to_normalized result true
-    else ok result
-  if include_debug_info
-  then
-    automata.terms_multitape.MultiTapeExpression._assign_expr_positions result1
-  else ok result1
 
 /-- [automata_builder::automata::terms_multitape::{impl automata_builder::automata::terms_multitape::AbstractMultiTapeExpression<automata_builder::automata::terms_multitape::MultiTapeExpression, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeExpression}::copy]: loop body 0:
     Source: 'src/automata/terms_multitape.rs', lines 853:8-855:9

@@ -62,11 +62,3 @@ jobs:
 
       - name: Build Lean definitions
         run: lake build
-
-      - name: Upload lake manifest
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: lake-manifest
-          path: lean/lake-manifest.json
-          if-no-files-found: ignore

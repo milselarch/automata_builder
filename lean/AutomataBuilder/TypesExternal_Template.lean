@@ -318,17 +318,3 @@ axiom indexmap.set.iter.IntoIter (T : Type _) : Type
 @[rust_type "indexmap::set::iter::Iter"]
 axiom indexmap.set.iter.Iter (T : Type _) : Type
 
-/-- [rayon::iter::map::Map]
-    Source: '/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/rayon-1.11.0/src/iter/map.rs', lines 14:0-14:20
-    Name pattern: [rayon::iter::map::Map]
-    Visibility: public -/
-@[rust_type "rayon::iter::map::Map"]
-axiom rayon.iter.map.Map (I : Type _) (F : Type _) : Type
-
-/-- [rayon::slice::Iter]
-    Source: '/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/rayon-1.11.0/src/slice/mod.rs', lines 801:0-801:25
-    Name pattern: [rayon::slice::Iter]
-    Visibility: public -/
-@[rust_type "rayon::slice::Iter"]
-axiom rayon.slice.Iter (T : Type _) : Type
-

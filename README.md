@@ -77,6 +77,52 @@ raw_result = builder.compile_tapes_rust()  # rust PyCompileTapesResult
 2. Execute counter automata unittests with
    - `python -m unittest discover -s unittests`
 
+### Lean definitions (Aeneas)
+[Aeneas](https://github.com/AeneasVerif/aeneas) is used to translate the rust
+crate into Lean definitions (in `lean/`) that can be used to reason about /
+verify the automata code. The translation is done in two steps:
+1. [Charon](https://github.com/AeneasVerif/charon) compiles the crate into
+   LLBC (`target/aeneas/automata_builder.llbc`)
+2. Aeneas translates the LLBC into Lean (`lean/AutomataBuilder/*.lean`)
+
+To regenerate the Lean definitions after changing the rust code, run
+```shell
+./scripts/generate_lean.sh
+```
+and commit the changes in `lean/`. CI (`.github/workflows/lean-generation.yml`)
+runs the same script and fails if it produces any git diff.
+
+The script (Linux x86_64 / aarch64 or macOS arm64; needs `rustup` and `curl`):
+- downloads the prebuilt Aeneas + Charon binaries of the pinned Aeneas
+  release (`AENEAS_RELEASE` in the script) into `.aeneas/`. Set
+  `AENEAS_DIR` to use an existing install instead
+- installs the nightly rust toolchain Charon was built for (with the
+  `rustc-dev`, `llvm-tools`, `rust-src` and `miri` components)
+- runs Charon on the pure rust modules only - the pyo3 bindings (`py_*`
+  modules), serde derives and `Iterator::{copied,cloned}` (which crash
+  Aeneas) are excluded
+- runs Aeneas with the Lean backend and `-split-files`
+
+Generated files in `lean/AutomataBuilder/`:
+- `Types.lean`, `Funs.lean` - translated types and functions
+- `TypesExternal_Template.lean`, `FunsExternal_Template.lean` - `axiom`s
+  for definitions which are not part of the Aeneas standard library
+  (e.g. `HashMap`, `IndexMap`, `BTreeMap`, `fmt`) and for functions whose
+  bodies Aeneas could not translate
+- `TypesExternal.lean`, `FunsExternal.lean` - hand-maintained models of the
+  external definitions. They are only seeded from the templates when
+  missing, so update them by hand when the templates change
+
+Aeneas only supports a subset of rust, so some functions are translated as
+axioms (Aeneas reports them as errors in `target/aeneas/aeneas.log`). Notably
+`break`/`continue` to outer loops and `return`s inside nested loops are not
+supported yet.
+
+To upgrade Aeneas, update `AENEAS_RELEASE` in `scripts/generate_lean.sh`
+(a tag from https://github.com/AeneasVerif/aeneas/releases), the `rev` in
+`lean/lakefile.toml` (the script checks they match) and `lean/lean-toolchain`
+(copy `backends/lean/lean-toolchain` from the release), then regenerate.
+
 ## TODO
 - design counter automata that operates within data range
 - add unittest for single-tape compiled automata
