@@ -189,3 +189,9 @@ target
 #  and can be added to the global gitignore or merged into this file.  For a more nuclear
 #  option (not recommended) you can uncomment the following to ignore the entire idea folder.
 #.idea/
+
+# Aeneas / Charon binaries downloaded by scripts/generate_lean.sh
+.aeneas/
+
+# Lean build outputs
+lean/.lake/
