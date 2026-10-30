@@ -2196,26 +2196,6 @@ def automata.terms_multitape.MultiTapeTerm.Insts.CoreHashHash.hash
   Pair.Insts.CoreHashHash.hash U16.Insts.CoreHashHash U32.Insts.CoreHashHash
     corehashHasherInst self.state state1
 
-/-- [automata_builder::automata::terms_multitape::{impl core::hash::Hash for automata_builder::automata::terms_multitape::MultiTapeProduct}::hash]: loop body 0:
-    Source: 'src/automata/terms_multitape.rs', lines 468:8-470:9
-    Visibility: public -/
-@[rust_loop_body]
-def automata.terms_multitape.MultiTapeProduct.Insts.CoreHashHash.hash_loop.body
-  {H : Type _} (corehashHasherInst : core.hash.Hasher H)
-  (iter : core.slice.iter.Iter automata.terms_multitape.MultiTapeTerm)
-  (state : H) :
-  Result (ControlFlow ((core.slice.iter.Iter
-    automata.terms_multitape.MultiTapeTerm) × H) H)
-  := do
-  let (o, iter1) ← core.slice.iter.IteratorSliceIter.next iter
-  match o with
-  | none => ok (done state)
-  | some term =>
-    let state1 ←
-      automata.terms_multitape.MultiTapeTerm.Insts.CoreHashHash.hash
-        corehashHasherInst term state
-    ok (cont (iter1, state1))
-
 /-- [automata_builder::automata::terms_multitape::{impl core::hash::Hash for automata_builder::automata::terms_multitape::MultiTapeProduct}::hash]: loop 0:
     Source: 'src/automata/terms_multitape.rs', lines 468:8-470:9
     Visibility: public -/
@@ -2226,11 +2206,16 @@ def automata.terms_multitape.MultiTapeProduct.Insts.CoreHashHash.hash_loop
   (state : H) :
   Result H
   := do
-  loop
-    (fun (iter1, state1) =>
-      automata.terms_multitape.MultiTapeProduct.Insts.CoreHashHash.hash_loop.body
-      corehashHasherInst iter1 state1)
-    (iter, state)
+  let (o, iter1) ← core.slice.iter.IteratorSliceIter.next iter
+  match o with
+  | none => ok state
+  | some term =>
+    let state1 ←
+      automata.terms_multitape.MultiTapeTerm.Insts.CoreHashHash.hash
+        corehashHasherInst term state
+    automata.terms_multitape.MultiTapeProduct.Insts.CoreHashHash.hash_loop
+      corehashHasherInst iter1 state1
+partial_fixpoint
 
 /-- [automata_builder::automata::terms_multitape::{impl core::hash::Hash for automata_builder::automata::terms_multitape::MultiTapeProduct}::hash]:
     Source: 'src/automata/terms_multitape.rs', lines 467:4-471:5
@@ -2403,27 +2388,6 @@ def automata.product_writes_map.ProductWritesMap.products
   := do
   indexmap.map.IndexMap.keys self.prod_to_state_map
 
-/-- [automata_builder::automata::multi_tape_automata::{automata_builder::automata::multi_tape_automata::MultiTapeAutomata}::compute_rule_range]: loop body 1:
-    Source: 'src/automata/multi_tape_automata.rs', lines 128:12-132:13 -/
-@[rust_loop_body]
-def
-  automata.multi_tape_automata.MultiTapeAutomata.compute_rule_range_loop0_loop0.body
-  (iter : alloc.vec.into_iter.IntoIter automata.terms_multitape.MultiTapeTerm)
-  (leftmost_extent : Std.I64) (rightmost_extent : Std.I64) :
-  Result (ControlFlow ((alloc.vec.into_iter.IntoIter
-    automata.terms_multitape.MultiTapeTerm) × Std.I64 × Std.I64) (Std.I64 ×
-    Std.I64))
-  := do
-  let (o, iter1) ← alloc.vec.into_iter.IteratorIntoIter.next iter
-  match o with
-  | none => ok (done (leftmost_extent, rightmost_extent))
-  | some term =>
-    let leftmost_extent1 ←
-      lift (core.cmp.impls.OrdI64.min leftmost_extent term.position)
-    let rightmost_extent1 ←
-      lift (core.cmp.impls.OrdI64.max rightmost_extent term.position)
-    ok (cont (iter1, leftmost_extent1, rightmost_extent1))
-
 /-- [automata_builder::automata::multi_tape_automata::{automata_builder::automata::multi_tape_automata::MultiTapeAutomata}::compute_rule_range]: loop 1:
     Source: 'src/automata/multi_tape_automata.rs', lines 128:12-132:13 -/
 @[rust_loop]
@@ -2433,37 +2397,17 @@ def
   (leftmost_extent : Std.I64) (rightmost_extent : Std.I64) :
   Result (Std.I64 × Std.I64)
   := do
-  loop
-    (fun (iter1, leftmost_extent1, rightmost_extent1) =>
-      automata.multi_tape_automata.MultiTapeAutomata.compute_rule_range_loop0_loop0.body
-      iter1 leftmost_extent1 rightmost_extent1)
-    (iter, leftmost_extent, rightmost_extent)
-
-/-- [automata_builder::automata::multi_tape_automata::{automata_builder::automata::multi_tape_automata::MultiTapeAutomata}::compute_rule_range]: loop body 0:
-    Source: 'src/automata/multi_tape_automata.rs', lines 127:8-133:9 -/
-@[rust_loop_body]
-def
-  automata.multi_tape_automata.MultiTapeAutomata.compute_rule_range_loop0.body
-  (iter : indexmap.map.iter.Keys automata.terms_multitape.MultiTapeProduct
-  (alloc.collections.btree.map.BTreeMap Std.U16 Std.U32 alloc.alloc.Global))
-  (leftmost_extent : Std.I64) (rightmost_extent : Std.I64) :
-  Result (ControlFlow ((indexmap.map.iter.Keys
-    automata.terms_multitape.MultiTapeProduct
-    (alloc.collections.btree.map.BTreeMap Std.U16 Std.U32 alloc.alloc.Global))
-    × Std.I64 × Std.I64) (Std.I64 × Std.I64))
-  := do
-  let (o, iter1) ←
-    indexmap.map.iter.Keys.Insts.CoreIterTraitsIteratorIteratorSharedAK.next
-      iter
+  let (o, iter1) ← alloc.vec.into_iter.IteratorIntoIter.next iter
   match o with
-  | none => ok (done (leftmost_extent, rightmost_extent))
-  | some product =>
-    let v ← automata.terms_multitape.MultiTapeProduct.to_flat_terms product
-    let iter2 ← alloc.vec.IntoIteratorVec.into_iter v
-    let (leftmost_extent1, rightmost_extent1) ←
-      automata.multi_tape_automata.MultiTapeAutomata.compute_rule_range_loop0_loop0
-        iter2 leftmost_extent rightmost_extent
-    ok (cont (iter1, leftmost_extent1, rightmost_extent1))
+  | none => ok (leftmost_extent, rightmost_extent)
+  | some term =>
+    let leftmost_extent1 ←
+      lift (core.cmp.impls.OrdI64.min leftmost_extent term.position)
+    let rightmost_extent1 ←
+      lift (core.cmp.impls.OrdI64.max rightmost_extent term.position)
+    automata.multi_tape_automata.MultiTapeAutomata.compute_rule_range_loop0_loop0
+      iter1 leftmost_extent1 rightmost_extent1
+partial_fixpoint
 
 /-- [automata_builder::automata::multi_tape_automata::{automata_builder::automata::multi_tape_automata::MultiTapeAutomata}::compute_rule_range]: loop 0:
     Source: 'src/automata/multi_tape_automata.rs', lines 127:8-133:9 -/
@@ -2474,11 +2418,20 @@ def automata.multi_tape_automata.MultiTapeAutomata.compute_rule_range_loop0
   (leftmost_extent : Std.I64) (rightmost_extent : Std.I64) :
   Result (Std.I64 × Std.I64)
   := do
-  loop
-    (fun (iter1, leftmost_extent1, rightmost_extent1) =>
-      automata.multi_tape_automata.MultiTapeAutomata.compute_rule_range_loop0.body
-      iter1 leftmost_extent1 rightmost_extent1)
-    (iter, leftmost_extent, rightmost_extent)
+  let (o, iter1) ←
+    indexmap.map.iter.Keys.Insts.CoreIterTraitsIteratorIteratorSharedAK.next
+      iter
+  match o with
+  | none => ok (leftmost_extent, rightmost_extent)
+  | some product =>
+    let v ← automata.terms_multitape.MultiTapeProduct.to_flat_terms product
+    let iter2 ← alloc.vec.IntoIteratorVec.into_iter v
+    let (leftmost_extent1, rightmost_extent1) ←
+      automata.multi_tape_automata.MultiTapeAutomata.compute_rule_range_loop0_loop0
+        iter2 leftmost_extent rightmost_extent
+    automata.multi_tape_automata.MultiTapeAutomata.compute_rule_range_loop0
+      iter1 leftmost_extent1 rightmost_extent1
+partial_fixpoint
 
 /-- [automata_builder::automata::multi_tape_automata::{automata_builder::automata::multi_tape_automata::MultiTapeAutomata}::compute_rule_range]:
     Source: 'src/automata/multi_tape_automata.rs', lines 123:4-138:5 -/
@@ -2787,45 +2740,6 @@ def automata.rule_generator_multitape.BiDirectionalMultiTape.get_or_make_tape
           { self with tapes := bm }
       ok (core.result.Result.Ok bt, back)
 
-/-- [automata_builder::automata::rule_generator_multitape::{automata_builder::automata::rule_generator_multitape::BiDirectionalMultiTape}::init_tapes]: loop body 0:
-    Source: 'src/automata/rule_generator_multitape.rs', lines 71:8-78:5
-    Visibility: public -/
-@[rust_loop_body]
-def
-  automata.rule_generator_multitape.BiDirectionalMultiTape.init_tapes_loop.body
-  (freeze : Bool) (iter : core.slice.iter.Iter Std.U16)
-  (self : automata.rule_generator_multitape.BiDirectionalMultiTape) :
-  Result (ControlFlow ((core.slice.iter.Iter Std.U16) ×
-    automata.rule_generator_multitape.BiDirectionalMultiTape)
-    ((core.result.Result Unit automata.rule_generator.TapeError) ×
-    automata.rule_generator_multitape.BiDirectionalMultiTape))
-  := do
-  let (o, iter1) ← core.slice.iter.IteratorSliceIter.next iter
-  match o with
-  | none =>
-    if freeze
-    then
-      ok (done (core.result.Result.Ok (), { self with freeze_tapes := true }))
-    else ok (done (core.result.Result.Ok (), self))
-  | some tape_no =>
-    let (r, get_or_make_tape_back) ←
-      automata.rule_generator_multitape.BiDirectionalMultiTape.get_or_make_tape
-        self tape_no
-    let (cf, branch_back) ← core.result.Result.Insts.CoreOpsTry.branch r
-    match cf with
-    | core.ops.control_flow.ControlFlow.Continue _ =>
-      let r1 := branch_back cf
-      let bdmt := get_or_make_tape_back r1
-      ok (cont (iter1, bdmt))
-    | core.ops.control_flow.ControlFlow.Break residual =>
-      let r1 ←
-        core.result.Result.Insts.CoreOpsTry_traitFromResidualResult.from_residual
-          Unit (core.convert.FromSame automata.rule_generator.TapeError)
-          residual
-      let r2 := branch_back cf
-      let bdmt := get_or_make_tape_back r2
-      ok (done (r1, bdmt))
-
 /-- [automata_builder::automata::rule_generator_multitape::{automata_builder::automata::rule_generator_multitape::BiDirectionalMultiTape}::init_tapes]: loop 0:
     Source: 'src/automata/rule_generator_multitape.rs', lines 71:8-78:5
     Visibility: public -/
@@ -2837,11 +2751,32 @@ def automata.rule_generator_multitape.BiDirectionalMultiTape.init_tapes_loop
   Result ((core.result.Result Unit automata.rule_generator.TapeError) ×
     automata.rule_generator_multitape.BiDirectionalMultiTape)
   := do
-  loop
-    (fun (iter1, self1) =>
-      automata.rule_generator_multitape.BiDirectionalMultiTape.init_tapes_loop.body
-      freeze iter1 self1)
-    (iter, self)
+  let (o, iter1) ← core.slice.iter.IteratorSliceIter.next iter
+  match o with
+  | none =>
+    if freeze
+    then ok (core.result.Result.Ok (), { self with freeze_tapes := true })
+    else ok (core.result.Result.Ok (), self)
+  | some tape_no =>
+    let (r, get_or_make_tape_back) ←
+      automata.rule_generator_multitape.BiDirectionalMultiTape.get_or_make_tape
+        self tape_no
+    let (cf, branch_back) ← core.result.Result.Insts.CoreOpsTry.branch r
+    match cf with
+    | core.ops.control_flow.ControlFlow.Continue _ =>
+      let r1 := branch_back cf
+      let bdmt := get_or_make_tape_back r1
+      automata.rule_generator_multitape.BiDirectionalMultiTape.init_tapes_loop
+        iter1 bdmt freeze
+    | core.ops.control_flow.ControlFlow.Break residual =>
+      let r1 ←
+        core.result.Result.Insts.CoreOpsTry_traitFromResidualResult.from_residual
+          Unit (core.convert.FromSame automata.rule_generator.TapeError)
+          residual
+      let r2 := branch_back cf
+      let bdmt := get_or_make_tape_back r2
+      ok (r1, bdmt)
+partial_fixpoint
 
 /-- [automata_builder::automata::rule_generator_multitape::{automata_builder::automata::rule_generator_multitape::BiDirectionalMultiTape}::init_tapes]:
     Source: 'src/automata/rule_generator_multitape.rs', lines 70:4-78:5
@@ -2956,44 +2891,6 @@ def automata.rule_generator_multitape.BiDirectionalMultiTape.write
     let self1 := get_or_make_tape_back r2
     ok (r1, self1)
 
-/-- [automata_builder::automata::rule_generator_multitape::{automata_builder::automata::rule_generator_multitape::BiDirectionalMultiTape}::write_region]: loop body 0:
-    Source: 'src/automata/rule_generator_multitape.rs', lines 95:8-101:5
-    Visibility: public -/
-@[rust_loop_body]
-def
-  automata.rule_generator_multitape.BiDirectionalMultiTape.write_region_loop.body
-  (position : Std.I64) (data : Slice automata.terms_multitape.MultiTapeState)
-  (iter : core.ops.range.RangeInclusive Std.I64)
-  (self : automata.rule_generator_multitape.BiDirectionalMultiTape) :
-  Result (ControlFlow ((core.ops.range.RangeInclusive Std.I64) ×
-    automata.rule_generator_multitape.BiDirectionalMultiTape)
-    ((core.result.Result Unit automata.rule_generator.TapeError) ×
-    automata.rule_generator_multitape.BiDirectionalMultiTape))
-  := do
-  let (o, iter1) ←
-    core.ops.range.RangeInclusive.Insts.CoreIterTraitsIteratorIterator.next
-      core.iter.range.StepI64 iter
-  match o with
-  | none => ok (done (core.result.Result.Ok (), self))
-  | some new_position =>
-    let i ← new_position - position
-    let offset ← lift (IScalar.hcast .Usize i)
-    let i1 := Slice.len data
-    let i2 ← offset % i1
-    let value ← Slice.index_usize data i2
-    let (r, self1) ←
-      automata.rule_generator_multitape.BiDirectionalMultiTape.write self
-        new_position value
-    let cf ← core.result.Result.Insts.CoreOpsTry.branch r
-    match cf with
-    | core.ops.control_flow.ControlFlow.Continue _ => ok (cont (iter1, self1))
-    | core.ops.control_flow.ControlFlow.Break residual =>
-      let r1 ←
-        core.result.Result.Insts.CoreOpsTry_traitFromResidualResult.from_residual
-          Unit (core.convert.FromSame automata.rule_generator.TapeError)
-          residual
-      ok (done (r1, self1))
-
 /-- [automata_builder::automata::rule_generator_multitape::{automata_builder::automata::rule_generator_multitape::BiDirectionalMultiTape}::write_region]: loop 0:
     Source: 'src/automata/rule_generator_multitape.rs', lines 95:8-101:5
     Visibility: public -/
@@ -3005,11 +2902,32 @@ def automata.rule_generator_multitape.BiDirectionalMultiTape.write_region_loop
   Result ((core.result.Result Unit automata.rule_generator.TapeError) ×
     automata.rule_generator_multitape.BiDirectionalMultiTape)
   := do
-  loop
-    (fun (iter1, self1) =>
-      automata.rule_generator_multitape.BiDirectionalMultiTape.write_region_loop.body
-      position data iter1 self1)
-    (iter, self)
+  let (o, iter1) ←
+    core.ops.range.RangeInclusive.Insts.CoreIterTraitsIteratorIterator.next
+      core.iter.range.StepI64 iter
+  match o with
+  | none => ok (core.result.Result.Ok (), self)
+  | some new_position =>
+    let i ← new_position - position
+    let offset ← lift (IScalar.hcast .Usize i)
+    let i1 := Slice.len data
+    let i2 ← offset % i1
+    let value ← Slice.index_usize data i2
+    let (r, self1) ←
+      automata.rule_generator_multitape.BiDirectionalMultiTape.write self
+        new_position value
+    let cf ← core.result.Result.Insts.CoreOpsTry.branch r
+    match cf with
+    | core.ops.control_flow.ControlFlow.Continue _ =>
+      automata.rule_generator_multitape.BiDirectionalMultiTape.write_region_loop
+        iter1 self1 position data
+    | core.ops.control_flow.ControlFlow.Break residual =>
+      let r1 ←
+        core.result.Result.Insts.CoreOpsTry_traitFromResidualResult.from_residual
+          Unit (core.convert.FromSame automata.rule_generator.TapeError)
+          residual
+      ok (r1, self1)
+partial_fixpoint
 
 /-- [automata_builder::automata::rule_generator_multitape::{automata_builder::automata::rule_generator_multitape::BiDirectionalMultiTape}::write_region]:
     Source: 'src/automata/rule_generator_multitape.rs', lines 86:4-101:5
@@ -3380,38 +3298,6 @@ def automata.renderer.TapeRenderFrame.new
   let rf ← automata.renderer.RenderFrame.from_line s
   ok { frame := rf, num_cells, cell_width }
 
-/-- [automata_builder::automata::rule_generator::{automata_builder::automata::rule_generator::BidirectionalTape}::render_line]: loop body 0:
-    Source: 'src/automata/rule_generator.rs', lines 381:8-386:9
-    Visibility: public -/
-@[rust_loop_body]
-def automata.rule_generator.BidirectionalTape.render_line_loop0.body
-  (self : automata.rule_generator.BidirectionalTape) (start_position : Std.I64)
-  (cell_width : Std.Usize) (iter : core.ops.range.Range Std.Usize)
-  (line : String) :
-  Result (ControlFlow ((core.ops.range.Range Std.Usize) × String) String)
-  := do
-  let (o, iter1) ←
-    core.iter.range.IteratorRange.next core.iter.range.StepUsize iter
-  match o with
-  | none => ok (done line)
-  | some k =>
-    let i ← lift (UScalar.hcast .I64 k)
-    let position ← start_position + i
-    let state ← automata.rule_generator.BidirectionalTape.read self position
-    let a ← core.fmt.rt.Argument.new_display U32.Insts.CoreFmtDisplay state
-    let a1 ← core.fmt.rt.Argument.from_usize cell_width
-    let a2 ←
-      core.fmt.Arguments.new
-        (Array.make 8#usize [
-          211#u8, 32#u8, 0#u8, 0#u8, 105#u8, 1#u8, 0#u8, 0#u8
-          ]) (Array.make 2#usize [ a, a1 ])
-    let s ← alloc.fmt.format a2
-    let s1 ← core.hint.must_use s
-    let s2 ← alloc.string.String.Insts.CoreOpsDerefDerefStr.deref s1
-    let line1 ← alloc.string.String.push_str line s2
-    let line2 ← alloc.string.String.push line1 '|'
-    ok (cont (iter1, line2))
-
 /-- [automata_builder::automata::rule_generator::{automata_builder::automata::rule_generator::BidirectionalTape}::render_line]: loop 0:
     Source: 'src/automata/rule_generator.rs', lines 381:8-386:9
     Visibility: public -/
@@ -3422,26 +3308,10 @@ def automata.rule_generator.BidirectionalTape.render_line_loop0
   (cell_width : Std.Usize) (line : String) :
   Result String
   := do
-  loop
-    (fun (iter1, line1) =>
-      automata.rule_generator.BidirectionalTape.render_line_loop0.body self
-      start_position cell_width iter1 line1)
-    (iter, line)
-
-/-- [automata_builder::automata::rule_generator::{automata_builder::automata::rule_generator::BidirectionalTape}::render_line]: loop body 1:
-    Source: 'src/automata/rule_generator.rs', lines 381:8-386:9
-    Visibility: public -/
-@[rust_loop_body]
-def automata.rule_generator.BidirectionalTape.render_line_loop1.body
-  (self : automata.rule_generator.BidirectionalTape) (start_position : Std.I64)
-  (cell_width : Std.Usize) (iter : core.ops.range.Range Std.Usize)
-  (line : String) :
-  Result (ControlFlow ((core.ops.range.Range Std.Usize) × String) String)
-  := do
   let (o, iter1) ←
     core.iter.range.IteratorRange.next core.iter.range.StepUsize iter
   match o with
-  | none => ok (done line)
+  | none => ok line
   | some k =>
     let i ← lift (UScalar.hcast .I64 k)
     let position ← start_position + i
@@ -3458,7 +3328,9 @@ def automata.rule_generator.BidirectionalTape.render_line_loop1.body
     let s2 ← alloc.string.String.Insts.CoreOpsDerefDerefStr.deref s1
     let line1 ← alloc.string.String.push_str line s2
     let line2 ← alloc.string.String.push line1 '|'
-    ok (cont (iter1, line2))
+    automata.rule_generator.BidirectionalTape.render_line_loop0 iter1 self
+      start_position cell_width line2
+partial_fixpoint
 
 /-- [automata_builder::automata::rule_generator::{automata_builder::automata::rule_generator::BidirectionalTape}::render_line]: loop 1:
     Source: 'src/automata/rule_generator.rs', lines 381:8-386:9
@@ -3470,11 +3342,29 @@ def automata.rule_generator.BidirectionalTape.render_line_loop1
   (cell_width : Std.Usize) (line : String) :
   Result String
   := do
-  loop
-    (fun (iter1, line1) =>
-      automata.rule_generator.BidirectionalTape.render_line_loop1.body self
-      start_position cell_width iter1 line1)
-    (iter, line)
+  let (o, iter1) ←
+    core.iter.range.IteratorRange.next core.iter.range.StepUsize iter
+  match o with
+  | none => ok line
+  | some k =>
+    let i ← lift (UScalar.hcast .I64 k)
+    let position ← start_position + i
+    let state ← automata.rule_generator.BidirectionalTape.read self position
+    let a ← core.fmt.rt.Argument.new_display U32.Insts.CoreFmtDisplay state
+    let a1 ← core.fmt.rt.Argument.from_usize cell_width
+    let a2 ←
+      core.fmt.Arguments.new
+        (Array.make 8#usize [
+          211#u8, 32#u8, 0#u8, 0#u8, 105#u8, 1#u8, 0#u8, 0#u8
+          ]) (Array.make 2#usize [ a, a1 ])
+    let s ← alloc.fmt.format a2
+    let s1 ← core.hint.must_use s
+    let s2 ← alloc.string.String.Insts.CoreOpsDerefDerefStr.deref s1
+    let line1 ← alloc.string.String.push_str line s2
+    let line2 ← alloc.string.String.push line1 '|'
+    automata.rule_generator.BidirectionalTape.render_line_loop1 iter1 self
+      start_position cell_width line2
+partial_fixpoint
 
 /-- [automata_builder::automata::rule_generator::{automata_builder::automata::rule_generator::BidirectionalTape}::render_line]:
     Source: 'src/automata/rule_generator.rs', lines 361:4-392:5
@@ -3556,38 +3446,6 @@ def automata.renderer.RenderFrame.get_height
   (self : automata.renderer.RenderFrame) : Result Std.Usize := do
   ok (alloc.vec.Vec.len self.lines)
 
-/-- [automata_builder::automata::renderer::{automata_builder::automata::renderer::RenderFrame}::extend_right]: loop body 0:
-    Source: 'src/automata/renderer.rs', lines 80:8-82:9
-    Visibility: public -/
-@[rust_loop_body]
-def automata.renderer.RenderFrame.extend_right_loop.body
-  (iter : core.iter.adapters.zip.Zip (core.slice.iter.IterMut String)
-  (core.slice.iter.Iter String))
-  (back : core.iter.adapters.zip.Zip (core.slice.iter.IterMut String)
-  (core.slice.iter.Iter String) → core.iter.adapters.zip.Zip
-  (core.slice.iter.IterMut String) (core.slice.iter.Iter String)) :
-  Result (ControlFlow ((core.iter.adapters.zip.Zip (core.slice.iter.IterMut
-    String) (core.slice.iter.Iter String)) × (core.iter.adapters.zip.Zip
-    (core.slice.iter.IterMut String) (core.slice.iter.Iter String) →
-    core.iter.adapters.zip.Zip (core.slice.iter.IterMut String)
-    (core.slice.iter.Iter String))) (core.iter.adapters.zip.Zip
-    (core.slice.iter.IterMut String) (core.slice.iter.Iter String)))
-  := do
-  let (o, iter1, next_back) ←
-    core.iter.adapters.zip.Zip.Insts.CoreIterTraitsIteratorIteratorPair.next
-      (core.slice.iter.IterMut.Insts.CoreIterTraitsIteratorIteratorMutAT
-      String) (core.iter.traits.iterator.IteratorSliceIter String) iter
-  match o with
-  | none => ok (done (let z := next_back iter1 none
-                      back z))
-  | some p =>
-    let (own_line, other_line) := p
-    let s ← alloc.string.String.Insts.CoreOpsDerefDerefStr.deref other_line
-    let own_line1 ← alloc.string.String.push_str own_line s
-    ok (cont (iter1,
-      fun z => let z1 := next_back z (some (own_line1, other_line))
-               back z1))
-
 /-- [automata_builder::automata::renderer::{automata_builder::automata::renderer::RenderFrame}::extend_right]: loop 0:
     Source: 'src/automata/renderer.rs', lines 80:8-82:9
     Visibility: public -/
@@ -3601,10 +3459,21 @@ def automata.renderer.RenderFrame.extend_right_loop
   Result (core.iter.adapters.zip.Zip (core.slice.iter.IterMut String)
     (core.slice.iter.Iter String))
   := do
-  loop
-    (fun (iter1, back1) => automata.renderer.RenderFrame.extend_right_loop.body
-      iter1 back1)
-    (iter, back)
+  let (o, iter1, next_back) ←
+    core.iter.adapters.zip.Zip.Insts.CoreIterTraitsIteratorIteratorPair.next
+      (core.slice.iter.IterMut.Insts.CoreIterTraitsIteratorIteratorMutAT
+      String) (core.iter.traits.iterator.IteratorSliceIter String) iter
+  match o with
+  | none => ok (let z := next_back iter1 none
+                back z)
+  | some p =>
+    let (own_line, other_line) := p
+    let s ← alloc.string.String.Insts.CoreOpsDerefDerefStr.deref other_line
+    let own_line1 ← alloc.string.String.push_str own_line s
+    automata.renderer.RenderFrame.extend_right_loop iter1
+      (fun z => let z1 := next_back z (some (own_line1, other_line))
+                back z1)
+partial_fixpoint
 
 /-- [automata_builder::automata::renderer::{automata_builder::automata::renderer::RenderFrame}::extend_right]:
     Source: 'src/automata/renderer.rs', lines 69:4-84:5
@@ -3666,36 +3535,6 @@ def automata.renderer.RenderFrame.Insts.CoreDefaultDefault.default
   let v ← alloc.vec.Vec.Insts.CoreDefaultDefault.default String
   ok { lines := v }
 
-/-- [automata_builder::automata::renderer::{automata_builder::automata::renderer::RenderFrame}::join_horizontally]: loop body 0:
-    Source: 'src/automata/renderer.rs', lines 96:8-100:5
-    Visibility: public -/
-@[rust_loop_body]
-def automata.renderer.RenderFrame.join_horizontally_loop.body
-  (iter : core.slice.iter.Iter automata.renderer.RenderFrame)
-  (combined : automata.renderer.RenderFrame) :
-  Result (ControlFlow ((core.slice.iter.Iter automata.renderer.RenderFrame) ×
-    automata.renderer.RenderFrame) (core.result.Result
-    automata.renderer.RenderFrame automata.renderer.RenderError))
-  := do
-  let (o, iter1) ← core.slice.iter.IteratorSliceIter.next iter
-  match o with
-  | none => ok (done (core.result.Result.Ok combined))
-  | some frame =>
-    let (r, extend_right_back) ←
-      automata.renderer.RenderFrame.extend_right combined frame
-    let (cf, branch_back) ← core.result.Result.Insts.CoreOpsTry.branch r
-    match cf with
-    | core.ops.control_flow.ControlFlow.Continue _ =>
-      let r1 := branch_back cf
-      let rf := extend_right_back r1
-      ok (cont (iter1, rf))
-    | core.ops.control_flow.ControlFlow.Break residual =>
-      let r1 ←
-        core.result.Result.Insts.CoreOpsTry_traitFromResidualResult.from_residual
-          automata.renderer.RenderFrame (core.convert.FromSame
-          automata.renderer.RenderError) residual
-      ok (done r1)
-
 /-- [automata_builder::automata::renderer::{automata_builder::automata::renderer::RenderFrame}::join_horizontally]: loop 0:
     Source: 'src/automata/renderer.rs', lines 96:8-100:5
     Visibility: public -/
@@ -3706,11 +3545,23 @@ def automata.renderer.RenderFrame.join_horizontally_loop
   Result (core.result.Result automata.renderer.RenderFrame
     automata.renderer.RenderError)
   := do
-  loop
-    (fun (iter1, combined1) =>
-      automata.renderer.RenderFrame.join_horizontally_loop.body iter1
-      combined1)
-    (iter, combined)
+  let (o, iter1) ← core.slice.iter.IteratorSliceIter.next iter
+  match o with
+  | none => ok (core.result.Result.Ok combined)
+  | some frame =>
+    let (r, extend_right_back) ←
+      automata.renderer.RenderFrame.extend_right combined frame
+    let (cf, branch_back) ← core.result.Result.Insts.CoreOpsTry.branch r
+    match cf with
+    | core.ops.control_flow.ControlFlow.Continue _ =>
+      let r1 := branch_back cf
+      let rf := extend_right_back r1
+      automata.renderer.RenderFrame.join_horizontally_loop iter1 rf
+    | core.ops.control_flow.ControlFlow.Break residual =>
+      core.result.Result.Insts.CoreOpsTry_traitFromResidualResult.from_residual
+        automata.renderer.RenderFrame (core.convert.FromSame
+        automata.renderer.RenderError) residual
+partial_fixpoint
 
 /-- [automata_builder::automata::renderer::{automata_builder::automata::renderer::RenderFrame}::join_horizontally]:
     Source: 'src/automata/renderer.rs', lines 94:4-100:5
@@ -3763,36 +3614,6 @@ def automata.renderer.RenderFrame.get_width
       o ()
   ok (core.option.Option.unwrap_or o1 0#usize)
 
-/-- [automata_builder::automata::renderer::{automata_builder::automata::renderer::RenderFrame}::join_vertically]: loop body 0:
-    Source: 'src/automata/renderer.rs', lines 88:8-92:5
-    Visibility: public -/
-@[rust_loop_body]
-def automata.renderer.RenderFrame.join_vertically_loop.body
-  (iter : core.slice.iter.Iter automata.renderer.RenderFrame)
-  (combined : automata.renderer.RenderFrame) :
-  Result (ControlFlow ((core.slice.iter.Iter automata.renderer.RenderFrame) ×
-    automata.renderer.RenderFrame) (core.result.Result
-    automata.renderer.RenderFrame automata.renderer.RenderError))
-  := do
-  let (o, iter1) ← core.slice.iter.IteratorSliceIter.next iter
-  match o with
-  | none => ok (done (core.result.Result.Ok combined))
-  | some frame =>
-    let (r, extend_down_back) ←
-      automata.renderer.RenderFrame.extend_down combined frame
-    let (cf, branch_back) ← core.result.Result.Insts.CoreOpsTry.branch r
-    match cf with
-    | core.ops.control_flow.ControlFlow.Continue _ =>
-      let r1 := branch_back cf
-      let rf := extend_down_back r1
-      ok (cont (iter1, rf))
-    | core.ops.control_flow.ControlFlow.Break residual =>
-      let r1 ←
-        core.result.Result.Insts.CoreOpsTry_traitFromResidualResult.from_residual
-          automata.renderer.RenderFrame (core.convert.FromSame
-          automata.renderer.RenderError) residual
-      ok (done r1)
-
 /-- [automata_builder::automata::renderer::{automata_builder::automata::renderer::RenderFrame}::join_vertically]: loop 0:
     Source: 'src/automata/renderer.rs', lines 88:8-92:5
     Visibility: public -/
@@ -3803,10 +3624,23 @@ def automata.renderer.RenderFrame.join_vertically_loop
   Result (core.result.Result automata.renderer.RenderFrame
     automata.renderer.RenderError)
   := do
-  loop
-    (fun (iter1, combined1) =>
-      automata.renderer.RenderFrame.join_vertically_loop.body iter1 combined1)
-    (iter, combined)
+  let (o, iter1) ← core.slice.iter.IteratorSliceIter.next iter
+  match o with
+  | none => ok (core.result.Result.Ok combined)
+  | some frame =>
+    let (r, extend_down_back) ←
+      automata.renderer.RenderFrame.extend_down combined frame
+    let (cf, branch_back) ← core.result.Result.Insts.CoreOpsTry.branch r
+    match cf with
+    | core.ops.control_flow.ControlFlow.Continue _ =>
+      let r1 := branch_back cf
+      let rf := extend_down_back r1
+      automata.renderer.RenderFrame.join_vertically_loop iter1 rf
+    | core.ops.control_flow.ControlFlow.Break residual =>
+      core.result.Result.Insts.CoreOpsTry_traitFromResidualResult.from_residual
+        automata.renderer.RenderFrame (core.convert.FromSame
+        automata.renderer.RenderError) residual
+partial_fixpoint
 
 /-- [automata_builder::automata::renderer::{automata_builder::automata::renderer::RenderFrame}::join_vertically]:
     Source: 'src/automata/renderer.rs', lines 86:4-92:5
@@ -4021,20 +3855,19 @@ def
     automata.multi_tape_automata.MultiTapeAutomata.product_satisfies.closure.Insts.CoreOpsFunctionFnOnceTupleShared0BidirectionalTapeU32.call_once
 }
 
-/-- [automata_builder::automata::multi_tape_automata::{automata_builder::automata::multi_tape_automata::MultiTapeAutomata}::product_satisfies]: loop body 0:
+/-- [automata_builder::automata::multi_tape_automata::{automata_builder::automata::multi_tape_automata::MultiTapeAutomata}::product_satisfies]: loop 0:
     Source: 'src/automata/multi_tape_automata.rs', lines 218:8-236:5
     Visibility: public -/
-@[rust_loop_body]
-def automata.multi_tape_automata.MultiTapeAutomata.product_satisfies_loop.body
-  (self : automata.multi_tape_automata.MultiTapeAutomata) (position : Std.I64)
+@[rust_loop]
+def automata.multi_tape_automata.MultiTapeAutomata.product_satisfies_loop
   (iter : alloc.vec.into_iter.IntoIter automata.terms_multitape.MultiTapeTerm)
+  (self : automata.multi_tape_automata.MultiTapeAutomata) (position : Std.I64)
   :
-  Result (ControlFlow (alloc.vec.into_iter.IntoIter
-    automata.terms_multitape.MultiTapeTerm) Bool)
+  Result Bool
   := do
   let (o, iter1) ← alloc.vec.into_iter.IteratorIntoIter.next iter
   match o with
-  | none => ok (done true)
+  | none => ok true
   | some term =>
     let (tape_no, tape_cell_state) := term.state
     let term_position ← position + term.position
@@ -4048,24 +3881,11 @@ def automata.multi_tape_automata.MultiTapeAutomata.product_satisfies_loop.body
     let read_state ←
       lift (core.option.Option.unwrap_or o2 automata.rule_generator.VOID_STATE)
     if read_state != tape_cell_state
-    then ok (done false)
-    else ok (cont iter1)
-
-/-- [automata_builder::automata::multi_tape_automata::{automata_builder::automata::multi_tape_automata::MultiTapeAutomata}::product_satisfies]: loop 0:
-    Source: 'src/automata/multi_tape_automata.rs', lines 218:8-236:5
-    Visibility: public -/
-@[rust_loop]
-def automata.multi_tape_automata.MultiTapeAutomata.product_satisfies_loop
-  (iter : alloc.vec.into_iter.IntoIter automata.terms_multitape.MultiTapeTerm)
-  (self : automata.multi_tape_automata.MultiTapeAutomata) (position : Std.I64)
-  :
-  Result Bool
-  := do
-  loop
-    (fun iter1 =>
-      automata.multi_tape_automata.MultiTapeAutomata.product_satisfies_loop.body
-      self position iter1)
-    iter
+    then ok false
+    else
+      automata.multi_tape_automata.MultiTapeAutomata.product_satisfies_loop
+        iter1 self position
+partial_fixpoint
 
 /-- [automata_builder::automata::multi_tape_automata::{automata_builder::automata::multi_tape_automata::MultiTapeAutomata}::product_satisfies]:
     Source: 'src/automata/multi_tape_automata.rs', lines 217:4-236:5
@@ -4095,31 +3915,6 @@ def automata.rule_generator.BidirectionalTape.get_range
   let max_pos ← i3 - 1#i64
   ok (min_pos, max_pos)
 
-/-- [automata_builder::automata::rule_generator_multitape::{automata_builder::automata::rule_generator_multitape::BiDirectionalMultiTape}::get_range]: loop body 0:
-    Source: 'src/automata/rule_generator_multitape.rs', lines 215:8-219:9
-    Visibility: public -/
-@[rust_loop_body]
-def
-  automata.rule_generator_multitape.BiDirectionalMultiTape.get_range_loop.body
-  (iter : alloc.collections.btree.map.Values Std.U16
-  automata.rule_generator.BidirectionalTape) (min_pos : Std.I64)
-  (max_pos : Std.I64) :
-  Result (ControlFlow ((alloc.collections.btree.map.Values Std.U16
-    automata.rule_generator.BidirectionalTape) × Std.I64 × Std.I64) (Std.I64
-    × Std.I64))
-  := do
-  let (o, iter1) ←
-    alloc.collections.btree.map.Values.Insts.CoreIterTraitsIteratorIteratorSharedAV.next
-      iter
-  match o with
-  | none => ok (done (min_pos, max_pos))
-  | some tape =>
-    let (tape_min, tape_max) ←
-      automata.rule_generator.BidirectionalTape.get_range tape
-    let min_pos1 ← lift (core.cmp.impls.OrdI64.min min_pos tape_min)
-    let max_pos1 ← lift (core.cmp.impls.OrdI64.max max_pos tape_max)
-    ok (cont (iter1, min_pos1, max_pos1))
-
 /-- [automata_builder::automata::rule_generator_multitape::{automata_builder::automata::rule_generator_multitape::BiDirectionalMultiTape}::get_range]: loop 0:
     Source: 'src/automata/rule_generator_multitape.rs', lines 215:8-219:9
     Visibility: public -/
@@ -4130,11 +3925,19 @@ def automata.rule_generator_multitape.BiDirectionalMultiTape.get_range_loop
   (max_pos : Std.I64) :
   Result (Std.I64 × Std.I64)
   := do
-  loop
-    (fun (iter1, min_pos1, max_pos1) =>
-      automata.rule_generator_multitape.BiDirectionalMultiTape.get_range_loop.body
-      iter1 min_pos1 max_pos1)
-    (iter, min_pos, max_pos)
+  let (o, iter1) ←
+    alloc.collections.btree.map.Values.Insts.CoreIterTraitsIteratorIteratorSharedAV.next
+      iter
+  match o with
+  | none => ok (min_pos, max_pos)
+  | some tape =>
+    let (tape_min, tape_max) ←
+      automata.rule_generator.BidirectionalTape.get_range tape
+    let min_pos1 ← lift (core.cmp.impls.OrdI64.min min_pos tape_min)
+    let max_pos1 ← lift (core.cmp.impls.OrdI64.max max_pos tape_max)
+    automata.rule_generator_multitape.BiDirectionalMultiTape.get_range_loop
+      iter1 min_pos1 max_pos1
+partial_fixpoint
 
 /-- [automata_builder::automata::rule_generator_multitape::{automata_builder::automata::rule_generator_multitape::BiDirectionalMultiTape}::get_range]:
     Source: 'src/automata/rule_generator_multitape.rs', lines 211:4-221:5
@@ -6208,28 +6011,6 @@ def
   := do
   automata.terms_multitape.MultiTapeTerm.Insts.CoreCloneClone.clone self
 
-/-- [automata_builder::automata::terms_multitape::{automata_builder::automata::terms_multitape::MultiTapeProduct}::merge_products]: loop body 1:
-    Source: 'src/automata/terms_multitape.rs', lines 368:12-370:13
-    Visibility: public -/
-@[rust_loop_body]
-def automata.terms_multitape.MultiTapeProduct.merge_products_loop0_loop0.body
-  (iter : core.slice.iter.Iter automata.terms_multitape.MultiTapeTerm)
-  (merged_terms : alloc.vec.Vec automata.terms_multitape.MultiTapeTerm) :
-  Result (ControlFlow ((core.slice.iter.Iter
-    automata.terms_multitape.MultiTapeTerm) × (alloc.vec.Vec
-    automata.terms_multitape.MultiTapeTerm)) (alloc.vec.Vec
-    automata.terms_multitape.MultiTapeTerm))
-  := do
-  let (o, iter1) ← core.slice.iter.IteratorSliceIter.next iter
-  match o with
-  | none => ok (done merged_terms)
-  | some term =>
-    let mtt ←
-      automata.terms_multitape.MultiTapeTerm.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeProductMultiTapeExpression.copy
-        term
-    let merged_terms1 ← alloc.vec.Vec.push merged_terms mtt
-    ok (cont (iter1, merged_terms1))
-
 /-- [automata_builder::automata::terms_multitape::{automata_builder::automata::terms_multitape::MultiTapeProduct}::merge_products]: loop 1:
     Source: 'src/automata/terms_multitape.rs', lines 368:12-370:13
     Visibility: public -/
@@ -6239,34 +6020,17 @@ def automata.terms_multitape.MultiTapeProduct.merge_products_loop0_loop0
   (merged_terms : alloc.vec.Vec automata.terms_multitape.MultiTapeTerm) :
   Result (alloc.vec.Vec automata.terms_multitape.MultiTapeTerm)
   := do
-  loop
-    (fun (iter1, merged_terms1) =>
-      automata.terms_multitape.MultiTapeProduct.merge_products_loop0_loop0.body
-      iter1 merged_terms1)
-    (iter, merged_terms)
-
-/-- [automata_builder::automata::terms_multitape::{automata_builder::automata::terms_multitape::MultiTapeProduct}::merge_products]: loop body 0:
-    Source: 'src/automata/terms_multitape.rs', lines 367:8-371:9
-    Visibility: public -/
-@[rust_loop_body]
-def automata.terms_multitape.MultiTapeProduct.merge_products_loop0.body
-  (iter : core.slice.iter.Iter automata.terms_multitape.MultiTapeProduct)
-  (merged_terms : alloc.vec.Vec automata.terms_multitape.MultiTapeTerm) :
-  Result (ControlFlow ((core.slice.iter.Iter
-    automata.terms_multitape.MultiTapeProduct) × (alloc.vec.Vec
-    automata.terms_multitape.MultiTapeTerm)) (alloc.vec.Vec
-    automata.terms_multitape.MultiTapeTerm))
-  := do
   let (o, iter1) ← core.slice.iter.IteratorSliceIter.next iter
   match o with
-  | none => ok (done merged_terms)
-  | some product =>
-    let s := alloc.vec.Vec.deref product._terms
-    let iter2 ← core.slice.Slice.iter s
-    let merged_terms1 ←
-      automata.terms_multitape.MultiTapeProduct.merge_products_loop0_loop0
-        iter2 merged_terms
-    ok (cont (iter1, merged_terms1))
+  | none => ok merged_terms
+  | some term =>
+    let mtt ←
+      automata.terms_multitape.MultiTapeTerm.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeProductMultiTapeExpression.copy
+        term
+    let merged_terms1 ← alloc.vec.Vec.push merged_terms mtt
+    automata.terms_multitape.MultiTapeProduct.merge_products_loop0_loop0 iter1
+      merged_terms1
+partial_fixpoint
 
 /-- [automata_builder::automata::terms_multitape::{automata_builder::automata::terms_multitape::MultiTapeProduct}::merge_products]: loop 0:
     Source: 'src/automata/terms_multitape.rs', lines 367:8-371:9
@@ -6277,11 +6041,18 @@ def automata.terms_multitape.MultiTapeProduct.merge_products_loop0
   (merged_terms : alloc.vec.Vec automata.terms_multitape.MultiTapeTerm) :
   Result (alloc.vec.Vec automata.terms_multitape.MultiTapeTerm)
   := do
-  loop
-    (fun (iter1, merged_terms1) =>
-      automata.terms_multitape.MultiTapeProduct.merge_products_loop0.body iter1
-      merged_terms1)
-    (iter, merged_terms)
+  let (o, iter1) ← core.slice.iter.IteratorSliceIter.next iter
+  match o with
+  | none => ok merged_terms
+  | some product =>
+    let s := alloc.vec.Vec.deref product._terms
+    let iter2 ← core.slice.Slice.iter s
+    let merged_terms1 ←
+      automata.terms_multitape.MultiTapeProduct.merge_products_loop0_loop0
+        iter2 merged_terms
+    automata.terms_multitape.MultiTapeProduct.merge_products_loop0 iter1
+      merged_terms1
+partial_fixpoint
 
 /-- [automata_builder::automata::terms_multitape::{automata_builder::automata::terms_multitape::MultiTapeProduct}::merge_products]:
     Source: 'src/automata/terms_multitape.rs', lines 363:4-375:5
@@ -6316,48 +6087,6 @@ def automata.terms_multitape.MultiTapeProduct.set_annotation
   := do
   ok { self with _annotation := annotation }
 
-/-- [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeStatePathRemap}::remap_single_tape_terms]: loop body 0:
-    Source: 'src/automata/multi_tape_builder.rs', lines 302:8-308:5
-    Visibility: public -/
-@[rust_loop_body]
-def
-  automata.multi_tape_builder.MultiTapeStatePathRemap.remap_single_tape_terms_loop.body
-  (self : automata.multi_tape_builder.MultiTapeStatePathRemap)
-  (annotation : Str) (iter : core.slice.iter.Iter automata.terms.Term)
-  (sub_products : alloc.vec.Vec automata.terms_multitape.MultiTapeProduct) :
-  Result (ControlFlow ((core.slice.iter.Iter automata.terms.Term) ×
-    (alloc.vec.Vec automata.terms_multitape.MultiTapeProduct))
-    (core.result.Result automata.terms_multitape.MultiTapeProduct
-    automata.multi_tape_builder.CompileTapesError))
-  := do
-  let (o, iter1) ← core.slice.iter.IteratorSliceIter.next iter
-  match o with
-  | none =>
-    let combined_product ←
-      automata.terms_multitape.MultiTapeProduct.merge_products sub_products
-    let s ←
-      alloc.string.ToString.Blanket.to_string Str.Insts.CoreFmtDisplay
-        annotation
-    let combined_product1 ←
-      automata.terms_multitape.MultiTapeProduct.set_annotation combined_product
-        s
-    ok (done (core.result.Result.Ok combined_product1))
-  | some term =>
-    let r ←
-      automata.multi_tape_builder.MultiTapeStatePathRemap.remap_term_to_multi_tape
-        self term
-    let cf ← core.result.Result.Insts.CoreOpsTry.branch r
-    match cf with
-    | core.ops.control_flow.ControlFlow.Continue val =>
-      let sub_products1 ← alloc.vec.Vec.push sub_products val
-      ok (cont (iter1, sub_products1))
-    | core.ops.control_flow.ControlFlow.Break residual =>
-      let r1 ←
-        core.result.Result.Insts.CoreOpsTry_traitFromResidualResult.from_residual
-          automata.terms_multitape.MultiTapeProduct (core.convert.FromSame
-          automata.multi_tape_builder.CompileTapesError) residual
-      ok (done r1)
-
 /-- [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeStatePathRemap}::remap_single_tape_terms]: loop 0:
     Source: 'src/automata/multi_tape_builder.rs', lines 302:8-308:5
     Visibility: public -/
@@ -6371,11 +6100,33 @@ def
   Result (core.result.Result automata.terms_multitape.MultiTapeProduct
     automata.multi_tape_builder.CompileTapesError)
   := do
-  loop
-    (fun (iter1, sub_products1) =>
-      automata.multi_tape_builder.MultiTapeStatePathRemap.remap_single_tape_terms_loop.body
-      self annotation iter1 sub_products1)
-    (iter, sub_products)
+  let (o, iter1) ← core.slice.iter.IteratorSliceIter.next iter
+  match o with
+  | none =>
+    let combined_product ←
+      automata.terms_multitape.MultiTapeProduct.merge_products sub_products
+    let s ←
+      alloc.string.ToString.Blanket.to_string Str.Insts.CoreFmtDisplay
+        annotation
+    let combined_product1 ←
+      automata.terms_multitape.MultiTapeProduct.set_annotation combined_product
+        s
+    ok (core.result.Result.Ok combined_product1)
+  | some term =>
+    let r ←
+      automata.multi_tape_builder.MultiTapeStatePathRemap.remap_term_to_multi_tape
+        self term
+    let cf ← core.result.Result.Insts.CoreOpsTry.branch r
+    match cf with
+    | core.ops.control_flow.ControlFlow.Continue val =>
+      let sub_products1 ← alloc.vec.Vec.push sub_products val
+      automata.multi_tape_builder.MultiTapeStatePathRemap.remap_single_tape_terms_loop
+        iter1 self annotation sub_products1
+    | core.ops.control_flow.ControlFlow.Break residual =>
+      core.result.Result.Insts.CoreOpsTry_traitFromResidualResult.from_residual
+        automata.terms_multitape.MultiTapeProduct (core.convert.FromSame
+        automata.multi_tape_builder.CompileTapesError) residual
+partial_fixpoint
 
 /-- [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeStatePathRemap}::remap_single_tape_terms]:
     Source: 'src/automata/multi_tape_builder.rs', lines 298:4-308:5
@@ -7203,19 +6954,18 @@ def
     automata.multi_tape_product_trie.terms_satisfiable_with.closure.Insts.CoreOpsFunctionFnMutTupleShared3Shared0MultiTapeTermBool.call_mut
 }
 
-/-- [automata_builder::automata::multi_tape_product_trie::terms_satisfiable_with]: loop body 0:
+/-- [automata_builder::automata::multi_tape_product_trie::terms_satisfiable_with]: loop 0:
     Source: 'src/automata/multi_tape_product_trie.rs', lines 36:4-48:1
     Visibility: public -/
-@[rust_loop_body]
-def automata.multi_tape_product_trie.terms_satisfiable_with_loop.body
-  (self_terms : Slice automata.terms_multitape.MultiTapeTerm)
-  (iter : core.slice.iter.Iter automata.terms_multitape.MultiTapeTerm) :
-  Result (ControlFlow (core.slice.iter.Iter
-    automata.terms_multitape.MultiTapeTerm) Bool)
+@[rust_loop]
+def automata.multi_tape_product_trie.terms_satisfiable_with_loop
+  (iter : core.slice.iter.Iter automata.terms_multitape.MultiTapeTerm)
+  (self_terms : Slice automata.terms_multitape.MultiTapeTerm) :
+  Result Bool
   := do
   let (o, iter1) ← core.slice.iter.IteratorSliceIter.next iter
   match o with
-  | none => ok (done true)
+  | none => ok true
   | some other_term =>
     let (other_tape_no, other_cell_state) := other_term.state
     let i ← core.slice.Slice.iter self_terms
@@ -7232,27 +6982,17 @@ def automata.multi_tape_product_trie.terms_satisfiable_with_loop.body
         automata.multi_tape_product_trie.terms_satisfiable_with.closure.Insts.CoreOpsFunctionFnMutTupleShared3Shared0MultiTapeTermBool
         r (other_term, other_tape_no)
     match existing with
-    | none => ok (cont iter1)
+    | none =>
+      automata.multi_tape_product_trie.terms_satisfiable_with_loop iter1
+        self_terms
     | some existing_term =>
       let (_, i1) := existing_term.state
       if i1 != other_cell_state
-      then ok (done false)
-      else ok (cont iter1)
-
-/-- [automata_builder::automata::multi_tape_product_trie::terms_satisfiable_with]: loop 0:
-    Source: 'src/automata/multi_tape_product_trie.rs', lines 36:4-48:1
-    Visibility: public -/
-@[rust_loop]
-def automata.multi_tape_product_trie.terms_satisfiable_with_loop
-  (iter : core.slice.iter.Iter automata.terms_multitape.MultiTapeTerm)
-  (self_terms : Slice automata.terms_multitape.MultiTapeTerm) :
-  Result Bool
-  := do
-  loop
-    (fun iter1 =>
-      automata.multi_tape_product_trie.terms_satisfiable_with_loop.body
-      self_terms iter1)
-    iter
+      then ok false
+      else
+        automata.multi_tape_product_trie.terms_satisfiable_with_loop iter1
+          self_terms
+partial_fixpoint
 
 /-- [automata_builder::automata::multi_tape_product_trie::terms_satisfiable_with]:
     Source: 'src/automata/multi_tape_product_trie.rs', lines 33:0-48:1
@@ -7321,26 +7061,6 @@ def
     automata.multi_tape_builder.RepresentabilityIndex.is_representable.closure.Insts.CoreOpsFunctionFnMutTupleShared1MultiTapeTermMultiTapeState.call_mut
 }
 
-/-- [automata_builder::automata::multi_tape_builder::cartesian_product]: loop body 2:
-    Source: 'src/automata/multi_tape_builder.rs', lines 421:12-425:13 -/
-@[rust_loop_body]
-def automata.multi_tape_builder.cartesian_product_loop0_loop0_loop0.body
-  {T : Type _} (corecloneCloneInst : core.clone.Clone T)
-  (combo : alloc.vec.Vec T) (iter : core.slice.iter.Iter T)
-  (next_combos : alloc.vec.Vec (alloc.vec.Vec T)) :
-  Result (ControlFlow ((core.slice.iter.Iter T) × (alloc.vec.Vec
-    (alloc.vec.Vec T))) (alloc.vec.Vec (alloc.vec.Vec T)))
-  := do
-  let (o, iter1) ← core.slice.iter.IteratorSliceIter.next iter
-  match o with
-  | none => ok (done next_combos)
-  | some item =>
-    let extended ← alloc.vec.CloneVec.clone corecloneCloneInst combo
-    let t ← corecloneCloneInst.clone item
-    let extended1 ← alloc.vec.Vec.push extended t
-    let next_combos1 ← alloc.vec.Vec.push next_combos extended1
-    ok (cont (iter1, next_combos1))
-
 /-- [automata_builder::automata::multi_tape_builder::cartesian_product]: loop 2:
     Source: 'src/automata/multi_tape_builder.rs', lines 421:12-425:13 -/
 @[rust_loop]
@@ -7350,32 +7070,17 @@ def automata.multi_tape_builder.cartesian_product_loop0_loop0_loop0
   (next_combos : alloc.vec.Vec (alloc.vec.Vec T)) (combo : alloc.vec.Vec T) :
   Result (alloc.vec.Vec (alloc.vec.Vec T))
   := do
-  loop
-    (fun (iter1, next_combos1) =>
-      automata.multi_tape_builder.cartesian_product_loop0_loop0_loop0.body
-      corecloneCloneInst combo iter1 next_combos1)
-    (iter, next_combos)
-
-/-- [automata_builder::automata::multi_tape_builder::cartesian_product]: loop body 1:
-    Source: 'src/automata/multi_tape_builder.rs', lines 420:8-426:9 -/
-@[rust_loop_body]
-def automata.multi_tape_builder.cartesian_product_loop0_loop0.body
-  {T : Type _} (corecloneCloneInst : core.clone.Clone T)
-  (sequence : alloc.vec.Vec T) (iter : core.slice.iter.Iter (alloc.vec.Vec T))
-  (next_combos : alloc.vec.Vec (alloc.vec.Vec T)) :
-  Result (ControlFlow ((core.slice.iter.Iter (alloc.vec.Vec T)) ×
-    (alloc.vec.Vec (alloc.vec.Vec T))) (alloc.vec.Vec (alloc.vec.Vec T)))
-  := do
   let (o, iter1) ← core.slice.iter.IteratorSliceIter.next iter
   match o with
-  | none => ok (done next_combos)
-  | some combo =>
-    let s := alloc.vec.Vec.deref sequence
-    let iter2 ← core.slice.Slice.iter s
-    let next_combos1 ←
-      automata.multi_tape_builder.cartesian_product_loop0_loop0_loop0
-        corecloneCloneInst iter2 next_combos combo
-    ok (cont (iter1, next_combos1))
+  | none => ok next_combos
+  | some item =>
+    let extended ← alloc.vec.CloneVec.clone corecloneCloneInst combo
+    let t ← corecloneCloneInst.clone item
+    let extended1 ← alloc.vec.Vec.push extended t
+    let next_combos1 ← alloc.vec.Vec.push next_combos extended1
+    automata.multi_tape_builder.cartesian_product_loop0_loop0_loop0
+      corecloneCloneInst iter1 next_combos1 combo
+partial_fixpoint
 
 /-- [automata_builder::automata::multi_tape_builder::cartesian_product]: loop 1:
     Source: 'src/automata/multi_tape_builder.rs', lines 420:8-426:9 -/
@@ -7386,36 +7091,18 @@ def automata.multi_tape_builder.cartesian_product_loop0_loop0
   (next_combos : alloc.vec.Vec (alloc.vec.Vec T)) :
   Result (alloc.vec.Vec (alloc.vec.Vec T))
   := do
-  loop
-    (fun (iter1, next_combos1) =>
-      automata.multi_tape_builder.cartesian_product_loop0_loop0.body
-      corecloneCloneInst sequence iter1 next_combos1)
-    (iter, next_combos)
-
-/-- [automata_builder::automata::multi_tape_builder::cartesian_product]: loop body 0:
-    Source: 'src/automata/multi_tape_builder.rs', lines 418:4-428:5 -/
-@[rust_loop_body]
-def automata.multi_tape_builder.cartesian_product_loop0.body
-  {T : Type _} (corecloneCloneInst : core.clone.Clone T)
-  (iter : core.slice.iter.Iter (alloc.vec.Vec T))
-  (combos : alloc.vec.Vec (alloc.vec.Vec T)) :
-  Result (ControlFlow ((core.slice.iter.Iter (alloc.vec.Vec T)) ×
-    (alloc.vec.Vec (alloc.vec.Vec T))) (alloc.vec.Vec (alloc.vec.Vec T)))
-  := do
   let (o, iter1) ← core.slice.iter.IteratorSliceIter.next iter
   match o with
-  | none => ok (done combos)
-  | some sequence =>
-    let i := alloc.vec.Vec.len combos
-    let i1 := alloc.vec.Vec.len sequence
-    let i2 ← i * i1
-    let next_combos := alloc.vec.Vec.with_capacity (alloc.vec.Vec T) i2
-    let s := alloc.vec.Vec.deref combos
+  | none => ok next_combos
+  | some combo =>
+    let s := alloc.vec.Vec.deref sequence
     let iter2 ← core.slice.Slice.iter s
     let next_combos1 ←
-      automata.multi_tape_builder.cartesian_product_loop0_loop0
-        corecloneCloneInst iter2 sequence next_combos
-    ok (cont (iter1, next_combos1))
+      automata.multi_tape_builder.cartesian_product_loop0_loop0_loop0
+        corecloneCloneInst iter2 next_combos combo
+    automata.multi_tape_builder.cartesian_product_loop0_loop0
+      corecloneCloneInst iter1 sequence next_combos1
+partial_fixpoint
 
 /-- [automata_builder::automata::multi_tape_builder::cartesian_product]: loop 0:
     Source: 'src/automata/multi_tape_builder.rs', lines 418:4-428:5 -/
@@ -7426,11 +7113,22 @@ def automata.multi_tape_builder.cartesian_product_loop0
   (combos : alloc.vec.Vec (alloc.vec.Vec T)) :
   Result (alloc.vec.Vec (alloc.vec.Vec T))
   := do
-  loop
-    (fun (iter1, combos1) =>
-      automata.multi_tape_builder.cartesian_product_loop0.body
-      corecloneCloneInst iter1 combos1)
-    (iter, combos)
+  let (o, iter1) ← core.slice.iter.IteratorSliceIter.next iter
+  match o with
+  | none => ok combos
+  | some sequence =>
+    let i := alloc.vec.Vec.len combos
+    let i1 := alloc.vec.Vec.len sequence
+    let i2 ← i * i1
+    let next_combos := alloc.vec.Vec.with_capacity (alloc.vec.Vec T) i2
+    let s := alloc.vec.Vec.deref combos
+    let iter2 ← core.slice.Slice.iter s
+    let next_combos1 ←
+      automata.multi_tape_builder.cartesian_product_loop0_loop0
+        corecloneCloneInst iter2 sequence next_combos
+    automata.multi_tape_builder.cartesian_product_loop0 corecloneCloneInst
+      iter1 next_combos1
+partial_fixpoint
 
 /-- [automata_builder::automata::multi_tape_builder::cartesian_product]:
     Source: 'src/automata/multi_tape_builder.rs', lines 416:0-430:1 -/
@@ -7603,27 +7301,26 @@ def automata.tape_overlaps.TapeOverlaps.get_overlaps_for_offset
       (alloc.collections.btree.set.BTreeSet
       automata.terms_multitape.MultiTapeState alloc.alloc.Global) residual
 
-/-- [automata_builder::automata::tape_overlaps::{automata_builder::automata::tape_overlaps::TapeOverlaps}::validate_symmetric_overlaps_for]: loop body 1:
+/-- [automata_builder::automata::tape_overlaps::{automata_builder::automata::tape_overlaps::TapeOverlaps}::validate_symmetric_overlaps_for]: loop 1:
     Source: 'src/automata/tape_overlaps.rs', lines 229:12-239:13 -/
-@[rust_loop_body]
+@[rust_loop]
 def
-  automata.tape_overlaps.TapeOverlaps.validate_symmetric_overlaps_for_loop0_loop0.body
+  automata.tape_overlaps.TapeOverlaps.validate_symmetric_overlaps_for_loop0_loop0
+  (iter : alloc.collections.btree.set.Iter
+  automata.terms_multitape.MultiTapeState)
   (bm : alloc.collections.btree.map.BTreeMap
   automata.terms_multitape.MultiTapeState (alloc.collections.btree.map.BTreeMap
   Std.I64 (alloc.collections.btree.set.BTreeSet
   automata.terms_multitape.MultiTapeState alloc.alloc.Global)
   alloc.alloc.Global) alloc.alloc.Global)
-  (source_state : automata.terms_multitape.MultiTapeState) (offset : Std.I64)
-  (iter : alloc.collections.btree.set.Iter
-  automata.terms_multitape.MultiTapeState) :
-  Result (ControlFlow (alloc.collections.btree.set.Iter
-    automata.terms_multitape.MultiTapeState) Unit)
+  (source_state : automata.terms_multitape.MultiTapeState) (offset : Std.I64) :
+  Result Unit
   := do
   let (o, iter1) ←
     alloc.collections.btree.set.Iter.Insts.CoreIterTraitsIteratorIteratorSharedAT.next
       iter
   match o with
-  | none => ok (done ())
+  | none => ok ()
   | some target_state =>
     let i ← Shared0I64.Insts.CoreOpsArithNegI64.neg offset
     let o1 ←
@@ -7635,7 +7332,9 @@ def
         o1 source_state
     let is_symmetric ← lift (core.option.Option.unwrap_or o2 false)
     if is_symmetric
-    then ok (cont iter1)
+    then
+      automata.tape_overlaps.TapeOverlaps.validate_symmetric_overlaps_for_loop0_loop0
+        iter1 bm source_state offset
     else
       let a ←
         core.fmt.rt.Argument.new_display
@@ -7661,59 +7360,7 @@ def
             192#u8, 0#u8
             ]) (Array.make 3#usize [ a, a1, a2 ])
       fail panic
-
-/-- [automata_builder::automata::tape_overlaps::{automata_builder::automata::tape_overlaps::TapeOverlaps}::validate_symmetric_overlaps_for]: loop 1:
-    Source: 'src/automata/tape_overlaps.rs', lines 229:12-239:13 -/
-@[rust_loop]
-def
-  automata.tape_overlaps.TapeOverlaps.validate_symmetric_overlaps_for_loop0_loop0
-  (iter : alloc.collections.btree.set.Iter
-  automata.terms_multitape.MultiTapeState)
-  (bm : alloc.collections.btree.map.BTreeMap
-  automata.terms_multitape.MultiTapeState (alloc.collections.btree.map.BTreeMap
-  Std.I64 (alloc.collections.btree.set.BTreeSet
-  automata.terms_multitape.MultiTapeState alloc.alloc.Global)
-  alloc.alloc.Global) alloc.alloc.Global)
-  (source_state : automata.terms_multitape.MultiTapeState) (offset : Std.I64) :
-  Result Unit
-  := do
-  loop
-    (fun iter1 =>
-      automata.tape_overlaps.TapeOverlaps.validate_symmetric_overlaps_for_loop0_loop0.body
-      bm source_state offset iter1)
-    iter
-
-/-- [automata_builder::automata::tape_overlaps::{automata_builder::automata::tape_overlaps::TapeOverlaps}::validate_symmetric_overlaps_for]: loop body 0:
-    Source: 'src/automata/tape_overlaps.rs', lines 228:8-240:9 -/
-@[rust_loop_body]
-def
-  automata.tape_overlaps.TapeOverlaps.validate_symmetric_overlaps_for_loop0.body
-  (bm : alloc.collections.btree.map.BTreeMap
-  automata.terms_multitape.MultiTapeState (alloc.collections.btree.map.BTreeMap
-  Std.I64 (alloc.collections.btree.set.BTreeSet
-  automata.terms_multitape.MultiTapeState alloc.alloc.Global)
-  alloc.alloc.Global) alloc.alloc.Global)
-  (source_state : automata.terms_multitape.MultiTapeState)
-  (iter : alloc.collections.btree.map.Iter Std.I64
-  (alloc.collections.btree.set.BTreeSet automata.terms_multitape.MultiTapeState
-  alloc.alloc.Global)) :
-  Result (ControlFlow (alloc.collections.btree.map.Iter Std.I64
-    (alloc.collections.btree.set.BTreeSet
-    automata.terms_multitape.MultiTapeState alloc.alloc.Global)) Unit)
-  := do
-  let (o, iter1) ←
-    alloc.collections.btree.map.Iter.Insts.CoreIterTraitsIteratorIteratorPairSharedAKSharedAV.next
-      iter
-  match o with
-  | none => ok (done ())
-  | some p =>
-    let (offset, target_states) := p
-    let iter2 ←
-      alloc.collections.btree.set.BTreeSet.iter
-        alloc.alloc.Global.Insts.CoreAllocAllocatorClone target_states
-    automata.tape_overlaps.TapeOverlaps.validate_symmetric_overlaps_for_loop0_loop0
-      iter2 bm source_state offset
-    ok (cont iter1)
+partial_fixpoint
 
 /-- [automata_builder::automata::tape_overlaps::{automata_builder::automata::tape_overlaps::TapeOverlaps}::validate_symmetric_overlaps_for]: loop 0:
     Source: 'src/automata/tape_overlaps.rs', lines 228:8-240:9 -/
@@ -7730,11 +7377,21 @@ def automata.tape_overlaps.TapeOverlaps.validate_symmetric_overlaps_for_loop0
   (source_state : automata.terms_multitape.MultiTapeState) :
   Result Unit
   := do
-  loop
-    (fun iter1 =>
-      automata.tape_overlaps.TapeOverlaps.validate_symmetric_overlaps_for_loop0.body
-      bm source_state iter1)
-    iter
+  let (o, iter1) ←
+    alloc.collections.btree.map.Iter.Insts.CoreIterTraitsIteratorIteratorPairSharedAKSharedAV.next
+      iter
+  match o with
+  | none => ok ()
+  | some p =>
+    let (offset, target_states) := p
+    let iter2 ←
+      alloc.collections.btree.set.BTreeSet.iter
+        alloc.alloc.Global.Insts.CoreAllocAllocatorClone target_states
+    automata.tape_overlaps.TapeOverlaps.validate_symmetric_overlaps_for_loop0_loop0
+      iter2 bm source_state offset
+    automata.tape_overlaps.TapeOverlaps.validate_symmetric_overlaps_for_loop0
+      iter1 bm source_state
+partial_fixpoint
 
 /-- [automata_builder::automata::tape_overlaps::{automata_builder::automata::tape_overlaps::TapeOverlaps}::validate_symmetric_overlaps_for]:
     Source: 'src/automata/tape_overlaps.rs', lines 221:4-241:5 -/
@@ -8607,47 +8264,6 @@ def automata.tape_overlaps.TapeOverlaps.get
     automata.terms_multitape.MultiTapeState.Insts.CoreCmpOrd self.overlaps
     source_state
 
-/-- [automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::build_flat_offset_path_combos]: loop body 1:
-    Source: 'src/automata/product_writes_map.rs', lines 603:12-608:13
-    Visibility: public -/
-@[rust_loop_body]
-def
-  automata.product_writes_map.ProductWritesMap.build_flat_offset_path_combos_loop0_loop0.body
-  (iter : alloc.collections.btree.set.Iter
-  automata.terms_multitape.MultiTapeState)
-  (states_by_tape : alloc.collections.btree.map.BTreeMap Std.U16
-  (alloc.collections.btree.set.BTreeSet Std.U32 alloc.alloc.Global)
-  alloc.alloc.Global) :
-  Result (ControlFlow ((alloc.collections.btree.set.Iter
-    automata.terms_multitape.MultiTapeState) ×
-    (alloc.collections.btree.map.BTreeMap Std.U16
-    (alloc.collections.btree.set.BTreeSet Std.U32 alloc.alloc.Global)
-    alloc.alloc.Global)) (alloc.collections.btree.map.BTreeMap Std.U16
-    (alloc.collections.btree.set.BTreeSet Std.U32 alloc.alloc.Global)
-    alloc.alloc.Global))
-  := do
-  let (o, iter1) ←
-    alloc.collections.btree.set.Iter.Insts.CoreIterTraitsIteratorIteratorSharedAT.next
-      iter
-  match o with
-  | none => ok (done states_by_tape)
-  | some target_state =>
-    let (e, entry_back) ←
-      alloc.collections.btree.map.BTreeMap.entry
-        alloc.alloc.Global.Insts.CoreAllocAllocatorClone core.cmp.OrdU16
-        states_by_tape target_state.tape_no
-    let (bs, or_default_back) ←
-      alloc.collections.btree.map.entry.Entry.or_default core.cmp.OrdU16
-        (alloc.collections.btree.set.BTreeSetTGlobal.Insts.CoreDefaultDefault
-        Std.U32) alloc.alloc.Global.Insts.CoreAllocAllocatorClone e
-    let (_, bs1) ←
-      alloc.collections.btree.set.BTreeSet.insert
-        alloc.alloc.Global.Insts.CoreAllocAllocatorClone core.cmp.OrdU32 bs
-        target_state.tape_cell_state
-    let e1 := or_default_back bs1
-    let bm := entry_back e1
-    ok (cont (iter1, bm))
-
 /-- [automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::build_flat_offset_path_combos]: loop 1:
     Source: 'src/automata/product_writes_map.rs', lines 603:12-608:13
     Visibility: public -/
@@ -8663,42 +8279,29 @@ def
     (alloc.collections.btree.set.BTreeSet Std.U32 alloc.alloc.Global)
     alloc.alloc.Global)
   := do
-  loop
-    (fun (iter1, states_by_tape1) =>
-      automata.product_writes_map.ProductWritesMap.build_flat_offset_path_combos_loop0_loop0.body
-      iter1 states_by_tape1)
-    (iter, states_by_tape)
-
-/-- [automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::build_flat_offset_path_combos]: loop body 4:
-    Source: 'src/automata/product_writes_map.rs', lines 617:20-625:21
-    Visibility: public -/
-@[rust_loop_body]
-def
-  automata.product_writes_map.ProductWritesMap.build_flat_offset_path_combos_loop0_loop1_loop0_loop0.body
-  (offset : Std.I64) (tape_no : Std.U16)
-  (combo : alloc.vec.Vec automata.terms_multitape.MultiTapeTerm)
-  (iter : alloc.collections.btree.set.Iter Std.U32)
-  (next_combos : alloc.vec.Vec (alloc.vec.Vec
-  automata.terms_multitape.MultiTapeTerm)) :
-  Result (ControlFlow ((alloc.collections.btree.set.Iter Std.U32) ×
-    (alloc.vec.Vec (alloc.vec.Vec automata.terms_multitape.MultiTapeTerm)))
-    (alloc.vec.Vec (alloc.vec.Vec automata.terms_multitape.MultiTapeTerm)))
-  := do
   let (o, iter1) ←
     alloc.collections.btree.set.Iter.Insts.CoreIterTraitsIteratorIteratorSharedAT.next
       iter
   match o with
-  | none => ok (done next_combos)
-  | some cell_state =>
-    let extended ←
-      alloc.vec.CloneVec.clone
-        automata.terms_multitape.MultiTapeTerm.Insts.CoreCloneClone combo
-    let mtt ←
-      automata.terms_multitape.MultiTapeTerm.new offset (tape_no, cell_state)
-        false
-    let extended1 ← alloc.vec.Vec.push extended mtt
-    let next_combos1 ← alloc.vec.Vec.push next_combos extended1
-    ok (cont (iter1, next_combos1))
+  | none => ok states_by_tape
+  | some target_state =>
+    let (e, entry_back) ←
+      alloc.collections.btree.map.BTreeMap.entry
+        alloc.alloc.Global.Insts.CoreAllocAllocatorClone core.cmp.OrdU16
+        states_by_tape target_state.tape_no
+    let (bs, or_default_back) ←
+      alloc.collections.btree.map.entry.Entry.or_default core.cmp.OrdU16
+        (alloc.collections.btree.set.BTreeSetTGlobal.Insts.CoreDefaultDefault
+        Std.U32) alloc.alloc.Global.Insts.CoreAllocAllocatorClone e
+    let (_, bs1) ←
+      alloc.collections.btree.set.BTreeSet.insert
+        alloc.alloc.Global.Insts.CoreAllocAllocatorClone core.cmp.OrdU32 bs
+        target_state.tape_cell_state
+    let e1 := or_default_back bs1
+    let bm := entry_back e1
+    automata.product_writes_map.ProductWritesMap.build_flat_offset_path_combos_loop0_loop0
+      iter1 bm
+partial_fixpoint
 
 /-- [automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::build_flat_offset_path_combos]: loop 4:
     Source: 'src/automata/product_writes_map.rs', lines 617:20-625:21
@@ -8713,41 +8316,23 @@ def
   (combo : alloc.vec.Vec automata.terms_multitape.MultiTapeTerm) :
   Result (alloc.vec.Vec (alloc.vec.Vec automata.terms_multitape.MultiTapeTerm))
   := do
-  loop
-    (fun (iter1, next_combos1) =>
-      automata.product_writes_map.ProductWritesMap.build_flat_offset_path_combos_loop0_loop1_loop0_loop0.body
-      offset tape_no combo iter1 next_combos1)
-    (iter, next_combos)
-
-/-- [automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::build_flat_offset_path_combos]: loop body 3:
-    Source: 'src/automata/product_writes_map.rs', lines 616:16-626:17
-    Visibility: public -/
-@[rust_loop_body]
-def
-  automata.product_writes_map.ProductWritesMap.build_flat_offset_path_combos_loop0_loop1_loop0.body
-  (offset : Std.I64) (tape_no : Std.U16)
-  (cell_states : alloc.collections.btree.set.BTreeSet Std.U32
-  alloc.alloc.Global)
-  (iter : core.slice.iter.Iter (alloc.vec.Vec
-  automata.terms_multitape.MultiTapeTerm))
-  (next_combos : alloc.vec.Vec (alloc.vec.Vec
-  automata.terms_multitape.MultiTapeTerm)) :
-  Result (ControlFlow ((core.slice.iter.Iter (alloc.vec.Vec
-    automata.terms_multitape.MultiTapeTerm)) × (alloc.vec.Vec (alloc.vec.Vec
-    automata.terms_multitape.MultiTapeTerm))) (alloc.vec.Vec (alloc.vec.Vec
-    automata.terms_multitape.MultiTapeTerm)))
-  := do
-  let (o, iter1) ← core.slice.iter.IteratorSliceIter.next iter
+  let (o, iter1) ←
+    alloc.collections.btree.set.Iter.Insts.CoreIterTraitsIteratorIteratorSharedAT.next
+      iter
   match o with
-  | none => ok (done next_combos)
-  | some combo =>
-    let iter2 ←
-      alloc.collections.btree.set.BTreeSet.iter
-        alloc.alloc.Global.Insts.CoreAllocAllocatorClone cell_states
-    let next_combos1 ←
-      automata.product_writes_map.ProductWritesMap.build_flat_offset_path_combos_loop0_loop1_loop0_loop0
-        iter2 offset tape_no next_combos combo
-    ok (cont (iter1, next_combos1))
+  | none => ok next_combos
+  | some cell_state =>
+    let extended ←
+      alloc.vec.CloneVec.clone
+        automata.terms_multitape.MultiTapeTerm.Insts.CoreCloneClone combo
+    let mtt ←
+      automata.terms_multitape.MultiTapeTerm.new offset (tape_no, cell_state)
+        false
+    let extended1 ← alloc.vec.Vec.push extended mtt
+    let next_combos1 ← alloc.vec.Vec.push next_combos extended1
+    automata.product_writes_map.ProductWritesMap.build_flat_offset_path_combos_loop0_loop1_loop0_loop0
+      iter1 offset tape_no next_combos1 combo
+partial_fixpoint
 
 /-- [automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::build_flat_offset_path_combos]: loop 3:
     Source: 'src/automata/product_writes_map.rs', lines 616:16-626:17
@@ -8764,33 +8349,38 @@ def
   automata.terms_multitape.MultiTapeTerm)) :
   Result (alloc.vec.Vec (alloc.vec.Vec automata.terms_multitape.MultiTapeTerm))
   := do
-  loop
-    (fun (iter1, next_combos1) =>
-      automata.product_writes_map.ProductWritesMap.build_flat_offset_path_combos_loop0_loop1_loop0.body
-      offset tape_no cell_states iter1 next_combos1)
-    (iter, next_combos)
+  let (o, iter1) ← core.slice.iter.IteratorSliceIter.next iter
+  match o with
+  | none => ok next_combos
+  | some combo =>
+    let iter2 ←
+      alloc.collections.btree.set.BTreeSet.iter
+        alloc.alloc.Global.Insts.CoreAllocAllocatorClone cell_states
+    let next_combos1 ←
+      automata.product_writes_map.ProductWritesMap.build_flat_offset_path_combos_loop0_loop1_loop0_loop0
+        iter2 offset tape_no next_combos combo
+    automata.product_writes_map.ProductWritesMap.build_flat_offset_path_combos_loop0_loop1_loop0
+      iter1 offset tape_no cell_states next_combos1
+partial_fixpoint
 
-/-- [automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::build_flat_offset_path_combos]: loop body 2:
+/-- [automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::build_flat_offset_path_combos]: loop 2:
     Source: 'src/automata/product_writes_map.rs', lines 612:12-628:13
     Visibility: public -/
-@[rust_loop_body]
+@[rust_loop]
 def
-  automata.product_writes_map.ProductWritesMap.build_flat_offset_path_combos_loop0_loop1.body
-  (offset : Std.I64)
+  automata.product_writes_map.ProductWritesMap.build_flat_offset_path_combos_loop0_loop1
   (iter : alloc.collections.btree.map.Iter Std.U16
   (alloc.collections.btree.set.BTreeSet Std.U32 alloc.alloc.Global))
+  (offset : Std.I64)
   (offset_combos : alloc.vec.Vec (alloc.vec.Vec
   automata.terms_multitape.MultiTapeTerm)) :
-  Result (ControlFlow ((alloc.collections.btree.map.Iter Std.U16
-    (alloc.collections.btree.set.BTreeSet Std.U32 alloc.alloc.Global)) ×
-    (alloc.vec.Vec (alloc.vec.Vec automata.terms_multitape.MultiTapeTerm)))
-    (alloc.vec.Vec (alloc.vec.Vec automata.terms_multitape.MultiTapeTerm)))
+  Result (alloc.vec.Vec (alloc.vec.Vec automata.terms_multitape.MultiTapeTerm))
   := do
   let (o, iter1) ←
     alloc.collections.btree.map.Iter.Insts.CoreIterTraitsIteratorIteratorPairSharedAKSharedAV.next
       iter
   match o with
-  | none => ok (done offset_combos)
+  | none => ok offset_combos
   | some p =>
     let (tape_no, cell_states) := p
     let i := alloc.vec.Vec.len offset_combos
@@ -8806,49 +8396,28 @@ def
     let next_combos1 ←
       automata.product_writes_map.ProductWritesMap.build_flat_offset_path_combos_loop0_loop1_loop0
         iter2 offset tape_no cell_states next_combos
-    ok (cont (iter1, next_combos1))
+    automata.product_writes_map.ProductWritesMap.build_flat_offset_path_combos_loop0_loop1
+      iter1 offset next_combos1
+partial_fixpoint
 
-/-- [automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::build_flat_offset_path_combos]: loop 2:
-    Source: 'src/automata/product_writes_map.rs', lines 612:12-628:13
+/-- [automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::build_flat_offset_path_combos]: loop 0:
+    Source: 'src/automata/product_writes_map.rs', lines 600:13-611:73
     Visibility: public -/
 @[rust_loop]
 def
-  automata.product_writes_map.ProductWritesMap.build_flat_offset_path_combos_loop0_loop1
-  (iter : alloc.collections.btree.map.Iter Std.U16
-  (alloc.collections.btree.set.BTreeSet Std.U32 alloc.alloc.Global))
-  (offset : Std.I64)
-  (offset_combos : alloc.vec.Vec (alloc.vec.Vec
-  automata.terms_multitape.MultiTapeTerm)) :
-  Result (alloc.vec.Vec (alloc.vec.Vec automata.terms_multitape.MultiTapeTerm))
-  := do
-  loop
-    (fun (iter1, offset_combos1) =>
-      automata.product_writes_map.ProductWritesMap.build_flat_offset_path_combos_loop0_loop1.body
-      offset iter1 offset_combos1)
-    (iter, offset_combos)
-
-/-- [automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::build_flat_offset_path_combos]: loop body 0:
-    Source: 'src/automata/product_writes_map.rs', lines 600:13-611:73
-    Visibility: public -/
-@[rust_loop_body]
-def
-  automata.product_writes_map.ProductWritesMap.build_flat_offset_path_combos_loop0.body
+  automata.product_writes_map.ProductWritesMap.build_flat_offset_path_combos_loop0
   (iter : alloc.collections.btree.map.Iter Std.I64
   (alloc.collections.btree.set.BTreeSet automata.terms_multitape.MultiTapeState
   alloc.alloc.Global))
   (combos : alloc.vec.Vec (alloc.vec.Vec
   automata.terms_multitape.MultiTapeTerm)) :
-  Result (ControlFlow ((alloc.collections.btree.map.Iter Std.I64
-    (alloc.collections.btree.set.BTreeSet
-    automata.terms_multitape.MultiTapeState alloc.alloc.Global)) ×
-    (alloc.vec.Vec (alloc.vec.Vec automata.terms_multitape.MultiTapeTerm)))
-    (alloc.vec.Vec (alloc.vec.Vec automata.terms_multitape.MultiTapeTerm)))
+  Result (alloc.vec.Vec (alloc.vec.Vec automata.terms_multitape.MultiTapeTerm))
   := do
   let (o, iter1) ←
     alloc.collections.btree.map.Iter.Insts.CoreIterTraitsIteratorIteratorPairSharedAKSharedAV.next
       iter
   match o with
-  | none => ok (done combos)
+  | none => ok combos
   | some p =>
     let (offset, target_states) := p
     let states_by_tape ←
@@ -8877,26 +8446,9 @@ def
       alloc.vec.Vec.Insts.CoreIterTraitsCollectExtend.extend alloc.alloc.Global
         (core.iter.traits.collect.IntoIteratorVec (alloc.vec.Vec
         automata.terms_multitape.MultiTapeTerm)) combos offset_combos
-    ok (cont (iter1, combos1))
-
-/-- [automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::build_flat_offset_path_combos]: loop 0:
-    Source: 'src/automata/product_writes_map.rs', lines 600:13-611:73
-    Visibility: public -/
-@[rust_loop]
-def
-  automata.product_writes_map.ProductWritesMap.build_flat_offset_path_combos_loop0
-  (iter : alloc.collections.btree.map.Iter Std.I64
-  (alloc.collections.btree.set.BTreeSet automata.terms_multitape.MultiTapeState
-  alloc.alloc.Global))
-  (combos : alloc.vec.Vec (alloc.vec.Vec
-  automata.terms_multitape.MultiTapeTerm)) :
-  Result (alloc.vec.Vec (alloc.vec.Vec automata.terms_multitape.MultiTapeTerm))
-  := do
-  loop
-    (fun (iter1, combos1) =>
-      automata.product_writes_map.ProductWritesMap.build_flat_offset_path_combos_loop0.body
-      iter1 combos1)
-    (iter, combos)
+    automata.product_writes_map.ProductWritesMap.build_flat_offset_path_combos_loop0
+      iter1 combos1
+partial_fixpoint
 
 /-- [automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::build_flat_offset_path_combos]:
     Source: 'src/automata/product_writes_map.rs', lines 590:4-634:5
@@ -8980,34 +8532,6 @@ def
     automata.product_writes_map.ProductWritesMap.get_state_attributes.closure.Insts.CoreOpsFunctionFnMutTupleShared0MultiTapeTermBool.call_mut
 }
 
-/-- [automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::get_state_attributes]: loop body 1:
-    Source: 'src/automata/product_writes_map.rs', lines 535:12-539:13
-    Visibility: public -/
-@[rust_loop_body]
-def
-  automata.product_writes_map.ProductWritesMap.get_state_attributes_loop0_loop0.body
-  (i : Std.U16) (source_tape_cell_state : Std.U32)
-  (iter : alloc.collections.btree.map.Iter Std.U16 Std.U32)
-  (source_state_written : Bool) :
-  Result (ControlFlow ((alloc.collections.btree.map.Iter Std.U16 Std.U32) ×
-    Bool) Bool)
-  := do
-  let (o, iter1) ←
-    alloc.collections.btree.map.Iter.Insts.CoreIterTraitsIteratorIteratorPairSharedAKSharedAV.next
-      iter
-  match o with
-  | none => ok (done source_state_written)
-  | some p =>
-    let (tape_no, tape_cell_state) := p
-    let mts ←
-      automata.terms_multitape.MultiTapeState.new tape_no tape_cell_state
-    let b ←
-      automata.terms_multitape.MultiTapeState.Insts.CoreCmpPartialEqMultiTapeState.eq
-        mts { tape_no := i, tape_cell_state := source_tape_cell_state }
-    if b
-    then ok (cont (iter1, true))
-    else ok (cont (iter1, source_state_written))
-
 /-- [automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::get_state_attributes]: loop 1:
     Source: 'src/automata/product_writes_map.rs', lines 535:12-539:13
     Visibility: public -/
@@ -9018,57 +8542,26 @@ def
   (source_tape_cell_state : Std.U32) (source_state_written : Bool) :
   Result Bool
   := do
-  loop
-    (fun (iter1, source_state_written1) =>
-      automata.product_writes_map.ProductWritesMap.get_state_attributes_loop0_loop0.body
-      i source_tape_cell_state iter1 source_state_written1)
-    (iter, source_state_written)
-
-/-- [automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::get_state_attributes]: loop body 2:
-    Source: 'src/automata/product_writes_map.rs', lines 546:12-568:13
-    Visibility: public -/
-@[rust_loop_body]
-def
-  automata.product_writes_map.ProductWritesMap.get_state_attributes_loop0_loop1.body
-  (i : Std.U16) (i1 : Std.U32)
-  (writes_map : alloc.collections.btree.map.BTreeMap Std.U16 Std.U32
-  alloc.alloc.Global)
-  (iter : alloc.vec.into_iter.IntoIter automata.terms_multitape.MultiTapeTerm)
-  (writes_away_from_source_state : Bool) (is_idempotent_transition : Bool) :
-  Result (ControlFlow ((alloc.vec.into_iter.IntoIter
-    automata.terms_multitape.MultiTapeTerm) × Bool × Bool) (Bool × Bool))
-  := do
-  let (o, iter1) ← alloc.vec.into_iter.IteratorIntoIter.next iter
+  let (o, iter1) ←
+    alloc.collections.btree.map.Iter.Insts.CoreIterTraitsIteratorIteratorPairSharedAKSharedAV.next
+      iter
   match o with
-  | none => ok (done (writes_away_from_source_state, is_idempotent_transition))
-  | some input_term =>
-    if input_term.position != 0#i64
+  | none => ok source_state_written
+  | some p =>
+    let (tape_no, tape_cell_state) := p
+    let mts ←
+      automata.terms_multitape.MultiTapeState.new tape_no tape_cell_state
+    let b ←
+      automata.terms_multitape.MultiTapeState.Insts.CoreCmpPartialEqMultiTapeState.eq
+        mts { tape_no := i, tape_cell_state := source_tape_cell_state }
+    if b
     then
-      ok (cont (iter1, writes_away_from_source_state,
-        is_idempotent_transition))
+      automata.product_writes_map.ProductWritesMap.get_state_attributes_loop0_loop0
+        iter1 i source_tape_cell_state true
     else
-      let (input_tape_no, input_tape_cell_state) := input_term.state
-      if input_tape_no != i
-      then
-        ok (cont (iter1, writes_away_from_source_state,
-          is_idempotent_transition))
-      else
-        if input_tape_cell_state != i1
-        then
-          ok (cont (iter1, writes_away_from_source_state,
-            is_idempotent_transition))
-        else
-          let o1 ←
-            alloc.collections.btree.map.BTreeMap.get
-              alloc.alloc.Global.Insts.CoreAllocAllocatorClone
-              (core.borrow.Borrow.Blanket Std.U16) core.cmp.OrdU16
-              core.cmp.OrdU16 writes_map i
-          let o2 ← core.option.OptionShared0T.copied core.marker.CopyU32 o1
-          let output_tape_cell_state ←
-            lift (core.option.Option.unwrap_or o2 i1)
-          if i1 != output_tape_cell_state
-          then ok (cont (iter1, true, is_idempotent_transition))
-          else ok (cont (iter1, writes_away_from_source_state, true))
+      automata.product_writes_map.ProductWritesMap.get_state_attributes_loop0_loop0
+        iter1 i source_tape_cell_state source_state_written
+partial_fixpoint
 
 /-- [automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::get_state_attributes]: loop 2:
     Source: 'src/automata/product_writes_map.rs', lines 546:12-568:13
@@ -9083,40 +8576,45 @@ def
   (is_idempotent_transition : Bool) :
   Result (Bool × Bool)
   := do
-  loop
-    (fun (iter1, writes_away_from_source_state1, is_idempotent_transition1) =>
-      automata.product_writes_map.ProductWritesMap.get_state_attributes_loop0_loop1.body
-      i i1 writes_map iter1 writes_away_from_source_state1
-      is_idempotent_transition1)
-    (iter, writes_away_from_source_state, is_idempotent_transition)
-
-/-- [automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::get_state_attributes]: loop body 3:
-    Source: 'src/automata/product_writes_map.rs', lines 535:12-539:13
-    Visibility: public -/
-@[rust_loop_body]
-def
-  automata.product_writes_map.ProductWritesMap.get_state_attributes_loop0_loop2.body
-  (i : Std.U16) (source_tape_cell_state : Std.U32)
-  (iter : alloc.collections.btree.map.Iter Std.U16 Std.U32)
-  (source_state_written : Bool) :
-  Result (ControlFlow ((alloc.collections.btree.map.Iter Std.U16 Std.U32) ×
-    Bool) Bool)
-  := do
-  let (o, iter1) ←
-    alloc.collections.btree.map.Iter.Insts.CoreIterTraitsIteratorIteratorPairSharedAKSharedAV.next
-      iter
+  let (o, iter1) ← alloc.vec.into_iter.IteratorIntoIter.next iter
   match o with
-  | none => ok (done source_state_written)
-  | some p =>
-    let (tape_no, tape_cell_state) := p
-    let mts ←
-      automata.terms_multitape.MultiTapeState.new tape_no tape_cell_state
-    let b ←
-      automata.terms_multitape.MultiTapeState.Insts.CoreCmpPartialEqMultiTapeState.eq
-        mts { tape_no := i, tape_cell_state := source_tape_cell_state }
-    if b
-    then ok (cont (iter1, true))
-    else ok (cont (iter1, source_state_written))
+  | none => ok (writes_away_from_source_state, is_idempotent_transition)
+  | some input_term =>
+    if input_term.position != 0#i64
+    then
+      automata.product_writes_map.ProductWritesMap.get_state_attributes_loop0_loop1
+        iter1 i i1 writes_map writes_away_from_source_state
+        is_idempotent_transition
+    else
+      let (input_tape_no, input_tape_cell_state) := input_term.state
+      if input_tape_no != i
+      then
+        automata.product_writes_map.ProductWritesMap.get_state_attributes_loop0_loop1
+          iter1 i i1 writes_map writes_away_from_source_state
+          is_idempotent_transition
+      else
+        if input_tape_cell_state != i1
+        then
+          automata.product_writes_map.ProductWritesMap.get_state_attributes_loop0_loop1
+            iter1 i i1 writes_map writes_away_from_source_state
+            is_idempotent_transition
+        else
+          let o1 ←
+            alloc.collections.btree.map.BTreeMap.get
+              alloc.alloc.Global.Insts.CoreAllocAllocatorClone
+              (core.borrow.Borrow.Blanket Std.U16) core.cmp.OrdU16
+              core.cmp.OrdU16 writes_map i
+          let o2 ← core.option.OptionShared0T.copied core.marker.CopyU32 o1
+          let output_tape_cell_state ←
+            lift (core.option.Option.unwrap_or o2 i1)
+          if i1 != output_tape_cell_state
+          then
+            automata.product_writes_map.ProductWritesMap.get_state_attributes_loop0_loop1
+              iter1 i i1 writes_map true is_idempotent_transition
+          else
+            automata.product_writes_map.ProductWritesMap.get_state_attributes_loop0_loop1
+              iter1 i i1 writes_map writes_away_from_source_state true
+partial_fixpoint
 
 /-- [automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::get_state_attributes]: loop 3:
     Source: 'src/automata/product_writes_map.rs', lines 535:12-539:13
@@ -9128,57 +8626,26 @@ def
   (source_tape_cell_state : Std.U32) (source_state_written : Bool) :
   Result Bool
   := do
-  loop
-    (fun (iter1, source_state_written1) =>
-      automata.product_writes_map.ProductWritesMap.get_state_attributes_loop0_loop2.body
-      i source_tape_cell_state iter1 source_state_written1)
-    (iter, source_state_written)
-
-/-- [automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::get_state_attributes]: loop body 4:
-    Source: 'src/automata/product_writes_map.rs', lines 546:12-568:13
-    Visibility: public -/
-@[rust_loop_body]
-def
-  automata.product_writes_map.ProductWritesMap.get_state_attributes_loop0_loop3.body
-  (i : Std.U16) (i1 : Std.U32)
-  (writes_map : alloc.collections.btree.map.BTreeMap Std.U16 Std.U32
-  alloc.alloc.Global)
-  (iter : alloc.vec.into_iter.IntoIter automata.terms_multitape.MultiTapeTerm)
-  (writes_away_from_source_state : Bool) (is_idempotent_transition : Bool) :
-  Result (ControlFlow ((alloc.vec.into_iter.IntoIter
-    automata.terms_multitape.MultiTapeTerm) × Bool × Bool) (Bool × Bool))
-  := do
-  let (o, iter1) ← alloc.vec.into_iter.IteratorIntoIter.next iter
+  let (o, iter1) ←
+    alloc.collections.btree.map.Iter.Insts.CoreIterTraitsIteratorIteratorPairSharedAKSharedAV.next
+      iter
   match o with
-  | none => ok (done (writes_away_from_source_state, is_idempotent_transition))
-  | some input_term =>
-    if input_term.position != 0#i64
+  | none => ok source_state_written
+  | some p =>
+    let (tape_no, tape_cell_state) := p
+    let mts ←
+      automata.terms_multitape.MultiTapeState.new tape_no tape_cell_state
+    let b ←
+      automata.terms_multitape.MultiTapeState.Insts.CoreCmpPartialEqMultiTapeState.eq
+        mts { tape_no := i, tape_cell_state := source_tape_cell_state }
+    if b
     then
-      ok (cont (iter1, writes_away_from_source_state,
-        is_idempotent_transition))
+      automata.product_writes_map.ProductWritesMap.get_state_attributes_loop0_loop2
+        iter1 i source_tape_cell_state true
     else
-      let (input_tape_no, input_tape_cell_state) := input_term.state
-      if input_tape_no != i
-      then
-        ok (cont (iter1, writes_away_from_source_state,
-          is_idempotent_transition))
-      else
-        if input_tape_cell_state != i1
-        then
-          ok (cont (iter1, writes_away_from_source_state,
-            is_idempotent_transition))
-        else
-          let o1 ←
-            alloc.collections.btree.map.BTreeMap.get
-              alloc.alloc.Global.Insts.CoreAllocAllocatorClone
-              (core.borrow.Borrow.Blanket Std.U16) core.cmp.OrdU16
-              core.cmp.OrdU16 writes_map i
-          let o2 ← core.option.OptionShared0T.copied core.marker.CopyU32 o1
-          let output_tape_cell_state ←
-            lift (core.option.Option.unwrap_or o2 i1)
-          if i1 != output_tape_cell_state
-          then ok (cont (iter1, true, is_idempotent_transition))
-          else ok (cont (iter1, writes_away_from_source_state, true))
+      automata.product_writes_map.ProductWritesMap.get_state_attributes_loop0_loop2
+        iter1 i source_tape_cell_state source_state_written
+partial_fixpoint
 
 /-- [automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::get_state_attributes]: loop 4:
     Source: 'src/automata/product_writes_map.rs', lines 546:12-568:13
@@ -9193,37 +8660,64 @@ def
   (is_idempotent_transition : Bool) :
   Result (Bool × Bool)
   := do
-  loop
-    (fun (iter1, writes_away_from_source_state1, is_idempotent_transition1) =>
-      automata.product_writes_map.ProductWritesMap.get_state_attributes_loop0_loop3.body
-      i i1 writes_map iter1 writes_away_from_source_state1
-      is_idempotent_transition1)
-    (iter, writes_away_from_source_state, is_idempotent_transition)
+  let (o, iter1) ← alloc.vec.into_iter.IteratorIntoIter.next iter
+  match o with
+  | none => ok (writes_away_from_source_state, is_idempotent_transition)
+  | some input_term =>
+    if input_term.position != 0#i64
+    then
+      automata.product_writes_map.ProductWritesMap.get_state_attributes_loop0_loop3
+        iter1 i i1 writes_map writes_away_from_source_state
+        is_idempotent_transition
+    else
+      let (input_tape_no, input_tape_cell_state) := input_term.state
+      if input_tape_no != i
+      then
+        automata.product_writes_map.ProductWritesMap.get_state_attributes_loop0_loop3
+          iter1 i i1 writes_map writes_away_from_source_state
+          is_idempotent_transition
+      else
+        if input_tape_cell_state != i1
+        then
+          automata.product_writes_map.ProductWritesMap.get_state_attributes_loop0_loop3
+            iter1 i i1 writes_map writes_away_from_source_state
+            is_idempotent_transition
+        else
+          let o1 ←
+            alloc.collections.btree.map.BTreeMap.get
+              alloc.alloc.Global.Insts.CoreAllocAllocatorClone
+              (core.borrow.Borrow.Blanket Std.U16) core.cmp.OrdU16
+              core.cmp.OrdU16 writes_map i
+          let o2 ← core.option.OptionShared0T.copied core.marker.CopyU32 o1
+          let output_tape_cell_state ←
+            lift (core.option.Option.unwrap_or o2 i1)
+          if i1 != output_tape_cell_state
+          then
+            automata.product_writes_map.ProductWritesMap.get_state_attributes_loop0_loop3
+              iter1 i i1 writes_map true is_idempotent_transition
+          else
+            automata.product_writes_map.ProductWritesMap.get_state_attributes_loop0_loop3
+              iter1 i i1 writes_map writes_away_from_source_state true
+partial_fixpoint
 
-/-- [automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::get_state_attributes]: loop body 0:
+/-- [automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::get_state_attributes]: loop 0:
     Source: 'src/automata/product_writes_map.rs', lines 522:8-579:9
     Visibility: public -/
-@[rust_loop_body]
-def
-  automata.product_writes_map.ProductWritesMap.get_state_attributes_loop0.body
-  (i : Std.U16) (source_tape_cell_state : Std.U32)
+@[rust_loop]
+def automata.product_writes_map.ProductWritesMap.get_state_attributes_loop0
   (iter : indexmap.map.iter.Iter automata.terms_multitape.MultiTapeProduct
   (alloc.collections.btree.map.BTreeMap Std.U16 Std.U32 alloc.alloc.Global))
+  (i : Std.U16) (source_tape_cell_state : Std.U32)
   (extant_states : Option (alloc.collections.btree.set.BTreeSet
   automata.terms_multitape.MultiTapeState alloc.alloc.Global))
   (writable : Bool) (deletable : Bool) :
-  Result (ControlFlow ((indexmap.map.iter.Iter
-    automata.terms_multitape.MultiTapeProduct
-    (alloc.collections.btree.map.BTreeMap Std.U16 Std.U32 alloc.alloc.Global))
-    × (Option (alloc.collections.btree.set.BTreeSet
-    automata.terms_multitape.MultiTapeState alloc.alloc.Global)) × Bool ×
-    Bool) (Bool × Bool))
+  Result (Bool × Bool)
   := do
   let (o, iter1) ←
     indexmap.map.iter.Iter.Insts.CoreIterTraitsIteratorIteratorPairSharedAKSharedAV.next
       iter
   match o with
-  | none => ok (done (writable, deletable))
+  | none => ok (writable, deletable)
   | some p =>
     let (product, writes_map) := p
     match extant_states with
@@ -9275,8 +8769,9 @@ def
         if source_state_written
         then ok (¬ is_idempotent_transition)
         else ok false
-      ok (cont (iter1, none, writable || b, deletable ||
-        writes_away_from_source_state))
+      automata.product_writes_map.ProductWritesMap.get_state_attributes_loop0
+        iter1 i source_tape_cell_state none (writable || b) (deletable ||
+        writes_away_from_source_state)
     | some extant =>
       let v ← automata.terms_multitape.MultiTapeProduct.to_flat_terms product
       let s := alloc.vec.Vec.deref v
@@ -9286,7 +8781,9 @@ def
           automata.product_writes_map.ProductWritesMap.get_state_attributes.closure.Insts.CoreOpsFunctionFnMutTupleShared0MultiTapeTermBool
           i1 extant
       if is_unsatisfiable
-      then ok (cont (iter1, extant_states, writable, deletable))
+      then
+        automata.product_writes_map.ProductWritesMap.get_state_attributes_loop0
+          iter1 i source_tape_cell_state extant_states writable deletable
       else
         let iter2 ←
           alloc.collections.btree.map.BTreeMap.iter
@@ -9337,27 +8834,10 @@ def
           if source_state_written
           then ok (¬ is_idempotent_transition)
           else ok false
-        ok (cont (iter1, extant_states, writable || b, deletable ||
-          writes_away_from_source_state))
-
-/-- [automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::get_state_attributes]: loop 0:
-    Source: 'src/automata/product_writes_map.rs', lines 522:8-579:9
-    Visibility: public -/
-@[rust_loop]
-def automata.product_writes_map.ProductWritesMap.get_state_attributes_loop0
-  (iter : indexmap.map.iter.Iter automata.terms_multitape.MultiTapeProduct
-  (alloc.collections.btree.map.BTreeMap Std.U16 Std.U32 alloc.alloc.Global))
-  (i : Std.U16) (source_tape_cell_state : Std.U32)
-  (extant_states : Option (alloc.collections.btree.set.BTreeSet
-  automata.terms_multitape.MultiTapeState alloc.alloc.Global))
-  (writable : Bool) (deletable : Bool) :
-  Result (Bool × Bool)
-  := do
-  loop
-    (fun (iter1, extant_states1, writable1, deletable1) =>
-      automata.product_writes_map.ProductWritesMap.get_state_attributes_loop0.body
-      i source_tape_cell_state iter1 extant_states1 writable1 deletable1)
-    (iter, extant_states, writable, deletable)
+        automata.product_writes_map.ProductWritesMap.get_state_attributes_loop0
+          iter1 i source_tape_cell_state extant_states (writable || b)
+          (deletable || writes_away_from_source_state)
+partial_fixpoint
 
 /-- [automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::get_state_attributes]:
     Source: 'src/automata/product_writes_map.rs', lines 509:4-586:5
@@ -9390,36 +8870,6 @@ def automata.product_writes_map.ProductWritesMap.get_state_attributes
     then ok { writable, deletable, instant_delete := (¬ writable) }
     else ok { writable, deletable, instant_delete := false }
 
-/-- [automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::get_states_set]: loop body 1:
-    Source: 'src/automata/product_writes_map.rs', lines 243:12-246:13
-    Visibility: public -/
-@[rust_loop_body]
-def
-  automata.product_writes_map.ProductWritesMap.get_states_set_loop0_loop0.body
-  (iter : alloc.vec.into_iter.IntoIter automata.terms_multitape.MultiTapeTerm)
-  (states_set : indexmap.set.IndexSet automata.terms_multitape.MultiTapeState
-  std.hash.random.RandomState) :
-  Result (ControlFlow ((alloc.vec.into_iter.IntoIter
-    automata.terms_multitape.MultiTapeTerm) × (indexmap.set.IndexSet
-    automata.terms_multitape.MultiTapeState std.hash.random.RandomState))
-    (indexmap.set.IndexSet automata.terms_multitape.MultiTapeState
-    std.hash.random.RandomState))
-  := do
-  let (o, iter1) ← alloc.vec.into_iter.IteratorIntoIter.next iter
-  match o with
-  | none => ok (done states_set)
-  | some term =>
-    let (tape_no, tape_cell_state) := term.state
-    let mts ←
-      automata.terms_multitape.MultiTapeState.new tape_no tape_cell_state
-    let (_, states_set1) ←
-      indexmap.set.IndexSet.insert
-        automata.terms_multitape.MultiTapeState.Insts.CoreHashHash
-        automata.terms_multitape.MultiTapeState.Insts.CoreCmpEq
-        std.hash.random.RandomState.Insts.CoreHashBuildHasherDefaultHasher
-        states_set mts
-    ok (cont (iter1, states_set1))
-
 /-- [automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::get_states_set]: loop 1:
     Source: 'src/automata/product_writes_map.rs', lines 243:12-246:13
     Visibility: public -/
@@ -9431,40 +8881,22 @@ def automata.product_writes_map.ProductWritesMap.get_states_set_loop0_loop0
   Result (indexmap.set.IndexSet automata.terms_multitape.MultiTapeState
     std.hash.random.RandomState)
   := do
-  loop
-    (fun (iter1, states_set1) =>
-      automata.product_writes_map.ProductWritesMap.get_states_set_loop0_loop0.body
-      iter1 states_set1)
-    (iter, states_set)
-
-/-- [automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::get_states_set]: loop body 0:
-    Source: 'src/automata/product_writes_map.rs', lines 242:8-247:9
-    Visibility: public -/
-@[rust_loop_body]
-def automata.product_writes_map.ProductWritesMap.get_states_set_loop0.body
-  (iter : indexmap.map.iter.Keys automata.terms_multitape.MultiTapeProduct
-  (alloc.collections.btree.map.BTreeMap Std.U16 Std.U32 alloc.alloc.Global))
-  (states_set : indexmap.set.IndexSet automata.terms_multitape.MultiTapeState
-  std.hash.random.RandomState) :
-  Result (ControlFlow ((indexmap.map.iter.Keys
-    automata.terms_multitape.MultiTapeProduct
-    (alloc.collections.btree.map.BTreeMap Std.U16 Std.U32 alloc.alloc.Global))
-    × (indexmap.set.IndexSet automata.terms_multitape.MultiTapeState
-    std.hash.random.RandomState)) (indexmap.set.IndexSet
-    automata.terms_multitape.MultiTapeState std.hash.random.RandomState))
-  := do
-  let (o, iter1) ←
-    indexmap.map.iter.Keys.Insts.CoreIterTraitsIteratorIteratorSharedAK.next
-      iter
+  let (o, iter1) ← alloc.vec.into_iter.IteratorIntoIter.next iter
   match o with
-  | none => ok (done states_set)
-  | some product =>
-    let v ← automata.terms_multitape.MultiTapeProduct.to_flat_terms product
-    let iter2 ← alloc.vec.IntoIteratorVec.into_iter v
-    let states_set1 ←
-      automata.product_writes_map.ProductWritesMap.get_states_set_loop0_loop0
-        iter2 states_set
-    ok (cont (iter1, states_set1))
+  | none => ok states_set
+  | some term =>
+    let (tape_no, tape_cell_state) := term.state
+    let mts ←
+      automata.terms_multitape.MultiTapeState.new tape_no tape_cell_state
+    let (_, states_set1) ←
+      indexmap.set.IndexSet.insert
+        automata.terms_multitape.MultiTapeState.Insts.CoreHashHash
+        automata.terms_multitape.MultiTapeState.Insts.CoreCmpEq
+        std.hash.random.RandomState.Insts.CoreHashBuildHasherDefaultHasher
+        states_set mts
+    automata.product_writes_map.ProductWritesMap.get_states_set_loop0_loop0
+      iter1 states_set1
+partial_fixpoint
 
 /-- [automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::get_states_set]: loop 0:
     Source: 'src/automata/product_writes_map.rs', lines 242:8-247:9
@@ -9478,11 +8910,20 @@ def automata.product_writes_map.ProductWritesMap.get_states_set_loop0
   Result (indexmap.set.IndexSet automata.terms_multitape.MultiTapeState
     std.hash.random.RandomState)
   := do
-  loop
-    (fun (iter1, states_set1) =>
-      automata.product_writes_map.ProductWritesMap.get_states_set_loop0.body
-      iter1 states_set1)
-    (iter, states_set)
+  let (o, iter1) ←
+    indexmap.map.iter.Keys.Insts.CoreIterTraitsIteratorIteratorSharedAK.next
+      iter
+  match o with
+  | none => ok states_set
+  | some product =>
+    let v ← automata.terms_multitape.MultiTapeProduct.to_flat_terms product
+    let iter2 ← alloc.vec.IntoIteratorVec.into_iter v
+    let states_set1 ←
+      automata.product_writes_map.ProductWritesMap.get_states_set_loop0_loop0
+        iter2 states_set
+    automata.product_writes_map.ProductWritesMap.get_states_set_loop0 iter1
+      states_set1
+partial_fixpoint
 
 /-- [automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::get_states_set]:
     Source: 'src/automata/product_writes_map.rs', lines 239:4-249:5
@@ -9498,44 +8939,6 @@ def automata.product_writes_map.ProductWritesMap.get_states_set
   let iter ← automata.product_writes_map.ProductWritesMap.products self
   automata.product_writes_map.ProductWritesMap.get_states_set_loop0 iter
     states_set
-
-/-- [automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::build_all_state_attrs_map]: loop body 0:
-    Source: 'src/automata/product_writes_map.rs', lines 498:8-502:9
-    Visibility: public -/
-@[rust_loop_body]
-def
-  automata.product_writes_map.ProductWritesMap.build_all_state_attrs_map_loop.body
-  (self : automata.product_writes_map.ProductWritesMap)
-  (extant_states : Option (alloc.collections.btree.set.BTreeSet
-  automata.terms_multitape.MultiTapeState alloc.alloc.Global))
-  (tape_overlaps : automata.tape_overlaps.TapeOverlaps)
-  (iter : indexmap.set.iter.IntoIter automata.terms_multitape.MultiTapeState)
-  (state_attributes_map : alloc.collections.btree.map.BTreeMap
-  automata.terms_multitape.MultiTapeState
-  automata.product_writes_map.MultiTapeStateAttributes alloc.alloc.Global) :
-  Result (ControlFlow ((indexmap.set.iter.IntoIter
-    automata.terms_multitape.MultiTapeState) ×
-    (alloc.collections.btree.map.BTreeMap
-    automata.terms_multitape.MultiTapeState
-    automata.product_writes_map.MultiTapeStateAttributes alloc.alloc.Global))
-    (alloc.collections.btree.map.BTreeMap
-    automata.terms_multitape.MultiTapeState
-    automata.product_writes_map.MultiTapeStateAttributes alloc.alloc.Global))
-  := do
-  let (o, iter1) ←
-    indexmap.set.iter.IntoIter.Insts.CoreIterTraitsIteratorIterator.next iter
-  match o with
-  | none => ok (done state_attributes_map)
-  | some state =>
-    let attributes ←
-      automata.product_writes_map.ProductWritesMap.get_state_attributes self
-        state extant_states tape_overlaps
-    let (_, state_attributes_map1) ←
-      alloc.collections.btree.map.BTreeMap.insert
-        alloc.alloc.Global.Insts.CoreAllocAllocatorClone
-        automata.terms_multitape.MultiTapeState.Insts.CoreCmpOrd
-        state_attributes_map state attributes
-    ok (cont (iter1, state_attributes_map1))
 
 /-- [automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::build_all_state_attrs_map]: loop 0:
     Source: 'src/automata/product_writes_map.rs', lines 498:8-502:9
@@ -9554,11 +8957,22 @@ def automata.product_writes_map.ProductWritesMap.build_all_state_attrs_map_loop
     automata.terms_multitape.MultiTapeState
     automata.product_writes_map.MultiTapeStateAttributes alloc.alloc.Global)
   := do
-  loop
-    (fun (iter1, state_attributes_map1) =>
-      automata.product_writes_map.ProductWritesMap.build_all_state_attrs_map_loop.body
-      self extant_states tape_overlaps iter1 state_attributes_map1)
-    (iter, state_attributes_map)
+  let (o, iter1) ←
+    indexmap.set.iter.IntoIter.Insts.CoreIterTraitsIteratorIterator.next iter
+  match o with
+  | none => ok state_attributes_map
+  | some state =>
+    let attributes ←
+      automata.product_writes_map.ProductWritesMap.get_state_attributes self
+        state extant_states tape_overlaps
+    let (_, state_attributes_map1) ←
+      alloc.collections.btree.map.BTreeMap.insert
+        alloc.alloc.Global.Insts.CoreAllocAllocatorClone
+        automata.terms_multitape.MultiTapeState.Insts.CoreCmpOrd
+        state_attributes_map state attributes
+    automata.product_writes_map.ProductWritesMap.build_all_state_attrs_map_loop
+      iter1 self extant_states tape_overlaps state_attributes_map1
+partial_fixpoint
 
 /-- [automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::build_all_state_attrs_map]:
     Source: 'src/automata/product_writes_map.rs', lines 491:4-504:5
@@ -9697,12 +9111,13 @@ def automata.product_writes_map.ProductWritesMap.to_unfrozen
       std.hash.random.RandomState.Insts.CoreCloneClone self.prod_to_state_map
   ok { prod_to_state_map := im, frozen := false }
 
-/-- [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::create_optimizations]: loop body 0:
+/-- [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::create_optimizations]: loop 0:
     Source: 'src/automata/multi_tape_builder.rs', lines 634:8-647:9
     Visibility: public -/
-@[rust_loop_body]
-def
-  automata.multi_tape_builder.MultiTapeBuilder.create_optimizations_loop0.body
+@[rust_loop]
+def automata.multi_tape_builder.MultiTapeBuilder.create_optimizations_loop0
+  (iter : alloc.collections.btree.set.Iter
+  automata.terms_multitape.MultiTapeState)
   (states_written : alloc.collections.btree.map.BTreeMap
   automata.terms_multitape.MultiTapeState (alloc.collections.btree.set.BTreeSet
   automata.terms_multitape.MultiTapeProduct alloc.alloc.Global)
@@ -9711,22 +9126,16 @@ def
   (prev_prod_to_state_map : automata.product_writes_map.ProductWritesMap)
   (all_prev_overlap_states : alloc.collections.btree.set.BTreeSet
   automata.terms_multitape.MultiTapeState alloc.alloc.Global)
-  (iter : alloc.collections.btree.set.Iter
-  automata.terms_multitape.MultiTapeState)
   (disappeared_states : alloc.collections.btree.set.BTreeSet
   automata.terms_multitape.MultiTapeState alloc.alloc.Global) :
-  Result (ControlFlow ((alloc.collections.btree.set.Iter
-    automata.terms_multitape.MultiTapeState) ×
-    (alloc.collections.btree.set.BTreeSet
-    automata.terms_multitape.MultiTapeState alloc.alloc.Global))
-    (alloc.collections.btree.set.BTreeSet
-    automata.terms_multitape.MultiTapeState alloc.alloc.Global))
+  Result (alloc.collections.btree.set.BTreeSet
+    automata.terms_multitape.MultiTapeState alloc.alloc.Global)
   := do
   let (o, iter1) ←
     alloc.collections.btree.set.Iter.Insts.CoreIterTraitsIteratorIteratorSharedAT.next
       iter
   match o with
-  | none => ok (done disappeared_states)
+  | none => ok disappeared_states
   | some prev_overlap_state =>
     let current_state_attrs ←
       automata.product_writes_map.ProductWritesMap.get_state_attributes
@@ -9769,51 +9178,28 @@ def
           alloc.alloc.Global.Insts.CoreAllocAllocatorClone
           automata.terms_multitape.MultiTapeState.Insts.CoreCmpOrd
           disappeared_states prev_overlap_state
-      ok (cont (iter1, disappeared_states1))
-    else ok (cont (iter1, disappeared_states))
+      automata.multi_tape_builder.MultiTapeBuilder.create_optimizations_loop0
+        iter1 states_written verbose prev_overlaps prev_prod_to_state_map
+        all_prev_overlap_states disappeared_states1
+    else
+      automata.multi_tape_builder.MultiTapeBuilder.create_optimizations_loop0
+        iter1 states_written verbose prev_overlaps prev_prod_to_state_map
+        all_prev_overlap_states disappeared_states
+partial_fixpoint
 
-/-- [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::create_optimizations]: loop 0:
-    Source: 'src/automata/multi_tape_builder.rs', lines 634:8-647:9
-    Visibility: public -/
-@[rust_loop]
-def automata.multi_tape_builder.MultiTapeBuilder.create_optimizations_loop0
-  (iter : alloc.collections.btree.set.Iter
-  automata.terms_multitape.MultiTapeState)
-  (states_written : alloc.collections.btree.map.BTreeMap
-  automata.terms_multitape.MultiTapeState (alloc.collections.btree.set.BTreeSet
-  automata.terms_multitape.MultiTapeProduct alloc.alloc.Global)
-  alloc.alloc.Global) (verbose : Bool)
-  (prev_overlaps : automata.tape_overlaps.TapeOverlaps)
-  (prev_prod_to_state_map : automata.product_writes_map.ProductWritesMap)
-  (all_prev_overlap_states : alloc.collections.btree.set.BTreeSet
-  automata.terms_multitape.MultiTapeState alloc.alloc.Global)
-  (disappeared_states : alloc.collections.btree.set.BTreeSet
-  automata.terms_multitape.MultiTapeState alloc.alloc.Global) :
-  Result (alloc.collections.btree.set.BTreeSet
-    automata.terms_multitape.MultiTapeState alloc.alloc.Global)
-  := do
-  loop
-    (fun (iter1, disappeared_states1) =>
-      automata.multi_tape_builder.MultiTapeBuilder.create_optimizations_loop0.body
-      states_written verbose prev_overlaps prev_prod_to_state_map
-      all_prev_overlap_states iter1 disappeared_states1)
-    (iter, disappeared_states)
-
-/-- [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::create_optimizations]: loop body 1:
+/-- [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::create_optimizations]: loop 1:
     Source: 'src/automata/multi_tape_builder.rs', lines 659:12-661:13
     Visibility: public -/
-@[rust_loop_body]
-def
-  automata.multi_tape_builder.MultiTapeBuilder.create_optimizations_loop1.body
+@[rust_loop]
+def automata.multi_tape_builder.MultiTapeBuilder.create_optimizations_loop1
   (iter : indexmap.set.iter.Iter automata.terms_multitape.MultiTapeProduct) :
-  Result (ControlFlow (indexmap.set.iter.Iter
-    automata.terms_multitape.MultiTapeProduct) Unit)
+  Result Unit
   := do
   let (o, iter1) ←
     indexmap.set.iter.Iter.Insts.CoreIterTraitsIteratorIteratorSharedAT.next
       iter
   match o with
-  | none => ok (done ())
+  | none => ok ()
   | some product =>
     let s ← automata.multi_tape_builder.product_repr product
     let s1 ← automata.terms_multitape.MultiTapeProduct.get_annotation product
@@ -9831,21 +9217,9 @@ def
           192#u8, 1#u8, 10#u8, 0#u8
           ]) (Array.make 2#usize [ a, a1 ])
     std.io.stdio._print a2
-    ok (cont iter1)
-
-/-- [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::create_optimizations]: loop 1:
-    Source: 'src/automata/multi_tape_builder.rs', lines 659:12-661:13
-    Visibility: public -/
-@[rust_loop]
-def automata.multi_tape_builder.MultiTapeBuilder.create_optimizations_loop1
-  (iter : indexmap.set.iter.Iter automata.terms_multitape.MultiTapeProduct) :
-  Result Unit
-  := do
-  loop
-    (fun iter1 =>
-      automata.multi_tape_builder.MultiTapeBuilder.create_optimizations_loop1.body
-      iter1)
-    iter
+    automata.multi_tape_builder.MultiTapeBuilder.create_optimizations_loop1
+      iter1
+partial_fixpoint
 
 /-- [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::create_optimizations]:
     Source: 'src/automata/multi_tape_builder.rs', lines 622:4-669:5
@@ -9982,22 +9356,21 @@ def automata.tape_overlaps.TapeOverlaps.can_overlap_exist
         automata.terms_multitape.MultiTapeState.Insts.CoreCmpOrd
         offset_overlaps target_state
 
-/-- [automata_builder::automata::tape_overlaps::is_product_satisfiable]: loop body 0:
+/-- [automata_builder::automata::tape_overlaps::is_product_satisfiable]: loop 0:
     Source: 'src/automata/tape_overlaps.rs', lines 663:4-681:1
     Visibility: public -/
-@[rust_loop_body]
-def automata.tape_overlaps.is_product_satisfiable_loop.body
+@[rust_loop]
+def automata.tape_overlaps.is_product_satisfiable_loop
+  (iter : core.slice.iter.Windows automata.terms_multitape.MultiTapeTerm)
   (overlaps : automata.tape_overlaps.TapeOverlaps)
-  (default_if_term_missing : Bool)
-  (iter : core.slice.iter.Windows automata.terms_multitape.MultiTapeTerm) :
-  Result (ControlFlow (core.slice.iter.Windows
-    automata.terms_multitape.MultiTapeTerm) Bool)
+  (default_if_term_missing : Bool) :
+  Result Bool
   := do
   let (o, iter1) ←
     core.slice.iter.Windows.Insts.CoreIterTraitsIteratorIteratorSharedASlice.next
       iter
   match o with
-  | none => ok (done true)
+  | none => ok true
   | some pair =>
     let term_a ← Slice.index_usize pair 0#usize
     let term_b ← Slice.index_usize pair 1#usize
@@ -10010,23 +9383,11 @@ def automata.tape_overlaps.is_product_satisfiable_loop.body
       automata.tape_overlaps.TapeOverlaps.can_overlap_exist overlaps state_a
         state_b relative_offset default_if_term_missing
     if b
-    then ok (cont iter1)
-    else ok (done false)
-
-/-- [automata_builder::automata::tape_overlaps::is_product_satisfiable]: loop 0:
-    Source: 'src/automata/tape_overlaps.rs', lines 663:4-681:1
-    Visibility: public -/
-@[rust_loop]
-def automata.tape_overlaps.is_product_satisfiable_loop
-  (iter : core.slice.iter.Windows automata.terms_multitape.MultiTapeTerm)
-  (overlaps : automata.tape_overlaps.TapeOverlaps)
-  (default_if_term_missing : Bool) :
-  Result Bool
-  := do
-  loop
-    (fun iter1 => automata.tape_overlaps.is_product_satisfiable_loop.body
-      overlaps default_if_term_missing iter1)
-    iter
+    then
+      automata.tape_overlaps.is_product_satisfiable_loop iter1 overlaps
+        default_if_term_missing
+    else ok false
+partial_fixpoint
 
 /-- [automata_builder::automata::tape_overlaps::is_product_satisfiable]:
     Source: 'src/automata/tape_overlaps.rs', lines 651:0-681:1
@@ -10053,34 +9414,28 @@ def automata.tape_overlaps.is_product_satisfiable
     automata.tape_overlaps.is_product_satisfiable_loop iter overlaps
       default_if_term_missing
 
-/-- [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::determine_state_written]: loop body 1:
+/-- [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::determine_state_written]: loop 1:
     Source: 'src/automata/multi_tape_builder.rs', lines 694:12-697:13
     Visibility: public -/
-@[rust_loop_body]
+@[rust_loop]
 def
-  automata.multi_tape_builder.MultiTapeBuilder.determine_state_written_loop0_loop0.body
-  (product : automata.terms_multitape.MultiTapeProduct)
+  automata.multi_tape_builder.MultiTapeBuilder.determine_state_written_loop0_loop0
   (iter : alloc.collections.btree.map.Iter Std.U16 Std.U32)
   (states_written : alloc.collections.btree.map.BTreeMap
   automata.terms_multitape.MultiTapeState (alloc.collections.btree.set.BTreeSet
   automata.terms_multitape.MultiTapeProduct alloc.alloc.Global)
-  alloc.alloc.Global) :
-  Result (ControlFlow ((alloc.collections.btree.map.Iter Std.U16 Std.U32) ×
-    (alloc.collections.btree.map.BTreeMap
+  alloc.alloc.Global) (product : automata.terms_multitape.MultiTapeProduct) :
+  Result (alloc.collections.btree.map.BTreeMap
     automata.terms_multitape.MultiTapeState
     (alloc.collections.btree.set.BTreeSet
     automata.terms_multitape.MultiTapeProduct alloc.alloc.Global)
-    alloc.alloc.Global)) (alloc.collections.btree.map.BTreeMap
-    automata.terms_multitape.MultiTapeState
-    (alloc.collections.btree.set.BTreeSet
-    automata.terms_multitape.MultiTapeProduct alloc.alloc.Global)
-    alloc.alloc.Global))
+    alloc.alloc.Global)
   := do
   let (o, iter1) ←
     alloc.collections.btree.map.Iter.Insts.CoreIterTraitsIteratorIteratorPairSharedAKSharedAV.next
       iter
   match o with
-  | none => ok (done states_written)
+  | none => ok states_written
   | some p =>
     let (write_tape_no, output_tape_cell_state) := p
     let output_state ←
@@ -10106,62 +9461,34 @@ def
         automata.terms_multitape.MultiTapeProduct.Insts.CoreCmpOrd bs mtp
     let e1 := or_default_back bs1
     let bm := entry_back e1
-    ok (cont (iter1, bm))
+    automata.multi_tape_builder.MultiTapeBuilder.determine_state_written_loop0_loop0
+      iter1 bm product
+partial_fixpoint
 
-/-- [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::determine_state_written]: loop 1:
-    Source: 'src/automata/multi_tape_builder.rs', lines 694:12-697:13
+/-- [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::determine_state_written]: loop 0:
+    Source: 'src/automata/multi_tape_builder.rs', lines 681:8-698:9
     Visibility: public -/
 @[rust_loop]
-def
-  automata.multi_tape_builder.MultiTapeBuilder.determine_state_written_loop0_loop0
-  (iter : alloc.collections.btree.map.Iter Std.U16 Std.U32)
+def automata.multi_tape_builder.MultiTapeBuilder.determine_state_written_loop0
+  (iter : alloc.collections.btree.set.Iter
+  automata.terms_multitape.MultiTapeProduct) (verbose : Bool)
+  (prev_overlaps : automata.tape_overlaps.TapeOverlaps)
+  (prev_prod_to_state_map : automata.product_writes_map.ProductWritesMap)
   (states_written : alloc.collections.btree.map.BTreeMap
   automata.terms_multitape.MultiTapeState (alloc.collections.btree.set.BTreeSet
   automata.terms_multitape.MultiTapeProduct alloc.alloc.Global)
-  alloc.alloc.Global) (product : automata.terms_multitape.MultiTapeProduct) :
+  alloc.alloc.Global) :
   Result (alloc.collections.btree.map.BTreeMap
     automata.terms_multitape.MultiTapeState
     (alloc.collections.btree.set.BTreeSet
     automata.terms_multitape.MultiTapeProduct alloc.alloc.Global)
     alloc.alloc.Global)
   := do
-  loop
-    (fun (iter1, states_written1) =>
-      automata.multi_tape_builder.MultiTapeBuilder.determine_state_written_loop0_loop0.body
-      product iter1 states_written1)
-    (iter, states_written)
-
-/-- [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::determine_state_written]: loop body 0:
-    Source: 'src/automata/multi_tape_builder.rs', lines 681:8-698:9
-    Visibility: public -/
-@[rust_loop_body]
-def
-  automata.multi_tape_builder.MultiTapeBuilder.determine_state_written_loop0.body
-  (verbose : Bool) (prev_overlaps : automata.tape_overlaps.TapeOverlaps)
-  (prev_prod_to_state_map : automata.product_writes_map.ProductWritesMap)
-  (iter : alloc.collections.btree.set.Iter
-  automata.terms_multitape.MultiTapeProduct)
-  (states_written : alloc.collections.btree.map.BTreeMap
-  automata.terms_multitape.MultiTapeState (alloc.collections.btree.set.BTreeSet
-  automata.terms_multitape.MultiTapeProduct alloc.alloc.Global)
-  alloc.alloc.Global) :
-  Result (ControlFlow ((alloc.collections.btree.set.Iter
-    automata.terms_multitape.MultiTapeProduct) ×
-    (alloc.collections.btree.map.BTreeMap
-    automata.terms_multitape.MultiTapeState
-    (alloc.collections.btree.set.BTreeSet
-    automata.terms_multitape.MultiTapeProduct alloc.alloc.Global)
-    alloc.alloc.Global)) (alloc.collections.btree.map.BTreeMap
-    automata.terms_multitape.MultiTapeState
-    (alloc.collections.btree.set.BTreeSet
-    automata.terms_multitape.MultiTapeProduct alloc.alloc.Global)
-    alloc.alloc.Global))
-  := do
   let (o, iter1) ←
     alloc.collections.btree.set.Iter.Insts.CoreIterTraitsIteratorIteratorSharedAT.next
       iter
   match o with
-  | none => ok (done states_written)
+  | none => ok states_written
   | some product =>
     let b ←
       automata.tape_overlaps.is_product_satisfiable product prev_overlaps false
@@ -10194,7 +9521,9 @@ def
         automata.product_writes_map.ProductWritesMap.get prev_prod_to_state_map
           product
       match o1 with
-      | none => ok (cont (iter2, states_written))
+      | none =>
+        automata.multi_tape_builder.MultiTapeBuilder.determine_state_written_loop0
+          iter2 verbose prev_overlaps prev_prod_to_state_map states_written
       | some product_writes =>
         let iter3 ←
           alloc.collections.btree.map.BTreeMap.iter
@@ -10202,7 +9531,8 @@ def
         let states_written1 ←
           automata.multi_tape_builder.MultiTapeBuilder.determine_state_written_loop0_loop0
             iter3 states_written product
-        ok (cont (iter2, states_written1))
+        automata.multi_tape_builder.MultiTapeBuilder.determine_state_written_loop0
+          iter2 verbose prev_overlaps prev_prod_to_state_map states_written1
     else
       if verbose
       then
@@ -10223,33 +9553,12 @@ def
               0#u8
               ]) (Array.make 2#usize [ a, a1 ])
         std.io.stdio._print a2
-        ok (cont (iter1, states_written))
-      else ok (cont (iter1, states_written))
-
-/-- [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::determine_state_written]: loop 0:
-    Source: 'src/automata/multi_tape_builder.rs', lines 681:8-698:9
-    Visibility: public -/
-@[rust_loop]
-def automata.multi_tape_builder.MultiTapeBuilder.determine_state_written_loop0
-  (iter : alloc.collections.btree.set.Iter
-  automata.terms_multitape.MultiTapeProduct) (verbose : Bool)
-  (prev_overlaps : automata.tape_overlaps.TapeOverlaps)
-  (prev_prod_to_state_map : automata.product_writes_map.ProductWritesMap)
-  (states_written : alloc.collections.btree.map.BTreeMap
-  automata.terms_multitape.MultiTapeState (alloc.collections.btree.set.BTreeSet
-  automata.terms_multitape.MultiTapeProduct alloc.alloc.Global)
-  alloc.alloc.Global) :
-  Result (alloc.collections.btree.map.BTreeMap
-    automata.terms_multitape.MultiTapeState
-    (alloc.collections.btree.set.BTreeSet
-    automata.terms_multitape.MultiTapeProduct alloc.alloc.Global)
-    alloc.alloc.Global)
-  := do
-  loop
-    (fun (iter1, states_written1) =>
-      automata.multi_tape_builder.MultiTapeBuilder.determine_state_written_loop0.body
-      verbose prev_overlaps prev_prod_to_state_map iter1 states_written1)
-    (iter, states_written)
+        automata.multi_tape_builder.MultiTapeBuilder.determine_state_written_loop0
+          iter1 verbose prev_overlaps prev_prod_to_state_map states_written
+      else
+        automata.multi_tape_builder.MultiTapeBuilder.determine_state_written_loop0
+          iter1 verbose prev_overlaps prev_prod_to_state_map states_written
+partial_fixpoint
 
 /-- [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::determine_state_written]:
     Source: 'src/automata/multi_tape_builder.rs', lines 674:4-700:5
@@ -10526,25 +9835,22 @@ def
     automata.tape_overlaps.TapeOverlaps.list_for_offset.closure.Insts.CoreOpsFunctionFnMutTuplePairShared0U16Shared1VecU32String.call_mut
 }
 
-/-- [automata_builder::automata::tape_overlaps::{automata_builder::automata::tape_overlaps::TapeOverlaps}::list_for_offset]: loop body 0:
+/-- [automata_builder::automata::tape_overlaps::{automata_builder::automata::tape_overlaps::TapeOverlaps}::list_for_offset]: loop 0:
     Source: 'src/automata/tape_overlaps.rs', lines 532:8-537:9 -/
-@[rust_loop_body]
-def automata.tape_overlaps.TapeOverlaps.list_for_offset_loop.body
+@[rust_loop]
+def automata.tape_overlaps.TapeOverlaps.list_for_offset_loop
   (iter : alloc.collections.btree.set.Iter
   automata.terms_multitape.MultiTapeState)
   (tape_states_map : alloc.collections.btree.map.BTreeMap Std.U16
   (alloc.vec.Vec Std.U32) alloc.alloc.Global) :
-  Result (ControlFlow ((alloc.collections.btree.set.Iter
-    automata.terms_multitape.MultiTapeState) ×
-    (alloc.collections.btree.map.BTreeMap Std.U16 (alloc.vec.Vec Std.U32)
-    alloc.alloc.Global)) (alloc.collections.btree.map.BTreeMap Std.U16
-    (alloc.vec.Vec Std.U32) alloc.alloc.Global))
+  Result (alloc.collections.btree.map.BTreeMap Std.U16 (alloc.vec.Vec Std.U32)
+    alloc.alloc.Global)
   := do
   let (o, iter1) ←
     alloc.collections.btree.set.Iter.Insts.CoreIterTraitsIteratorIteratorSharedAT.next
       iter
   match o with
-  | none => ok (done tape_states_map)
+  | none => ok tape_states_map
   | some target_state =>
     let (e, entry_back) ←
       alloc.collections.btree.map.BTreeMap.entry
@@ -10557,24 +9863,8 @@ def automata.tape_overlaps.TapeOverlaps.list_for_offset_loop.body
     let v1 ← alloc.vec.Vec.push v target_state.tape_cell_state
     let e1 := or_default_back v1
     let bm := entry_back e1
-    ok (cont (iter1, bm))
-
-/-- [automata_builder::automata::tape_overlaps::{automata_builder::automata::tape_overlaps::TapeOverlaps}::list_for_offset]: loop 0:
-    Source: 'src/automata/tape_overlaps.rs', lines 532:8-537:9 -/
-@[rust_loop]
-def automata.tape_overlaps.TapeOverlaps.list_for_offset_loop
-  (iter : alloc.collections.btree.set.Iter
-  automata.terms_multitape.MultiTapeState)
-  (tape_states_map : alloc.collections.btree.map.BTreeMap Std.U16
-  (alloc.vec.Vec Std.U32) alloc.alloc.Global) :
-  Result (alloc.collections.btree.map.BTreeMap Std.U16 (alloc.vec.Vec Std.U32)
-    alloc.alloc.Global)
-  := do
-  loop
-    (fun (iter1, tape_states_map1) =>
-      automata.tape_overlaps.TapeOverlaps.list_for_offset_loop.body iter1
-      tape_states_map1)
-    (iter, tape_states_map)
+    automata.tape_overlaps.TapeOverlaps.list_for_offset_loop iter1 bm
+partial_fixpoint
 
 /-- [automata_builder::automata::tape_overlaps::{automata_builder::automata::tape_overlaps::TapeOverlaps}::list_for_offset]:
     Source: 'src/automata/tape_overlaps.rs', lines 530:4-551:5 -/
@@ -10612,28 +9902,26 @@ def automata.tape_overlaps.TapeOverlaps.list_for_offset
   alloc.slice.Slice.join (Slice.Insts.AllocSliceJoinShared0StrString
     alloc.string.String.Insts.CoreBorrowBorrowStr) s (toStr " ")
 
-/-- [automata_builder::automata::tape_overlaps::{automata_builder::automata::tape_overlaps::TapeOverlaps}::visualize_for_state]: loop body 0:
+/-- [automata_builder::automata::tape_overlaps::{automata_builder::automata::tape_overlaps::TapeOverlaps}::visualize_for_state]: loop 0:
     Source: 'src/automata/tape_overlaps.rs', lines 582:8-616:9
     Visibility: public -/
-@[rust_loop_body]
-def automata.tape_overlaps.TapeOverlaps.visualize_for_state_loop.body
+@[rust_loop]
+def automata.tape_overlaps.TapeOverlaps.visualize_for_state_loop
+  (iter : core.ops.range.RangeInclusive Std.I64)
   (overlap_map : alloc.collections.btree.map.BTreeMap Std.I64
   (alloc.collections.btree.set.BTreeSet automata.terms_multitape.MultiTapeState
   alloc.alloc.Global) alloc.alloc.Global) (min_offset : Std.I64)
   (max_offset : Std.I64) (offset_pad_length : Std.Usize)
-  (mid_pre_line : String)
+  (mid_pre_line : String) (lines : alloc.vec.Vec String)
   (empty_set : alloc.collections.btree.set.BTreeSet
-  automata.terms_multitape.MultiTapeState alloc.alloc.Global)
-  (iter : core.ops.range.RangeInclusive Std.I64) (lines : alloc.vec.Vec String)
-  :
-  Result (ControlFlow ((core.ops.range.RangeInclusive Std.I64) ×
-    (alloc.vec.Vec String)) (alloc.vec.Vec String))
+  automata.terms_multitape.MultiTapeState alloc.alloc.Global) :
+  Result (alloc.vec.Vec String)
   := do
   let (o, iter1) ←
     core.ops.range.RangeInclusive.Insts.CoreIterTraitsIteratorIterator.next
       core.iter.range.StepI64 iter
   match o with
-  | none => ok (done lines)
+  | none => ok lines
   | some offset =>
     let pre_line ←
       if offset = 0#i64
@@ -10658,7 +9946,10 @@ def automata.tape_overlaps.TapeOverlaps.visualize_for_state_loop.body
         alloc.collections.btree.set.BTreeSet.is_empty
           alloc.alloc.Global.Insts.CoreAllocAllocatorClone target_states_set
       if b
-      then ok (cont (iter1, lines))
+      then
+        automata.tape_overlaps.TapeOverlaps.visualize_for_state_loop iter1
+          overlap_map min_offset max_offset offset_pad_length mid_pre_line
+          lines empty_set
       else
         let target_states_str ←
           automata.tape_overlaps.TapeOverlaps.list_for_offset target_states_set
@@ -10711,7 +10002,9 @@ def automata.tape_overlaps.TapeOverlaps.visualize_for_state_loop.body
         let s ← alloc.fmt.format a5
         let s1 ← core.hint.must_use s
         let lines1 ← alloc.vec.Vec.push lines s1
-        ok (cont (iter1, lines1))
+        automata.tape_overlaps.TapeOverlaps.visualize_for_state_loop iter1
+          overlap_map min_offset max_offset offset_pad_length mid_pre_line
+          lines1 empty_set
     else
       let target_states_str ←
         automata.tape_overlaps.TapeOverlaps.list_for_offset target_states_set
@@ -10763,29 +10056,10 @@ def automata.tape_overlaps.TapeOverlaps.visualize_for_state_loop.body
       let s ← alloc.fmt.format a5
       let s1 ← core.hint.must_use s
       let lines1 ← alloc.vec.Vec.push lines s1
-      ok (cont (iter1, lines1))
-
-/-- [automata_builder::automata::tape_overlaps::{automata_builder::automata::tape_overlaps::TapeOverlaps}::visualize_for_state]: loop 0:
-    Source: 'src/automata/tape_overlaps.rs', lines 582:8-616:9
-    Visibility: public -/
-@[rust_loop]
-def automata.tape_overlaps.TapeOverlaps.visualize_for_state_loop
-  (iter : core.ops.range.RangeInclusive Std.I64)
-  (overlap_map : alloc.collections.btree.map.BTreeMap Std.I64
-  (alloc.collections.btree.set.BTreeSet automata.terms_multitape.MultiTapeState
-  alloc.alloc.Global) alloc.alloc.Global) (min_offset : Std.I64)
-  (max_offset : Std.I64) (offset_pad_length : Std.Usize)
-  (mid_pre_line : String) (lines : alloc.vec.Vec String)
-  (empty_set : alloc.collections.btree.set.BTreeSet
-  automata.terms_multitape.MultiTapeState alloc.alloc.Global) :
-  Result (alloc.vec.Vec String)
-  := do
-  loop
-    (fun (iter1, lines1) =>
-      automata.tape_overlaps.TapeOverlaps.visualize_for_state_loop.body
-      overlap_map min_offset max_offset offset_pad_length mid_pre_line
-      empty_set iter1 lines1)
-    (iter, lines)
+      automata.tape_overlaps.TapeOverlaps.visualize_for_state_loop iter1
+        overlap_map min_offset max_offset offset_pad_length mid_pre_line lines1
+        empty_set
+partial_fixpoint
 
 /-- [automata_builder::automata::tape_overlaps::{automata_builder::automata::tape_overlaps::TapeOverlaps}::visualize_for_state]:
     Source: 'src/automata/tape_overlaps.rs', lines 553:4-619:5
@@ -10868,34 +10142,6 @@ def automata.tape_overlaps.TapeOverlaps.visualize_for_state
     min_offset max_offset offset_pad_length mid_pre_line (alloc.vec.Vec.new
     String) empty_set
 
-/-- [automata_builder::automata::tape_overlaps::{automata_builder::automata::tape_overlaps::TapeOverlaps}::visualize_for_states]: loop body 0:
-    Source: 'src/automata/tape_overlaps.rs', lines 629:8-632:9
-    Visibility: public -/
-@[rust_loop_body]
-def automata.tape_overlaps.TapeOverlaps.visualize_for_states_loop.body
-  (self : automata.tape_overlaps.TapeOverlaps) (max_prefix_length : Std.Usize)
-  (iter : alloc.collections.btree.set.Iter
-  automata.terms_multitape.MultiTapeState) (lines : alloc.vec.Vec String) :
-  Result (ControlFlow ((alloc.collections.btree.set.Iter
-    automata.terms_multitape.MultiTapeState) × (alloc.vec.Vec String))
-    (alloc.vec.Vec String))
-  := do
-  let (o, iter1) ←
-    alloc.collections.btree.set.Iter.Insts.CoreIterTraitsIteratorIteratorSharedAT.next
-      iter
-  match o with
-  | none => ok (done lines)
-  | some source_state =>
-    let v ←
-      automata.tape_overlaps.TapeOverlaps.visualize_for_state self source_state
-        max_prefix_length
-    let lines1 ←
-      alloc.vec.Vec.Insts.CoreIterTraitsCollectExtend.extend alloc.alloc.Global
-        (core.iter.traits.collect.IntoIteratorVec String) lines v
-    let s ← alloc.string.String.new
-    let lines2 ← alloc.vec.Vec.push lines1 s
-    ok (cont (iter1, lines2))
-
 /-- [automata_builder::automata::tape_overlaps::{automata_builder::automata::tape_overlaps::TapeOverlaps}::visualize_for_states]: loop 0:
     Source: 'src/automata/tape_overlaps.rs', lines 629:8-632:9
     Visibility: public -/
@@ -10907,11 +10153,23 @@ def automata.tape_overlaps.TapeOverlaps.visualize_for_states_loop
   (lines : alloc.vec.Vec String) :
   Result (alloc.vec.Vec String)
   := do
-  loop
-    (fun (iter1, lines1) =>
-      automata.tape_overlaps.TapeOverlaps.visualize_for_states_loop.body self
-      max_prefix_length iter1 lines1)
-    (iter, lines)
+  let (o, iter1) ←
+    alloc.collections.btree.set.Iter.Insts.CoreIterTraitsIteratorIteratorSharedAT.next
+      iter
+  match o with
+  | none => ok lines
+  | some source_state =>
+    let v ←
+      automata.tape_overlaps.TapeOverlaps.visualize_for_state self source_state
+        max_prefix_length
+    let lines1 ←
+      alloc.vec.Vec.Insts.CoreIterTraitsCollectExtend.extend alloc.alloc.Global
+        (core.iter.traits.collect.IntoIteratorVec String) lines v
+    let s ← alloc.string.String.new
+    let lines2 ← alloc.vec.Vec.push lines1 s
+    automata.tape_overlaps.TapeOverlaps.visualize_for_states_loop iter1 self
+      max_prefix_length lines2
+partial_fixpoint
 
 /-- [automata_builder::automata::tape_overlaps::{automata_builder::automata::tape_overlaps::TapeOverlaps}::visualize_for_states]:
     Source: 'src/automata/tape_overlaps.rs', lines 621:4-634:5
@@ -11118,57 +10376,6 @@ def automata.tape_overlaps.TapeOverlaps.propagate_overlap
   then ok (true, self4)
   else ok (target_updated, self4)
 
-/-- [automata_builder::automata::tape_overlaps::{automata_builder::automata::tape_overlaps::TapeOverlaps}::delete_state]: loop body 1:
-    Source: 'src/automata/tape_overlaps.rs', lines 295:12-297:13
-    Visibility: public -/
-@[rust_loop_body]
-def automata.tape_overlaps.TapeOverlaps.delete_state_loop0_loop0.body
-  (state : automata.terms_multitape.MultiTapeState)
-  (iter : alloc.collections.btree.map.ValuesMut Std.I64
-  (alloc.collections.btree.set.BTreeSet automata.terms_multitape.MultiTapeState
-  alloc.alloc.Global))
-  (back : alloc.collections.btree.map.ValuesMut Std.I64
-  (alloc.collections.btree.set.BTreeSet automata.terms_multitape.MultiTapeState
-  alloc.alloc.Global) → alloc.collections.btree.map.ValuesMut Std.I64
-  (alloc.collections.btree.set.BTreeSet automata.terms_multitape.MultiTapeState
-  alloc.alloc.Global)) :
-  Result (ControlFlow ((alloc.collections.btree.map.ValuesMut Std.I64
-    (alloc.collections.btree.set.BTreeSet
-    automata.terms_multitape.MultiTapeState alloc.alloc.Global)) ×
-    (alloc.collections.btree.map.ValuesMut Std.I64
-    (alloc.collections.btree.set.BTreeSet
-    automata.terms_multitape.MultiTapeState alloc.alloc.Global) →
-    alloc.collections.btree.map.ValuesMut Std.I64
-    (alloc.collections.btree.set.BTreeSet
-    automata.terms_multitape.MultiTapeState alloc.alloc.Global)))
-    ((alloc.collections.btree.map.ValuesMut Std.I64
-    (alloc.collections.btree.set.BTreeSet
-    automata.terms_multitape.MultiTapeState alloc.alloc.Global)) ×
-    (alloc.collections.btree.map.ValuesMut Std.I64
-    (alloc.collections.btree.set.BTreeSet
-    automata.terms_multitape.MultiTapeState alloc.alloc.Global) →
-    alloc.collections.btree.map.ValuesMut Std.I64
-    (alloc.collections.btree.set.BTreeSet
-    automata.terms_multitape.MultiTapeState alloc.alloc.Global))))
-  := do
-  let (o, iter1, next_back) ←
-    alloc.collections.btree.map.ValuesMut.Insts.CoreIterTraitsIteratorIteratorMutAV.next
-      iter
-  match o with
-  | none => ok (done (iter1, fun vm => let vm1 := next_back vm none
-                                       back vm1))
-  | some offset_overlaps =>
-    let (_, offset_overlaps1) ←
-      alloc.collections.btree.set.BTreeSet.remove
-        alloc.alloc.Global.Insts.CoreAllocAllocatorClone
-        (core.borrow.Borrow.Blanket automata.terms_multitape.MultiTapeState)
-        automata.terms_multitape.MultiTapeState.Insts.CoreCmpOrd
-        automata.terms_multitape.MultiTapeState.Insts.CoreCmpOrd
-        offset_overlaps state
-    ok (cont (iter1,
-      fun vm => let vm1 := next_back vm (some offset_overlaps1)
-                back vm1))
-
 /-- [automata_builder::automata::tape_overlaps::{automata_builder::automata::tape_overlaps::TapeOverlaps}::delete_state]: loop 1:
     Source: 'src/automata/tape_overlaps.rs', lines 295:12-297:13
     Visibility: public -/
@@ -11192,73 +10399,24 @@ def automata.tape_overlaps.TapeOverlaps.delete_state_loop0_loop0
     (alloc.collections.btree.set.BTreeSet
     automata.terms_multitape.MultiTapeState alloc.alloc.Global)))
   := do
-  loop
-    (fun (iter1, back1) =>
-      automata.tape_overlaps.TapeOverlaps.delete_state_loop0_loop0.body state
-      iter1 back1)
-    (iter, back)
-
-/-- [automata_builder::automata::tape_overlaps::{automata_builder::automata::tape_overlaps::TapeOverlaps}::delete_state]: loop body 0:
-    Source: 'src/automata/tape_overlaps.rs', lines 294:8-298:9
-    Visibility: public -/
-@[rust_loop_body]
-def automata.tape_overlaps.TapeOverlaps.delete_state_loop0.body
-  (state : automata.terms_multitape.MultiTapeState)
-  (iter : alloc.collections.btree.map.ValuesMut
-  automata.terms_multitape.MultiTapeState (alloc.collections.btree.map.BTreeMap
-  Std.I64 (alloc.collections.btree.set.BTreeSet
-  automata.terms_multitape.MultiTapeState alloc.alloc.Global)
-  alloc.alloc.Global))
-  (back : alloc.collections.btree.map.ValuesMut
-  automata.terms_multitape.MultiTapeState (alloc.collections.btree.map.BTreeMap
-  Std.I64 (alloc.collections.btree.set.BTreeSet
-  automata.terms_multitape.MultiTapeState alloc.alloc.Global)
-  alloc.alloc.Global) → alloc.collections.btree.map.ValuesMut
-  automata.terms_multitape.MultiTapeState (alloc.collections.btree.map.BTreeMap
-  Std.I64 (alloc.collections.btree.set.BTreeSet
-  automata.terms_multitape.MultiTapeState alloc.alloc.Global)
-  alloc.alloc.Global)) :
-  Result (ControlFlow ((alloc.collections.btree.map.ValuesMut
-    automata.terms_multitape.MultiTapeState
-    (alloc.collections.btree.map.BTreeMap Std.I64
-    (alloc.collections.btree.set.BTreeSet
-    automata.terms_multitape.MultiTapeState alloc.alloc.Global)
-    alloc.alloc.Global)) × (alloc.collections.btree.map.ValuesMut
-    automata.terms_multitape.MultiTapeState
-    (alloc.collections.btree.map.BTreeMap Std.I64
-    (alloc.collections.btree.set.BTreeSet
-    automata.terms_multitape.MultiTapeState alloc.alloc.Global)
-    alloc.alloc.Global) → alloc.collections.btree.map.ValuesMut
-    automata.terms_multitape.MultiTapeState
-    (alloc.collections.btree.map.BTreeMap Std.I64
-    (alloc.collections.btree.set.BTreeSet
-    automata.terms_multitape.MultiTapeState alloc.alloc.Global)
-    alloc.alloc.Global))) (alloc.collections.btree.map.ValuesMut
-    automata.terms_multitape.MultiTapeState
-    (alloc.collections.btree.map.BTreeMap Std.I64
-    (alloc.collections.btree.set.BTreeSet
-    automata.terms_multitape.MultiTapeState alloc.alloc.Global)
-    alloc.alloc.Global)))
-  := do
   let (o, iter1, next_back) ←
     alloc.collections.btree.map.ValuesMut.Insts.CoreIterTraitsIteratorIteratorMutAV.next
       iter
   match o with
-  | none => ok (done (let vm := next_back iter1 none
-                      back vm))
-  | some source_overlaps =>
-    let (iter2, values_mut_back) ←
-      alloc.collections.btree.map.BTreeMap.values_mut
-        alloc.alloc.Global.Insts.CoreAllocAllocatorClone source_overlaps
-    let (vm, back1) ←
-      automata.tape_overlaps.TapeOverlaps.delete_state_loop0_loop0 iter2
-        (fun vm1 => vm1) state
-    ok (cont (iter1,
-      fun vm1 =>
-        let vm2 := back1 vm
-        let bm := values_mut_back vm2
-        let vm3 := next_back vm1 (some bm)
-        back vm3))
+  | none => ok (iter1, fun vm => let vm1 := next_back vm none
+                                 back vm1)
+  | some offset_overlaps =>
+    let (_, offset_overlaps1) ←
+      alloc.collections.btree.set.BTreeSet.remove
+        alloc.alloc.Global.Insts.CoreAllocAllocatorClone
+        (core.borrow.Borrow.Blanket automata.terms_multitape.MultiTapeState)
+        automata.terms_multitape.MultiTapeState.Insts.CoreCmpOrd
+        automata.terms_multitape.MultiTapeState.Insts.CoreCmpOrd
+        offset_overlaps state
+    automata.tape_overlaps.TapeOverlaps.delete_state_loop0_loop0 iter1
+      (fun vm => let vm1 := next_back vm (some offset_overlaps1)
+                 back vm1) state
+partial_fixpoint
 
 /-- [automata_builder::automata::tape_overlaps::{automata_builder::automata::tape_overlaps::TapeOverlaps}::delete_state]: loop 0:
     Source: 'src/automata/tape_overlaps.rs', lines 294:8-298:9
@@ -11286,11 +10444,26 @@ def automata.tape_overlaps.TapeOverlaps.delete_state_loop0
     automata.terms_multitape.MultiTapeState alloc.alloc.Global)
     alloc.alloc.Global))
   := do
-  loop
-    (fun (iter1, back1) =>
-      automata.tape_overlaps.TapeOverlaps.delete_state_loop0.body state iter1
-      back1)
-    (iter, back)
+  let (o, iter1, next_back) ←
+    alloc.collections.btree.map.ValuesMut.Insts.CoreIterTraitsIteratorIteratorMutAV.next
+      iter
+  match o with
+  | none => ok (let vm := next_back iter1 none
+                back vm)
+  | some source_overlaps =>
+    let (iter2, values_mut_back) ←
+      alloc.collections.btree.map.BTreeMap.values_mut
+        alloc.alloc.Global.Insts.CoreAllocAllocatorClone source_overlaps
+    let (vm, back1) ←
+      automata.tape_overlaps.TapeOverlaps.delete_state_loop0_loop0 iter2
+        (fun vm1 => vm1) state
+    automata.tape_overlaps.TapeOverlaps.delete_state_loop0 iter1
+      (fun vm1 =>
+        let vm2 := back1 vm
+        let bm := values_mut_back vm2
+        let vm3 := next_back vm1 (some bm)
+        back vm3) state
+partial_fixpoint
 
 /-- [automata_builder::automata::tape_overlaps::{automata_builder::automata::tape_overlaps::TapeOverlaps}::delete_state]:
     Source: 'src/automata/tape_overlaps.rs', lines 292:4-299:5
@@ -11316,29 +10489,24 @@ def automata.tape_overlaps.TapeOverlaps.delete_state
   let bm1 := values_mut_back back
   ok { overlaps := bm1 }
 
-/-- [automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::build_input_state_to_prod_map]: loop body 1:
+/-- [automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::build_input_state_to_prod_map]: loop 1:
     Source: 'src/automata/product_writes_map.rs', lines 275:12-279:13
     Visibility: public -/
-@[rust_loop_body]
+@[rust_loop]
 def
-  automata.product_writes_map.ProductWritesMap.build_input_state_to_prod_map_loop0_loop0.body
-  (product : automata.terms_multitape.MultiTapeProduct)
+  automata.product_writes_map.ProductWritesMap.build_input_state_to_prod_map_loop0_loop0
   (iter : alloc.vec.into_iter.IntoIter automata.terms_multitape.MultiTapeTerm)
   (input_state_to_prod : alloc.collections.btree.map.BTreeMap
   automata.terms_multitape.MultiTapeState (alloc.vec.Vec
-  automata.terms_multitape.MultiTapeProduct) alloc.alloc.Global) :
-  Result (ControlFlow ((alloc.vec.into_iter.IntoIter
-    automata.terms_multitape.MultiTapeTerm) ×
-    (alloc.collections.btree.map.BTreeMap
+  automata.terms_multitape.MultiTapeProduct) alloc.alloc.Global)
+  (product : automata.terms_multitape.MultiTapeProduct) :
+  Result (alloc.collections.btree.map.BTreeMap
     automata.terms_multitape.MultiTapeState (alloc.vec.Vec
-    automata.terms_multitape.MultiTapeProduct) alloc.alloc.Global))
-    (alloc.collections.btree.map.BTreeMap
-    automata.terms_multitape.MultiTapeState (alloc.vec.Vec
-    automata.terms_multitape.MultiTapeProduct) alloc.alloc.Global))
+    automata.terms_multitape.MultiTapeProduct) alloc.alloc.Global)
   := do
   let (o, iter1) ← alloc.vec.into_iter.IteratorIntoIter.next iter
   match o with
-  | none => ok (done input_state_to_prod)
+  | none => ok input_state_to_prod
   | some term =>
     let (tape_no, tape_cell_state) := term.state
     let state ←
@@ -11360,62 +10528,9 @@ def
     let v1 ← alloc.vec.Vec.push v mtp
     let e1 := or_default_back v1
     let bm := entry_back e1
-    ok (cont (iter1, bm))
-
-/-- [automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::build_input_state_to_prod_map]: loop 1:
-    Source: 'src/automata/product_writes_map.rs', lines 275:12-279:13
-    Visibility: public -/
-@[rust_loop]
-def
-  automata.product_writes_map.ProductWritesMap.build_input_state_to_prod_map_loop0_loop0
-  (iter : alloc.vec.into_iter.IntoIter automata.terms_multitape.MultiTapeTerm)
-  (input_state_to_prod : alloc.collections.btree.map.BTreeMap
-  automata.terms_multitape.MultiTapeState (alloc.vec.Vec
-  automata.terms_multitape.MultiTapeProduct) alloc.alloc.Global)
-  (product : automata.terms_multitape.MultiTapeProduct) :
-  Result (alloc.collections.btree.map.BTreeMap
-    automata.terms_multitape.MultiTapeState (alloc.vec.Vec
-    automata.terms_multitape.MultiTapeProduct) alloc.alloc.Global)
-  := do
-  loop
-    (fun (iter1, input_state_to_prod1) =>
-      automata.product_writes_map.ProductWritesMap.build_input_state_to_prod_map_loop0_loop0.body
-      product iter1 input_state_to_prod1)
-    (iter, input_state_to_prod)
-
-/-- [automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::build_input_state_to_prod_map]: loop body 0:
-    Source: 'src/automata/product_writes_map.rs', lines 274:8-280:9
-    Visibility: public -/
-@[rust_loop_body]
-def
-  automata.product_writes_map.ProductWritesMap.build_input_state_to_prod_map_loop0.body
-  (iter : indexmap.map.iter.Keys automata.terms_multitape.MultiTapeProduct
-  (alloc.collections.btree.map.BTreeMap Std.U16 Std.U32 alloc.alloc.Global))
-  (input_state_to_prod : alloc.collections.btree.map.BTreeMap
-  automata.terms_multitape.MultiTapeState (alloc.vec.Vec
-  automata.terms_multitape.MultiTapeProduct) alloc.alloc.Global) :
-  Result (ControlFlow ((indexmap.map.iter.Keys
-    automata.terms_multitape.MultiTapeProduct
-    (alloc.collections.btree.map.BTreeMap Std.U16 Std.U32 alloc.alloc.Global))
-    × (alloc.collections.btree.map.BTreeMap
-    automata.terms_multitape.MultiTapeState (alloc.vec.Vec
-    automata.terms_multitape.MultiTapeProduct) alloc.alloc.Global))
-    (alloc.collections.btree.map.BTreeMap
-    automata.terms_multitape.MultiTapeState (alloc.vec.Vec
-    automata.terms_multitape.MultiTapeProduct) alloc.alloc.Global))
-  := do
-  let (o, iter1) ←
-    indexmap.map.iter.Keys.Insts.CoreIterTraitsIteratorIteratorSharedAK.next
-      iter
-  match o with
-  | none => ok (done input_state_to_prod)
-  | some product =>
-    let v ← automata.terms_multitape.MultiTapeProduct.to_flat_terms product
-    let iter2 ← alloc.vec.IntoIteratorVec.into_iter v
-    let input_state_to_prod1 ←
-      automata.product_writes_map.ProductWritesMap.build_input_state_to_prod_map_loop0_loop0
-        iter2 input_state_to_prod product
-    ok (cont (iter1, input_state_to_prod1))
+    automata.product_writes_map.ProductWritesMap.build_input_state_to_prod_map_loop0_loop0
+      iter1 bm product
+partial_fixpoint
 
 /-- [automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::build_input_state_to_prod_map]: loop 0:
     Source: 'src/automata/product_writes_map.rs', lines 274:8-280:9
@@ -11432,11 +10547,20 @@ def
     automata.terms_multitape.MultiTapeState (alloc.vec.Vec
     automata.terms_multitape.MultiTapeProduct) alloc.alloc.Global)
   := do
-  loop
-    (fun (iter1, input_state_to_prod1) =>
-      automata.product_writes_map.ProductWritesMap.build_input_state_to_prod_map_loop0.body
-      iter1 input_state_to_prod1)
-    (iter, input_state_to_prod)
+  let (o, iter1) ←
+    indexmap.map.iter.Keys.Insts.CoreIterTraitsIteratorIteratorSharedAK.next
+      iter
+  match o with
+  | none => ok input_state_to_prod
+  | some product =>
+    let v ← automata.terms_multitape.MultiTapeProduct.to_flat_terms product
+    let iter2 ← alloc.vec.IntoIteratorVec.into_iter v
+    let input_state_to_prod1 ←
+      automata.product_writes_map.ProductWritesMap.build_input_state_to_prod_map_loop0_loop0
+        iter2 input_state_to_prod product
+    automata.product_writes_map.ProductWritesMap.build_input_state_to_prod_map_loop0
+      iter1 input_state_to_prod1
+partial_fixpoint
 
 /-- [automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::build_input_state_to_prod_map]:
     Source: 'src/automata/product_writes_map.rs', lines 268:4-282:5
@@ -11938,27 +11062,23 @@ def automata.multi_tape_product_trie.OffsetGroupedTerms.new
   massert b1
   ok { terms, offset := (some offset) }
 
-/-- [automata_builder::automata::multi_tape_product_trie::{automata_builder::automata::multi_tape_product_trie::MultiTapeProductTrie}::create_group_path]: loop body 0:
+/-- [automata_builder::automata::multi_tape_product_trie::{automata_builder::automata::multi_tape_product_trie::MultiTapeProductTrie}::create_group_path]: loop 0:
     Source: 'src/automata/multi_tape_product_trie.rs', lines 321:8-329:9
     Visibility: public -/
-@[rust_loop_body]
+@[rust_loop]
 def
-  automata.multi_tape_product_trie.MultiTapeProductTrie.create_group_path_loop.body
+  automata.multi_tape_product_trie.MultiTapeProductTrie.create_group_path_loop
   (iter : alloc.vec.into_iter.IntoIter automata.terms_multitape.MultiTapeTerm)
   (offset_groups : alloc.vec.Vec
   automata.multi_tape_product_trie.OffsetGroupedTerms)
   (grouped_terms : alloc.vec.Vec automata.terms_multitape.MultiTapeTerm)
   (prev_offset : Std.I64) :
-  Result (ControlFlow ((alloc.vec.into_iter.IntoIter
-    automata.terms_multitape.MultiTapeTerm) × (alloc.vec.Vec
-    automata.multi_tape_product_trie.OffsetGroupedTerms) × (alloc.vec.Vec
-    automata.terms_multitape.MultiTapeTerm) × Std.I64) ((alloc.vec.Vec
-    automata.multi_tape_product_trie.OffsetGroupedTerms) × (alloc.vec.Vec
-    automata.terms_multitape.MultiTapeTerm) × Std.I64))
+  Result ((alloc.vec.Vec automata.multi_tape_product_trie.OffsetGroupedTerms)
+    × (alloc.vec.Vec automata.terms_multitape.MultiTapeTerm) × Std.I64)
   := do
   let (o, iter1) ← alloc.vec.into_iter.IteratorIntoIter.next iter
   match o with
-  | none => ok (done (offset_groups, grouped_terms, prev_offset))
+  | none => ok (offset_groups, grouped_terms, prev_offset)
   | some term =>
     let b ← alloc.vec.Vec.is_empty alloc.alloc.Global grouped_terms
     let (offset_groups1, grouped_terms1, iter2, term1) ←
@@ -11981,27 +11101,9 @@ def
           else ok (offset_groups, grouped_terms)
         ok (v, v1, iter1, term)
     let grouped_terms2 ← alloc.vec.Vec.push grouped_terms1 term1
-    ok (cont (iter2, offset_groups1, grouped_terms2, term1.position))
-
-/-- [automata_builder::automata::multi_tape_product_trie::{automata_builder::automata::multi_tape_product_trie::MultiTapeProductTrie}::create_group_path]: loop 0:
-    Source: 'src/automata/multi_tape_product_trie.rs', lines 321:8-329:9
-    Visibility: public -/
-@[rust_loop]
-def
-  automata.multi_tape_product_trie.MultiTapeProductTrie.create_group_path_loop
-  (iter : alloc.vec.into_iter.IntoIter automata.terms_multitape.MultiTapeTerm)
-  (offset_groups : alloc.vec.Vec
-  automata.multi_tape_product_trie.OffsetGroupedTerms)
-  (grouped_terms : alloc.vec.Vec automata.terms_multitape.MultiTapeTerm)
-  (prev_offset : Std.I64) :
-  Result ((alloc.vec.Vec automata.multi_tape_product_trie.OffsetGroupedTerms)
-    × (alloc.vec.Vec automata.terms_multitape.MultiTapeTerm) × Std.I64)
-  := do
-  loop
-    (fun (iter1, offset_groups1, grouped_terms1, prev_offset1) =>
-      automata.multi_tape_product_trie.MultiTapeProductTrie.create_group_path_loop.body
-      iter1 offset_groups1 grouped_terms1 prev_offset1)
-    (iter, offset_groups, grouped_terms, prev_offset)
+    automata.multi_tape_product_trie.MultiTapeProductTrie.create_group_path_loop
+      iter2 offset_groups1 grouped_terms2 term1.position
+partial_fixpoint
 
 /-- [automata_builder::automata::multi_tape_product_trie::{automata_builder::automata::multi_tape_product_trie::MultiTapeProductTrie}::create_group_path]:
     Source: 'src/automata/multi_tape_product_trie.rs', lines 315:4-334:5
@@ -12317,56 +11419,6 @@ def automata.tape_overlaps_fsm.TapeOverlapsFSM.new
       prod_to_fsm_states := im
     } 0#usize
 
-/-- [automata_builder::automata::tape_overlaps::{automata_builder::automata::tape_overlaps::TapeOverlaps}::group_states_by_tape]: loop body 0:
-    Source: 'src/automata/tape_overlaps.rs', lines 155:8-157:9
-    Visibility: public -/
-@[rust_loop_body]
-def automata.tape_overlaps.TapeOverlaps.group_states_by_tape_loop.body
-  (iter : alloc.collections.btree.map.Keys
-  automata.terms_multitape.MultiTapeState (alloc.collections.btree.map.BTreeMap
-  Std.I64 (alloc.collections.btree.set.BTreeSet
-  automata.terms_multitape.MultiTapeState alloc.alloc.Global)
-  alloc.alloc.Global))
-  (tape_states : alloc.collections.btree.map.BTreeMap Std.U16
-  (alloc.collections.btree.set.BTreeSet automata.terms_multitape.MultiTapeState
-  alloc.alloc.Global) alloc.alloc.Global) :
-  Result (ControlFlow ((alloc.collections.btree.map.Keys
-    automata.terms_multitape.MultiTapeState
-    (alloc.collections.btree.map.BTreeMap Std.I64
-    (alloc.collections.btree.set.BTreeSet
-    automata.terms_multitape.MultiTapeState alloc.alloc.Global)
-    alloc.alloc.Global)) × (alloc.collections.btree.map.BTreeMap Std.U16
-    (alloc.collections.btree.set.BTreeSet
-    automata.terms_multitape.MultiTapeState alloc.alloc.Global)
-    alloc.alloc.Global)) (alloc.collections.btree.map.BTreeMap Std.U16
-    (alloc.collections.btree.set.BTreeSet
-    automata.terms_multitape.MultiTapeState alloc.alloc.Global)
-    alloc.alloc.Global))
-  := do
-  let (o, iter1) ←
-    alloc.collections.btree.map.Keys.Insts.CoreIterTraitsIteratorIteratorSharedAK.next
-      iter
-  match o with
-  | none => ok (done tape_states)
-  | some source_state =>
-    let (e, entry_back) ←
-      alloc.collections.btree.map.BTreeMap.entry
-        alloc.alloc.Global.Insts.CoreAllocAllocatorClone core.cmp.OrdU16
-        tape_states source_state.tape_no
-    let (bs, or_default_back) ←
-      alloc.collections.btree.map.entry.Entry.or_default core.cmp.OrdU16
-        (alloc.collections.btree.set.BTreeSetTGlobal.Insts.CoreDefaultDefault
-        automata.terms_multitape.MultiTapeState)
-        alloc.alloc.Global.Insts.CoreAllocAllocatorClone e
-    let (_, bs1) ←
-      alloc.collections.btree.set.BTreeSet.insert
-        alloc.alloc.Global.Insts.CoreAllocAllocatorClone
-        automata.terms_multitape.MultiTapeState.Insts.CoreCmpOrd bs
-        source_state
-    let e1 := or_default_back bs1
-    let bm := entry_back e1
-    ok (cont (iter1, bm))
-
 /-- [automata_builder::automata::tape_overlaps::{automata_builder::automata::tape_overlaps::TapeOverlaps}::group_states_by_tape]: loop 0:
     Source: 'src/automata/tape_overlaps.rs', lines 155:8-157:9
     Visibility: public -/
@@ -12385,11 +11437,30 @@ def automata.tape_overlaps.TapeOverlaps.group_states_by_tape_loop
     automata.terms_multitape.MultiTapeState alloc.alloc.Global)
     alloc.alloc.Global)
   := do
-  loop
-    (fun (iter1, tape_states1) =>
-      automata.tape_overlaps.TapeOverlaps.group_states_by_tape_loop.body iter1
-      tape_states1)
-    (iter, tape_states)
+  let (o, iter1) ←
+    alloc.collections.btree.map.Keys.Insts.CoreIterTraitsIteratorIteratorSharedAK.next
+      iter
+  match o with
+  | none => ok tape_states
+  | some source_state =>
+    let (e, entry_back) ←
+      alloc.collections.btree.map.BTreeMap.entry
+        alloc.alloc.Global.Insts.CoreAllocAllocatorClone core.cmp.OrdU16
+        tape_states source_state.tape_no
+    let (bs, or_default_back) ←
+      alloc.collections.btree.map.entry.Entry.or_default core.cmp.OrdU16
+        (alloc.collections.btree.set.BTreeSetTGlobal.Insts.CoreDefaultDefault
+        automata.terms_multitape.MultiTapeState)
+        alloc.alloc.Global.Insts.CoreAllocAllocatorClone e
+    let (_, bs1) ←
+      alloc.collections.btree.set.BTreeSet.insert
+        alloc.alloc.Global.Insts.CoreAllocAllocatorClone
+        automata.terms_multitape.MultiTapeState.Insts.CoreCmpOrd bs
+        source_state
+    let e1 := or_default_back bs1
+    let bm := entry_back e1
+    automata.tape_overlaps.TapeOverlaps.group_states_by_tape_loop iter1 bm
+partial_fixpoint
 
 /-- [automata_builder::automata::tape_overlaps::{automata_builder::automata::tape_overlaps::TapeOverlaps}::group_states_by_tape]:
     Source: 'src/automata/tape_overlaps.rs', lines 153:4-159:5
@@ -12754,41 +11825,11 @@ def
     automata.multi_tape_product_trie.MultiTapeProductTrie)
     std.hash.random.RandomState))
   := do
-  loop
-    (fun (iter1, changed1, next_groups1) =>
-      automata.multi_tape_product_trie.MultiTapeProductTrie._without_nested_offsets_loop.body
-      offsets iter1 changed1 next_groups1)
-    (iter, changed, next_groups)
-partial_fixpoint
-
-/-- [automata_builder::automata::multi_tape_product_trie::{automata_builder::automata::multi_tape_product_trie::MultiTapeProductTrie}::_without_nested_offsets]: loop body 0:
-    Source: 'src/automata/multi_tape_product_trie.rs', lines 219:8-235:9 -/
-@[rust_loop_body]
-def
-  automata.multi_tape_product_trie.MultiTapeProductTrie._without_nested_offsets_loop.body
-  (offsets : alloc.collections.btree.set.BTreeSet Std.I64 alloc.alloc.Global)
-  (iter : indexmap.map.iter.Iter
-  automata.multi_tape_product_trie.OffsetGroupedTerms (alloc.sync.Arc
-  automata.multi_tape_product_trie.MultiTapeProductTrie)) (changed : Bool)
-  (next_groups : indexmap.map.IndexMap
-  automata.multi_tape_product_trie.OffsetGroupedTerms (alloc.sync.Arc
-  automata.multi_tape_product_trie.MultiTapeProductTrie)
-  std.hash.random.RandomState) :
-  Result (ControlFlow ((indexmap.map.iter.Iter
-    automata.multi_tape_product_trie.OffsetGroupedTerms (alloc.sync.Arc
-    automata.multi_tape_product_trie.MultiTapeProductTrie)) × Bool ×
-    (indexmap.map.IndexMap automata.multi_tape_product_trie.OffsetGroupedTerms
-    (alloc.sync.Arc automata.multi_tape_product_trie.MultiTapeProductTrie)
-    std.hash.random.RandomState)) (Bool × (indexmap.map.IndexMap
-    automata.multi_tape_product_trie.OffsetGroupedTerms (alloc.sync.Arc
-    automata.multi_tape_product_trie.MultiTapeProductTrie)
-    std.hash.random.RandomState)))
-  := do
   let (o, iter1) ←
     indexmap.map.iter.Iter.Insts.CoreIterTraitsIteratorIteratorPairSharedAKSharedAV.next
       iter
   match o with
-  | none => ok (done (changed, next_groups))
+  | none => ok (changed, next_groups)
   | some p =>
     let (offset_group, next_trie) := p
     match offset_group.offset with
@@ -12813,7 +11854,8 @@ def
             automata.multi_tape_product_trie.OffsetGroupedTerms.Insts.CoreCmpEq
             std.hash.random.RandomState.Insts.CoreHashBuildHasherDefaultHasher
             next_groups ogt a
-        ok (cont (iter1, changed, next_groups1))
+        automata.multi_tape_product_trie.MultiTapeProductTrie._without_nested_offsets_loop
+          iter1 offsets changed next_groups1
       | some new_trie =>
         let ogt ←
           automata.multi_tape_product_trie.OffsetGroupedTerms.Insts.CoreCloneClone.clone
@@ -12825,7 +11867,8 @@ def
             automata.multi_tape_product_trie.OffsetGroupedTerms.Insts.CoreCmpEq
             std.hash.random.RandomState.Insts.CoreHashBuildHasherDefaultHasher
             next_groups ogt a
-        ok (cont (iter1, true, next_groups1))
+        automata.multi_tape_product_trie.MultiTapeProductTrie._without_nested_offsets_loop
+          iter1 offsets true next_groups1
     | some offset =>
       let b ←
         alloc.collections.btree.set.BTreeSet.contains
@@ -12833,7 +11876,9 @@ def
           (core.borrow.Borrow.Blanket Std.I64) core.cmp.OrdI64 core.cmp.OrdI64
           offsets offset
       if b
-      then ok (cont (iter1, true, next_groups))
+      then
+        automata.multi_tape_product_trie.MultiTapeProductTrie._without_nested_offsets_loop
+          iter1 offsets true next_groups
       else
         let mtpt ←
           alloc.sync.Arc.Insts.CoreOpsDerefDeref.deref alloc.alloc.Global
@@ -12855,7 +11900,8 @@ def
               automata.multi_tape_product_trie.OffsetGroupedTerms.Insts.CoreCmpEq
               std.hash.random.RandomState.Insts.CoreHashBuildHasherDefaultHasher
               next_groups ogt a
-          ok (cont (iter1, changed, next_groups1))
+          automata.multi_tape_product_trie.MultiTapeProductTrie._without_nested_offsets_loop
+            iter1 offsets changed next_groups1
         | some new_trie =>
           let ogt ←
             automata.multi_tape_product_trie.OffsetGroupedTerms.Insts.CoreCloneClone.clone
@@ -12867,7 +11913,8 @@ def
               automata.multi_tape_product_trie.OffsetGroupedTerms.Insts.CoreCmpEq
               std.hash.random.RandomState.Insts.CoreHashBuildHasherDefaultHasher
               next_groups ogt a
-          ok (cont (iter1, true, next_groups1))
+          automata.multi_tape_product_trie.MultiTapeProductTrie._without_nested_offsets_loop
+            iter1 offsets true next_groups1
 partial_fixpoint
 
 /-- [automata_builder::automata::multi_tape_product_trie::{automata_builder::automata::multi_tape_product_trie::MultiTapeProductTrie}::_without_nested_offsets]:
@@ -12900,37 +11947,6 @@ partial_fixpoint
 
 end
 
-/-- [automata_builder::automata::multi_tape_product_trie::{automata_builder::automata::multi_tape_product_trie::MultiTapeProductTrie}::union]: loop body 0:
-    Source: 'src/automata/multi_tape_product_trie.rs', lines 154:8-156:9
-    Visibility: public -/
-@[rust_loop_body]
-def automata.multi_tape_product_trie.MultiTapeProductTrie.union_loop0.body
-  (iter : indexmap.set.iter.Iter automata.terms_multitape.MultiTapeProduct)
-  (end_products : indexmap.set.IndexSet
-  automata.terms_multitape.MultiTapeProduct std.hash.random.RandomState) :
-  Result (ControlFlow ((indexmap.set.iter.Iter
-    automata.terms_multitape.MultiTapeProduct) × (indexmap.set.IndexSet
-    automata.terms_multitape.MultiTapeProduct std.hash.random.RandomState))
-    (indexmap.set.IndexSet automata.terms_multitape.MultiTapeProduct
-    std.hash.random.RandomState))
-  := do
-  let (o, iter1) ←
-    indexmap.set.iter.Iter.Insts.CoreIterTraitsIteratorIteratorSharedAT.next
-      iter
-  match o with
-  | none => ok (done end_products)
-  | some product =>
-    let mtp ←
-      automata.terms_multitape.MultiTapeProduct.Insts.CoreCloneClone.clone
-        product
-    let (_, end_products1) ←
-      indexmap.set.IndexSet.insert
-        automata.terms_multitape.MultiTapeProduct.Insts.CoreHashHash
-        automata.terms_multitape.MultiTapeProduct.Insts.CoreCmpEq
-        std.hash.random.RandomState.Insts.CoreHashBuildHasherDefaultHasher
-        end_products mtp
-    ok (cont (iter1, end_products1))
-
 /-- [automata_builder::automata::multi_tape_product_trie::{automata_builder::automata::multi_tape_product_trie::MultiTapeProductTrie}::union]: loop 0:
     Source: 'src/automata/multi_tape_product_trie.rs', lines 154:8-156:9
     Visibility: public -/
@@ -12942,31 +11958,11 @@ def automata.multi_tape_product_trie.MultiTapeProductTrie.union_loop0
   Result (indexmap.set.IndexSet automata.terms_multitape.MultiTapeProduct
     std.hash.random.RandomState)
   := do
-  loop
-    (fun (iter1, end_products1) =>
-      automata.multi_tape_product_trie.MultiTapeProductTrie.union_loop0.body
-      iter1 end_products1)
-    (iter, end_products)
-
-/-- [automata_builder::automata::multi_tape_product_trie::{automata_builder::automata::multi_tape_product_trie::MultiTapeProductTrie}::union]: loop body 2:
-    Source: 'src/automata/multi_tape_product_trie.rs', lines 154:8-156:9
-    Visibility: public -/
-@[rust_loop_body]
-def automata.multi_tape_product_trie.MultiTapeProductTrie.union_loop2.body
-  (iter : indexmap.set.iter.Iter automata.terms_multitape.MultiTapeProduct)
-  (end_products : indexmap.set.IndexSet
-  automata.terms_multitape.MultiTapeProduct std.hash.random.RandomState) :
-  Result (ControlFlow ((indexmap.set.iter.Iter
-    automata.terms_multitape.MultiTapeProduct) × (indexmap.set.IndexSet
-    automata.terms_multitape.MultiTapeProduct std.hash.random.RandomState))
-    (indexmap.set.IndexSet automata.terms_multitape.MultiTapeProduct
-    std.hash.random.RandomState))
-  := do
   let (o, iter1) ←
     indexmap.set.iter.Iter.Insts.CoreIterTraitsIteratorIteratorSharedAT.next
       iter
   match o with
-  | none => ok (done end_products)
+  | none => ok end_products
   | some product =>
     let mtp ←
       automata.terms_multitape.MultiTapeProduct.Insts.CoreCloneClone.clone
@@ -12977,7 +11973,9 @@ def automata.multi_tape_product_trie.MultiTapeProductTrie.union_loop2.body
         automata.terms_multitape.MultiTapeProduct.Insts.CoreCmpEq
         std.hash.random.RandomState.Insts.CoreHashBuildHasherDefaultHasher
         end_products mtp
-    ok (cont (iter1, end_products1))
+    automata.multi_tape_product_trie.MultiTapeProductTrie.union_loop0 iter1
+      end_products1
+partial_fixpoint
 
 /-- [automata_builder::automata::multi_tape_product_trie::{automata_builder::automata::multi_tape_product_trie::MultiTapeProductTrie}::union]: loop 2:
     Source: 'src/automata/multi_tape_product_trie.rs', lines 154:8-156:9
@@ -12990,31 +11988,11 @@ def automata.multi_tape_product_trie.MultiTapeProductTrie.union_loop2
   Result (indexmap.set.IndexSet automata.terms_multitape.MultiTapeProduct
     std.hash.random.RandomState)
   := do
-  loop
-    (fun (iter1, end_products1) =>
-      automata.multi_tape_product_trie.MultiTapeProductTrie.union_loop2.body
-      iter1 end_products1)
-    (iter, end_products)
-
-/-- [automata_builder::automata::multi_tape_product_trie::{automata_builder::automata::multi_tape_product_trie::MultiTapeProductTrie}::union]: loop body 4:
-    Source: 'src/automata/multi_tape_product_trie.rs', lines 154:8-156:9
-    Visibility: public -/
-@[rust_loop_body]
-def automata.multi_tape_product_trie.MultiTapeProductTrie.union_loop4.body
-  (iter : indexmap.set.iter.Iter automata.terms_multitape.MultiTapeProduct)
-  (end_products : indexmap.set.IndexSet
-  automata.terms_multitape.MultiTapeProduct std.hash.random.RandomState) :
-  Result (ControlFlow ((indexmap.set.iter.Iter
-    automata.terms_multitape.MultiTapeProduct) × (indexmap.set.IndexSet
-    automata.terms_multitape.MultiTapeProduct std.hash.random.RandomState))
-    (indexmap.set.IndexSet automata.terms_multitape.MultiTapeProduct
-    std.hash.random.RandomState))
-  := do
   let (o, iter1) ←
     indexmap.set.iter.Iter.Insts.CoreIterTraitsIteratorIteratorSharedAT.next
       iter
   match o with
-  | none => ok (done end_products)
+  | none => ok end_products
   | some product =>
     let mtp ←
       automata.terms_multitape.MultiTapeProduct.Insts.CoreCloneClone.clone
@@ -13025,7 +12003,9 @@ def automata.multi_tape_product_trie.MultiTapeProductTrie.union_loop4.body
         automata.terms_multitape.MultiTapeProduct.Insts.CoreCmpEq
         std.hash.random.RandomState.Insts.CoreHashBuildHasherDefaultHasher
         end_products mtp
-    ok (cont (iter1, end_products1))
+    automata.multi_tape_product_trie.MultiTapeProductTrie.union_loop2 iter1
+      end_products1
+partial_fixpoint
 
 /-- [automata_builder::automata::multi_tape_product_trie::{automata_builder::automata::multi_tape_product_trie::MultiTapeProductTrie}::union]: loop 4:
     Source: 'src/automata/multi_tape_product_trie.rs', lines 154:8-156:9
@@ -13038,11 +12018,24 @@ def automata.multi_tape_product_trie.MultiTapeProductTrie.union_loop4
   Result (indexmap.set.IndexSet automata.terms_multitape.MultiTapeProduct
     std.hash.random.RandomState)
   := do
-  loop
-    (fun (iter1, end_products1) =>
-      automata.multi_tape_product_trie.MultiTapeProductTrie.union_loop4.body
-      iter1 end_products1)
-    (iter, end_products)
+  let (o, iter1) ←
+    indexmap.set.iter.Iter.Insts.CoreIterTraitsIteratorIteratorSharedAT.next
+      iter
+  match o with
+  | none => ok end_products
+  | some product =>
+    let mtp ←
+      automata.terms_multitape.MultiTapeProduct.Insts.CoreCloneClone.clone
+        product
+    let (_, end_products1) ←
+      indexmap.set.IndexSet.insert
+        automata.terms_multitape.MultiTapeProduct.Insts.CoreHashHash
+        automata.terms_multitape.MultiTapeProduct.Insts.CoreCmpEq
+        std.hash.random.RandomState.Insts.CoreHashBuildHasherDefaultHasher
+        end_products mtp
+    automata.multi_tape_product_trie.MultiTapeProductTrie.union_loop4 iter1
+      end_products1
+partial_fixpoint
 
 mutual
 
@@ -13065,11 +12058,69 @@ def automata.multi_tape_product_trie.MultiTapeProductTrie.union_loop1
     automata.multi_tape_product_trie.MultiTapeProductTrie
     automata.multi_tape_product_trie.TrieError)
   := do
-  loop
-    (fun (iter1, next_groups1) =>
-      automata.multi_tape_product_trie.MultiTapeProductTrie.union_loop1.body
-      offset end_products iter1 next_groups1)
-    (iter, next_groups)
+  let (o, iter1) ←
+    indexmap.map.iter.Iter.Insts.CoreIterTraitsIteratorIteratorPairSharedAKSharedAV.next
+      iter
+  match o with
+  | none =>
+    ok (core.result.Result.Ok
+      (automata.multi_tape_product_trie.MultiTapeProductTrie.mk offset
+      end_products next_groups))
+  | some p =>
+    let (group, other_trie) := p
+    let o1 ←
+      indexmap.map.IndexMap.get
+        std.hash.random.RandomState.Insts.CoreHashBuildHasherDefaultHasher
+        automata.multi_tape_product_trie.OffsetGroupedTerms.Insts.CoreHashHash
+        (equivalent.Equivalent.Blanket
+        automata.multi_tape_product_trie.OffsetGroupedTerms.Insts.CoreCmpEq
+        (core.borrow.Borrow.Blanket
+        automata.multi_tape_product_trie.OffsetGroupedTerms)) next_groups group
+    match o1 with
+    | none =>
+      let merged ←
+        alloc.sync.Arc.Insts.CoreCloneClone.clone
+          alloc.alloc.Global.Insts.CoreAllocAllocatorClone other_trie
+      let ogt ←
+        automata.multi_tape_product_trie.OffsetGroupedTerms.Insts.CoreCloneClone.clone
+          group
+      let (_, next_groups1) ←
+        indexmap.map.IndexMap.insert
+          automata.multi_tape_product_trie.OffsetGroupedTerms.Insts.CoreHashHash
+          automata.multi_tape_product_trie.OffsetGroupedTerms.Insts.CoreCmpEq
+          std.hash.random.RandomState.Insts.CoreHashBuildHasherDefaultHasher
+          next_groups ogt merged
+      automata.multi_tape_product_trie.MultiTapeProductTrie.union_loop1 iter1
+        offset end_products next_groups1
+    | some existing =>
+      let mtpt ←
+        alloc.sync.Arc.Insts.CoreOpsDerefDeref.deref alloc.alloc.Global
+          existing
+      let mtpt1 ←
+        alloc.sync.Arc.Insts.CoreOpsDerefDeref.deref alloc.alloc.Global
+          other_trie
+      let r ←
+        automata.multi_tape_product_trie.MultiTapeProductTrie.union mtpt mtpt1
+      let cf ← core.result.Result.Insts.CoreOpsTry.branch r
+      match cf with
+      | core.ops.control_flow.ControlFlow.Continue val =>
+        let merged ← alloc.sync.Arc.new val
+        let ogt ←
+          automata.multi_tape_product_trie.OffsetGroupedTerms.Insts.CoreCloneClone.clone
+            group
+        let (_, next_groups1) ←
+          indexmap.map.IndexMap.insert
+            automata.multi_tape_product_trie.OffsetGroupedTerms.Insts.CoreHashHash
+            automata.multi_tape_product_trie.OffsetGroupedTerms.Insts.CoreCmpEq
+            std.hash.random.RandomState.Insts.CoreHashBuildHasherDefaultHasher
+            next_groups ogt merged
+        automata.multi_tape_product_trie.MultiTapeProductTrie.union_loop1 iter1
+          offset end_products next_groups1
+      | core.ops.control_flow.ControlFlow.Break residual =>
+        core.result.Result.Insts.CoreOpsTry_traitFromResidualResult.from_residual
+          automata.multi_tape_product_trie.MultiTapeProductTrie
+          (core.convert.FromSame automata.multi_tape_product_trie.TrieError)
+          residual
 partial_fixpoint
 
 /-- [automata_builder::automata::multi_tape_product_trie::{automata_builder::automata::multi_tape_product_trie::MultiTapeProductTrie}::union]: loop 3:
@@ -13090,11 +12141,69 @@ def automata.multi_tape_product_trie.MultiTapeProductTrie.union_loop3
     automata.multi_tape_product_trie.MultiTapeProductTrie
     automata.multi_tape_product_trie.TrieError)
   := do
-  loop
-    (fun (iter1, next_groups1) =>
-      automata.multi_tape_product_trie.MultiTapeProductTrie.union_loop3.body i
-      end_products iter1 next_groups1)
-    (iter, next_groups)
+  let (o, iter1) ←
+    indexmap.map.iter.Iter.Insts.CoreIterTraitsIteratorIteratorPairSharedAKSharedAV.next
+      iter
+  match o with
+  | none =>
+    ok (core.result.Result.Ok
+      (automata.multi_tape_product_trie.MultiTapeProductTrie.mk (some i)
+      end_products next_groups))
+  | some p =>
+    let (group, other_trie) := p
+    let o1 ←
+      indexmap.map.IndexMap.get
+        std.hash.random.RandomState.Insts.CoreHashBuildHasherDefaultHasher
+        automata.multi_tape_product_trie.OffsetGroupedTerms.Insts.CoreHashHash
+        (equivalent.Equivalent.Blanket
+        automata.multi_tape_product_trie.OffsetGroupedTerms.Insts.CoreCmpEq
+        (core.borrow.Borrow.Blanket
+        automata.multi_tape_product_trie.OffsetGroupedTerms)) next_groups group
+    match o1 with
+    | none =>
+      let merged ←
+        alloc.sync.Arc.Insts.CoreCloneClone.clone
+          alloc.alloc.Global.Insts.CoreAllocAllocatorClone other_trie
+      let ogt ←
+        automata.multi_tape_product_trie.OffsetGroupedTerms.Insts.CoreCloneClone.clone
+          group
+      let (_, next_groups1) ←
+        indexmap.map.IndexMap.insert
+          automata.multi_tape_product_trie.OffsetGroupedTerms.Insts.CoreHashHash
+          automata.multi_tape_product_trie.OffsetGroupedTerms.Insts.CoreCmpEq
+          std.hash.random.RandomState.Insts.CoreHashBuildHasherDefaultHasher
+          next_groups ogt merged
+      automata.multi_tape_product_trie.MultiTapeProductTrie.union_loop3 iter1 i
+        end_products next_groups1
+    | some existing =>
+      let mtpt ←
+        alloc.sync.Arc.Insts.CoreOpsDerefDeref.deref alloc.alloc.Global
+          existing
+      let mtpt1 ←
+        alloc.sync.Arc.Insts.CoreOpsDerefDeref.deref alloc.alloc.Global
+          other_trie
+      let r ←
+        automata.multi_tape_product_trie.MultiTapeProductTrie.union mtpt mtpt1
+      let cf ← core.result.Result.Insts.CoreOpsTry.branch r
+      match cf with
+      | core.ops.control_flow.ControlFlow.Continue val =>
+        let merged ← alloc.sync.Arc.new val
+        let ogt ←
+          automata.multi_tape_product_trie.OffsetGroupedTerms.Insts.CoreCloneClone.clone
+            group
+        let (_, next_groups1) ←
+          indexmap.map.IndexMap.insert
+            automata.multi_tape_product_trie.OffsetGroupedTerms.Insts.CoreHashHash
+            automata.multi_tape_product_trie.OffsetGroupedTerms.Insts.CoreCmpEq
+            std.hash.random.RandomState.Insts.CoreHashBuildHasherDefaultHasher
+            next_groups ogt merged
+        automata.multi_tape_product_trie.MultiTapeProductTrie.union_loop3 iter1
+          i end_products next_groups1
+      | core.ops.control_flow.ControlFlow.Break residual =>
+        core.result.Result.Insts.CoreOpsTry_traitFromResidualResult.from_residual
+          automata.multi_tape_product_trie.MultiTapeProductTrie
+          (core.convert.FromSame automata.multi_tape_product_trie.TrieError)
+          residual
 partial_fixpoint
 
 /-- [automata_builder::automata::multi_tape_product_trie::{automata_builder::automata::multi_tape_product_trie::MultiTapeProductTrie}::union]: loop 5:
@@ -13115,134 +12224,14 @@ def automata.multi_tape_product_trie.MultiTapeProductTrie.union_loop5
     automata.multi_tape_product_trie.MultiTapeProductTrie
     automata.multi_tape_product_trie.TrieError)
   := do
-  loop
-    (fun (iter1, next_groups1) =>
-      automata.multi_tape_product_trie.MultiTapeProductTrie.union_loop5.body i
-      end_products iter1 next_groups1)
-    (iter, next_groups)
-partial_fixpoint
-
-/-- [automata_builder::automata::multi_tape_product_trie::{automata_builder::automata::multi_tape_product_trie::MultiTapeProductTrie}::union]: loop body 1:
-    Source: 'src/automata/multi_tape_product_trie.rs', lines 159:8-168:5
-    Visibility: public -/
-@[rust_loop_body]
-def automata.multi_tape_product_trie.MultiTapeProductTrie.union_loop1.body
-  (offset : Option Std.I64)
-  (end_products : indexmap.set.IndexSet
-  automata.terms_multitape.MultiTapeProduct std.hash.random.RandomState)
-  (iter : indexmap.map.iter.Iter
-  automata.multi_tape_product_trie.OffsetGroupedTerms (alloc.sync.Arc
-  automata.multi_tape_product_trie.MultiTapeProductTrie))
-  (next_groups : indexmap.map.IndexMap
-  automata.multi_tape_product_trie.OffsetGroupedTerms (alloc.sync.Arc
-  automata.multi_tape_product_trie.MultiTapeProductTrie)
-  std.hash.random.RandomState) :
-  Result (ControlFlow ((indexmap.map.iter.Iter
-    automata.multi_tape_product_trie.OffsetGroupedTerms (alloc.sync.Arc
-    automata.multi_tape_product_trie.MultiTapeProductTrie)) ×
-    (indexmap.map.IndexMap automata.multi_tape_product_trie.OffsetGroupedTerms
-    (alloc.sync.Arc automata.multi_tape_product_trie.MultiTapeProductTrie)
-    std.hash.random.RandomState)) (core.result.Result
-    automata.multi_tape_product_trie.MultiTapeProductTrie
-    automata.multi_tape_product_trie.TrieError))
-  := do
   let (o, iter1) ←
     indexmap.map.iter.Iter.Insts.CoreIterTraitsIteratorIteratorPairSharedAKSharedAV.next
       iter
   match o with
   | none =>
-    ok (done (core.result.Result.Ok
-      (automata.multi_tape_product_trie.MultiTapeProductTrie.mk offset
-      end_products next_groups)))
-  | some p =>
-    let (group, other_trie) := p
-    let o1 ←
-      indexmap.map.IndexMap.get
-        std.hash.random.RandomState.Insts.CoreHashBuildHasherDefaultHasher
-        automata.multi_tape_product_trie.OffsetGroupedTerms.Insts.CoreHashHash
-        (equivalent.Equivalent.Blanket
-        automata.multi_tape_product_trie.OffsetGroupedTerms.Insts.CoreCmpEq
-        (core.borrow.Borrow.Blanket
-        automata.multi_tape_product_trie.OffsetGroupedTerms)) next_groups group
-    match o1 with
-    | none =>
-      let merged ←
-        alloc.sync.Arc.Insts.CoreCloneClone.clone
-          alloc.alloc.Global.Insts.CoreAllocAllocatorClone other_trie
-      let ogt ←
-        automata.multi_tape_product_trie.OffsetGroupedTerms.Insts.CoreCloneClone.clone
-          group
-      let (_, next_groups1) ←
-        indexmap.map.IndexMap.insert
-          automata.multi_tape_product_trie.OffsetGroupedTerms.Insts.CoreHashHash
-          automata.multi_tape_product_trie.OffsetGroupedTerms.Insts.CoreCmpEq
-          std.hash.random.RandomState.Insts.CoreHashBuildHasherDefaultHasher
-          next_groups ogt merged
-      ok (cont (iter1, next_groups1))
-    | some existing =>
-      let mtpt ←
-        alloc.sync.Arc.Insts.CoreOpsDerefDeref.deref alloc.alloc.Global
-          existing
-      let mtpt1 ←
-        alloc.sync.Arc.Insts.CoreOpsDerefDeref.deref alloc.alloc.Global
-          other_trie
-      let r ←
-        automata.multi_tape_product_trie.MultiTapeProductTrie.union mtpt mtpt1
-      let cf ← core.result.Result.Insts.CoreOpsTry.branch r
-      match cf with
-      | core.ops.control_flow.ControlFlow.Continue val =>
-        let merged ← alloc.sync.Arc.new val
-        let ogt ←
-          automata.multi_tape_product_trie.OffsetGroupedTerms.Insts.CoreCloneClone.clone
-            group
-        let (_, next_groups1) ←
-          indexmap.map.IndexMap.insert
-            automata.multi_tape_product_trie.OffsetGroupedTerms.Insts.CoreHashHash
-            automata.multi_tape_product_trie.OffsetGroupedTerms.Insts.CoreCmpEq
-            std.hash.random.RandomState.Insts.CoreHashBuildHasherDefaultHasher
-            next_groups ogt merged
-        ok (cont (iter1, next_groups1))
-      | core.ops.control_flow.ControlFlow.Break residual =>
-        let r1 ←
-          core.result.Result.Insts.CoreOpsTry_traitFromResidualResult.from_residual
-            automata.multi_tape_product_trie.MultiTapeProductTrie
-            (core.convert.FromSame automata.multi_tape_product_trie.TrieError)
-            residual
-        ok (done r1)
-partial_fixpoint
-
-/-- [automata_builder::automata::multi_tape_product_trie::{automata_builder::automata::multi_tape_product_trie::MultiTapeProductTrie}::union]: loop body 3:
-    Source: 'src/automata/multi_tape_product_trie.rs', lines 159:8-168:5
-    Visibility: public -/
-@[rust_loop_body]
-def automata.multi_tape_product_trie.MultiTapeProductTrie.union_loop3.body
-  (i : Std.I64)
-  (end_products : indexmap.set.IndexSet
-  automata.terms_multitape.MultiTapeProduct std.hash.random.RandomState)
-  (iter : indexmap.map.iter.Iter
-  automata.multi_tape_product_trie.OffsetGroupedTerms (alloc.sync.Arc
-  automata.multi_tape_product_trie.MultiTapeProductTrie))
-  (next_groups : indexmap.map.IndexMap
-  automata.multi_tape_product_trie.OffsetGroupedTerms (alloc.sync.Arc
-  automata.multi_tape_product_trie.MultiTapeProductTrie)
-  std.hash.random.RandomState) :
-  Result (ControlFlow ((indexmap.map.iter.Iter
-    automata.multi_tape_product_trie.OffsetGroupedTerms (alloc.sync.Arc
-    automata.multi_tape_product_trie.MultiTapeProductTrie)) ×
-    (indexmap.map.IndexMap automata.multi_tape_product_trie.OffsetGroupedTerms
-    (alloc.sync.Arc automata.multi_tape_product_trie.MultiTapeProductTrie)
-    std.hash.random.RandomState)) (core.result.Result
-    automata.multi_tape_product_trie.MultiTapeProductTrie
-    automata.multi_tape_product_trie.TrieError))
-  := do
-  let (o, iter1) ←
-    indexmap.map.iter.Iter.Insts.CoreIterTraitsIteratorIteratorPairSharedAKSharedAV.next
-      iter
-  match o with
-  | none =>
-    ok (done (core.result.Result.Ok
+    ok (core.result.Result.Ok
       (automata.multi_tape_product_trie.MultiTapeProductTrie.mk (some i)
-      end_products next_groups)))
+      end_products next_groups))
   | some p =>
     let (group, other_trie) := p
     let o1 ←
@@ -13267,7 +12256,8 @@ def automata.multi_tape_product_trie.MultiTapeProductTrie.union_loop3.body
           automata.multi_tape_product_trie.OffsetGroupedTerms.Insts.CoreCmpEq
           std.hash.random.RandomState.Insts.CoreHashBuildHasherDefaultHasher
           next_groups ogt merged
-      ok (cont (iter1, next_groups1))
+      automata.multi_tape_product_trie.MultiTapeProductTrie.union_loop5 iter1 i
+        end_products next_groups1
     | some existing =>
       let mtpt ←
         alloc.sync.Arc.Insts.CoreOpsDerefDeref.deref alloc.alloc.Global
@@ -13290,103 +12280,13 @@ def automata.multi_tape_product_trie.MultiTapeProductTrie.union_loop3.body
             automata.multi_tape_product_trie.OffsetGroupedTerms.Insts.CoreCmpEq
             std.hash.random.RandomState.Insts.CoreHashBuildHasherDefaultHasher
             next_groups ogt merged
-        ok (cont (iter1, next_groups1))
+        automata.multi_tape_product_trie.MultiTapeProductTrie.union_loop5 iter1
+          i end_products next_groups1
       | core.ops.control_flow.ControlFlow.Break residual =>
-        let r1 ←
-          core.result.Result.Insts.CoreOpsTry_traitFromResidualResult.from_residual
-            automata.multi_tape_product_trie.MultiTapeProductTrie
-            (core.convert.FromSame automata.multi_tape_product_trie.TrieError)
-            residual
-        ok (done r1)
-partial_fixpoint
-
-/-- [automata_builder::automata::multi_tape_product_trie::{automata_builder::automata::multi_tape_product_trie::MultiTapeProductTrie}::union]: loop body 5:
-    Source: 'src/automata/multi_tape_product_trie.rs', lines 159:8-168:5
-    Visibility: public -/
-@[rust_loop_body]
-def automata.multi_tape_product_trie.MultiTapeProductTrie.union_loop5.body
-  (i : Std.I64)
-  (end_products : indexmap.set.IndexSet
-  automata.terms_multitape.MultiTapeProduct std.hash.random.RandomState)
-  (iter : indexmap.map.iter.Iter
-  automata.multi_tape_product_trie.OffsetGroupedTerms (alloc.sync.Arc
-  automata.multi_tape_product_trie.MultiTapeProductTrie))
-  (next_groups : indexmap.map.IndexMap
-  automata.multi_tape_product_trie.OffsetGroupedTerms (alloc.sync.Arc
-  automata.multi_tape_product_trie.MultiTapeProductTrie)
-  std.hash.random.RandomState) :
-  Result (ControlFlow ((indexmap.map.iter.Iter
-    automata.multi_tape_product_trie.OffsetGroupedTerms (alloc.sync.Arc
-    automata.multi_tape_product_trie.MultiTapeProductTrie)) ×
-    (indexmap.map.IndexMap automata.multi_tape_product_trie.OffsetGroupedTerms
-    (alloc.sync.Arc automata.multi_tape_product_trie.MultiTapeProductTrie)
-    std.hash.random.RandomState)) (core.result.Result
-    automata.multi_tape_product_trie.MultiTapeProductTrie
-    automata.multi_tape_product_trie.TrieError))
-  := do
-  let (o, iter1) ←
-    indexmap.map.iter.Iter.Insts.CoreIterTraitsIteratorIteratorPairSharedAKSharedAV.next
-      iter
-  match o with
-  | none =>
-    ok (done (core.result.Result.Ok
-      (automata.multi_tape_product_trie.MultiTapeProductTrie.mk (some i)
-      end_products next_groups)))
-  | some p =>
-    let (group, other_trie) := p
-    let o1 ←
-      indexmap.map.IndexMap.get
-        std.hash.random.RandomState.Insts.CoreHashBuildHasherDefaultHasher
-        automata.multi_tape_product_trie.OffsetGroupedTerms.Insts.CoreHashHash
-        (equivalent.Equivalent.Blanket
-        automata.multi_tape_product_trie.OffsetGroupedTerms.Insts.CoreCmpEq
-        (core.borrow.Borrow.Blanket
-        automata.multi_tape_product_trie.OffsetGroupedTerms)) next_groups group
-    match o1 with
-    | none =>
-      let merged ←
-        alloc.sync.Arc.Insts.CoreCloneClone.clone
-          alloc.alloc.Global.Insts.CoreAllocAllocatorClone other_trie
-      let ogt ←
-        automata.multi_tape_product_trie.OffsetGroupedTerms.Insts.CoreCloneClone.clone
-          group
-      let (_, next_groups1) ←
-        indexmap.map.IndexMap.insert
-          automata.multi_tape_product_trie.OffsetGroupedTerms.Insts.CoreHashHash
-          automata.multi_tape_product_trie.OffsetGroupedTerms.Insts.CoreCmpEq
-          std.hash.random.RandomState.Insts.CoreHashBuildHasherDefaultHasher
-          next_groups ogt merged
-      ok (cont (iter1, next_groups1))
-    | some existing =>
-      let mtpt ←
-        alloc.sync.Arc.Insts.CoreOpsDerefDeref.deref alloc.alloc.Global
-          existing
-      let mtpt1 ←
-        alloc.sync.Arc.Insts.CoreOpsDerefDeref.deref alloc.alloc.Global
-          other_trie
-      let r ←
-        automata.multi_tape_product_trie.MultiTapeProductTrie.union mtpt mtpt1
-      let cf ← core.result.Result.Insts.CoreOpsTry.branch r
-      match cf with
-      | core.ops.control_flow.ControlFlow.Continue val =>
-        let merged ← alloc.sync.Arc.new val
-        let ogt ←
-          automata.multi_tape_product_trie.OffsetGroupedTerms.Insts.CoreCloneClone.clone
-            group
-        let (_, next_groups1) ←
-          indexmap.map.IndexMap.insert
-            automata.multi_tape_product_trie.OffsetGroupedTerms.Insts.CoreHashHash
-            automata.multi_tape_product_trie.OffsetGroupedTerms.Insts.CoreCmpEq
-            std.hash.random.RandomState.Insts.CoreHashBuildHasherDefaultHasher
-            next_groups ogt merged
-        ok (cont (iter1, next_groups1))
-      | core.ops.control_flow.ControlFlow.Break residual =>
-        let r1 ←
-          core.result.Result.Insts.CoreOpsTry_traitFromResidualResult.from_residual
-            automata.multi_tape_product_trie.MultiTapeProductTrie
-            (core.convert.FromSame automata.multi_tape_product_trie.TrieError)
-            residual
-        ok (done r1)
+        core.result.Result.Insts.CoreOpsTry_traitFromResidualResult.from_residual
+          automata.multi_tape_product_trie.MultiTapeProductTrie
+          (core.convert.FromSame automata.multi_tape_product_trie.TrieError)
+          residual
 partial_fixpoint
 
 /-- [automata_builder::automata::multi_tape_product_trie::{automata_builder::automata::multi_tape_product_trie::MultiTapeProductTrie}::union]:
@@ -13469,39 +12369,6 @@ partial_fixpoint
 
 end
 
-/-- [automata_builder::automata::multi_tape_product_trie::{automata_builder::automata::multi_tape_product_trie::MultiTapeProductTrie}::merge]: loop body 0:
-    Source: 'src/automata/multi_tape_product_trie.rs', lines 174:8-178:5
-    Visibility: public -/
-@[rust_loop_body]
-def automata.multi_tape_product_trie.MultiTapeProductTrie.merge_loop.body
-  (iter : core.slice.iter.Iter (alloc.sync.Arc
-  automata.multi_tape_product_trie.MultiTapeProductTrie))
-  (merged : automata.multi_tape_product_trie.MultiTapeProductTrie) :
-  Result (ControlFlow ((core.slice.iter.Iter (alloc.sync.Arc
-    automata.multi_tape_product_trie.MultiTapeProductTrie)) ×
-    automata.multi_tape_product_trie.MultiTapeProductTrie) (core.result.Result
-    automata.multi_tape_product_trie.MultiTapeProductTrie
-    automata.multi_tape_product_trie.TrieError))
-  := do
-  let (o, iter1) ← core.slice.iter.IteratorSliceIter.next iter
-  match o with
-  | none => ok (done (core.result.Result.Ok merged))
-  | some trie =>
-    let mtpt ←
-      alloc.sync.Arc.Insts.CoreOpsDerefDeref.deref alloc.alloc.Global trie
-    let r ←
-      automata.multi_tape_product_trie.MultiTapeProductTrie.union merged mtpt
-    let cf ← core.result.Result.Insts.CoreOpsTry.branch r
-    match cf with
-    | core.ops.control_flow.ControlFlow.Continue val => ok (cont (iter1, val))
-    | core.ops.control_flow.ControlFlow.Break residual =>
-      let r1 ←
-        core.result.Result.Insts.CoreOpsTry_traitFromResidualResult.from_residual
-          automata.multi_tape_product_trie.MultiTapeProductTrie
-          (core.convert.FromSame automata.multi_tape_product_trie.TrieError)
-          residual
-      ok (done r1)
-
 /-- [automata_builder::automata::multi_tape_product_trie::{automata_builder::automata::multi_tape_product_trie::MultiTapeProductTrie}::merge]: loop 0:
     Source: 'src/automata/multi_tape_product_trie.rs', lines 174:8-178:5
     Visibility: public -/
@@ -13514,11 +12381,25 @@ def automata.multi_tape_product_trie.MultiTapeProductTrie.merge_loop
     automata.multi_tape_product_trie.MultiTapeProductTrie
     automata.multi_tape_product_trie.TrieError)
   := do
-  loop
-    (fun (iter1, merged1) =>
-      automata.multi_tape_product_trie.MultiTapeProductTrie.merge_loop.body
-      iter1 merged1)
-    (iter, merged)
+  let (o, iter1) ← core.slice.iter.IteratorSliceIter.next iter
+  match o with
+  | none => ok (core.result.Result.Ok merged)
+  | some trie =>
+    let mtpt ←
+      alloc.sync.Arc.Insts.CoreOpsDerefDeref.deref alloc.alloc.Global trie
+    let r ←
+      automata.multi_tape_product_trie.MultiTapeProductTrie.union merged mtpt
+    let cf ← core.result.Result.Insts.CoreOpsTry.branch r
+    match cf with
+    | core.ops.control_flow.ControlFlow.Continue val =>
+      automata.multi_tape_product_trie.MultiTapeProductTrie.merge_loop iter1
+        val
+    | core.ops.control_flow.ControlFlow.Break residual =>
+      core.result.Result.Insts.CoreOpsTry_traitFromResidualResult.from_residual
+        automata.multi_tape_product_trie.MultiTapeProductTrie
+        (core.convert.FromSame automata.multi_tape_product_trie.TrieError)
+        residual
+partial_fixpoint
 
 /-- [automata_builder::automata::multi_tape_product_trie::{automata_builder::automata::multi_tape_product_trie::MultiTapeProductTrie}::merge]:
     Source: 'src/automata/multi_tape_product_trie.rs', lines 171:4-178:5
@@ -13546,61 +12427,6 @@ def automata.multi_tape_product_trie.MultiTapeProductTrie.merge
   let iter ← core.slice.Slice.iter s
   automata.multi_tape_product_trie.MultiTapeProductTrie.merge_loop iter merged
 
-/-- [automata_builder::automata::multi_tape_product_trie::{automata_builder::automata::multi_tape_product_trie::MultiTapeProductTrie}::advance_exclusions]: loop body 0:
-    Source: 'src/automata/multi_tape_product_trie.rs', lines 292:8-304:5
-    Visibility: public -/
-@[rust_loop_body]
-def
-  automata.multi_tape_product_trie.MultiTapeProductTrie.advance_exclusions_loop0.body
-  (source_offset : Std.I64)
-  (iter : indexmap.map.iter.Iter
-  automata.multi_tape_product_trie.OffsetGroupedTerms (alloc.sync.Arc
-  automata.multi_tape_product_trie.MultiTapeProductTrie))
-  (next_exclusions : automata.multi_tape_product_trie.MultiTapeProductTrie) :
-  Result (ControlFlow ((indexmap.map.iter.Iter
-    automata.multi_tape_product_trie.OffsetGroupedTerms (alloc.sync.Arc
-    automata.multi_tape_product_trie.MultiTapeProductTrie)) ×
-    automata.multi_tape_product_trie.MultiTapeProductTrie) (core.result.Result
-    automata.multi_tape_product_trie.MultiTapeProductTrie
-    automata.multi_tape_product_trie.TrieError))
-  := do
-  let (o, iter1) ←
-    indexmap.map.iter.Iter.Insts.CoreIterTraitsIteratorIteratorPairSharedAKSharedAV.next
-      iter
-  match o with
-  | none =>
-    let offsets ←
-      alloc.collections.btree.set.BTreeSetTGlobal.Insts.CoreConvertFromArray.from
-        core.cmp.OrdI64 (Array.make 1#usize [ source_offset ])
-    let o1 ←
-      automata.multi_tape_product_trie.MultiTapeProductTrie._without_nested_offsets
-        next_exclusions offsets
-    match o1 with
-    | none => ok (done (core.result.Result.Ok next_exclusions))
-    | some trie => ok (done (core.result.Result.Ok trie))
-  | some p =>
-    let (offset_group, adjacent_exclusions) := p
-    let b ←
-      core.option.Option.Insts.CoreCmpPartialEqOption.eq core.cmp.PartialEqI64
-        offset_group.offset (some source_offset)
-    if b
-    then ok (cont (iter1, next_exclusions))
-    else
-      let (r, next_exclusions1) ←
-        automata.multi_tape_product_trie.MultiTapeProductTrie.insert
-          next_exclusions offset_group adjacent_exclusions
-      let cf ← core.result.Result.Insts.CoreOpsTry.branch r
-      match cf with
-      | core.ops.control_flow.ControlFlow.Continue _ =>
-        ok (cont (iter1, next_exclusions1))
-      | core.ops.control_flow.ControlFlow.Break residual =>
-        let r1 ←
-          core.result.Result.Insts.CoreOpsTry_traitFromResidualResult.from_residual
-            automata.multi_tape_product_trie.MultiTapeProductTrie
-            (core.convert.FromSame automata.multi_tape_product_trie.TrieError)
-            residual
-        ok (done r1)
-
 /-- [automata_builder::automata::multi_tape_product_trie::{automata_builder::automata::multi_tape_product_trie::MultiTapeProductTrie}::advance_exclusions]: loop 0:
     Source: 'src/automata/multi_tape_product_trie.rs', lines 292:8-304:5
     Visibility: public -/
@@ -13616,30 +12442,6 @@ def
     automata.multi_tape_product_trie.MultiTapeProductTrie
     automata.multi_tape_product_trie.TrieError)
   := do
-  loop
-    (fun (iter1, next_exclusions1) =>
-      automata.multi_tape_product_trie.MultiTapeProductTrie.advance_exclusions_loop0.body
-      source_offset iter1 next_exclusions1)
-    (iter, next_exclusions)
-
-/-- [automata_builder::automata::multi_tape_product_trie::{automata_builder::automata::multi_tape_product_trie::MultiTapeProductTrie}::advance_exclusions]: loop body 1:
-    Source: 'src/automata/multi_tape_product_trie.rs', lines 292:8-304:5
-    Visibility: public -/
-@[rust_loop_body]
-def
-  automata.multi_tape_product_trie.MultiTapeProductTrie.advance_exclusions_loop1.body
-  (source_offset : Std.I64)
-  (iter : indexmap.map.iter.Iter
-  automata.multi_tape_product_trie.OffsetGroupedTerms (alloc.sync.Arc
-  automata.multi_tape_product_trie.MultiTapeProductTrie))
-  (next_exclusions : automata.multi_tape_product_trie.MultiTapeProductTrie) :
-  Result (ControlFlow ((indexmap.map.iter.Iter
-    automata.multi_tape_product_trie.OffsetGroupedTerms (alloc.sync.Arc
-    automata.multi_tape_product_trie.MultiTapeProductTrie)) ×
-    automata.multi_tape_product_trie.MultiTapeProductTrie) (core.result.Result
-    automata.multi_tape_product_trie.MultiTapeProductTrie
-    automata.multi_tape_product_trie.TrieError))
-  := do
   let (o, iter1) ←
     indexmap.map.iter.Iter.Insts.CoreIterTraitsIteratorIteratorPairSharedAKSharedAV.next
       iter
@@ -13652,15 +12454,17 @@ def
       automata.multi_tape_product_trie.MultiTapeProductTrie._without_nested_offsets
         next_exclusions offsets
     match o1 with
-    | none => ok (done (core.result.Result.Ok next_exclusions))
-    | some trie => ok (done (core.result.Result.Ok trie))
+    | none => ok (core.result.Result.Ok next_exclusions)
+    | some trie => ok (core.result.Result.Ok trie)
   | some p =>
     let (offset_group, adjacent_exclusions) := p
     let b ←
       core.option.Option.Insts.CoreCmpPartialEqOption.eq core.cmp.PartialEqI64
         offset_group.offset (some source_offset)
     if b
-    then ok (cont (iter1, next_exclusions))
+    then
+      automata.multi_tape_product_trie.MultiTapeProductTrie.advance_exclusions_loop0
+        iter1 source_offset next_exclusions
     else
       let (r, next_exclusions1) ←
         automata.multi_tape_product_trie.MultiTapeProductTrie.insert
@@ -13668,14 +12472,14 @@ def
       let cf ← core.result.Result.Insts.CoreOpsTry.branch r
       match cf with
       | core.ops.control_flow.ControlFlow.Continue _ =>
-        ok (cont (iter1, next_exclusions1))
+        automata.multi_tape_product_trie.MultiTapeProductTrie.advance_exclusions_loop0
+          iter1 source_offset next_exclusions1
       | core.ops.control_flow.ControlFlow.Break residual =>
-        let r1 ←
-          core.result.Result.Insts.CoreOpsTry_traitFromResidualResult.from_residual
-            automata.multi_tape_product_trie.MultiTapeProductTrie
-            (core.convert.FromSame automata.multi_tape_product_trie.TrieError)
-            residual
-        ok (done r1)
+        core.result.Result.Insts.CoreOpsTry_traitFromResidualResult.from_residual
+          automata.multi_tape_product_trie.MultiTapeProductTrie
+          (core.convert.FromSame automata.multi_tape_product_trie.TrieError)
+          residual
+partial_fixpoint
 
 /-- [automata_builder::automata::multi_tape_product_trie::{automata_builder::automata::multi_tape_product_trie::MultiTapeProductTrie}::advance_exclusions]: loop 1:
     Source: 'src/automata/multi_tape_product_trie.rs', lines 292:8-304:5
@@ -13692,11 +12496,44 @@ def
     automata.multi_tape_product_trie.MultiTapeProductTrie
     automata.multi_tape_product_trie.TrieError)
   := do
-  loop
-    (fun (iter1, next_exclusions1) =>
-      automata.multi_tape_product_trie.MultiTapeProductTrie.advance_exclusions_loop1.body
-      source_offset iter1 next_exclusions1)
-    (iter, next_exclusions)
+  let (o, iter1) ←
+    indexmap.map.iter.Iter.Insts.CoreIterTraitsIteratorIteratorPairSharedAKSharedAV.next
+      iter
+  match o with
+  | none =>
+    let offsets ←
+      alloc.collections.btree.set.BTreeSetTGlobal.Insts.CoreConvertFromArray.from
+        core.cmp.OrdI64 (Array.make 1#usize [ source_offset ])
+    let o1 ←
+      automata.multi_tape_product_trie.MultiTapeProductTrie._without_nested_offsets
+        next_exclusions offsets
+    match o1 with
+    | none => ok (core.result.Result.Ok next_exclusions)
+    | some trie => ok (core.result.Result.Ok trie)
+  | some p =>
+    let (offset_group, adjacent_exclusions) := p
+    let b ←
+      core.option.Option.Insts.CoreCmpPartialEqOption.eq core.cmp.PartialEqI64
+        offset_group.offset (some source_offset)
+    if b
+    then
+      automata.multi_tape_product_trie.MultiTapeProductTrie.advance_exclusions_loop1
+        iter1 source_offset next_exclusions
+    else
+      let (r, next_exclusions1) ←
+        automata.multi_tape_product_trie.MultiTapeProductTrie.insert
+          next_exclusions offset_group adjacent_exclusions
+      let cf ← core.result.Result.Insts.CoreOpsTry.branch r
+      match cf with
+      | core.ops.control_flow.ControlFlow.Continue _ =>
+        automata.multi_tape_product_trie.MultiTapeProductTrie.advance_exclusions_loop1
+          iter1 source_offset next_exclusions1
+      | core.ops.control_flow.ControlFlow.Break residual =>
+        core.result.Result.Insts.CoreOpsTry_traitFromResidualResult.from_residual
+          automata.multi_tape_product_trie.MultiTapeProductTrie
+          (core.convert.FromSame automata.multi_tape_product_trie.TrieError)
+          residual
+partial_fixpoint
 
 /-- [automata_builder::automata::multi_tape_product_trie::{automata_builder::automata::multi_tape_product_trie::MultiTapeProductTrie}::advance_exclusions]:
     Source: 'src/automata/multi_tape_product_trie.rs', lines 263:4-304:5
@@ -13942,46 +12779,6 @@ def automata.multi_tape_product_trie.offset_group_path_to_product
       automata.terms_multitape.MultiTapeTerm) fm
   automata.terms_multitape.MultiTapeProduct.new flat_terms
 
-/-- [automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::insert_neutral_product]: loop body 0:
-    Source: 'src/automata/product_writes_map.rs', lines 180:8-188:5
-    Visibility: public -/
-@[rust_loop_body]
-def
-  automata.product_writes_map.ProductWritesMap.insert_neutral_product_loop.body
-  (product : automata.terms_multitape.MultiTapeProduct)
-  (iter : alloc.vec.into_iter.IntoIter automata.terms_multitape.MultiTapeTerm)
-  (self : automata.product_writes_map.ProductWritesMap) :
-  Result (ControlFlow ((alloc.vec.into_iter.IntoIter
-    automata.terms_multitape.MultiTapeTerm) ×
-    automata.product_writes_map.ProductWritesMap) ((core.result.Result Unit
-    automata.product_writes_map.ProductWritesError) ×
-    automata.product_writes_map.ProductWritesMap))
-  := do
-  let (o, iter1) ← alloc.vec.into_iter.IteratorIntoIter.next iter
-  match o with
-  | none => ok (done (core.result.Result.Ok (), self))
-  | some term =>
-    if term.position != 0#i64
-    then ok (cont (iter1, self))
-    else
-      let (tape_no, tape_cell_state) := term.state
-      let mtp ←
-        automata.terms_multitape.MultiTapeProduct.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeProductMultiTapeExpression.copy
-          product
-      let (r, self1) ←
-        automata.product_writes_map.ProductWritesMap._insert self mtp tape_no
-          tape_cell_state
-      let cf ← core.result.Result.Insts.CoreOpsTry.branch r
-      match cf with
-      | core.ops.control_flow.ControlFlow.Continue _ =>
-        ok (cont (iter1, self1))
-      | core.ops.control_flow.ControlFlow.Break residual =>
-        let r1 ←
-          core.result.Result.Insts.CoreOpsTry_traitFromResidualResult.from_residual
-            Unit (core.convert.FromSame
-            automata.product_writes_map.ProductWritesError) residual
-        ok (done (r1, self1))
-
 /-- [automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::insert_neutral_product]: loop 0:
     Source: 'src/automata/product_writes_map.rs', lines 180:8-188:5
     Visibility: public -/
@@ -13994,11 +12791,34 @@ def automata.product_writes_map.ProductWritesMap.insert_neutral_product_loop
     automata.product_writes_map.ProductWritesError) ×
     automata.product_writes_map.ProductWritesMap)
   := do
-  loop
-    (fun (iter1, self1) =>
-      automata.product_writes_map.ProductWritesMap.insert_neutral_product_loop.body
-      product iter1 self1)
-    (iter, self)
+  let (o, iter1) ← alloc.vec.into_iter.IteratorIntoIter.next iter
+  match o with
+  | none => ok (core.result.Result.Ok (), self)
+  | some term =>
+    if term.position != 0#i64
+    then
+      automata.product_writes_map.ProductWritesMap.insert_neutral_product_loop
+        iter1 self product
+    else
+      let (tape_no, tape_cell_state) := term.state
+      let mtp ←
+        automata.terms_multitape.MultiTapeProduct.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeProductMultiTapeExpression.copy
+          product
+      let (r, self1) ←
+        automata.product_writes_map.ProductWritesMap._insert self mtp tape_no
+          tape_cell_state
+      let cf ← core.result.Result.Insts.CoreOpsTry.branch r
+      match cf with
+      | core.ops.control_flow.ControlFlow.Continue _ =>
+        automata.product_writes_map.ProductWritesMap.insert_neutral_product_loop
+          iter1 self1 product
+      | core.ops.control_flow.ControlFlow.Break residual =>
+        let r1 ←
+          core.result.Result.Insts.CoreOpsTry_traitFromResidualResult.from_residual
+            Unit (core.convert.FromSame
+            automata.product_writes_map.ProductWritesError) residual
+        ok (r1, self1)
+partial_fixpoint
 
 /-- [automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::insert_neutral_product]:
     Source: 'src/automata/product_writes_map.rs', lines 177:4-188:5
@@ -14151,24 +12971,20 @@ def automata.multi_tape_product_trie.OffsetGroupedTerms.to_product
       automata.terms_multitape.MultiTapeTerm.Insts.CoreCloneClone self.terms
   automata.terms_multitape.MultiTapeProduct.new v
 
-/-- [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::build_self_writes_map]: loop body 0:
+/-- [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::build_self_writes_map]: loop 0:
     Source: 'src/automata/multi_tape_builder.rs', lines 929:8-934:5
     Visibility: public -/
-@[rust_loop_body]
-def
-  automata.multi_tape_builder.MultiTapeBuilder.build_self_writes_map_loop.body
+@[rust_loop]
+def automata.multi_tape_builder.MultiTapeBuilder.build_self_writes_map_loop
   (iter : core.slice.iter.Iter (alloc.vec.Vec
   automata.terms_multitape.MultiTapeState))
   (self_writes_map : automata.product_writes_map.ProductWritesMap) :
-  Result (ControlFlow ((core.slice.iter.Iter (alloc.vec.Vec
-    automata.terms_multitape.MultiTapeState)) ×
-    automata.product_writes_map.ProductWritesMap) (core.result.Result
-    automata.product_writes_map.ProductWritesMap
-    automata.multi_tape_builder.CompileTapesError))
+  Result (core.result.Result automata.product_writes_map.ProductWritesMap
+    automata.multi_tape_builder.CompileTapesError)
   := do
   let (o, iter1) ← core.slice.iter.IteratorSliceIter.next iter
   match o with
-  | none => ok (done (core.result.Result.Ok self_writes_map))
+  | none => ok (core.result.Result.Ok self_writes_map)
   | some combo =>
     let s := alloc.vec.Vec.deref combo
     let group ←
@@ -14181,31 +12997,14 @@ def
     let cf ← core.result.Result.Insts.CoreOpsTry.branch r
     match cf with
     | core.ops.control_flow.ControlFlow.Continue _ =>
-      ok (cont (iter1, self_writes_map1))
+      automata.multi_tape_builder.MultiTapeBuilder.build_self_writes_map_loop
+        iter1 self_writes_map1
     | core.ops.control_flow.ControlFlow.Break residual =>
-      let r1 ←
-        core.result.Result.Insts.CoreOpsTry_traitFromResidualResult.from_residual
-          automata.product_writes_map.ProductWritesMap
-          automata.multi_tape_builder.CompileTapesError.Insts.CoreConvertFromProductWritesError
-          residual
-      ok (done r1)
-
-/-- [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::build_self_writes_map]: loop 0:
-    Source: 'src/automata/multi_tape_builder.rs', lines 929:8-934:5
-    Visibility: public -/
-@[rust_loop]
-def automata.multi_tape_builder.MultiTapeBuilder.build_self_writes_map_loop
-  (iter : core.slice.iter.Iter (alloc.vec.Vec
-  automata.terms_multitape.MultiTapeState))
-  (self_writes_map : automata.product_writes_map.ProductWritesMap) :
-  Result (core.result.Result automata.product_writes_map.ProductWritesMap
-    automata.multi_tape_builder.CompileTapesError)
-  := do
-  loop
-    (fun (iter1, self_writes_map1) =>
-      automata.multi_tape_builder.MultiTapeBuilder.build_self_writes_map_loop.body
-      iter1 self_writes_map1)
-    (iter, self_writes_map)
+      core.result.Result.Insts.CoreOpsTry_traitFromResidualResult.from_residual
+        automata.product_writes_map.ProductWritesMap
+        automata.multi_tape_builder.CompileTapesError.Insts.CoreConvertFromProductWritesError
+        residual
+partial_fixpoint
 
 /-- [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::build_self_writes_map]:
     Source: 'src/automata/multi_tape_builder.rs', lines 927:4-934:5
@@ -14592,33 +13391,6 @@ def automata.tape_overlaps.MultiTapeStatesMap.insert_multi_tape_state
   automata.tape_overlaps.MultiTapeStatesMap.insert self state.tape_no
     state.tape_cell_state
 
-/-- [automata_builder::automata::tape_overlaps::{automata_builder::automata::tape_overlaps::MultiTapeStatesMap}::insert_multi_tape_states]: loop body 0:
-    Source: 'src/automata/tape_overlaps.rs', lines 74:8-76:9
-    Visibility: public -/
-@[rust_loop_body]
-def
-  automata.tape_overlaps.MultiTapeStatesMap.insert_multi_tape_states_loop.body
-  {T1 : Type _} {Clause0_IntoIter : Type _}
-  (coreitertraitscollectIntoIteratorT1SharedMultiTapeStateClause0_IntoIterInst
-  : core.iter.traits.collect.IntoIterator T1
-  automata.terms_multitape.MultiTapeState Clause0_IntoIter)
-  (iter : Clause0_IntoIter) (self : automata.tape_overlaps.MultiTapeStatesMap)
-  :
-  Result (ControlFlow (Clause0_IntoIter ×
-    automata.tape_overlaps.MultiTapeStatesMap)
-    automata.tape_overlaps.MultiTapeStatesMap)
-  := do
-  let (o, iter1) ←
-    coreitertraitscollectIntoIteratorT1SharedMultiTapeStateClause0_IntoIterInst.iteratorInst.next
-      iter
-  match o with
-  | none => ok (done self)
-  | some state =>
-    let self1 ←
-      automata.tape_overlaps.MultiTapeStatesMap.insert_multi_tape_state self
-        state
-    ok (cont (iter1, self1))
-
 /-- [automata_builder::automata::tape_overlaps::{automata_builder::automata::tape_overlaps::MultiTapeStatesMap}::insert_multi_tape_states]: loop 0:
     Source: 'src/automata/tape_overlaps.rs', lines 74:8-76:9
     Visibility: public -/
@@ -14632,12 +13404,19 @@ def automata.tape_overlaps.MultiTapeStatesMap.insert_multi_tape_states_loop
   :
   Result automata.tape_overlaps.MultiTapeStatesMap
   := do
-  loop
-    (fun (iter1, self1) =>
-      automata.tape_overlaps.MultiTapeStatesMap.insert_multi_tape_states_loop.body
+  let (o, iter1) ←
+    coreitertraitscollectIntoIteratorT1SharedMultiTapeStateClause0_IntoIterInst.iteratorInst.next
+      iter
+  match o with
+  | none => ok self
+  | some state =>
+    let self1 ←
+      automata.tape_overlaps.MultiTapeStatesMap.insert_multi_tape_state self
+        state
+    automata.tape_overlaps.MultiTapeStatesMap.insert_multi_tape_states_loop
       coreitertraitscollectIntoIteratorT1SharedMultiTapeStateClause0_IntoIterInst
-      iter1 self1)
-    (iter, self)
+      iter1 self1
+partial_fixpoint
 
 /-- [automata_builder::automata::tape_overlaps::{automata_builder::automata::tape_overlaps::MultiTapeStatesMap}::insert_multi_tape_states]:
     Source: 'src/automata/tape_overlaps.rs', lines 71:4-77:5
@@ -14767,29 +13546,29 @@ def
     automata.multi_tape_builder.MultiTapeBuilder.build_offset_group_choices.closure.closure.Insts.CoreOpsFunctionFnMutTupleShared0VecMultiTapeStateOffsetGroupedTerms.call_mut
 }
 
-/-- [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::build_offset_group_choices::{impl core::ops::function::FnMut<(&'_0 i64,), alloc::vec::Vec<automata_builder::automata::multi_tape_product_trie::OffsetGroupedTerms>> for automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::build_offset_group_choices::{closure}<'_0, '_1, '_2, '_3>}::call_mut]: loop body 0:
+/-- [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::build_offset_group_choices::{impl core::ops::function::FnMut<(&'_0 i64,), alloc::vec::Vec<automata_builder::automata::multi_tape_product_trie::OffsetGroupedTerms>> for automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::build_offset_group_choices::{closure}<'_0, '_1, '_2, '_3>}::call_mut]: loop 0:
     Source: 'src/automata/multi_tape_builder.rs', lines 952:16-958:17 -/
-@[rust_loop_body]
+@[rust_loop]
 def
-  automata.multi_tape_builder.MultiTapeBuilder.build_offset_group_choices.closure.Insts.CoreOpsFunctionFnMutTupleShared0I64VecOffsetGroupedTerms.call_mut_loop.body
-  («to» : automata.tape_overlaps.TapeOverlaps)
+  automata.multi_tape_builder.MultiTapeBuilder.build_offset_group_choices.closure.Insts.CoreOpsFunctionFnMutTupleShared0I64VecOffsetGroupedTerms.call_mut_loop
   (iter : alloc.collections.btree.set.Iter Std.U16)
+  («to» : automata.tape_overlaps.TapeOverlaps)
   (offset_tape_states_whitelist : automata.tape_overlaps.MultiTapeStatesMap) :
-  Result (ControlFlow ((alloc.collections.btree.set.Iter Std.U16) ×
-    automata.tape_overlaps.MultiTapeStatesMap)
-    automata.tape_overlaps.MultiTapeStatesMap)
+  Result automata.tape_overlaps.MultiTapeStatesMap
   := do
   let (o, iter1) ←
     alloc.collections.btree.set.Iter.Insts.CoreIterTraitsIteratorIteratorSharedAT.next
       iter
   match o with
-  | none => ok (done offset_tape_states_whitelist)
+  | none => ok offset_tape_states_whitelist
   | some tape_no =>
     let b ←
       automata.tape_overlaps.MultiTapeStatesMap.contains_tape
         offset_tape_states_whitelist tape_no
     if b
-    then ok (cont (iter1, offset_tape_states_whitelist))
+    then
+      automata.multi_tape_builder.MultiTapeBuilder.build_offset_group_choices.closure.Insts.CoreOpsFunctionFnMutTupleShared0I64VecOffsetGroupedTerms.call_mut_loop
+        iter1 «to» offset_tape_states_whitelist
     else
       let multi_tape_states ←
         automata.tape_overlaps.TapeOverlaps.get_states_for_tape «to» tape_no
@@ -14802,23 +13581,9 @@ def
           (alloc.collections.btree.set.Iter.Insts.CoreIterTraitsIteratorIteratorSharedAT
           automata.terms_multitape.MultiTapeState))
           offset_tape_states_whitelist i
-      ok (cont (iter1, offset_tape_states_whitelist1))
-
-/-- [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::build_offset_group_choices::{impl core::ops::function::FnMut<(&'_0 i64,), alloc::vec::Vec<automata_builder::automata::multi_tape_product_trie::OffsetGroupedTerms>> for automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::build_offset_group_choices::{closure}<'_0, '_1, '_2, '_3>}::call_mut]: loop 0:
-    Source: 'src/automata/multi_tape_builder.rs', lines 952:16-958:17 -/
-@[rust_loop]
-def
-  automata.multi_tape_builder.MultiTapeBuilder.build_offset_group_choices.closure.Insts.CoreOpsFunctionFnMutTupleShared0I64VecOffsetGroupedTerms.call_mut_loop
-  (iter : alloc.collections.btree.set.Iter Std.U16)
-  («to» : automata.tape_overlaps.TapeOverlaps)
-  (offset_tape_states_whitelist : automata.tape_overlaps.MultiTapeStatesMap) :
-  Result automata.tape_overlaps.MultiTapeStatesMap
-  := do
-  loop
-    (fun (iter1, offset_tape_states_whitelist1) =>
-      automata.multi_tape_builder.MultiTapeBuilder.build_offset_group_choices.closure.Insts.CoreOpsFunctionFnMutTupleShared0I64VecOffsetGroupedTerms.call_mut_loop.body
-      «to» iter1 offset_tape_states_whitelist1)
-    (iter, offset_tape_states_whitelist)
+      automata.multi_tape_builder.MultiTapeBuilder.build_offset_group_choices.closure.Insts.CoreOpsFunctionFnMutTupleShared0I64VecOffsetGroupedTerms.call_mut_loop
+        iter1 «to» offset_tape_states_whitelist1
+partial_fixpoint
 
 /-- [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::build_offset_group_choices::{impl core::ops::function::FnMut<(&'_0 i64,), alloc::vec::Vec<automata_builder::automata::multi_tape_product_trie::OffsetGroupedTerms>> for automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::build_offset_group_choices::{closure}<'_0, '_1, '_2, '_3>}::call_mut]:
     Source: 'src/automata/multi_tape_builder.rs', lines 947:17-964:13 -/
@@ -15094,41 +13859,19 @@ def
   alloc.alloc.Global) :
   Result (alloc.collections.btree.set.BTreeSet Std.I64 alloc.alloc.Global)
   := do
-  loop
-    (fun (iter1, all_offsets1) =>
-      automata.multi_tape_product_trie.MultiTapeProductTrie._search_all_offsets_loop.body
-      iter1 all_offsets1)
-    (iter, all_offsets)
-partial_fixpoint
-
-/-- [automata_builder::automata::multi_tape_product_trie::{automata_builder::automata::multi_tape_product_trie::MultiTapeProductTrie}::_search_all_offsets]: loop body 0:
-    Source: 'src/automata/multi_tape_product_trie.rs', lines 428:8-430:9 -/
-@[rust_loop_body]
-def
-  automata.multi_tape_product_trie.MultiTapeProductTrie._search_all_offsets_loop.body
-  (iter : indexmap.map.iter.Values
-  automata.multi_tape_product_trie.OffsetGroupedTerms (alloc.sync.Arc
-  automata.multi_tape_product_trie.MultiTapeProductTrie))
-  (all_offsets : alloc.collections.btree.set.BTreeSet Std.I64
-  alloc.alloc.Global) :
-  Result (ControlFlow ((indexmap.map.iter.Values
-    automata.multi_tape_product_trie.OffsetGroupedTerms (alloc.sync.Arc
-    automata.multi_tape_product_trie.MultiTapeProductTrie)) ×
-    (alloc.collections.btree.set.BTreeSet Std.I64 alloc.alloc.Global))
-    (alloc.collections.btree.set.BTreeSet Std.I64 alloc.alloc.Global))
-  := do
   let (o, iter1) ←
     indexmap.map.iter.Values.Insts.CoreIterTraitsIteratorIteratorSharedAV.next
       iter
   match o with
-  | none => ok (done all_offsets)
+  | none => ok all_offsets
   | some next_trie =>
     let mtpt ←
       alloc.sync.Arc.Insts.CoreOpsDerefDeref.deref alloc.alloc.Global next_trie
     let all_offsets1 ←
       automata.multi_tape_product_trie.MultiTapeProductTrie._search_all_offsets
         mtpt all_offsets
-    ok (cont (iter1, all_offsets1))
+    automata.multi_tape_product_trie.MultiTapeProductTrie._search_all_offsets_loop
+      iter1 all_offsets1
 partial_fixpoint
 
 /-- [automata_builder::automata::multi_tape_product_trie::{automata_builder::automata::multi_tape_product_trie::MultiTapeProductTrie}::_search_all_offsets]:
@@ -15167,37 +13910,6 @@ def automata.multi_tape_product_trie.MultiTapeProductTrie.search_all_offsets
   automata.multi_tape_product_trie.MultiTapeProductTrie._search_all_offsets
     self all_offsets
 
-/-- [automata_builder::automata::multi_tape_product_trie::{automata_builder::automata::multi_tape_product_trie::MultiTapeProductTrie}::_search_all_products]: loop body 0:
-    Source: 'src/automata/multi_tape_product_trie.rs', lines 402:8-404:9 -/
-@[rust_loop_body]
-def
-  automata.multi_tape_product_trie.MultiTapeProductTrie._search_all_products_loop0.body
-  (iter : indexmap.set.iter.Iter automata.terms_multitape.MultiTapeProduct)
-  (all_products : indexmap.set.IndexSet
-  automata.terms_multitape.MultiTapeProduct std.hash.random.RandomState) :
-  Result (ControlFlow ((indexmap.set.iter.Iter
-    automata.terms_multitape.MultiTapeProduct) × (indexmap.set.IndexSet
-    automata.terms_multitape.MultiTapeProduct std.hash.random.RandomState))
-    (indexmap.set.IndexSet automata.terms_multitape.MultiTapeProduct
-    std.hash.random.RandomState))
-  := do
-  let (o, iter1) ←
-    indexmap.set.iter.Iter.Insts.CoreIterTraitsIteratorIteratorSharedAT.next
-      iter
-  match o with
-  | none => ok (done all_products)
-  | some product =>
-    let mtp ←
-      automata.terms_multitape.MultiTapeProduct.Insts.CoreCloneClone.clone
-        product
-    let (_, all_products1) ←
-      indexmap.set.IndexSet.insert
-        automata.terms_multitape.MultiTapeProduct.Insts.CoreHashHash
-        automata.terms_multitape.MultiTapeProduct.Insts.CoreCmpEq
-        std.hash.random.RandomState.Insts.CoreHashBuildHasherDefaultHasher
-        all_products mtp
-    ok (cont (iter1, all_products1))
-
 /-- [automata_builder::automata::multi_tape_product_trie::{automata_builder::automata::multi_tape_product_trie::MultiTapeProductTrie}::_search_all_products]: loop 0:
     Source: 'src/automata/multi_tape_product_trie.rs', lines 402:8-404:9 -/
 @[rust_loop]
@@ -15209,11 +13921,24 @@ def
   Result (indexmap.set.IndexSet automata.terms_multitape.MultiTapeProduct
     std.hash.random.RandomState)
   := do
-  loop
-    (fun (iter1, all_products1) =>
-      automata.multi_tape_product_trie.MultiTapeProductTrie._search_all_products_loop0.body
-      iter1 all_products1)
-    (iter, all_products)
+  let (o, iter1) ←
+    indexmap.set.iter.Iter.Insts.CoreIterTraitsIteratorIteratorSharedAT.next
+      iter
+  match o with
+  | none => ok all_products
+  | some product =>
+    let mtp ←
+      automata.terms_multitape.MultiTapeProduct.Insts.CoreCloneClone.clone
+        product
+    let (_, all_products1) ←
+      indexmap.set.IndexSet.insert
+        automata.terms_multitape.MultiTapeProduct.Insts.CoreHashHash
+        automata.terms_multitape.MultiTapeProduct.Insts.CoreCmpEq
+        std.hash.random.RandomState.Insts.CoreHashBuildHasherDefaultHasher
+        all_products mtp
+    automata.multi_tape_product_trie.MultiTapeProductTrie._search_all_products_loop0
+      iter1 all_products1
+partial_fixpoint
 
 mutual
 
@@ -15230,42 +13955,19 @@ def
   Result (indexmap.set.IndexSet automata.terms_multitape.MultiTapeProduct
     std.hash.random.RandomState)
   := do
-  loop
-    (fun (iter1, all_products1) =>
-      automata.multi_tape_product_trie.MultiTapeProductTrie._search_all_products_loop1.body
-      iter1 all_products1)
-    (iter, all_products)
-partial_fixpoint
-
-/-- [automata_builder::automata::multi_tape_product_trie::{automata_builder::automata::multi_tape_product_trie::MultiTapeProductTrie}::_search_all_products]: loop body 1:
-    Source: 'src/automata/multi_tape_product_trie.rs', lines 405:8-407:9 -/
-@[rust_loop_body]
-def
-  automata.multi_tape_product_trie.MultiTapeProductTrie._search_all_products_loop1.body
-  (iter : indexmap.map.iter.Values
-  automata.multi_tape_product_trie.OffsetGroupedTerms (alloc.sync.Arc
-  automata.multi_tape_product_trie.MultiTapeProductTrie))
-  (all_products : indexmap.set.IndexSet
-  automata.terms_multitape.MultiTapeProduct std.hash.random.RandomState) :
-  Result (ControlFlow ((indexmap.map.iter.Values
-    automata.multi_tape_product_trie.OffsetGroupedTerms (alloc.sync.Arc
-    automata.multi_tape_product_trie.MultiTapeProductTrie)) ×
-    (indexmap.set.IndexSet automata.terms_multitape.MultiTapeProduct
-    std.hash.random.RandomState)) (indexmap.set.IndexSet
-    automata.terms_multitape.MultiTapeProduct std.hash.random.RandomState))
-  := do
   let (o, iter1) ←
     indexmap.map.iter.Values.Insts.CoreIterTraitsIteratorIteratorSharedAV.next
       iter
   match o with
-  | none => ok (done all_products)
+  | none => ok all_products
   | some next_trie =>
     let mtpt ←
       alloc.sync.Arc.Insts.CoreOpsDerefDeref.deref alloc.alloc.Global next_trie
     let all_products1 ←
       automata.multi_tape_product_trie.MultiTapeProductTrie._search_all_products
         mtpt all_products
-    ok (cont (iter1, all_products1))
+    automata.multi_tape_product_trie.MultiTapeProductTrie._search_all_products_loop1
+      iter1 all_products1
 partial_fixpoint
 
 /-- [automata_builder::automata::multi_tape_product_trie::{automata_builder::automata::multi_tape_product_trie::MultiTapeProductTrie}::_search_all_products]:
@@ -15288,37 +13990,6 @@ partial_fixpoint
 
 end
 
-/-- [automata_builder::automata::multi_tape_product_trie::{automata_builder::automata::multi_tape_product_trie::MultiTapeProductTrie}::search_all_nested_products]: loop body 0:
-    Source: 'src/automata/multi_tape_product_trie.rs', lines 418:8-420:9
-    Visibility: public -/
-@[rust_loop_body]
-def
-  automata.multi_tape_product_trie.MultiTapeProductTrie.search_all_nested_products_loop.body
-  (iter : indexmap.map.iter.Values
-  automata.multi_tape_product_trie.OffsetGroupedTerms (alloc.sync.Arc
-  automata.multi_tape_product_trie.MultiTapeProductTrie))
-  (all_products : indexmap.set.IndexSet
-  automata.terms_multitape.MultiTapeProduct std.hash.random.RandomState) :
-  Result (ControlFlow ((indexmap.map.iter.Values
-    automata.multi_tape_product_trie.OffsetGroupedTerms (alloc.sync.Arc
-    automata.multi_tape_product_trie.MultiTapeProductTrie)) ×
-    (indexmap.set.IndexSet automata.terms_multitape.MultiTapeProduct
-    std.hash.random.RandomState)) (indexmap.set.IndexSet
-    automata.terms_multitape.MultiTapeProduct std.hash.random.RandomState))
-  := do
-  let (o, iter1) ←
-    indexmap.map.iter.Values.Insts.CoreIterTraitsIteratorIteratorSharedAV.next
-      iter
-  match o with
-  | none => ok (done all_products)
-  | some next_trie =>
-    let mtpt ←
-      alloc.sync.Arc.Insts.CoreOpsDerefDeref.deref alloc.alloc.Global next_trie
-    let all_products1 ←
-      automata.multi_tape_product_trie.MultiTapeProductTrie._search_all_products
-        mtpt all_products
-    ok (cont (iter1, all_products1))
-
 /-- [automata_builder::automata::multi_tape_product_trie::{automata_builder::automata::multi_tape_product_trie::MultiTapeProductTrie}::search_all_nested_products]: loop 0:
     Source: 'src/automata/multi_tape_product_trie.rs', lines 418:8-420:9
     Visibility: public -/
@@ -15333,11 +14004,20 @@ def
   Result (indexmap.set.IndexSet automata.terms_multitape.MultiTapeProduct
     std.hash.random.RandomState)
   := do
-  loop
-    (fun (iter1, all_products1) =>
-      automata.multi_tape_product_trie.MultiTapeProductTrie.search_all_nested_products_loop.body
-      iter1 all_products1)
-    (iter, all_products)
+  let (o, iter1) ←
+    indexmap.map.iter.Values.Insts.CoreIterTraitsIteratorIteratorSharedAV.next
+      iter
+  match o with
+  | none => ok all_products
+  | some next_trie =>
+    let mtpt ←
+      alloc.sync.Arc.Insts.CoreOpsDerefDeref.deref alloc.alloc.Global next_trie
+    let all_products1 ←
+      automata.multi_tape_product_trie.MultiTapeProductTrie._search_all_products
+        mtpt all_products
+    automata.multi_tape_product_trie.MultiTapeProductTrie.search_all_nested_products_loop
+      iter1 all_products1
+partial_fixpoint
 
 /-- [automata_builder::automata::multi_tape_product_trie::{automata_builder::automata::multi_tape_product_trie::MultiTapeProductTrie}::search_all_nested_products]:
     Source: 'src/automata/multi_tape_product_trie.rs', lines 416:4-422:5
@@ -15601,28 +14281,6 @@ def automata.multi_tape_builder.MultiTapeBuilder.build_remap_state_paths
       automata.terms_multitape.MultiTapeState))
   ok state_paths
 
-/-- [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::build_remap_states]: loop body 0:
-    Source: 'src/automata/multi_tape_builder.rs', lines 1183:8-1187:9
-    Visibility: public -/
-@[rust_loop_body]
-def automata.multi_tape_builder.MultiTapeBuilder.build_remap_states_loop.body
-  (iter : alloc.vec.into_iter.IntoIter (alloc.vec.Vec
-  automata.terms_multitape.MultiTapeState))
-  (remap : automata.multi_tape_builder.MultiTapeStatePathRemap) :
-  Result (ControlFlow ((alloc.vec.into_iter.IntoIter (alloc.vec.Vec
-    automata.terms_multitape.MultiTapeState)) ×
-    automata.multi_tape_builder.MultiTapeStatePathRemap)
-    automata.multi_tape_builder.MultiTapeStatePathRemap)
-  := do
-  let (o, iter1) ← alloc.vec.into_iter.IteratorIntoIter.next iter
-  match o with
-  | none => ok (done remap)
-  | some state_path =>
-    let (_, remap1) ←
-      automata.multi_tape_builder.MultiTapeStatePathRemap.insert_overlap_path
-        remap state_path
-    ok (cont (iter1, remap1))
-
 /-- [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::build_remap_states]: loop 0:
     Source: 'src/automata/multi_tape_builder.rs', lines 1183:8-1187:9
     Visibility: public -/
@@ -15633,11 +14291,16 @@ def automata.multi_tape_builder.MultiTapeBuilder.build_remap_states_loop
   (remap : automata.multi_tape_builder.MultiTapeStatePathRemap) :
   Result automata.multi_tape_builder.MultiTapeStatePathRemap
   := do
-  loop
-    (fun (iter1, remap1) =>
-      automata.multi_tape_builder.MultiTapeBuilder.build_remap_states_loop.body
-      iter1 remap1)
-    (iter, remap)
+  let (o, iter1) ← alloc.vec.into_iter.IteratorIntoIter.next iter
+  match o with
+  | none => ok remap
+  | some state_path =>
+    let (_, remap1) ←
+      automata.multi_tape_builder.MultiTapeStatePathRemap.insert_overlap_path
+        remap state_path
+    automata.multi_tape_builder.MultiTapeBuilder.build_remap_states_loop iter1
+      remap1
+partial_fixpoint
 
 /-- [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::build_remap_states]:
     Source: 'src/automata/multi_tape_builder.rs', lines 1176:4-1189:5
@@ -15668,30 +14331,6 @@ def automata.tape_overlaps.MultiTapeStatesMap.new
       (alloc.collections.btree.set.BTreeSet Std.U32 alloc.alloc.Global)
   ok { whitelist := bm }
 
-/-- [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::build_global_state_path_remap]: loop body 1:
-    Source: 'src/automata/multi_tape_builder.rs', lines 1199:12-1201:13
-    Visibility: public -/
-@[rust_loop_body]
-def
-  automata.multi_tape_builder.MultiTapeBuilder.build_global_state_path_remap_loop0_loop0.body
-  (iter : alloc.collections.btree.map.Iter Std.U16 Std.U32)
-  (multi_tape_states_map : automata.tape_overlaps.MultiTapeStatesMap) :
-  Result (ControlFlow ((alloc.collections.btree.map.Iter Std.U16 Std.U32) ×
-    automata.tape_overlaps.MultiTapeStatesMap)
-    automata.tape_overlaps.MultiTapeStatesMap)
-  := do
-  let (o, iter1) ←
-    alloc.collections.btree.map.Iter.Insts.CoreIterTraitsIteratorIteratorPairSharedAKSharedAV.next
-      iter
-  match o with
-  | none => ok (done multi_tape_states_map)
-  | some p =>
-    let (tape_no, tape_cell_state) := p
-    let multi_tape_states_map1 ←
-      automata.tape_overlaps.MultiTapeStatesMap.insert multi_tape_states_map
-        tape_no tape_cell_state
-    ok (cont (iter1, multi_tape_states_map1))
-
 /-- [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::build_global_state_path_remap]: loop 1:
     Source: 'src/automata/multi_tape_builder.rs', lines 1199:12-1201:13
     Visibility: public -/
@@ -15702,34 +14341,19 @@ def
   (multi_tape_states_map : automata.tape_overlaps.MultiTapeStatesMap) :
   Result automata.tape_overlaps.MultiTapeStatesMap
   := do
-  loop
-    (fun (iter1, multi_tape_states_map1) =>
-      automata.multi_tape_builder.MultiTapeBuilder.build_global_state_path_remap_loop0_loop0.body
-      iter1 multi_tape_states_map1)
-    (iter, multi_tape_states_map)
-
-/-- [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::build_global_state_path_remap]: loop body 2:
-    Source: 'src/automata/multi_tape_builder.rs', lines 1203:12-1206:13
-    Visibility: public -/
-@[rust_loop_body]
-def
-  automata.multi_tape_builder.MultiTapeBuilder.build_global_state_path_remap_loop0_loop1.body
-  (iter : core.slice.iter.Iter automata.terms_multitape.MultiTapeTerm)
-  (multi_tape_states_map : automata.tape_overlaps.MultiTapeStatesMap) :
-  Result (ControlFlow ((core.slice.iter.Iter
-    automata.terms_multitape.MultiTapeTerm) ×
-    automata.tape_overlaps.MultiTapeStatesMap)
-    automata.tape_overlaps.MultiTapeStatesMap)
-  := do
-  let (o, iter1) ← core.slice.iter.IteratorSliceIter.next iter
+  let (o, iter1) ←
+    alloc.collections.btree.map.Iter.Insts.CoreIterTraitsIteratorIteratorPairSharedAKSharedAV.next
+      iter
   match o with
-  | none => ok (done multi_tape_states_map)
-  | some product_term =>
-    let (tape_no, tape_cell_state) := product_term.state
+  | none => ok multi_tape_states_map
+  | some p =>
+    let (tape_no, tape_cell_state) := p
     let multi_tape_states_map1 ←
       automata.tape_overlaps.MultiTapeStatesMap.insert multi_tape_states_map
         tape_no tape_cell_state
-    ok (cont (iter1, multi_tape_states_map1))
+    automata.multi_tape_builder.MultiTapeBuilder.build_global_state_path_remap_loop0_loop0
+      iter1 multi_tape_states_map1
+partial_fixpoint
 
 /-- [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::build_global_state_path_remap]: loop 2:
     Source: 'src/automata/multi_tape_builder.rs', lines 1203:12-1206:13
@@ -15741,32 +14365,34 @@ def
   (multi_tape_states_map : automata.tape_overlaps.MultiTapeStatesMap) :
   Result automata.tape_overlaps.MultiTapeStatesMap
   := do
-  loop
-    (fun (iter1, multi_tape_states_map1) =>
-      automata.multi_tape_builder.MultiTapeBuilder.build_global_state_path_remap_loop0_loop1.body
-      iter1 multi_tape_states_map1)
-    (iter, multi_tape_states_map)
+  let (o, iter1) ← core.slice.iter.IteratorSliceIter.next iter
+  match o with
+  | none => ok multi_tape_states_map
+  | some product_term =>
+    let (tape_no, tape_cell_state) := product_term.state
+    let multi_tape_states_map1 ←
+      automata.tape_overlaps.MultiTapeStatesMap.insert multi_tape_states_map
+        tape_no tape_cell_state
+    automata.multi_tape_builder.MultiTapeBuilder.build_global_state_path_remap_loop0_loop1
+      iter1 multi_tape_states_map1
+partial_fixpoint
 
-/-- [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::build_global_state_path_remap]: loop body 0:
+/-- [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::build_global_state_path_remap]: loop 0:
     Source: 'src/automata/multi_tape_builder.rs', lines 1197:8-1207:9
     Visibility: public -/
-@[rust_loop_body]
+@[rust_loop]
 def
-  automata.multi_tape_builder.MultiTapeBuilder.build_global_state_path_remap_loop0.body
+  automata.multi_tape_builder.MultiTapeBuilder.build_global_state_path_remap_loop0
   (iter : indexmap.map.iter.Iter automata.terms_multitape.MultiTapeProduct
   (alloc.collections.btree.map.BTreeMap Std.U16 Std.U32 alloc.alloc.Global))
   (multi_tape_states_map : automata.tape_overlaps.MultiTapeStatesMap) :
-  Result (ControlFlow ((indexmap.map.iter.Iter
-    automata.terms_multitape.MultiTapeProduct
-    (alloc.collections.btree.map.BTreeMap Std.U16 Std.U32 alloc.alloc.Global))
-    × automata.tape_overlaps.MultiTapeStatesMap)
-    automata.tape_overlaps.MultiTapeStatesMap)
+  Result automata.tape_overlaps.MultiTapeStatesMap
   := do
   let (o, iter1) ←
     indexmap.map.iter.Iter.Insts.CoreIterTraitsIteratorIteratorPairSharedAKSharedAV.next
       iter
   match o with
-  | none => ok (done multi_tape_states_map)
+  | none => ok multi_tape_states_map
   | some p =>
     let (product, product_writes) := p
     let iter2 ←
@@ -15780,24 +14406,9 @@ def
     let multi_tape_states_map2 ←
       automata.multi_tape_builder.MultiTapeBuilder.build_global_state_path_remap_loop0_loop1
         iter3 multi_tape_states_map1
-    ok (cont (iter1, multi_tape_states_map2))
-
-/-- [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::build_global_state_path_remap]: loop 0:
-    Source: 'src/automata/multi_tape_builder.rs', lines 1197:8-1207:9
-    Visibility: public -/
-@[rust_loop]
-def
-  automata.multi_tape_builder.MultiTapeBuilder.build_global_state_path_remap_loop0
-  (iter : indexmap.map.iter.Iter automata.terms_multitape.MultiTapeProduct
-  (alloc.collections.btree.map.BTreeMap Std.U16 Std.U32 alloc.alloc.Global))
-  (multi_tape_states_map : automata.tape_overlaps.MultiTapeStatesMap) :
-  Result automata.tape_overlaps.MultiTapeStatesMap
-  := do
-  loop
-    (fun (iter1, multi_tape_states_map1) =>
-      automata.multi_tape_builder.MultiTapeBuilder.build_global_state_path_remap_loop0.body
-      iter1 multi_tape_states_map1)
-    (iter, multi_tape_states_map)
+    automata.multi_tape_builder.MultiTapeBuilder.build_global_state_path_remap_loop0
+      iter1 multi_tape_states_map2
+partial_fixpoint
 
 /-- [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::build_global_state_path_remap]:
     Source: 'src/automata/multi_tape_builder.rs', lines 1192:4-1212:5
@@ -16112,37 +14723,6 @@ def automata.rule_generator.AutomataTransitionsGroup.spawn_new
         (alloc.vec.Vec.new automata.rule_generator.AutomataTransition)
     }
 
-/-- [automata_builder::automata::multi_tape_product_trie::{automata_builder::automata::multi_tape_product_trie::MultiTapeProductTrie}::_load_matching_products]: loop body 0:
-    Source: 'src/automata/multi_tape_product_trie.rs', lines 375:8-377:9 -/
-@[rust_loop_body]
-def
-  automata.multi_tape_product_trie.MultiTapeProductTrie._load_matching_products_loop0.body
-  (iter : indexmap.set.iter.Iter automata.terms_multitape.MultiTapeProduct)
-  (all_products : indexmap.set.IndexSet
-  automata.terms_multitape.MultiTapeProduct std.hash.random.RandomState) :
-  Result (ControlFlow ((indexmap.set.iter.Iter
-    automata.terms_multitape.MultiTapeProduct) × (indexmap.set.IndexSet
-    automata.terms_multitape.MultiTapeProduct std.hash.random.RandomState))
-    (indexmap.set.IndexSet automata.terms_multitape.MultiTapeProduct
-    std.hash.random.RandomState))
-  := do
-  let (o, iter1) ←
-    indexmap.set.iter.Iter.Insts.CoreIterTraitsIteratorIteratorSharedAT.next
-      iter
-  match o with
-  | none => ok (done all_products)
-  | some product =>
-    let mtp ←
-      automata.terms_multitape.MultiTapeProduct.Insts.CoreCloneClone.clone
-        product
-    let (_, all_products1) ←
-      indexmap.set.IndexSet.insert
-        automata.terms_multitape.MultiTapeProduct.Insts.CoreHashHash
-        automata.terms_multitape.MultiTapeProduct.Insts.CoreCmpEq
-        std.hash.random.RandomState.Insts.CoreHashBuildHasherDefaultHasher
-        all_products mtp
-    ok (cont (iter1, all_products1))
-
 /-- [automata_builder::automata::multi_tape_product_trie::{automata_builder::automata::multi_tape_product_trie::MultiTapeProductTrie}::_load_matching_products]: loop 0:
     Source: 'src/automata/multi_tape_product_trie.rs', lines 375:8-377:9 -/
 @[rust_loop]
@@ -16154,11 +14734,24 @@ def
   Result (indexmap.set.IndexSet automata.terms_multitape.MultiTapeProduct
     std.hash.random.RandomState)
   := do
-  loop
-    (fun (iter1, all_products1) =>
-      automata.multi_tape_product_trie.MultiTapeProductTrie._load_matching_products_loop0.body
-      iter1 all_products1)
-    (iter, all_products)
+  let (o, iter1) ←
+    indexmap.set.iter.Iter.Insts.CoreIterTraitsIteratorIteratorSharedAT.next
+      iter
+  match o with
+  | none => ok all_products
+  | some product =>
+    let mtp ←
+      automata.terms_multitape.MultiTapeProduct.Insts.CoreCloneClone.clone
+        product
+    let (_, all_products1) ←
+      indexmap.set.IndexSet.insert
+        automata.terms_multitape.MultiTapeProduct.Insts.CoreHashHash
+        automata.terms_multitape.MultiTapeProduct.Insts.CoreCmpEq
+        std.hash.random.RandomState.Insts.CoreHashBuildHasherDefaultHasher
+        all_products mtp
+    automata.multi_tape_product_trie.MultiTapeProductTrie._load_matching_products_loop0
+      iter1 all_products1
+partial_fixpoint
 
 mutual
 
@@ -16177,37 +14770,11 @@ def
   Result (indexmap.set.IndexSet automata.terms_multitape.MultiTapeProduct
     std.hash.random.RandomState)
   := do
-  loop
-    (fun (iter1, all_products1) =>
-      automata.multi_tape_product_trie.MultiTapeProductTrie._load_matching_products_loop1.body
-      current_group next_groups iter1 all_products1)
-    (iter, all_products)
-partial_fixpoint
-
-/-- [automata_builder::automata::multi_tape_product_trie::{automata_builder::automata::multi_tape_product_trie::MultiTapeProductTrie}::_load_matching_products]: loop body 1:
-    Source: 'src/automata/multi_tape_product_trie.rs', lines 381:8-385:9 -/
-@[rust_loop_body]
-def
-  automata.multi_tape_product_trie.MultiTapeProductTrie._load_matching_products_loop1.body
-  (current_group : automata.multi_tape_product_trie.OffsetGroupedTerms)
-  (next_groups : Slice automata.multi_tape_product_trie.OffsetGroupedTerms)
-  (iter : indexmap.map.iter.Iter
-  automata.multi_tape_product_trie.OffsetGroupedTerms (alloc.sync.Arc
-  automata.multi_tape_product_trie.MultiTapeProductTrie))
-  (all_products : indexmap.set.IndexSet
-  automata.terms_multitape.MultiTapeProduct std.hash.random.RandomState) :
-  Result (ControlFlow ((indexmap.map.iter.Iter
-    automata.multi_tape_product_trie.OffsetGroupedTerms (alloc.sync.Arc
-    automata.multi_tape_product_trie.MultiTapeProductTrie)) ×
-    (indexmap.set.IndexSet automata.terms_multitape.MultiTapeProduct
-    std.hash.random.RandomState)) (indexmap.set.IndexSet
-    automata.terms_multitape.MultiTapeProduct std.hash.random.RandomState))
-  := do
   let (o, iter1) ←
     indexmap.map.iter.Iter.Insts.CoreIterTraitsIteratorIteratorPairSharedAKSharedAV.next
       iter
   match o with
-  | none => ok (done all_products)
+  | none => ok all_products
   | some p =>
     let (offset_group, next_trie) := p
     let b ←
@@ -16221,8 +14788,11 @@ def
       let all_products1 ←
         automata.multi_tape_product_trie.MultiTapeProductTrie._load_matching_products
           mtpt next_groups all_products
-      ok (cont (iter1, all_products1))
-    else ok (cont (iter1, all_products))
+      automata.multi_tape_product_trie.MultiTapeProductTrie._load_matching_products_loop1
+        iter1 all_products1 current_group next_groups
+    else
+      automata.multi_tape_product_trie.MultiTapeProductTrie._load_matching_products_loop1
+        iter1 all_products current_group next_groups
 partial_fixpoint
 
 /-- [automata_builder::automata::multi_tape_product_trie::{automata_builder::automata::multi_tape_product_trie::MultiTapeProductTrie}::_load_matching_products]:
@@ -16414,30 +14984,6 @@ def
     automata.tape_overlaps_fsm.TapeOverlapsFSM.merge.closure.Insts.CoreOpsFunctionFnMutTupleShared0TapeOverlapsFSMStateShared1TapeOverlaps.call_mut
 }
 
-/-- [automata_builder::automata::tape_overlaps::{automata_builder::automata::tape_overlaps::TapeOverlaps}::merge]: loop body 3:
-    Source: 'src/automata/tape_overlaps.rs', lines 515:20-519:21
-    Visibility: public -/
-@[rust_loop_body]
-def automata.tape_overlaps.TapeOverlaps.merge_loop0_loop0_loop0_loop0.body
-  (source_state : automata.terms_multitape.MultiTapeState) (offset : Std.I64)
-  (iter : alloc.collections.btree.set.Iter
-  automata.terms_multitape.MultiTapeState)
-  (new_overlaps : automata.tape_overlaps.TapeOverlaps) :
-  Result (ControlFlow ((alloc.collections.btree.set.Iter
-    automata.terms_multitape.MultiTapeState) ×
-    automata.tape_overlaps.TapeOverlaps) automata.tape_overlaps.TapeOverlaps)
-  := do
-  let (o, iter1) ←
-    alloc.collections.btree.set.Iter.Insts.CoreIterTraitsIteratorIteratorSharedAT.next
-      iter
-  match o with
-  | none => ok (done new_overlaps)
-  | some target_state =>
-    let (_, new_overlaps1) ←
-      automata.tape_overlaps.TapeOverlaps.insert_direct_overlap new_overlaps
-        source_state target_state offset
-    ok (cont (iter1, new_overlaps1))
-
 /-- [automata_builder::automata::tape_overlaps::{automata_builder::automata::tape_overlaps::TapeOverlaps}::merge]: loop 3:
     Source: 'src/automata/tape_overlaps.rs', lines 515:20-519:21
     Visibility: public -/
@@ -16449,40 +14995,18 @@ def automata.tape_overlaps.TapeOverlaps.merge_loop0_loop0_loop0_loop0
   (source_state : automata.terms_multitape.MultiTapeState) (offset : Std.I64) :
   Result automata.tape_overlaps.TapeOverlaps
   := do
-  loop
-    (fun (iter1, new_overlaps1) =>
-      automata.tape_overlaps.TapeOverlaps.merge_loop0_loop0_loop0_loop0.body
-      source_state offset iter1 new_overlaps1)
-    (iter, new_overlaps)
-
-/-- [automata_builder::automata::tape_overlaps::{automata_builder::automata::tape_overlaps::TapeOverlaps}::merge]: loop body 2:
-    Source: 'src/automata/tape_overlaps.rs', lines 514:16-520:17
-    Visibility: public -/
-@[rust_loop_body]
-def automata.tape_overlaps.TapeOverlaps.merge_loop0_loop0_loop0.body
-  (source_state : automata.terms_multitape.MultiTapeState)
-  (iter : alloc.collections.btree.map.Iter Std.I64
-  (alloc.collections.btree.set.BTreeSet automata.terms_multitape.MultiTapeState
-  alloc.alloc.Global)) (new_overlaps : automata.tape_overlaps.TapeOverlaps) :
-  Result (ControlFlow ((alloc.collections.btree.map.Iter Std.I64
-    (alloc.collections.btree.set.BTreeSet
-    automata.terms_multitape.MultiTapeState alloc.alloc.Global)) ×
-    automata.tape_overlaps.TapeOverlaps) automata.tape_overlaps.TapeOverlaps)
-  := do
   let (o, iter1) ←
-    alloc.collections.btree.map.Iter.Insts.CoreIterTraitsIteratorIteratorPairSharedAKSharedAV.next
+    alloc.collections.btree.set.Iter.Insts.CoreIterTraitsIteratorIteratorSharedAT.next
       iter
   match o with
-  | none => ok (done new_overlaps)
-  | some p =>
-    let (offset, offset_overlaps) := p
-    let iter2 ←
-      alloc.collections.btree.set.BTreeSet.iter
-        alloc.alloc.Global.Insts.CoreAllocAllocatorClone offset_overlaps
-    let new_overlaps1 ←
-      automata.tape_overlaps.TapeOverlaps.merge_loop0_loop0_loop0_loop0 iter2
-        new_overlaps source_state offset
-    ok (cont (iter1, new_overlaps1))
+  | none => ok new_overlaps
+  | some target_state =>
+    let (_, new_overlaps1) ←
+      automata.tape_overlaps.TapeOverlaps.insert_direct_overlap new_overlaps
+        source_state target_state offset
+    automata.tape_overlaps.TapeOverlaps.merge_loop0_loop0_loop0_loop0 iter1
+      new_overlaps1 source_state offset
+partial_fixpoint
 
 /-- [automata_builder::automata::tape_overlaps::{automata_builder::automata::tape_overlaps::TapeOverlaps}::merge]: loop 2:
     Source: 'src/automata/tape_overlaps.rs', lines 514:16-520:17
@@ -16495,44 +15019,22 @@ def automata.tape_overlaps.TapeOverlaps.merge_loop0_loop0_loop0
   (source_state : automata.terms_multitape.MultiTapeState) :
   Result automata.tape_overlaps.TapeOverlaps
   := do
-  loop
-    (fun (iter1, new_overlaps1) =>
-      automata.tape_overlaps.TapeOverlaps.merge_loop0_loop0_loop0.body
-      source_state iter1 new_overlaps1)
-    (iter, new_overlaps)
-
-/-- [automata_builder::automata::tape_overlaps::{automata_builder::automata::tape_overlaps::TapeOverlaps}::merge]: loop body 1:
-    Source: 'src/automata/tape_overlaps.rs', lines 513:12-521:13
-    Visibility: public -/
-@[rust_loop_body]
-def automata.tape_overlaps.TapeOverlaps.merge_loop0_loop0.body
-  (iter : alloc.collections.btree.map.Iter
-  automata.terms_multitape.MultiTapeState (alloc.collections.btree.map.BTreeMap
-  Std.I64 (alloc.collections.btree.set.BTreeSet
-  automata.terms_multitape.MultiTapeState alloc.alloc.Global)
-  alloc.alloc.Global)) (new_overlaps : automata.tape_overlaps.TapeOverlaps) :
-  Result (ControlFlow ((alloc.collections.btree.map.Iter
-    automata.terms_multitape.MultiTapeState
-    (alloc.collections.btree.map.BTreeMap Std.I64
-    (alloc.collections.btree.set.BTreeSet
-    automata.terms_multitape.MultiTapeState alloc.alloc.Global)
-    alloc.alloc.Global)) × automata.tape_overlaps.TapeOverlaps)
-    automata.tape_overlaps.TapeOverlaps)
-  := do
   let (o, iter1) ←
     alloc.collections.btree.map.Iter.Insts.CoreIterTraitsIteratorIteratorPairSharedAKSharedAV.next
       iter
   match o with
-  | none => ok (done new_overlaps)
+  | none => ok new_overlaps
   | some p =>
-    let (source_state, source_overlaps) := p
+    let (offset, offset_overlaps) := p
     let iter2 ←
-      alloc.collections.btree.map.BTreeMap.iter
-        alloc.alloc.Global.Insts.CoreAllocAllocatorClone source_overlaps
+      alloc.collections.btree.set.BTreeSet.iter
+        alloc.alloc.Global.Insts.CoreAllocAllocatorClone offset_overlaps
     let new_overlaps1 ←
-      automata.tape_overlaps.TapeOverlaps.merge_loop0_loop0_loop0 iter2
-        new_overlaps source_state
-    ok (cont (iter1, new_overlaps1))
+      automata.tape_overlaps.TapeOverlaps.merge_loop0_loop0_loop0_loop0 iter2
+        new_overlaps source_state offset
+    automata.tape_overlaps.TapeOverlaps.merge_loop0_loop0_loop0 iter1
+      new_overlaps1 source_state
+partial_fixpoint
 
 /-- [automata_builder::automata::tape_overlaps::{automata_builder::automata::tape_overlaps::TapeOverlaps}::merge]: loop 1:
     Source: 'src/automata/tape_overlaps.rs', lines 513:12-521:13
@@ -16546,37 +15048,21 @@ def automata.tape_overlaps.TapeOverlaps.merge_loop0_loop0
   alloc.alloc.Global)) (new_overlaps : automata.tape_overlaps.TapeOverlaps) :
   Result automata.tape_overlaps.TapeOverlaps
   := do
-  loop
-    (fun (iter1, new_overlaps1) =>
-      automata.tape_overlaps.TapeOverlaps.merge_loop0_loop0.body iter1
-      new_overlaps1)
-    (iter, new_overlaps)
-
-/-- [automata_builder::automata::tape_overlaps::{automata_builder::automata::tape_overlaps::TapeOverlaps}::merge]: loop body 0:
-    Source: 'src/automata/tape_overlaps.rs', lines 512:8-522:9
-    Visibility: public -/
-@[rust_loop_body]
-def automata.tape_overlaps.TapeOverlaps.merge_loop0.body
-  {T1 : Type _} {Clause0_IntoIter : Type _}
-  (coreitertraitscollectIntoIteratorT1SharedTapeOverlapsClause0_IntoIterInst :
-  core.iter.traits.collect.IntoIterator T1 automata.tape_overlaps.TapeOverlaps
-  Clause0_IntoIter) (iter : Clause0_IntoIter)
-  (new_overlaps : automata.tape_overlaps.TapeOverlaps) :
-  Result (ControlFlow (Clause0_IntoIter × automata.tape_overlaps.TapeOverlaps)
-    automata.tape_overlaps.TapeOverlaps)
-  := do
   let (o, iter1) ←
-    coreitertraitscollectIntoIteratorT1SharedTapeOverlapsClause0_IntoIterInst.iteratorInst.next
+    alloc.collections.btree.map.Iter.Insts.CoreIterTraitsIteratorIteratorPairSharedAKSharedAV.next
       iter
   match o with
-  | none => ok (done new_overlaps)
-  | some tape_overlaps =>
+  | none => ok new_overlaps
+  | some p =>
+    let (source_state, source_overlaps) := p
     let iter2 ←
       alloc.collections.btree.map.BTreeMap.iter
-        alloc.alloc.Global.Insts.CoreAllocAllocatorClone tape_overlaps.overlaps
+        alloc.alloc.Global.Insts.CoreAllocAllocatorClone source_overlaps
     let new_overlaps1 ←
-      automata.tape_overlaps.TapeOverlaps.merge_loop0_loop0 iter2 new_overlaps
-    ok (cont (iter1, new_overlaps1))
+      automata.tape_overlaps.TapeOverlaps.merge_loop0_loop0_loop0 iter2
+        new_overlaps source_state
+    automata.tape_overlaps.TapeOverlaps.merge_loop0_loop0 iter1 new_overlaps1
+partial_fixpoint
 
 /-- [automata_builder::automata::tape_overlaps::{automata_builder::automata::tape_overlaps::TapeOverlaps}::merge]: loop 0:
     Source: 'src/automata/tape_overlaps.rs', lines 512:8-522:9
@@ -16590,12 +15076,21 @@ def automata.tape_overlaps.TapeOverlaps.merge_loop0
   (new_overlaps : automata.tape_overlaps.TapeOverlaps) :
   Result automata.tape_overlaps.TapeOverlaps
   := do
-  loop
-    (fun (iter1, new_overlaps1) =>
-      automata.tape_overlaps.TapeOverlaps.merge_loop0.body
+  let (o, iter1) ←
+    coreitertraitscollectIntoIteratorT1SharedTapeOverlapsClause0_IntoIterInst.iteratorInst.next
+      iter
+  match o with
+  | none => ok new_overlaps
+  | some tape_overlaps =>
+    let iter2 ←
+      alloc.collections.btree.map.BTreeMap.iter
+        alloc.alloc.Global.Insts.CoreAllocAllocatorClone tape_overlaps.overlaps
+    let new_overlaps1 ←
+      automata.tape_overlaps.TapeOverlaps.merge_loop0_loop0 iter2 new_overlaps
+    automata.tape_overlaps.TapeOverlaps.merge_loop0
       coreitertraitscollectIntoIteratorT1SharedTapeOverlapsClause0_IntoIterInst
-      iter1 new_overlaps1)
-    (iter, new_overlaps)
+      iter1 new_overlaps1
+partial_fixpoint
 
 /-- [automata_builder::automata::tape_overlaps::{automata_builder::automata::tape_overlaps::TapeOverlaps}::merge]:
     Source: 'src/automata/tape_overlaps.rs', lines 509:4-524:5
@@ -16638,36 +15133,6 @@ def automata.tape_overlaps_fsm.TapeOverlapsFSM.merge
     automata.tape_overlaps_fsm.TapeOverlapsFSM.merge.closure.Insts.CoreOpsFunctionFnMutTupleShared0TapeOverlapsFSMStateShared1TapeOverlaps))
     m
 
-/-- [automata_builder::automata::rule_generator::{automata_builder::automata::rule_generator::AutomataTransitionsGroup}::merge]: loop body 0:
-    Source: 'src/automata/rule_generator.rs', lines 134:8-141:5
-    Visibility: public -/
-@[rust_loop_body]
-def automata.rule_generator.AutomataTransitionsGroup.merge_loop.body
-  (iter : alloc.vec.into_iter.IntoIter
-  automata.rule_generator.AutomataTransition)
-  (self : automata.rule_generator.AutomataTransitionsGroup) :
-  Result (ControlFlow ((alloc.vec.into_iter.IntoIter
-    automata.rule_generator.AutomataTransition) ×
-    automata.rule_generator.AutomataTransitionsGroup) ((core.result.Result Unit
-    String) × automata.rule_generator.AutomataTransitionsGroup))
-  := do
-  let (o, iter1) ← alloc.vec.into_iter.IteratorIntoIter.next iter
-  match o with
-  | none => ok (done (core.result.Result.Ok (), self))
-  | some transition =>
-    let (r, self1) ←
-      automata.rule_generator.AutomataTransitionsGroup.add_transition self
-        transition.input_terms transition.output_state false
-        transition.annotation
-    let cf ← core.result.Result.Insts.CoreOpsTry.branch r
-    match cf with
-    | core.ops.control_flow.ControlFlow.Continue _ => ok (cont (iter1, self1))
-    | core.ops.control_flow.ControlFlow.Break residual =>
-      let r1 ←
-        core.result.Result.Insts.CoreOpsTry_traitFromResidualResult.from_residual
-          Unit (core.convert.FromSame String) residual
-      ok (done (r1, self1))
-
 /-- [automata_builder::automata::rule_generator::{automata_builder::automata::rule_generator::AutomataTransitionsGroup}::merge]: loop 0:
     Source: 'src/automata/rule_generator.rs', lines 134:8-141:5
     Visibility: public -/
@@ -16679,11 +15144,24 @@ def automata.rule_generator.AutomataTransitionsGroup.merge_loop
   Result ((core.result.Result Unit String) ×
     automata.rule_generator.AutomataTransitionsGroup)
   := do
-  loop
-    (fun (iter1, self1) =>
-      automata.rule_generator.AutomataTransitionsGroup.merge_loop.body iter1
-      self1)
-    (iter, self)
+  let (o, iter1) ← alloc.vec.into_iter.IteratorIntoIter.next iter
+  match o with
+  | none => ok (core.result.Result.Ok (), self)
+  | some transition =>
+    let (r, self1) ←
+      automata.rule_generator.AutomataTransitionsGroup.add_transition self
+        transition.input_terms transition.output_state false
+        transition.annotation
+    let cf ← core.result.Result.Insts.CoreOpsTry.branch r
+    match cf with
+    | core.ops.control_flow.ControlFlow.Continue _ =>
+      automata.rule_generator.AutomataTransitionsGroup.merge_loop iter1 self1
+    | core.ops.control_flow.ControlFlow.Break residual =>
+      let r1 ←
+        core.result.Result.Insts.CoreOpsTry_traitFromResidualResult.from_residual
+          Unit (core.convert.FromSame String) residual
+      ok (r1, self1)
+partial_fixpoint
 
 /-- [automata_builder::automata::rule_generator::{automata_builder::automata::rule_generator::AutomataTransitionsGroup}::merge]:
     Source: 'src/automata/rule_generator.rs', lines 133:4-141:5
@@ -18476,36 +16954,6 @@ def automata.multi_tape_transition.MultiTapeTransitionsGroup.is_empty
   := do
   alloc.vec.Vec.is_empty alloc.alloc.Global self.transitions
 
-/-- [automata_builder::automata::multi_tape_transition::{automata_builder::automata::multi_tape_transition::MultiTapeTransitionsGroup}::get_all_states]: loop body 1:
-    Source: 'src/automata/multi_tape_transition.rs', lines 167:12-169:13
-    Visibility: public -/
-@[rust_loop_body]
-def
-  automata.multi_tape_transition.MultiTapeTransitionsGroup.get_all_states_loop0_loop0.body
-  (iter : core.slice.iter.Iter automata.terms_multitape.MultiTapeTerm)
-  (all_states : indexmap.set.IndexSet automata.terms_multitape.MultiTapeState
-  std.hash.random.RandomState) :
-  Result (ControlFlow ((core.slice.iter.Iter
-    automata.terms_multitape.MultiTapeTerm) × (indexmap.set.IndexSet
-    automata.terms_multitape.MultiTapeState std.hash.random.RandomState))
-    (indexmap.set.IndexSet automata.terms_multitape.MultiTapeState
-    std.hash.random.RandomState))
-  := do
-  let (o, iter1) ← core.slice.iter.IteratorSliceIter.next iter
-  match o with
-  | none => ok (done all_states)
-  | some term =>
-    let mtt ←
-      automata.terms_multitape.MultiTapeTerm.Insts.CoreCloneClone.clone term
-    let mts ← automata.terms_multitape.MultiTapeState.from_term mtt
-    let (_, all_states1) ←
-      indexmap.set.IndexSet.insert
-        automata.terms_multitape.MultiTapeState.Insts.CoreHashHash
-        automata.terms_multitape.MultiTapeState.Insts.CoreCmpEq
-        std.hash.random.RandomState.Insts.CoreHashBuildHasherDefaultHasher
-        all_states mts
-    ok (cont (iter1, all_states1))
-
 /-- [automata_builder::automata::multi_tape_transition::{automata_builder::automata::multi_tape_transition::MultiTapeTransitionsGroup}::get_all_states]: loop 1:
     Source: 'src/automata/multi_tape_transition.rs', lines 167:12-169:13
     Visibility: public -/
@@ -18518,31 +16966,39 @@ def
   Result (indexmap.set.IndexSet automata.terms_multitape.MultiTapeState
     std.hash.random.RandomState)
   := do
-  loop
-    (fun (iter1, all_states1) =>
-      automata.multi_tape_transition.MultiTapeTransitionsGroup.get_all_states_loop0_loop0.body
-      iter1 all_states1)
-    (iter, all_states)
+  let (o, iter1) ← core.slice.iter.IteratorSliceIter.next iter
+  match o with
+  | none => ok all_states
+  | some term =>
+    let mtt ←
+      automata.terms_multitape.MultiTapeTerm.Insts.CoreCloneClone.clone term
+    let mts ← automata.terms_multitape.MultiTapeState.from_term mtt
+    let (_, all_states1) ←
+      indexmap.set.IndexSet.insert
+        automata.terms_multitape.MultiTapeState.Insts.CoreHashHash
+        automata.terms_multitape.MultiTapeState.Insts.CoreCmpEq
+        std.hash.random.RandomState.Insts.CoreHashBuildHasherDefaultHasher
+        all_states mts
+    automata.multi_tape_transition.MultiTapeTransitionsGroup.get_all_states_loop0_loop0
+      iter1 all_states1
+partial_fixpoint
 
-/-- [automata_builder::automata::multi_tape_transition::{automata_builder::automata::multi_tape_transition::MultiTapeTransitionsGroup}::get_all_states]: loop body 0:
+/-- [automata_builder::automata::multi_tape_transition::{automata_builder::automata::multi_tape_transition::MultiTapeTransitionsGroup}::get_all_states]: loop 0:
     Source: 'src/automata/multi_tape_transition.rs', lines 166:8-171:9
     Visibility: public -/
-@[rust_loop_body]
+@[rust_loop]
 def
-  automata.multi_tape_transition.MultiTapeTransitionsGroup.get_all_states_loop0.body
+  automata.multi_tape_transition.MultiTapeTransitionsGroup.get_all_states_loop0
   (iter : core.slice.iter.Iter
   automata.multi_tape_transition.MultiTapeTransition)
   (all_states : indexmap.set.IndexSet automata.terms_multitape.MultiTapeState
   std.hash.random.RandomState) :
-  Result (ControlFlow ((core.slice.iter.Iter
-    automata.multi_tape_transition.MultiTapeTransition) ×
-    (indexmap.set.IndexSet automata.terms_multitape.MultiTapeState
-    std.hash.random.RandomState)) (indexmap.set.IndexSet
-    automata.terms_multitape.MultiTapeState std.hash.random.RandomState))
+  Result (indexmap.set.IndexSet automata.terms_multitape.MultiTapeState
+    std.hash.random.RandomState)
   := do
   let (o, iter1) ← core.slice.iter.IteratorSliceIter.next iter
   match o with
-  | none => ok (done all_states)
+  | none => ok all_states
   | some transition =>
     let s := alloc.vec.Vec.deref transition.input_terms
     let iter2 ← core.slice.Slice.iter s
@@ -18558,26 +17014,9 @@ def
         automata.terms_multitape.MultiTapeState.Insts.CoreCmpEq
         std.hash.random.RandomState.Insts.CoreHashBuildHasherDefaultHasher
         all_states1 mts
-    ok (cont (iter1, all_states2))
-
-/-- [automata_builder::automata::multi_tape_transition::{automata_builder::automata::multi_tape_transition::MultiTapeTransitionsGroup}::get_all_states]: loop 0:
-    Source: 'src/automata/multi_tape_transition.rs', lines 166:8-171:9
-    Visibility: public -/
-@[rust_loop]
-def
-  automata.multi_tape_transition.MultiTapeTransitionsGroup.get_all_states_loop0
-  (iter : core.slice.iter.Iter
-  automata.multi_tape_transition.MultiTapeTransition)
-  (all_states : indexmap.set.IndexSet automata.terms_multitape.MultiTapeState
-  std.hash.random.RandomState) :
-  Result (indexmap.set.IndexSet automata.terms_multitape.MultiTapeState
-    std.hash.random.RandomState)
-  := do
-  loop
-    (fun (iter1, all_states1) =>
-      automata.multi_tape_transition.MultiTapeTransitionsGroup.get_all_states_loop0.body
-      iter1 all_states1)
-    (iter, all_states)
+    automata.multi_tape_transition.MultiTapeTransitionsGroup.get_all_states_loop0
+      iter1 all_states2
+partial_fixpoint
 
 /-- [automata_builder::automata::multi_tape_transition::{automata_builder::automata::multi_tape_transition::MultiTapeTransitionsGroup}::get_all_states]:
     Source: 'src/automata/multi_tape_transition.rs', lines 163:4-173:5
@@ -18663,39 +17102,6 @@ def automata.multi_tape_transition.MultiTapeTransitionsGroup.add_transition
   := do
   sorry
 
-/-- [automata_builder::automata::multi_tape_transition::{automata_builder::automata::multi_tape_transition::MultiTapeTransitionsGroup}::_insert_transitions]: loop body 0:
-    Source: 'src/automata/multi_tape_transition.rs', lines 261:8-265:5
-    Visibility: public -/
-@[rust_loop_body]
-def
-  automata.multi_tape_transition.MultiTapeTransitionsGroup._insert_transitions_loop.body
-  (iter : alloc.vec.into_iter.IntoIter
-  automata.multi_tape_transition.MultiTapeTransition)
-  (self : automata.multi_tape_transition.MultiTapeTransitionsGroup) :
-  Result (ControlFlow ((alloc.vec.into_iter.IntoIter
-    automata.multi_tape_transition.MultiTapeTransition) ×
-    automata.multi_tape_transition.MultiTapeTransitionsGroup)
-    ((core.result.Result Unit
-    automata.multi_tape_transition.AddTransitionError) ×
-    automata.multi_tape_transition.MultiTapeTransitionsGroup))
-  := do
-  let (o, iter1) ← alloc.vec.into_iter.IteratorIntoIter.next iter
-  match o with
-  | none => ok (done (core.result.Result.Ok (), self))
-  | some transition =>
-    let (r, self1) ←
-      automata.multi_tape_transition.MultiTapeTransitionsGroup._insert_transition
-        self transition
-    let cf ← core.result.Result.Insts.CoreOpsTry.branch r
-    match cf with
-    | core.ops.control_flow.ControlFlow.Continue _ => ok (cont (iter1, self1))
-    | core.ops.control_flow.ControlFlow.Break residual =>
-      let r1 ←
-        core.result.Result.Insts.CoreOpsTry_traitFromResidualResult.from_residual
-          Unit (core.convert.FromSame
-          automata.multi_tape_transition.AddTransitionError) residual
-      ok (done (r1, self1))
-
 /-- [automata_builder::automata::multi_tape_transition::{automata_builder::automata::multi_tape_transition::MultiTapeTransitionsGroup}::_insert_transitions]: loop 0:
     Source: 'src/automata/multi_tape_transition.rs', lines 261:8-265:5
     Visibility: public -/
@@ -18709,11 +17115,25 @@ def
     automata.multi_tape_transition.AddTransitionError) ×
     automata.multi_tape_transition.MultiTapeTransitionsGroup)
   := do
-  loop
-    (fun (iter1, self1) =>
-      automata.multi_tape_transition.MultiTapeTransitionsGroup._insert_transitions_loop.body
-      iter1 self1)
-    (iter, self)
+  let (o, iter1) ← alloc.vec.into_iter.IteratorIntoIter.next iter
+  match o with
+  | none => ok (core.result.Result.Ok (), self)
+  | some transition =>
+    let (r, self1) ←
+      automata.multi_tape_transition.MultiTapeTransitionsGroup._insert_transition
+        self transition
+    let cf ← core.result.Result.Insts.CoreOpsTry.branch r
+    match cf with
+    | core.ops.control_flow.ControlFlow.Continue _ =>
+      automata.multi_tape_transition.MultiTapeTransitionsGroup._insert_transitions_loop
+        iter1 self1
+    | core.ops.control_flow.ControlFlow.Break residual =>
+      let r1 ←
+        core.result.Result.Insts.CoreOpsTry_traitFromResidualResult.from_residual
+          Unit (core.convert.FromSame
+          automata.multi_tape_transition.AddTransitionError) residual
+      ok (r1, self1)
+partial_fixpoint
 
 /-- [automata_builder::automata::multi_tape_transition::{automata_builder::automata::multi_tape_transition::MultiTapeTransitionsGroup}::_insert_transitions]:
     Source: 'src/automata/multi_tape_transition.rs', lines 258:4-265:5
@@ -19134,30 +17554,26 @@ def automata.product_writes_map.ProductWritesMap.remove
         self.prod_to_state_map product
     ok (core.result.Result.Ok o, { self with prod_to_state_map := im })
 
-/-- [automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::build_state_to_products_map]: loop body 1:
+/-- [automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::build_state_to_products_map]: loop 1:
     Source: 'src/automata/product_writes_map.rs', lines 259:12-262:13
     Visibility: public -/
-@[rust_loop_body]
+@[rust_loop]
 def
-  automata.product_writes_map.ProductWritesMap.build_state_to_products_map_loop0_loop0.body
-  (product : automata.terms_multitape.MultiTapeProduct)
+  automata.product_writes_map.ProductWritesMap.build_state_to_products_map_loop0_loop0
   (iter : alloc.collections.btree.map.Iter Std.U16 Std.U32)
   (state_to_products : alloc.collections.btree.map.BTreeMap
   automata.terms_multitape.MultiTapeState (alloc.vec.Vec
-  automata.terms_multitape.MultiTapeProduct) alloc.alloc.Global) :
-  Result (ControlFlow ((alloc.collections.btree.map.Iter Std.U16 Std.U32) ×
-    (alloc.collections.btree.map.BTreeMap
+  automata.terms_multitape.MultiTapeProduct) alloc.alloc.Global)
+  (product : automata.terms_multitape.MultiTapeProduct) :
+  Result (alloc.collections.btree.map.BTreeMap
     automata.terms_multitape.MultiTapeState (alloc.vec.Vec
-    automata.terms_multitape.MultiTapeProduct) alloc.alloc.Global))
-    (alloc.collections.btree.map.BTreeMap
-    automata.terms_multitape.MultiTapeState (alloc.vec.Vec
-    automata.terms_multitape.MultiTapeProduct) alloc.alloc.Global))
+    automata.terms_multitape.MultiTapeProduct) alloc.alloc.Global)
   := do
   let (o, iter1) ←
     alloc.collections.btree.map.Iter.Insts.CoreIterTraitsIteratorIteratorPairSharedAKSharedAV.next
       iter
   match o with
-  | none => ok (done state_to_products)
+  | none => ok state_to_products
   | some p =>
     let (tape_no, tape_cell_state) := p
     let state ←
@@ -19179,64 +17595,9 @@ def
     let v1 ← alloc.vec.Vec.push v mtp
     let e1 := or_default_back v1
     let bm := entry_back e1
-    ok (cont (iter1, bm))
-
-/-- [automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::build_state_to_products_map]: loop 1:
-    Source: 'src/automata/product_writes_map.rs', lines 259:12-262:13
-    Visibility: public -/
-@[rust_loop]
-def
-  automata.product_writes_map.ProductWritesMap.build_state_to_products_map_loop0_loop0
-  (iter : alloc.collections.btree.map.Iter Std.U16 Std.U32)
-  (state_to_products : alloc.collections.btree.map.BTreeMap
-  automata.terms_multitape.MultiTapeState (alloc.vec.Vec
-  automata.terms_multitape.MultiTapeProduct) alloc.alloc.Global)
-  (product : automata.terms_multitape.MultiTapeProduct) :
-  Result (alloc.collections.btree.map.BTreeMap
-    automata.terms_multitape.MultiTapeState (alloc.vec.Vec
-    automata.terms_multitape.MultiTapeProduct) alloc.alloc.Global)
-  := do
-  loop
-    (fun (iter1, state_to_products1) =>
-      automata.product_writes_map.ProductWritesMap.build_state_to_products_map_loop0_loop0.body
-      product iter1 state_to_products1)
-    (iter, state_to_products)
-
-/-- [automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::build_state_to_products_map]: loop body 0:
-    Source: 'src/automata/product_writes_map.rs', lines 258:8-263:9
-    Visibility: public -/
-@[rust_loop_body]
-def
-  automata.product_writes_map.ProductWritesMap.build_state_to_products_map_loop0.body
-  (iter : indexmap.map.iter.Iter automata.terms_multitape.MultiTapeProduct
-  (alloc.collections.btree.map.BTreeMap Std.U16 Std.U32 alloc.alloc.Global))
-  (state_to_products : alloc.collections.btree.map.BTreeMap
-  automata.terms_multitape.MultiTapeState (alloc.vec.Vec
-  automata.terms_multitape.MultiTapeProduct) alloc.alloc.Global) :
-  Result (ControlFlow ((indexmap.map.iter.Iter
-    automata.terms_multitape.MultiTapeProduct
-    (alloc.collections.btree.map.BTreeMap Std.U16 Std.U32 alloc.alloc.Global))
-    × (alloc.collections.btree.map.BTreeMap
-    automata.terms_multitape.MultiTapeState (alloc.vec.Vec
-    automata.terms_multitape.MultiTapeProduct) alloc.alloc.Global))
-    (alloc.collections.btree.map.BTreeMap
-    automata.terms_multitape.MultiTapeState (alloc.vec.Vec
-    automata.terms_multitape.MultiTapeProduct) alloc.alloc.Global))
-  := do
-  let (o, iter1) ←
-    indexmap.map.iter.Iter.Insts.CoreIterTraitsIteratorIteratorPairSharedAKSharedAV.next
-      iter
-  match o with
-  | none => ok (done state_to_products)
-  | some p =>
-    let (product, writes) := p
-    let iter2 ←
-      alloc.collections.btree.map.BTreeMap.iter
-        alloc.alloc.Global.Insts.CoreAllocAllocatorClone writes
-    let state_to_products1 ←
-      automata.product_writes_map.ProductWritesMap.build_state_to_products_map_loop0_loop0
-        iter2 state_to_products product
-    ok (cont (iter1, state_to_products1))
+    automata.product_writes_map.ProductWritesMap.build_state_to_products_map_loop0_loop0
+      iter1 bm product
+partial_fixpoint
 
 /-- [automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::build_state_to_products_map]: loop 0:
     Source: 'src/automata/product_writes_map.rs', lines 258:8-263:9
@@ -19253,11 +17614,22 @@ def
     automata.terms_multitape.MultiTapeState (alloc.vec.Vec
     automata.terms_multitape.MultiTapeProduct) alloc.alloc.Global)
   := do
-  loop
-    (fun (iter1, state_to_products1) =>
-      automata.product_writes_map.ProductWritesMap.build_state_to_products_map_loop0.body
-      iter1 state_to_products1)
-    (iter, state_to_products)
+  let (o, iter1) ←
+    indexmap.map.iter.Iter.Insts.CoreIterTraitsIteratorIteratorPairSharedAKSharedAV.next
+      iter
+  match o with
+  | none => ok state_to_products
+  | some p =>
+    let (product, writes) := p
+    let iter2 ←
+      alloc.collections.btree.map.BTreeMap.iter
+        alloc.alloc.Global.Insts.CoreAllocAllocatorClone writes
+    let state_to_products1 ←
+      automata.product_writes_map.ProductWritesMap.build_state_to_products_map_loop0_loop0
+        iter2 state_to_products product
+    automata.product_writes_map.ProductWritesMap.build_state_to_products_map_loop0
+      iter1 state_to_products1
+partial_fixpoint
 
 /-- [automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::build_state_to_products_map]:
     Source: 'src/automata/product_writes_map.rs', lines 252:4-265:5
@@ -20656,27 +19028,6 @@ def automata.rule_generator.BidirectionalTape.prune
   := do
   sorry
 
-/-- [automata_builder::automata::rule_generator::{automata_builder::automata::rule_generator::BidirectionalTape}::read_region]: loop body 0:
-    Source: 'src/automata/rule_generator.rs', lines 351:8-355:9
-    Visibility: public -/
-@[rust_loop_body]
-def automata.rule_generator.BidirectionalTape.read_region_loop.body
-  (self : automata.rule_generator.BidirectionalTape) (start_position : Std.I64)
-  (iter : core.ops.range.Range Std.Usize) (region : alloc.vec.Vec Std.U32) :
-  Result (ControlFlow ((core.ops.range.Range Std.Usize) × (alloc.vec.Vec
-    Std.U32)) (alloc.vec.Vec Std.U32))
-  := do
-  let (o, iter1) ←
-    core.iter.range.IteratorRange.next core.iter.range.StepUsize iter
-  match o with
-  | none => ok (done region)
-  | some k =>
-    let i ← lift (UScalar.hcast .I64 k)
-    let position ← start_position + i
-    let state ← automata.rule_generator.BidirectionalTape.read self position
-    let region1 ← alloc.vec.Vec.push region state
-    ok (cont (iter1, region1))
-
 /-- [automata_builder::automata::rule_generator::{automata_builder::automata::rule_generator::BidirectionalTape}::read_region]: loop 0:
     Source: 'src/automata/rule_generator.rs', lines 351:8-355:9
     Visibility: public -/
@@ -20687,11 +19038,18 @@ def automata.rule_generator.BidirectionalTape.read_region_loop
   (region : alloc.vec.Vec Std.U32) :
   Result (alloc.vec.Vec Std.U32)
   := do
-  loop
-    (fun (iter1, region1) =>
-      automata.rule_generator.BidirectionalTape.read_region_loop.body self
-      start_position iter1 region1)
-    (iter, region)
+  let (o, iter1) ←
+    core.iter.range.IteratorRange.next core.iter.range.StepUsize iter
+  match o with
+  | none => ok region
+  | some k =>
+    let i ← lift (UScalar.hcast .I64 k)
+    let position ← start_position + i
+    let state ← automata.rule_generator.BidirectionalTape.read self position
+    let region1 ← alloc.vec.Vec.push region state
+    automata.rule_generator.BidirectionalTape.read_region_loop iter1 self
+      start_position region1
+partial_fixpoint
 
 /-- [automata_builder::automata::rule_generator::{automata_builder::automata::rule_generator::BidirectionalTape}::read_region]:
     Source: 'src/automata/rule_generator.rs', lines 347:4-357:5
@@ -20716,33 +19074,6 @@ def automata.rule_generator.BidirectionalTape.is_state_eq
   let i ← automata.rule_generator.BidirectionalTape.read self position
   ok (i = state)
 
-/-- [automata_builder::automata::rule_generator::{automata_builder::automata::rule_generator::BidirectionalTape}::write_region]: loop body 0:
-    Source: 'src/automata/rule_generator.rs', lines 436:8-440:9
-    Visibility: public -/
-@[rust_loop_body]
-def automata.rule_generator.BidirectionalTape.write_region_loop.body
-  (position : Std.I64) (values : Slice Std.U32)
-  (iter : core.ops.range.RangeInclusive Std.I64)
-  (self : automata.rule_generator.BidirectionalTape) :
-  Result (ControlFlow ((core.ops.range.RangeInclusive Std.I64) ×
-    automata.rule_generator.BidirectionalTape)
-    automata.rule_generator.BidirectionalTape)
-  := do
-  let (o, iter1) ←
-    core.ops.range.RangeInclusive.Insts.CoreIterTraitsIteratorIterator.next
-      core.iter.range.StepI64 iter
-  match o with
-  | none => ok (done self)
-  | some new_position =>
-    let i ← new_position - position
-    let offset ← lift (IScalar.hcast .Usize i)
-    let i1 := Slice.len values
-    let i2 ← offset % i1
-    let value ← Slice.index_usize values i2
-    let self1 ←
-      automata.rule_generator.BidirectionalTape.write self new_position value
-    ok (cont (iter1, self1))
-
 /-- [automata_builder::automata::rule_generator::{automata_builder::automata::rule_generator::BidirectionalTape}::write_region]: loop 0:
     Source: 'src/automata/rule_generator.rs', lines 436:8-440:9
     Visibility: public -/
@@ -20753,11 +19084,22 @@ def automata.rule_generator.BidirectionalTape.write_region_loop
   (values : Slice Std.U32) :
   Result automata.rule_generator.BidirectionalTape
   := do
-  loop
-    (fun (iter1, self1) =>
-      automata.rule_generator.BidirectionalTape.write_region_loop.body position
-      values iter1 self1)
-    (iter, self)
+  let (o, iter1) ←
+    core.ops.range.RangeInclusive.Insts.CoreIterTraitsIteratorIterator.next
+      core.iter.range.StepI64 iter
+  match o with
+  | none => ok self
+  | some new_position =>
+    let i ← new_position - position
+    let offset ← lift (IScalar.hcast .Usize i)
+    let i1 := Slice.len values
+    let i2 ← offset % i1
+    let value ← Slice.index_usize values i2
+    let self1 ←
+      automata.rule_generator.BidirectionalTape.write self new_position value
+    automata.rule_generator.BidirectionalTape.write_region_loop iter1 self1
+      position values
+partial_fixpoint
 
 /-- [automata_builder::automata::rule_generator::{automata_builder::automata::rule_generator::BidirectionalTape}::write_region]:
     Source: 'src/automata/rule_generator.rs', lines 426:4-442:5
@@ -20923,25 +19265,23 @@ def automata.rule_generator_multitape.MultiTapeDataRegion.add_tape_region
       self.tape_regions tape_no region
   ok { self with tape_regions := bm }
 
-/-- [automata_builder::automata::rule_generator_multitape::{automata_builder::automata::rule_generator_multitape::MultiTapeDataRegion}::get_product_slice_at]: loop body 0:
+/-- [automata_builder::automata::rule_generator_multitape::{automata_builder::automata::rule_generator_multitape::MultiTapeDataRegion}::get_product_slice_at]: loop 0:
     Source: 'src/automata/rule_generator_multitape.rs', lines 29:8-36:9
     Visibility: public -/
-@[rust_loop_body]
+@[rust_loop]
 def
-  automata.rule_generator_multitape.MultiTapeDataRegion.get_product_slice_at_loop.body
+  automata.rule_generator_multitape.MultiTapeDataRegion.get_product_slice_at_loop
+  (iter : alloc.collections.btree.map.Keys Std.U16 (alloc.vec.Vec Std.U32))
   (bm : alloc.collections.btree.map.BTreeMap Std.U16 (alloc.vec.Vec Std.U32)
   alloc.alloc.Global) (index : Std.Usize) (position : Std.I64)
-  (iter : alloc.collections.btree.map.Keys Std.U16 (alloc.vec.Vec Std.U32))
   (terms : alloc.vec.Vec automata.terms_multitape.MultiTapeTerm) :
-  Result (ControlFlow ((alloc.collections.btree.map.Keys Std.U16 (alloc.vec.Vec
-    Std.U32)) × (alloc.vec.Vec automata.terms_multitape.MultiTapeTerm))
-    (alloc.vec.Vec automata.terms_multitape.MultiTapeTerm))
+  Result (alloc.vec.Vec automata.terms_multitape.MultiTapeTerm)
   := do
   let (o, iter1) ←
     alloc.collections.btree.map.Keys.Insts.CoreIterTraitsIteratorIteratorSharedAK.next
       iter
   match o with
-  | none => ok (done terms)
+  | none => ok terms
   | some tape_no =>
     let o1 ←
       alloc.collections.btree.map.BTreeMap.get
@@ -20956,25 +19296,9 @@ def
       automata.terms_multitape.MultiTapeTerm.new position (tape_no, cell_state)
         false
     let terms1 ← alloc.vec.Vec.push terms mtt
-    ok (cont (iter1, terms1))
-
-/-- [automata_builder::automata::rule_generator_multitape::{automata_builder::automata::rule_generator_multitape::MultiTapeDataRegion}::get_product_slice_at]: loop 0:
-    Source: 'src/automata/rule_generator_multitape.rs', lines 29:8-36:9
-    Visibility: public -/
-@[rust_loop]
-def
-  automata.rule_generator_multitape.MultiTapeDataRegion.get_product_slice_at_loop
-  (iter : alloc.collections.btree.map.Keys Std.U16 (alloc.vec.Vec Std.U32))
-  (bm : alloc.collections.btree.map.BTreeMap Std.U16 (alloc.vec.Vec Std.U32)
-  alloc.alloc.Global) (index : Std.Usize) (position : Std.I64)
-  (terms : alloc.vec.Vec automata.terms_multitape.MultiTapeTerm) :
-  Result (alloc.vec.Vec automata.terms_multitape.MultiTapeTerm)
-  := do
-  loop
-    (fun (iter1, terms1) =>
-      automata.rule_generator_multitape.MultiTapeDataRegion.get_product_slice_at_loop.body
-      bm index position iter1 terms1)
-    (iter, terms)
+    automata.rule_generator_multitape.MultiTapeDataRegion.get_product_slice_at_loop
+      iter1 bm index position terms1
+partial_fixpoint
 
 /-- [automata_builder::automata::rule_generator_multitape::{automata_builder::automata::rule_generator_multitape::MultiTapeDataRegion}::get_product_slice_at]:
     Source: 'src/automata/rule_generator_multitape.rs', lines 25:4-39:5
@@ -21027,35 +19351,6 @@ def automata.rule_generator_multitape.BiDirectionalMultiTape.new
   := do
   ok { tapes, freeze_tapes := false }
 
-/-- [automata_builder::automata::rule_generator_multitape::{automata_builder::automata::rule_generator_multitape::BiDirectionalMultiTape}::get_all_states]: loop body 0:
-    Source: 'src/automata/rule_generator_multitape.rs', lines 111:8-113:9
-    Visibility: public -/
-@[rust_loop_body]
-def
-  automata.rule_generator_multitape.BiDirectionalMultiTape.get_all_states_loop.body
-  (iter : alloc.collections.btree.map.Values Std.U16
-  automata.rule_generator.BidirectionalTape)
-  (all_states : indexmap.set.IndexSet Std.U32 std.hash.random.RandomState) :
-  Result (ControlFlow ((alloc.collections.btree.map.Values Std.U16
-    automata.rule_generator.BidirectionalTape) × (indexmap.set.IndexSet
-    Std.U32 std.hash.random.RandomState)) (indexmap.set.IndexSet Std.U32
-    std.hash.random.RandomState))
-  := do
-  let (o, iter1) ←
-    alloc.collections.btree.map.Values.Insts.CoreIterTraitsIteratorIteratorSharedAV.next
-      iter
-  match o with
-  | none => ok (done all_states)
-  | some tape =>
-    let is ← automata.rule_generator.BidirectionalTape.get_all_states tape
-    let all_states1 ←
-      indexmap.set.IndexSet.Insts.CoreIterTraitsCollectExtend.extend
-        U32.Insts.CoreHashHash core.cmp.EqU32
-        std.hash.random.RandomState.Insts.CoreHashBuildHasherDefaultHasher
-        (indexmap.set.IndexSet.Insts.CoreIterTraitsCollectIntoIteratorTIntoIter
-        Std.U32 std.hash.random.RandomState) all_states is
-    ok (cont (iter1, all_states1))
-
 /-- [automata_builder::automata::rule_generator_multitape::{automata_builder::automata::rule_generator_multitape::BiDirectionalMultiTape}::get_all_states]: loop 0:
     Source: 'src/automata/rule_generator_multitape.rs', lines 111:8-113:9
     Visibility: public -/
@@ -21067,11 +19362,22 @@ def
   (all_states : indexmap.set.IndexSet Std.U32 std.hash.random.RandomState) :
   Result (indexmap.set.IndexSet Std.U32 std.hash.random.RandomState)
   := do
-  loop
-    (fun (iter1, all_states1) =>
-      automata.rule_generator_multitape.BiDirectionalMultiTape.get_all_states_loop.body
-      iter1 all_states1)
-    (iter, all_states)
+  let (o, iter1) ←
+    alloc.collections.btree.map.Values.Insts.CoreIterTraitsIteratorIteratorSharedAV.next
+      iter
+  match o with
+  | none => ok all_states
+  | some tape =>
+    let is ← automata.rule_generator.BidirectionalTape.get_all_states tape
+    let all_states1 ←
+      indexmap.set.IndexSet.Insts.CoreIterTraitsCollectExtend.extend
+        U32.Insts.CoreHashHash core.cmp.EqU32
+        std.hash.random.RandomState.Insts.CoreHashBuildHasherDefaultHasher
+        (indexmap.set.IndexSet.Insts.CoreIterTraitsCollectIntoIteratorTIntoIter
+        Std.U32 std.hash.random.RandomState) all_states is
+    automata.rule_generator_multitape.BiDirectionalMultiTape.get_all_states_loop
+      iter1 all_states1
+partial_fixpoint
 
 /-- [automata_builder::automata::rule_generator_multitape::{automata_builder::automata::rule_generator_multitape::BiDirectionalMultiTape}::get_all_states]:
     Source: 'src/automata/rule_generator_multitape.rs', lines 109:4-115:5
@@ -21087,37 +19393,6 @@ def automata.rule_generator_multitape.BiDirectionalMultiTape.get_all_states
   automata.rule_generator_multitape.BiDirectionalMultiTape.get_all_states_loop
     iter all_states
 
-/-- [automata_builder::automata::rule_generator_multitape::{automata_builder::automata::rule_generator_multitape::BiDirectionalMultiTape}::prune]: loop body 0:
-    Source: 'src/automata/rule_generator_multitape.rs', lines 126:8-128:9
-    Visibility: public -/
-@[rust_loop_body]
-def automata.rule_generator_multitape.BiDirectionalMultiTape.prune_loop.body
-  (iter : alloc.collections.btree.map.ValuesMut Std.U16
-  automata.rule_generator.BidirectionalTape)
-  (back : alloc.collections.btree.map.ValuesMut Std.U16
-  automata.rule_generator.BidirectionalTape →
-  alloc.collections.btree.map.ValuesMut Std.U16
-  automata.rule_generator.BidirectionalTape) :
-  Result (ControlFlow ((alloc.collections.btree.map.ValuesMut Std.U16
-    automata.rule_generator.BidirectionalTape) ×
-    (alloc.collections.btree.map.ValuesMut Std.U16
-    automata.rule_generator.BidirectionalTape →
-    alloc.collections.btree.map.ValuesMut Std.U16
-    automata.rule_generator.BidirectionalTape))
-    (alloc.collections.btree.map.ValuesMut Std.U16
-    automata.rule_generator.BidirectionalTape))
-  := do
-  let (o, iter1, next_back) ←
-    alloc.collections.btree.map.ValuesMut.Insts.CoreIterTraitsIteratorIteratorMutAV.next
-      iter
-  match o with
-  | none => ok (done (let vm := next_back iter1 none
-                      back vm))
-  | some tape =>
-    let (_, tape1) ← automata.rule_generator.BidirectionalTape.prune tape
-    ok (cont (iter1, fun vm => let vm1 := next_back vm (some tape1)
-                               back vm1))
-
 /-- [automata_builder::automata::rule_generator_multitape::{automata_builder::automata::rule_generator_multitape::BiDirectionalMultiTape}::prune]: loop 0:
     Source: 'src/automata/rule_generator_multitape.rs', lines 126:8-128:9
     Visibility: public -/
@@ -21132,11 +19407,18 @@ def automata.rule_generator_multitape.BiDirectionalMultiTape.prune_loop
   Result (alloc.collections.btree.map.ValuesMut Std.U16
     automata.rule_generator.BidirectionalTape)
   := do
-  loop
-    (fun (iter1, back1) =>
-      automata.rule_generator_multitape.BiDirectionalMultiTape.prune_loop.body
-      iter1 back1)
-    (iter, back)
+  let (o, iter1, next_back) ←
+    alloc.collections.btree.map.ValuesMut.Insts.CoreIterTraitsIteratorIteratorMutAV.next
+      iter
+  match o with
+  | none => ok (let vm := next_back iter1 none
+                back vm)
+  | some tape =>
+    let (_, tape1) ← automata.rule_generator.BidirectionalTape.prune tape
+    automata.rule_generator_multitape.BiDirectionalMultiTape.prune_loop iter1
+      (fun vm => let vm1 := next_back vm (some tape1)
+                 back vm1)
+partial_fixpoint
 
 /-- [automata_builder::automata::rule_generator_multitape::{automata_builder::automata::rule_generator_multitape::BiDirectionalMultiTape}::prune]:
     Source: 'src/automata/rule_generator_multitape.rs', lines 125:4-129:5
@@ -21200,42 +19482,6 @@ def
     automata.rule_generator_multitape.BiDirectionalMultiTape.get_minimal_data_range.closure.Insts.CoreOpsFunctionFnOnceTupleI64I64.call_once
 }
 
-/-- [automata_builder::automata::rule_generator_multitape::{automata_builder::automata::rule_generator_multitape::BiDirectionalMultiTape}::get_minimal_data_range]: loop body 0:
-    Source: 'src/automata/rule_generator_multitape.rs', lines 231:8-236:9
-    Visibility: public -/
-@[rust_loop_body]
-def
-  automata.rule_generator_multitape.BiDirectionalMultiTape.get_minimal_data_range_loop.body
-  (iter : alloc.collections.btree.map.Iter Std.U16
-  automata.rule_generator.BidirectionalTape) (start_pos : Option Std.I64)
-  (end_pos : Option Std.I64) :
-  Result (ControlFlow ((alloc.collections.btree.map.Iter Std.U16
-    automata.rule_generator.BidirectionalTape) × (Option Std.I64) × (Option
-    Std.I64)) ((Option Std.I64) × (Option Std.I64)))
-  := do
-  let (o, iter1) ←
-    alloc.collections.btree.map.Iter.Insts.CoreIterTraitsIteratorIteratorPairSharedAKSharedAV.next
-      iter
-  match o with
-  | none => ok (done (start_pos, end_pos))
-  | some p =>
-    let (_, tape) := p
-    let o1 ←
-      automata.rule_generator.BidirectionalTape.get_minimal_data_range tape
-    match o1 with
-    | none => ok (cont (iter1, start_pos, end_pos))
-    | some p1 =>
-      let (tape_start, tape_end) := p1
-      let i ←
-        core.option.Option.map_or
-          automata.rule_generator_multitape.BiDirectionalMultiTape.get_minimal_data_range.closure.Insts.CoreOpsFunctionFnOnceTupleI64I64
-          start_pos tape_start tape_start
-      let i1 ←
-        core.option.Option.map_or
-          automata.rule_generator_multitape.BiDirectionalMultiTape.get_minimal_data_range.closure_1.Insts.CoreOpsFunctionFnOnceTupleI64I64
-          end_pos tape_end tape_end
-      ok (cont (iter1, some i, some i1))
-
 /-- [automata_builder::automata::rule_generator_multitape::{automata_builder::automata::rule_generator_multitape::BiDirectionalMultiTape}::get_minimal_data_range]: loop 0:
     Source: 'src/automata/rule_generator_multitape.rs', lines 231:8-236:9
     Visibility: public -/
@@ -21247,11 +19493,32 @@ def
   (end_pos : Option Std.I64) :
   Result ((Option Std.I64) × (Option Std.I64))
   := do
-  loop
-    (fun (iter1, start_pos1, end_pos1) =>
-      automata.rule_generator_multitape.BiDirectionalMultiTape.get_minimal_data_range_loop.body
-      iter1 start_pos1 end_pos1)
-    (iter, start_pos, end_pos)
+  let (o, iter1) ←
+    alloc.collections.btree.map.Iter.Insts.CoreIterTraitsIteratorIteratorPairSharedAKSharedAV.next
+      iter
+  match o with
+  | none => ok (start_pos, end_pos)
+  | some p =>
+    let (_, tape) := p
+    let o1 ←
+      automata.rule_generator.BidirectionalTape.get_minimal_data_range tape
+    match o1 with
+    | none =>
+      automata.rule_generator_multitape.BiDirectionalMultiTape.get_minimal_data_range_loop
+        iter1 start_pos end_pos
+    | some p1 =>
+      let (tape_start, tape_end) := p1
+      let i ←
+        core.option.Option.map_or
+          automata.rule_generator_multitape.BiDirectionalMultiTape.get_minimal_data_range.closure.Insts.CoreOpsFunctionFnOnceTupleI64I64
+          start_pos tape_start tape_start
+      let i1 ←
+        core.option.Option.map_or
+          automata.rule_generator_multitape.BiDirectionalMultiTape.get_minimal_data_range.closure_1.Insts.CoreOpsFunctionFnOnceTupleI64I64
+          end_pos tape_end tape_end
+      automata.rule_generator_multitape.BiDirectionalMultiTape.get_minimal_data_range_loop
+        iter1 (some i) (some i1)
+partial_fixpoint
 
 /-- [automata_builder::automata::rule_generator_multitape::{automata_builder::automata::rule_generator_multitape::BiDirectionalMultiTape}::get_minimal_data_range]:
     Source: 'src/automata/rule_generator_multitape.rs', lines 223:4-238:5
@@ -21269,37 +19536,6 @@ def
       iter none none
   core.option.Option.zip start_pos end_pos
 
-/-- [automata_builder::automata::rule_generator_multitape::{automata_builder::automata::rule_generator_multitape::BiDirectionalMultiTape}::get_minimal_data_region]: loop body 0:
-    Source: 'src/automata/rule_generator_multitape.rs', lines 255:8-260:9
-    Visibility: public -/
-@[rust_loop_body]
-def
-  automata.rule_generator_multitape.BiDirectionalMultiTape.get_minimal_data_region_loop.body
-  (data_length : Std.Usize) (start_pos : Std.I64)
-  (iter : alloc.collections.btree.map.Iter Std.U16
-  automata.rule_generator.BidirectionalTape)
-  (multi_tape_data_region :
-  automata.rule_generator_multitape.MultiTapeDataRegion) :
-  Result (ControlFlow ((alloc.collections.btree.map.Iter Std.U16
-    automata.rule_generator.BidirectionalTape) ×
-    automata.rule_generator_multitape.MultiTapeDataRegion)
-    automata.rule_generator_multitape.MultiTapeDataRegion)
-  := do
-  let (o, iter1) ←
-    alloc.collections.btree.map.Iter.Insts.CoreIterTraitsIteratorIteratorPairSharedAKSharedAV.next
-      iter
-  match o with
-  | none => ok (done multi_tape_data_region)
-  | some p =>
-    let (tape_no, tape) := p
-    let tape_minimal_data_region ←
-      automata.rule_generator.BidirectionalTape.read_region tape start_pos
-        data_length
-    let multi_tape_data_region1 ←
-      automata.rule_generator_multitape.MultiTapeDataRegion.add_tape_region
-        multi_tape_data_region tape_no tape_minimal_data_region
-    ok (cont (iter1, multi_tape_data_region1))
-
 /-- [automata_builder::automata::rule_generator_multitape::{automata_builder::automata::rule_generator_multitape::BiDirectionalMultiTape}::get_minimal_data_region]: loop 0:
     Source: 'src/automata/rule_generator_multitape.rs', lines 255:8-260:9
     Visibility: public -/
@@ -21313,11 +19549,22 @@ def
   automata.rule_generator_multitape.MultiTapeDataRegion) :
   Result automata.rule_generator_multitape.MultiTapeDataRegion
   := do
-  loop
-    (fun (iter1, multi_tape_data_region1) =>
-      automata.rule_generator_multitape.BiDirectionalMultiTape.get_minimal_data_region_loop.body
-      data_length start_pos iter1 multi_tape_data_region1)
-    (iter, multi_tape_data_region)
+  let (o, iter1) ←
+    alloc.collections.btree.map.Iter.Insts.CoreIterTraitsIteratorIteratorPairSharedAKSharedAV.next
+      iter
+  match o with
+  | none => ok multi_tape_data_region
+  | some p =>
+    let (tape_no, tape) := p
+    let tape_minimal_data_region ←
+      automata.rule_generator.BidirectionalTape.read_region tape start_pos
+        data_length
+    let multi_tape_data_region1 ←
+      automata.rule_generator_multitape.MultiTapeDataRegion.add_tape_region
+        multi_tape_data_region tape_no tape_minimal_data_region
+    automata.rule_generator_multitape.BiDirectionalMultiTape.get_minimal_data_region_loop
+      iter1 data_length start_pos multi_tape_data_region1
+partial_fixpoint
 
 /-- [automata_builder::automata::rule_generator_multitape::{automata_builder::automata::rule_generator_multitape::BiDirectionalMultiTape}::get_minimal_data_region]:
     Source: 'src/automata/rule_generator_multitape.rs', lines 240:4-262:5
@@ -22138,32 +20385,20 @@ def automata.single_tape_automata.SingleTapeAutomataError.Insts.CoreErrorError
     automata.single_tape_automata.SingleTapeAutomataError.Insts.CoreFmtDisplay
 }
 
-/-- [automata_builder::automata::single_tape_automata::is_void_product]: loop body 0:
-    Source: 'src/automata/single_tape_automata.rs', lines 76:4-82:1
-    Visibility: public -/
-@[rust_loop_body]
-def automata.single_tape_automata.is_void_product_loop.body
-  (iter : core.slice.iter.Iter automata.terms.Term) :
-  Result (ControlFlow (core.slice.iter.Iter automata.terms.Term) Bool)
-  := do
-  let (o, iter1) ← core.slice.iter.IteratorSliceIter.next iter
-  match o with
-  | none => ok (done true)
-  | some term =>
-    if term.state != automata.rule_generator.VOID_STATE
-    then ok (done false)
-    else ok (cont iter1)
-
 /-- [automata_builder::automata::single_tape_automata::is_void_product]: loop 0:
     Source: 'src/automata/single_tape_automata.rs', lines 76:4-82:1
     Visibility: public -/
 @[rust_loop]
 def automata.single_tape_automata.is_void_product_loop
   (iter : core.slice.iter.Iter automata.terms.Term) : Result Bool := do
-  loop
-    (fun iter1 => automata.single_tape_automata.is_void_product_loop.body
-      iter1)
-    iter
+  let (o, iter1) ← core.slice.iter.IteratorSliceIter.next iter
+  match o with
+  | none => ok true
+  | some term =>
+    if term.state != automata.rule_generator.VOID_STATE
+    then ok false
+    else automata.single_tape_automata.is_void_product_loop iter1
+partial_fixpoint
 
 /-- [automata_builder::automata::single_tape_automata::is_void_product]:
     Source: 'src/automata/single_tape_automata.rs', lines 75:0-82:1
@@ -22828,23 +21063,6 @@ impl_def automata.terms.Product.Insts.CoreCmpEq : core.cmp.Eq
     automata.terms.Product.Insts.CoreCmpEq
 }
 
-/-- [automata_builder::automata::terms::{impl core::hash::Hash for automata_builder::automata::terms::Product}::hash]: loop body 0:
-    Source: 'src/automata/terms.rs', lines 408:8-410:9
-    Visibility: public -/
-@[rust_loop_body]
-def automata.terms.Product.Insts.CoreHashHash.hash_loop.body
-  {H : Type _} (corehashHasherInst : core.hash.Hasher H)
-  (iter : core.slice.iter.Iter automata.terms.Term) (state : H) :
-  Result (ControlFlow ((core.slice.iter.Iter automata.terms.Term) × H) H)
-  := do
-  let (o, iter1) ← core.slice.iter.IteratorSliceIter.next iter
-  match o with
-  | none => ok (done state)
-  | some term =>
-    let state1 ←
-      automata.terms.Term.Insts.CoreHashHash.hash corehashHasherInst term state
-    ok (cont (iter1, state1))
-
 /-- [automata_builder::automata::terms::{impl core::hash::Hash for automata_builder::automata::terms::Product}::hash]: loop 0:
     Source: 'src/automata/terms.rs', lines 408:8-410:9
     Visibility: public -/
@@ -22854,11 +21072,15 @@ def automata.terms.Product.Insts.CoreHashHash.hash_loop
   (iter : core.slice.iter.Iter automata.terms.Term) (state : H) :
   Result H
   := do
-  loop
-    (fun (iter1, state1) =>
-      automata.terms.Product.Insts.CoreHashHash.hash_loop.body
-      corehashHasherInst iter1 state1)
-    (iter, state)
+  let (o, iter1) ← core.slice.iter.IteratorSliceIter.next iter
+  match o with
+  | none => ok state
+  | some term =>
+    let state1 ←
+      automata.terms.Term.Insts.CoreHashHash.hash corehashHasherInst term state
+    automata.terms.Product.Insts.CoreHashHash.hash_loop corehashHasherInst
+      iter1 state1
+partial_fixpoint
 
 /-- [automata_builder::automata::terms::{impl core::hash::Hash for automata_builder::automata::terms::Product}::hash]:
     Source: 'src/automata/terms.rs', lines 407:4-411:5
@@ -22970,28 +21192,6 @@ def automata.single_tape_automata.ProductWriteMap.insert
           product existing output_state), self)
       else ok (core.result.Result.Ok (), self)
 
-/-- [automata_builder::automata::single_tape_automata::{automata_builder::automata::single_tape_automata::ProductWriteMap}::get_states_set]: loop body 1:
-    Source: 'src/automata/single_tape_automata.rs', lines 276:12-278:13
-    Visibility: public -/
-@[rust_loop_body]
-def
-  automata.single_tape_automata.ProductWriteMap.get_states_set_loop0_loop0.body
-  (iter : alloc.vec.into_iter.IntoIter automata.terms.Term)
-  (states_set : indexmap.set.IndexSet Std.U32 std.hash.random.RandomState) :
-  Result (ControlFlow ((alloc.vec.into_iter.IntoIter automata.terms.Term) ×
-    (indexmap.set.IndexSet Std.U32 std.hash.random.RandomState))
-    (indexmap.set.IndexSet Std.U32 std.hash.random.RandomState))
-  := do
-  let (o, iter1) ← alloc.vec.into_iter.IteratorIntoIter.next iter
-  match o with
-  | none => ok (done states_set)
-  | some term =>
-    let (_, states_set1) ←
-      indexmap.set.IndexSet.insert U32.Insts.CoreHashHash core.cmp.EqU32
-        std.hash.random.RandomState.Insts.CoreHashBuildHasherDefaultHasher
-        states_set term.state
-    ok (cont (iter1, states_set1))
-
 /-- [automata_builder::automata::single_tape_automata::{automata_builder::automata::single_tape_automata::ProductWriteMap}::get_states_set]: loop 1:
     Source: 'src/automata/single_tape_automata.rs', lines 276:12-278:13
     Visibility: public -/
@@ -23001,35 +21201,17 @@ def automata.single_tape_automata.ProductWriteMap.get_states_set_loop0_loop0
   (states_set : indexmap.set.IndexSet Std.U32 std.hash.random.RandomState) :
   Result (indexmap.set.IndexSet Std.U32 std.hash.random.RandomState)
   := do
-  loop
-    (fun (iter1, states_set1) =>
-      automata.single_tape_automata.ProductWriteMap.get_states_set_loop0_loop0.body
-      iter1 states_set1)
-    (iter, states_set)
-
-/-- [automata_builder::automata::single_tape_automata::{automata_builder::automata::single_tape_automata::ProductWriteMap}::get_states_set]: loop body 0:
-    Source: 'src/automata/single_tape_automata.rs', lines 275:8-279:9
-    Visibility: public -/
-@[rust_loop_body]
-def automata.single_tape_automata.ProductWriteMap.get_states_set_loop0.body
-  (iter : indexmap.map.iter.Keys automata.terms.Product Std.U32)
-  (states_set : indexmap.set.IndexSet Std.U32 std.hash.random.RandomState) :
-  Result (ControlFlow ((indexmap.map.iter.Keys automata.terms.Product Std.U32)
-    × (indexmap.set.IndexSet Std.U32 std.hash.random.RandomState))
-    (indexmap.set.IndexSet Std.U32 std.hash.random.RandomState))
-  := do
-  let (o, iter1) ←
-    indexmap.map.iter.Keys.Insts.CoreIterTraitsIteratorIteratorSharedAK.next
-      iter
+  let (o, iter1) ← alloc.vec.into_iter.IteratorIntoIter.next iter
   match o with
-  | none => ok (done states_set)
-  | some product =>
-    let v ← automata.terms.Product.to_flat_terms product
-    let iter2 ← alloc.vec.IntoIteratorVec.into_iter v
-    let states_set1 ←
-      automata.single_tape_automata.ProductWriteMap.get_states_set_loop0_loop0
-        iter2 states_set
-    ok (cont (iter1, states_set1))
+  | none => ok states_set
+  | some term =>
+    let (_, states_set1) ←
+      indexmap.set.IndexSet.insert U32.Insts.CoreHashHash core.cmp.EqU32
+        std.hash.random.RandomState.Insts.CoreHashBuildHasherDefaultHasher
+        states_set term.state
+    automata.single_tape_automata.ProductWriteMap.get_states_set_loop0_loop0
+      iter1 states_set1
+partial_fixpoint
 
 /-- [automata_builder::automata::single_tape_automata::{automata_builder::automata::single_tape_automata::ProductWriteMap}::get_states_set]: loop 0:
     Source: 'src/automata/single_tape_automata.rs', lines 275:8-279:9
@@ -23040,11 +21222,20 @@ def automata.single_tape_automata.ProductWriteMap.get_states_set_loop0
   (states_set : indexmap.set.IndexSet Std.U32 std.hash.random.RandomState) :
   Result (indexmap.set.IndexSet Std.U32 std.hash.random.RandomState)
   := do
-  loop
-    (fun (iter1, states_set1) =>
-      automata.single_tape_automata.ProductWriteMap.get_states_set_loop0.body
-      iter1 states_set1)
-    (iter, states_set)
+  let (o, iter1) ←
+    indexmap.map.iter.Keys.Insts.CoreIterTraitsIteratorIteratorSharedAK.next
+      iter
+  match o with
+  | none => ok states_set
+  | some product =>
+    let v ← automata.terms.Product.to_flat_terms product
+    let iter2 ← alloc.vec.IntoIteratorVec.into_iter v
+    let states_set1 ←
+      automata.single_tape_automata.ProductWriteMap.get_states_set_loop0_loop0
+        iter2 states_set
+    automata.single_tape_automata.ProductWriteMap.get_states_set_loop0 iter1
+      states_set1
+partial_fixpoint
 
 /-- [automata_builder::automata::single_tape_automata::{automata_builder::automata::single_tape_automata::ProductWriteMap}::get_states_set]:
     Source: 'src/automata/single_tape_automata.rs', lines 273:4-281:5
@@ -23094,25 +21285,23 @@ def
     automata.terms.ProductFactory.with_optimized pf1 self._optimized
   automata.terms.ProductFactory.to_product pf2
 
-/-- [automata_builder::automata::single_tape_automata::{automata_builder::automata::single_tape_automata::ProductWriteMap}::build_state_to_products_map]: loop body 0:
+/-- [automata_builder::automata::single_tape_automata::{automata_builder::automata::single_tape_automata::ProductWriteMap}::build_state_to_products_map]: loop 0:
     Source: 'src/automata/single_tape_automata.rs', lines 286:8-288:9
     Visibility: public -/
-@[rust_loop_body]
+@[rust_loop]
 def
-  automata.single_tape_automata.ProductWriteMap.build_state_to_products_map_loop.body
+  automata.single_tape_automata.ProductWriteMap.build_state_to_products_map_loop
   (iter : indexmap.map.iter.Iter automata.terms.Product Std.U32)
   (state_to_products : indexmap.map.IndexMap Std.U32 (alloc.vec.Vec
   automata.terms.Product) std.hash.random.RandomState) :
-  Result (ControlFlow ((indexmap.map.iter.Iter automata.terms.Product Std.U32)
-    × (indexmap.map.IndexMap Std.U32 (alloc.vec.Vec automata.terms.Product)
-    std.hash.random.RandomState)) (indexmap.map.IndexMap Std.U32 (alloc.vec.Vec
-    automata.terms.Product) std.hash.random.RandomState))
+  Result (indexmap.map.IndexMap Std.U32 (alloc.vec.Vec automata.terms.Product)
+    std.hash.random.RandomState)
   := do
   let (o, iter1) ←
     indexmap.map.iter.Iter.Insts.CoreIterTraitsIteratorIteratorPairSharedAKSharedAV.next
       iter
   match o with
-  | none => ok (done state_to_products)
+  | none => ok state_to_products
   | some p =>
     let (product, output_state) := p
     let (e, entry_back) ←
@@ -23128,25 +21317,9 @@ def
     let v1 ← alloc.vec.Vec.push v p1
     let e1 := or_default_back v1
     let im := entry_back e1
-    ok (cont (iter1, im))
-
-/-- [automata_builder::automata::single_tape_automata::{automata_builder::automata::single_tape_automata::ProductWriteMap}::build_state_to_products_map]: loop 0:
-    Source: 'src/automata/single_tape_automata.rs', lines 286:8-288:9
-    Visibility: public -/
-@[rust_loop]
-def
-  automata.single_tape_automata.ProductWriteMap.build_state_to_products_map_loop
-  (iter : indexmap.map.iter.Iter automata.terms.Product Std.U32)
-  (state_to_products : indexmap.map.IndexMap Std.U32 (alloc.vec.Vec
-  automata.terms.Product) std.hash.random.RandomState) :
-  Result (indexmap.map.IndexMap Std.U32 (alloc.vec.Vec automata.terms.Product)
-    std.hash.random.RandomState)
-  := do
-  loop
-    (fun (iter1, state_to_products1) =>
-      automata.single_tape_automata.ProductWriteMap.build_state_to_products_map_loop.body
-      iter1 state_to_products1)
-    (iter, state_to_products)
+    automata.single_tape_automata.ProductWriteMap.build_state_to_products_map_loop
+      iter1 im
+partial_fixpoint
 
 /-- [automata_builder::automata::single_tape_automata::{automata_builder::automata::single_tape_automata::ProductWriteMap}::build_state_to_products_map]:
     Source: 'src/automata/single_tape_automata.rs', lines 284:4-290:5
@@ -23163,24 +21336,22 @@ def automata.single_tape_automata.ProductWriteMap.build_state_to_products_map
   automata.single_tape_automata.ProductWriteMap.build_state_to_products_map_loop
     iter state_to_products
 
-/-- [automata_builder::automata::single_tape_automata::{automata_builder::automata::single_tape_automata::ProductWriteMap}::build_input_state_to_prod_map]: loop body 1:
+/-- [automata_builder::automata::single_tape_automata::{automata_builder::automata::single_tape_automata::ProductWriteMap}::build_input_state_to_prod_map]: loop 1:
     Source: 'src/automata/single_tape_automata.rs', lines 296:12-298:13
     Visibility: public -/
-@[rust_loop_body]
+@[rust_loop]
 def
-  automata.single_tape_automata.ProductWriteMap.build_input_state_to_prod_map_loop0_loop0.body
-  (product : automata.terms.Product)
+  automata.single_tape_automata.ProductWriteMap.build_input_state_to_prod_map_loop0_loop0
   (iter : alloc.vec.into_iter.IntoIter automata.terms.Term)
   (input_state_to_prod : indexmap.map.IndexMap Std.U32 (alloc.vec.Vec
-  automata.terms.Product) std.hash.random.RandomState) :
-  Result (ControlFlow ((alloc.vec.into_iter.IntoIter automata.terms.Term) ×
-    (indexmap.map.IndexMap Std.U32 (alloc.vec.Vec automata.terms.Product)
-    std.hash.random.RandomState)) (indexmap.map.IndexMap Std.U32 (alloc.vec.Vec
-    automata.terms.Product) std.hash.random.RandomState))
+  automata.terms.Product) std.hash.random.RandomState)
+  (product : automata.terms.Product) :
+  Result (indexmap.map.IndexMap Std.U32 (alloc.vec.Vec automata.terms.Product)
+    std.hash.random.RandomState)
   := do
   let (o, iter1) ← alloc.vec.into_iter.IteratorIntoIter.next iter
   match o with
-  | none => ok (done input_state_to_prod)
+  | none => ok input_state_to_prod
   | some term =>
     let (e, entry_back) ←
       indexmap.map.IndexMap.entry U32.Insts.CoreHashHash core.cmp.EqU32
@@ -23195,53 +21366,9 @@ def
     let v1 ← alloc.vec.Vec.push v p
     let e1 := or_default_back v1
     let im := entry_back e1
-    ok (cont (iter1, im))
-
-/-- [automata_builder::automata::single_tape_automata::{automata_builder::automata::single_tape_automata::ProductWriteMap}::build_input_state_to_prod_map]: loop 1:
-    Source: 'src/automata/single_tape_automata.rs', lines 296:12-298:13
-    Visibility: public -/
-@[rust_loop]
-def
-  automata.single_tape_automata.ProductWriteMap.build_input_state_to_prod_map_loop0_loop0
-  (iter : alloc.vec.into_iter.IntoIter automata.terms.Term)
-  (input_state_to_prod : indexmap.map.IndexMap Std.U32 (alloc.vec.Vec
-  automata.terms.Product) std.hash.random.RandomState)
-  (product : automata.terms.Product) :
-  Result (indexmap.map.IndexMap Std.U32 (alloc.vec.Vec automata.terms.Product)
-    std.hash.random.RandomState)
-  := do
-  loop
-    (fun (iter1, input_state_to_prod1) =>
-      automata.single_tape_automata.ProductWriteMap.build_input_state_to_prod_map_loop0_loop0.body
-      product iter1 input_state_to_prod1)
-    (iter, input_state_to_prod)
-
-/-- [automata_builder::automata::single_tape_automata::{automata_builder::automata::single_tape_automata::ProductWriteMap}::build_input_state_to_prod_map]: loop body 0:
-    Source: 'src/automata/single_tape_automata.rs', lines 295:8-299:9
-    Visibility: public -/
-@[rust_loop_body]
-def
-  automata.single_tape_automata.ProductWriteMap.build_input_state_to_prod_map_loop0.body
-  (iter : indexmap.map.iter.Keys automata.terms.Product Std.U32)
-  (input_state_to_prod : indexmap.map.IndexMap Std.U32 (alloc.vec.Vec
-  automata.terms.Product) std.hash.random.RandomState) :
-  Result (ControlFlow ((indexmap.map.iter.Keys automata.terms.Product Std.U32)
-    × (indexmap.map.IndexMap Std.U32 (alloc.vec.Vec automata.terms.Product)
-    std.hash.random.RandomState)) (indexmap.map.IndexMap Std.U32 (alloc.vec.Vec
-    automata.terms.Product) std.hash.random.RandomState))
-  := do
-  let (o, iter1) ←
-    indexmap.map.iter.Keys.Insts.CoreIterTraitsIteratorIteratorSharedAK.next
-      iter
-  match o with
-  | none => ok (done input_state_to_prod)
-  | some product =>
-    let v ← automata.terms.Product.to_flat_terms product
-    let iter2 ← alloc.vec.IntoIteratorVec.into_iter v
-    let input_state_to_prod1 ←
-      automata.single_tape_automata.ProductWriteMap.build_input_state_to_prod_map_loop0_loop0
-        iter2 input_state_to_prod product
-    ok (cont (iter1, input_state_to_prod1))
+    automata.single_tape_automata.ProductWriteMap.build_input_state_to_prod_map_loop0_loop0
+      iter1 im product
+partial_fixpoint
 
 /-- [automata_builder::automata::single_tape_automata::{automata_builder::automata::single_tape_automata::ProductWriteMap}::build_input_state_to_prod_map]: loop 0:
     Source: 'src/automata/single_tape_automata.rs', lines 295:8-299:9
@@ -23255,11 +21382,20 @@ def
   Result (indexmap.map.IndexMap Std.U32 (alloc.vec.Vec automata.terms.Product)
     std.hash.random.RandomState)
   := do
-  loop
-    (fun (iter1, input_state_to_prod1) =>
-      automata.single_tape_automata.ProductWriteMap.build_input_state_to_prod_map_loop0.body
-      iter1 input_state_to_prod1)
-    (iter, input_state_to_prod)
+  let (o, iter1) ←
+    indexmap.map.iter.Keys.Insts.CoreIterTraitsIteratorIteratorSharedAK.next
+      iter
+  match o with
+  | none => ok input_state_to_prod
+  | some product =>
+    let v ← automata.terms.Product.to_flat_terms product
+    let iter2 ← alloc.vec.IntoIteratorVec.into_iter v
+    let input_state_to_prod1 ←
+      automata.single_tape_automata.ProductWriteMap.build_input_state_to_prod_map_loop0_loop0
+        iter2 input_state_to_prod product
+    automata.single_tape_automata.ProductWriteMap.build_input_state_to_prod_map_loop0
+      iter1 input_state_to_prod1
+partial_fixpoint
 
 /-- [automata_builder::automata::single_tape_automata::{automata_builder::automata::single_tape_automata::ProductWriteMap}::build_input_state_to_prod_map]:
     Source: 'src/automata/single_tape_automata.rs', lines 293:4-301:5
@@ -23568,26 +21704,6 @@ def
     automata.single_tape_automata.SingleTapeAutomata.reverse_state_eq_map.closure.Insts.CoreOpsFunctionFnMutTupleShared0TermBool.call_mut
 }
 
-/-- [automata_builder::automata::single_tape_automata::{automata_builder::automata::single_tape_automata::SingleTapeAutomata}::compute_rule_range]: loop body 1:
-    Source: 'src/automata/single_tape_automata.rs', lines 408:12-411:13 -/
-@[rust_loop_body]
-def
-  automata.single_tape_automata.SingleTapeAutomata.compute_rule_range_loop0_loop0.body
-  (iter : alloc.vec.into_iter.IntoIter automata.terms.Term)
-  (leftmost_extent : Std.I64) (rightmost_extent : Std.I64) :
-  Result (ControlFlow ((alloc.vec.into_iter.IntoIter automata.terms.Term) ×
-    Std.I64 × Std.I64) (Std.I64 × Std.I64))
-  := do
-  let (o, iter1) ← alloc.vec.into_iter.IteratorIntoIter.next iter
-  match o with
-  | none => ok (done (leftmost_extent, rightmost_extent))
-  | some term =>
-    let leftmost_extent1 ←
-      lift (core.cmp.impls.OrdI64.min leftmost_extent term.position)
-    let rightmost_extent1 ←
-      lift (core.cmp.impls.OrdI64.max rightmost_extent term.position)
-    ok (cont (iter1, leftmost_extent1, rightmost_extent1))
-
 /-- [automata_builder::automata::single_tape_automata::{automata_builder::automata::single_tape_automata::SingleTapeAutomata}::compute_rule_range]: loop 1:
     Source: 'src/automata/single_tape_automata.rs', lines 408:12-411:13 -/
 @[rust_loop]
@@ -23597,34 +21713,17 @@ def
   (leftmost_extent : Std.I64) (rightmost_extent : Std.I64) :
   Result (Std.I64 × Std.I64)
   := do
-  loop
-    (fun (iter1, leftmost_extent1, rightmost_extent1) =>
-      automata.single_tape_automata.SingleTapeAutomata.compute_rule_range_loop0_loop0.body
-      iter1 leftmost_extent1 rightmost_extent1)
-    (iter, leftmost_extent, rightmost_extent)
-
-/-- [automata_builder::automata::single_tape_automata::{automata_builder::automata::single_tape_automata::SingleTapeAutomata}::compute_rule_range]: loop body 0:
-    Source: 'src/automata/single_tape_automata.rs', lines 407:8-412:9 -/
-@[rust_loop_body]
-def
-  automata.single_tape_automata.SingleTapeAutomata.compute_rule_range_loop0.body
-  (iter : indexmap.map.iter.Keys automata.terms.Product Std.U32)
-  (leftmost_extent : Std.I64) (rightmost_extent : Std.I64) :
-  Result (ControlFlow ((indexmap.map.iter.Keys automata.terms.Product Std.U32)
-    × Std.I64 × Std.I64) (Std.I64 × Std.I64))
-  := do
-  let (o, iter1) ←
-    indexmap.map.iter.Keys.Insts.CoreIterTraitsIteratorIteratorSharedAK.next
-      iter
+  let (o, iter1) ← alloc.vec.into_iter.IteratorIntoIter.next iter
   match o with
-  | none => ok (done (leftmost_extent, rightmost_extent))
-  | some product =>
-    let v ← automata.terms.Product.to_flat_terms product
-    let iter2 ← alloc.vec.IntoIteratorVec.into_iter v
-    let (leftmost_extent1, rightmost_extent1) ←
-      automata.single_tape_automata.SingleTapeAutomata.compute_rule_range_loop0_loop0
-        iter2 leftmost_extent rightmost_extent
-    ok (cont (iter1, leftmost_extent1, rightmost_extent1))
+  | none => ok (leftmost_extent, rightmost_extent)
+  | some term =>
+    let leftmost_extent1 ←
+      lift (core.cmp.impls.OrdI64.min leftmost_extent term.position)
+    let rightmost_extent1 ←
+      lift (core.cmp.impls.OrdI64.max rightmost_extent term.position)
+    automata.single_tape_automata.SingleTapeAutomata.compute_rule_range_loop0_loop0
+      iter1 leftmost_extent1 rightmost_extent1
+partial_fixpoint
 
 /-- [automata_builder::automata::single_tape_automata::{automata_builder::automata::single_tape_automata::SingleTapeAutomata}::compute_rule_range]: loop 0:
     Source: 'src/automata/single_tape_automata.rs', lines 407:8-412:9 -/
@@ -23634,11 +21733,20 @@ def automata.single_tape_automata.SingleTapeAutomata.compute_rule_range_loop0
   (leftmost_extent : Std.I64) (rightmost_extent : Std.I64) :
   Result (Std.I64 × Std.I64)
   := do
-  loop
-    (fun (iter1, leftmost_extent1, rightmost_extent1) =>
-      automata.single_tape_automata.SingleTapeAutomata.compute_rule_range_loop0.body
-      iter1 leftmost_extent1 rightmost_extent1)
-    (iter, leftmost_extent, rightmost_extent)
+  let (o, iter1) ←
+    indexmap.map.iter.Keys.Insts.CoreIterTraitsIteratorIteratorSharedAK.next
+      iter
+  match o with
+  | none => ok (leftmost_extent, rightmost_extent)
+  | some product =>
+    let v ← automata.terms.Product.to_flat_terms product
+    let iter2 ← alloc.vec.IntoIteratorVec.into_iter v
+    let (leftmost_extent1, rightmost_extent1) ←
+      automata.single_tape_automata.SingleTapeAutomata.compute_rule_range_loop0_loop0
+        iter2 leftmost_extent rightmost_extent
+    automata.single_tape_automata.SingleTapeAutomata.compute_rule_range_loop0
+      iter1 leftmost_extent1 rightmost_extent1
+partial_fixpoint
 
 /-- [automata_builder::automata::single_tape_automata::{automata_builder::automata::single_tape_automata::SingleTapeAutomata}::compute_rule_range]:
     Source: 'src/automata/single_tape_automata.rs', lines 403:4-417:5 -/
@@ -23655,56 +21763,6 @@ def automata.single_tape_automata.SingleTapeAutomata.compute_rule_range
   massert (rightmost_extent >= 0#i64)
   ok (leftmost_extent, rightmost_extent)
 
-/-- [automata_builder::automata::single_tape_automata::{automata_builder::automata::single_tape_automata::SingleTapeAutomata}::new]: loop body 0:
-    Source: 'src/automata/single_tape_automata.rs', lines 361:8-373:5
-    Visibility: public -/
-@[rust_loop_body]
-def automata.single_tape_automata.SingleTapeAutomata.new_loop.body
-  (state_eq_map : indexmap.map.IndexMap Std.U32 automata.terms.Expression
-  std.hash.random.RandomState)
-  (prod_to_state_map : automata.single_tape_automata.ProductWriteMap)
-  (leftmost_extent : Std.I64) (rightmost_extent : Std.I64)
-  (iter : indexmap.map.iter.Iter automata.terms.Product Std.U32)
-  (product_writes_trie : automata.single_tape_automata.ProductWritesTrie) :
-  Result (ControlFlow ((indexmap.map.iter.Iter automata.terms.Product Std.U32)
-    × automata.single_tape_automata.ProductWritesTrie) (core.result.Result
-    automata.single_tape_automata.SingleTapeAutomata
-    automata.single_tape_automata.SingleTapeAutomataError))
-  := do
-  let (o, iter1) ←
-    indexmap.map.iter.Iter.Insts.CoreIterTraitsIteratorIteratorPairSharedAKSharedAV.next
-      iter
-  match o with
-  | none =>
-    let bt ←
-      automata.rule_generator.BidirectionalTape.Insts.CoreDefaultDefault.default
-    ok (done (core.result.Result.Ok
-      {
-        tape := bt,
-        prod_to_state_map,
-        product_writes_trie,
-        leftmost_extent,
-        rightmost_extent,
-        state_eq_map
-      }))
-  | some p =>
-    let (product, write_state) := p
-    let p1 ← automata.terms.Product.Insts.CoreCloneClone.clone product
-    let (r, product_writes_trie1) ←
-      automata.single_tape_automata.ProductWritesTrie.insert
-        product_writes_trie p1 write_state
-    let cf ← core.result.Result.Insts.CoreOpsTry.branch r
-    match cf with
-    | core.ops.control_flow.ControlFlow.Continue _ =>
-      ok (cont (iter1, product_writes_trie1))
-    | core.ops.control_flow.ControlFlow.Break residual =>
-      let r1 ←
-        core.result.Result.Insts.CoreOpsTry_traitFromResidualResult.from_residual
-          automata.single_tape_automata.SingleTapeAutomata
-          (core.convert.FromSame
-          automata.single_tape_automata.SingleTapeAutomataError) residual
-      ok (done r1)
-
 /-- [automata_builder::automata::single_tape_automata::{automata_builder::automata::single_tape_automata::SingleTapeAutomata}::new]: loop 0:
     Source: 'src/automata/single_tape_automata.rs', lines 361:8-373:5
     Visibility: public -/
@@ -23719,12 +21777,39 @@ def automata.single_tape_automata.SingleTapeAutomata.new_loop
   Result (core.result.Result automata.single_tape_automata.SingleTapeAutomata
     automata.single_tape_automata.SingleTapeAutomataError)
   := do
-  loop
-    (fun (iter1, product_writes_trie1) =>
-      automata.single_tape_automata.SingleTapeAutomata.new_loop.body
-      state_eq_map prod_to_state_map leftmost_extent rightmost_extent iter1
-      product_writes_trie1)
-    (iter, product_writes_trie)
+  let (o, iter1) ←
+    indexmap.map.iter.Iter.Insts.CoreIterTraitsIteratorIteratorPairSharedAKSharedAV.next
+      iter
+  match o with
+  | none =>
+    let bt ←
+      automata.rule_generator.BidirectionalTape.Insts.CoreDefaultDefault.default
+    ok (core.result.Result.Ok
+      {
+        tape := bt,
+        prod_to_state_map,
+        product_writes_trie,
+        leftmost_extent,
+        rightmost_extent,
+        state_eq_map
+      })
+  | some p =>
+    let (product, write_state) := p
+    let p1 ← automata.terms.Product.Insts.CoreCloneClone.clone product
+    let (r, product_writes_trie1) ←
+      automata.single_tape_automata.ProductWritesTrie.insert
+        product_writes_trie p1 write_state
+    let cf ← core.result.Result.Insts.CoreOpsTry.branch r
+    match cf with
+    | core.ops.control_flow.ControlFlow.Continue _ =>
+      automata.single_tape_automata.SingleTapeAutomata.new_loop iter1
+        state_eq_map prod_to_state_map leftmost_extent rightmost_extent
+        product_writes_trie1
+    | core.ops.control_flow.ControlFlow.Break residual =>
+      core.result.Result.Insts.CoreOpsTry_traitFromResidualResult.from_residual
+        automata.single_tape_automata.SingleTapeAutomata (core.convert.FromSame
+        automata.single_tape_automata.SingleTapeAutomataError) residual
+partial_fixpoint
 
 /-- [automata_builder::automata::single_tape_automata::{automata_builder::automata::single_tape_automata::SingleTapeAutomata}::new]:
     Source: 'src/automata/single_tape_automata.rs', lines 355:4-373:5
@@ -24011,27 +22096,6 @@ def automata.single_tape_automata.SingleTapeAutomata.render_tape
       automata.single_tape_automata.SingleTapeAutomataError.Insts.CoreConvertFromTapeError
       residual
 
-/-- [automata_builder::automata::single_tape_automata::{automata_builder::automata::single_tape_automata::SingleTapeAutomata}::product_satisfies]: loop body 0:
-    Source: 'src/automata/single_tape_automata.rs', lines 515:8-521:5
-    Visibility: public -/
-@[rust_loop_body]
-def
-  automata.single_tape_automata.SingleTapeAutomata.product_satisfies_loop.body
-  (self : automata.single_tape_automata.SingleTapeAutomata)
-  (position : Std.I64)
-  (iter : alloc.vec.into_iter.IntoIter automata.terms.Term) :
-  Result (ControlFlow (alloc.vec.into_iter.IntoIter automata.terms.Term) Bool)
-  := do
-  let (o, iter1) ← alloc.vec.into_iter.IteratorIntoIter.next iter
-  match o with
-  | none => ok (done true)
-  | some term =>
-    let i ← position + term.position
-    let i1 ← automata.rule_generator.BidirectionalTape.read self.tape i
-    if i1 != term.state
-    then ok (done false)
-    else ok (cont iter1)
-
 /-- [automata_builder::automata::single_tape_automata::{automata_builder::automata::single_tape_automata::SingleTapeAutomata}::product_satisfies]: loop 0:
     Source: 'src/automata/single_tape_automata.rs', lines 515:8-521:5
     Visibility: public -/
@@ -24042,11 +22106,18 @@ def automata.single_tape_automata.SingleTapeAutomata.product_satisfies_loop
   (position : Std.I64) :
   Result Bool
   := do
-  loop
-    (fun iter1 =>
-      automata.single_tape_automata.SingleTapeAutomata.product_satisfies_loop.body
-      self position iter1)
-    iter
+  let (o, iter1) ← alloc.vec.into_iter.IteratorIntoIter.next iter
+  match o with
+  | none => ok true
+  | some term =>
+    let i ← position + term.position
+    let i1 ← automata.rule_generator.BidirectionalTape.read self.tape i
+    if i1 != term.state
+    then ok false
+    else
+      automata.single_tape_automata.SingleTapeAutomata.product_satisfies_loop
+        iter1 self position
+partial_fixpoint
 
 /-- [automata_builder::automata::single_tape_automata::{automata_builder::automata::single_tape_automata::SingleTapeAutomata}::product_satisfies]:
     Source: 'src/automata/single_tape_automata.rs', lines 514:4-521:5
@@ -24076,34 +22147,11 @@ def automata.single_tape_automata.SingleTapeAutomata._seek_trie_match_loop
   Result (core.result.Result (Option (automata.terms.Product × Std.U32))
     automata.single_tape_automata.SingleTapeAutomataError)
   := do
-  loop
-    (fun (iter1, matched_write1) =>
-      automata.single_tape_automata.SingleTapeAutomata._seek_trie_match_loop.body
-      self write_position iter1 matched_write1)
-    (iter, matched_write)
-partial_fixpoint
-
-/-- [automata_builder::automata::single_tape_automata::{automata_builder::automata::single_tape_automata::SingleTapeAutomata}::_seek_trie_match]: loop body 0:
-    Source: 'src/automata/single_tape_automata.rs', lines 540:8-572:5
-    Visibility: public -/
-@[rust_loop_body]
-def automata.single_tape_automata.SingleTapeAutomata._seek_trie_match_loop.body
-  (self : automata.single_tape_automata.SingleTapeAutomata)
-  (write_position : Std.I64)
-  (iter : std.collections.hash.map.Iter (Std.I64 × Std.U32)
-  automata.single_tape_automata.ProductWritesTrie)
-  (matched_write : Option (automata.terms.Product × Std.U32)) :
-  Result (ControlFlow ((std.collections.hash.map.Iter (Std.I64 × Std.U32)
-    automata.single_tape_automata.ProductWritesTrie) × (Option
-    (automata.terms.Product × Std.U32))) (core.result.Result (Option
-    (automata.terms.Product × Std.U32))
-    automata.single_tape_automata.SingleTapeAutomataError))
-  := do
   let (o, iter1) ←
     std.collections.hash.map.Iter.Insts.CoreIterTraitsIteratorIteratorPairSharedAKSharedAV.next
       iter
   match o with
-  | none => ok (done (core.result.Result.Ok matched_write))
+  | none => ok (core.result.Result.Ok matched_write)
   | some p =>
     let ((next_offset, required_state), next_trie) := p
     let match_position ← write_position + next_offset
@@ -24119,28 +22167,32 @@ def automata.single_tape_automata.SingleTapeAutomata._seek_trie_match_loop.body
       match cf with
       | core.ops.control_flow.ControlFlow.Continue val =>
         match val with
-        | none => ok (cont (iter1, matched_write))
+        | none =>
+          automata.single_tape_automata.SingleTapeAutomata._seek_trie_match_loop
+            iter1 self write_position matched_write
         | some new_match =>
           let (new_product, new_write_state) ←
             (BuiltinClone (automata.terms.Product × Std.U32)).clone new_match
           match matched_write with
-          | none => ok (cont (iter1, val))
+          | none =>
+            automata.single_tape_automata.SingleTapeAutomata._seek_trie_match_loop
+              iter1 self write_position val
           | some existing_write =>
             let (existing_product, existing_state) := existing_write
             let y ←
               lift (Std.Array.to_slice (Array.make 1#usize [ existing_product ]
                 : Array automata.terms.Product 1#usize))
             let ret := alloc.slice.Slice.into_vec y
-            ok (done (core.result.Result.Err
+            ok (core.result.Result.Err
               (automata.single_tape_automata.SingleTapeAutomataError.ConflictingWrite
-              write_position new_product existing_state new_write_state ret)))
+              write_position new_product existing_state new_write_state ret))
       | core.ops.control_flow.ControlFlow.Break residual =>
-        let r1 ←
-          core.result.Result.Insts.CoreOpsTry_traitFromResidualResult.from_residual
-            (Option (automata.terms.Product × Std.U32)) (core.convert.FromSame
-            automata.single_tape_automata.SingleTapeAutomataError) residual
-        ok (done r1)
-    else ok (cont (iter1, matched_write))
+        core.result.Result.Insts.CoreOpsTry_traitFromResidualResult.from_residual
+          (Option (automata.terms.Product × Std.U32)) (core.convert.FromSame
+          automata.single_tape_automata.SingleTapeAutomataError) residual
+    else
+      automata.single_tape_automata.SingleTapeAutomata._seek_trie_match_loop
+        iter1 self write_position matched_write
 partial_fixpoint
 
 /-- [automata_builder::automata::single_tape_automata::{automata_builder::automata::single_tape_automata::SingleTapeAutomata}::_seek_trie_match]:
@@ -24312,18 +22364,18 @@ impl_def automata.terms.Product.Insts.CoreCmpOrd : core.cmp.Ord
   min := core.cmp.Ord.min.trait_default automata.terms.Product.Insts.CoreCmpOrd
 }
 
-/-- [automata_builder::automata::single_tape_automata::{automata_builder::automata::single_tape_automata::SingleTapeAutomata}::process_step]: loop body 0:
+/-- [automata_builder::automata::single_tape_automata::{automata_builder::automata::single_tape_automata::SingleTapeAutomata}::process_step]: loop 0:
     Source: 'src/automata/single_tape_automata.rs', lines 586:8-633:5
     Visibility: public -/
-@[rust_loop_body]
-def automata.single_tape_automata.SingleTapeAutomata.process_step_loop.body
+@[rust_loop]
+def automata.single_tape_automata.SingleTapeAutomata.process_step_loop
+  (iter : core.ops.range.Range Std.I64)
   (bt : automata.rule_generator.BidirectionalTape)
   (pwm : automata.single_tape_automata.ProductWriteMap)
   (pwt : automata.single_tape_automata.ProductWritesTrie) (i : Std.I64)
   (i1 : Std.I64)
   (im : indexmap.map.IndexMap Std.U32 automata.terms.Expression
   std.hash.random.RandomState) (log_active_writes : Bool)
-  (iter : core.ops.range.Range Std.I64)
   (new_tape : automata.rule_generator.BidirectionalTape)
   (writes_map : std.collections.hash.map.HashMap Std.I64 Std.U32
   std.hash.random.RandomState alloc.alloc.Global)
@@ -24331,16 +22383,8 @@ def automata.single_tape_automata.SingleTapeAutomata.process_step_loop.body
   (alloc.collections.btree.set.BTreeSet automata.terms.Product
   alloc.alloc.Global) std.hash.random.RandomState alloc.alloc.Global)
   (active_writes : alloc.vec.Vec automata.single_tape_automata.WriteRecord) :
-  Result (ControlFlow ((core.ops.range.Range Std.I64) ×
-    automata.rule_generator.BidirectionalTape ×
-    (std.collections.hash.map.HashMap Std.I64 Std.U32
-    std.hash.random.RandomState alloc.alloc.Global) ×
-    (std.collections.hash.map.HashMap Std.I64
-    (alloc.collections.btree.set.BTreeSet automata.terms.Product
-    alloc.alloc.Global) std.hash.random.RandomState alloc.alloc.Global) ×
-    (alloc.vec.Vec automata.single_tape_automata.WriteRecord))
-    (core.result.Result automata.single_tape_automata.ProcessStepResult
-    automata.single_tape_automata.SingleTapeAutomataError))
+  Result (core.result.Result automata.single_tape_automata.ProcessStepResult
+    automata.single_tape_automata.SingleTapeAutomataError)
   := do
   let (o, iter1) ←
     core.iter.range.IteratorRange.next core.iter.range.StepI64 iter
@@ -24348,8 +22392,7 @@ def automata.single_tape_automata.SingleTapeAutomata.process_step_loop.body
   | none =>
     let bt1 ←
       automata.rule_generator.BidirectionalTape.Insts.CoreCloneClone.clone bt
-    ok (done (core.result.Result.Ok
-      { prev_tape := bt1, new_tape, active_writes }))
+    ok (core.result.Result.Ok { prev_tape := bt1, new_tape, active_writes })
   | some position =>
     let write_res ←
       automata.single_tape_automata.SingleTapeAutomata.seek_trie_match
@@ -24368,7 +22411,9 @@ def automata.single_tape_automata.SingleTapeAutomata.process_step_loop.body
         let i2 ← automata.rule_generator.BidirectionalTape.read bt position
         let new_tape1 ←
           automata.rule_generator.BidirectionalTape.write new_tape position i2
-        ok (cont (iter1, new_tape1, writes_map, origins_map, active_writes))
+        automata.single_tape_automata.SingleTapeAutomata.process_step_loop
+          iter1 bt pwm pwt i i1 im log_active_writes new_tape1 writes_map
+          origins_map active_writes
       | some write =>
         let (matching_product, output_state) := write
         let b ←
@@ -24431,7 +22476,9 @@ def automata.single_tape_automata.SingleTapeAutomata.process_step_loop.body
           massert (left_val = output_state)
           let e1 := or_default_back bs1
           let hm := entry_back e1
-          ok (cont (iter2, new_tape1, writes_map1, hm, active_writes1))
+          automata.single_tape_automata.SingleTapeAutomata.process_step_loop
+            iter2 bt pwm pwt i i1 im log_active_writes new_tape1 writes_map1 hm
+            active_writes1
         else
           let a ←
             core.fmt.rt.Argument.new_display (Shared0T.Insts.CoreFmtDisplay
@@ -24454,36 +22501,8 @@ def automata.single_tape_automata.SingleTapeAutomata.process_step_loop.body
                 192#u8, 0#u8
                 ]) (Array.make 3#usize [ a, a1, a2 ])
           fail panic
-    | core.result.Result.Err err => ok (done (core.result.Result.Err err))
-
-/-- [automata_builder::automata::single_tape_automata::{automata_builder::automata::single_tape_automata::SingleTapeAutomata}::process_step]: loop 0:
-    Source: 'src/automata/single_tape_automata.rs', lines 586:8-633:5
-    Visibility: public -/
-@[rust_loop]
-def automata.single_tape_automata.SingleTapeAutomata.process_step_loop
-  (iter : core.ops.range.Range Std.I64)
-  (bt : automata.rule_generator.BidirectionalTape)
-  (pwm : automata.single_tape_automata.ProductWriteMap)
-  (pwt : automata.single_tape_automata.ProductWritesTrie) (i : Std.I64)
-  (i1 : Std.I64)
-  (im : indexmap.map.IndexMap Std.U32 automata.terms.Expression
-  std.hash.random.RandomState) (log_active_writes : Bool)
-  (new_tape : automata.rule_generator.BidirectionalTape)
-  (writes_map : std.collections.hash.map.HashMap Std.I64 Std.U32
-  std.hash.random.RandomState alloc.alloc.Global)
-  (origins_map : std.collections.hash.map.HashMap Std.I64
-  (alloc.collections.btree.set.BTreeSet automata.terms.Product
-  alloc.alloc.Global) std.hash.random.RandomState alloc.alloc.Global)
-  (active_writes : alloc.vec.Vec automata.single_tape_automata.WriteRecord) :
-  Result (core.result.Result automata.single_tape_automata.ProcessStepResult
-    automata.single_tape_automata.SingleTapeAutomataError)
-  := do
-  loop
-    (fun (iter1, new_tape1, writes_map1, origins_map1, active_writes1) =>
-      automata.single_tape_automata.SingleTapeAutomata.process_step_loop.body
-      bt pwm pwt i i1 im log_active_writes iter1 new_tape1 writes_map1
-      origins_map1 active_writes1)
-    (iter, new_tape, writes_map, origins_map, active_writes)
+    | core.result.Result.Err err => ok (core.result.Result.Err err)
+partial_fixpoint
 
 /-- [automata_builder::automata::single_tape_automata::{automata_builder::automata::single_tape_automata::SingleTapeAutomata}::process_step]:
     Source: 'src/automata/single_tape_automata.rs', lines 574:4-633:5
@@ -25468,26 +23487,6 @@ def automata.terms.Term.Insts.CoreOpsArithMulTermProduct : core.ops.arith.Mul
   mul := automata.terms.Term.Insts.CoreOpsArithMulTermProduct.mul
 }
 
-/-- [automata_builder::automata::terms::{impl core::ops::arith::Mul<automata_builder::automata::terms::Product, automata_builder::automata::terms::Product> for automata_builder::automata::terms::Term}::mul]: loop body 0:
-    Source: 'src/automata/terms.rs', lines 162:8-164:9
-    Visibility: public -/
-@[rust_loop_body]
-def automata.terms.Term.Insts.CoreOpsArithMulProductProduct.mul_loop.body
-  (iter : core.slice.iter.Iter automata.terms.Term)
-  (new_terms : alloc.vec.Vec automata.terms.Term) :
-  Result (ControlFlow ((core.slice.iter.Iter automata.terms.Term) ×
-    (alloc.vec.Vec automata.terms.Term)) (alloc.vec.Vec automata.terms.Term))
-  := do
-  let (o, iter1) ← core.slice.iter.IteratorSliceIter.next iter
-  match o with
-  | none => ok (done new_terms)
-  | some term =>
-    let t ←
-      automata.terms.Term.Insts.Automata_builderAutomataTermsAbstractExpressionProductExpression.copy
-        term
-    let new_terms1 ← alloc.vec.Vec.push new_terms t
-    ok (cont (iter1, new_terms1))
-
 /-- [automata_builder::automata::terms::{impl core::ops::arith::Mul<automata_builder::automata::terms::Product, automata_builder::automata::terms::Product> for automata_builder::automata::terms::Term}::mul]: loop 0:
     Source: 'src/automata/terms.rs', lines 162:8-164:9
     Visibility: public -/
@@ -25497,11 +23496,17 @@ def automata.terms.Term.Insts.CoreOpsArithMulProductProduct.mul_loop
   (new_terms : alloc.vec.Vec automata.terms.Term) :
   Result (alloc.vec.Vec automata.terms.Term)
   := do
-  loop
-    (fun (iter1, new_terms1) =>
-      automata.terms.Term.Insts.CoreOpsArithMulProductProduct.mul_loop.body
-      iter1 new_terms1)
-    (iter, new_terms)
+  let (o, iter1) ← core.slice.iter.IteratorSliceIter.next iter
+  match o with
+  | none => ok new_terms
+  | some term =>
+    let t ←
+      automata.terms.Term.Insts.Automata_builderAutomataTermsAbstractExpressionProductExpression.copy
+        term
+    let new_terms1 ← alloc.vec.Vec.push new_terms t
+    automata.terms.Term.Insts.CoreOpsArithMulProductProduct.mul_loop iter1
+      new_terms1
+partial_fixpoint
 
 /-- [automata_builder::automata::terms::{impl core::ops::arith::Mul<automata_builder::automata::terms::Product, automata_builder::automata::terms::Product> for automata_builder::automata::terms::Term}::mul]:
     Source: 'src/automata/terms.rs', lines 158:4-169:5
@@ -25550,30 +23555,6 @@ def automata.terms.Expression.new
   := do
   ok { products, _optimized := false }
 
-/-- [automata_builder::automata::terms::{impl core::ops::arith::Mul<automata_builder::automata::terms::Expression, automata_builder::automata::terms::Expression> for automata_builder::automata::terms::Term}::mul]: loop body 0:
-    Source: 'src/automata/terms.rs', lines 176:8-178:9
-    Visibility: public -/
-@[rust_loop_body]
-def automata.terms.Term.Insts.CoreOpsArithMulExpressionExpression.mul_loop.body
-  (self : automata.terms.Term)
-  (iter : core.slice.iter.Iter automata.terms.Product)
-  (new_products : alloc.vec.Vec automata.terms.Product) :
-  Result (ControlFlow ((core.slice.iter.Iter automata.terms.Product) ×
-    (alloc.vec.Vec automata.terms.Product)) (alloc.vec.Vec
-    automata.terms.Product))
-  := do
-  let (o, iter1) ← core.slice.iter.IteratorSliceIter.next iter
-  match o with
-  | none => ok (done new_products)
-  | some product =>
-    let t ← automata.terms.Term.Insts.CoreCloneClone.clone self
-    let p ←
-      automata.terms.Product.Insts.Automata_builderAutomataTermsAbstractExpressionProductExpression.copy
-        product
-    let p1 ← automata.terms.Term.Insts.CoreOpsArithMulProductProduct.mul t p
-    let new_products1 ← alloc.vec.Vec.push new_products p1
-    ok (cont (iter1, new_products1))
-
 /-- [automata_builder::automata::terms::{impl core::ops::arith::Mul<automata_builder::automata::terms::Expression, automata_builder::automata::terms::Expression> for automata_builder::automata::terms::Term}::mul]: loop 0:
     Source: 'src/automata/terms.rs', lines 176:8-178:9
     Visibility: public -/
@@ -25584,11 +23565,19 @@ def automata.terms.Term.Insts.CoreOpsArithMulExpressionExpression.mul_loop
   (new_products : alloc.vec.Vec automata.terms.Product) :
   Result (alloc.vec.Vec automata.terms.Product)
   := do
-  loop
-    (fun (iter1, new_products1) =>
-      automata.terms.Term.Insts.CoreOpsArithMulExpressionExpression.mul_loop.body
-      self iter1 new_products1)
-    (iter, new_products)
+  let (o, iter1) ← core.slice.iter.IteratorSliceIter.next iter
+  match o with
+  | none => ok new_products
+  | some product =>
+    let t ← automata.terms.Term.Insts.CoreCloneClone.clone self
+    let p ←
+      automata.terms.Product.Insts.Automata_builderAutomataTermsAbstractExpressionProductExpression.copy
+        product
+    let p1 ← automata.terms.Term.Insts.CoreOpsArithMulProductProduct.mul t p
+    let new_products1 ← alloc.vec.Vec.push new_products p1
+    automata.terms.Term.Insts.CoreOpsArithMulExpressionExpression.mul_loop
+      iter1 self new_products1
+partial_fixpoint
 
 /-- [automata_builder::automata::terms::{impl core::ops::arith::Mul<automata_builder::automata::terms::Expression, automata_builder::automata::terms::Expression> for automata_builder::automata::terms::Term}::mul]:
     Source: 'src/automata/terms.rs', lines 174:4-180:5
@@ -25739,28 +23728,6 @@ def
   let ret1 := alloc.slice.Slice.into_vec y1
   automata.terms.Expression.new ret1
 
-/-- [automata_builder::automata::terms::{impl core::ops::bit::BitOr<automata_builder::automata::terms::Expression, automata_builder::automata::terms::Expression> for automata_builder::automata::terms::Expression}::bitor]: loop body 0:
-    Source: 'src/automata/terms.rs', lines 753:8-755:9
-    Visibility: public -/
-@[rust_loop_body]
-def
-  automata.terms.Expression.Insts.CoreOpsBitBitOrExpressionExpression.bitor_loop0.body
-  (iter : core.slice.iter.Iter automata.terms.Product)
-  (new_products : alloc.vec.Vec automata.terms.Product) :
-  Result (ControlFlow ((core.slice.iter.Iter automata.terms.Product) ×
-    (alloc.vec.Vec automata.terms.Product)) (alloc.vec.Vec
-    automata.terms.Product))
-  := do
-  let (o, iter1) ← core.slice.iter.IteratorSliceIter.next iter
-  match o with
-  | none => ok (done new_products)
-  | some product =>
-    let p ←
-      automata.terms.Product.Insts.Automata_builderAutomataTermsAbstractExpressionProductExpression.copy
-        product
-    let new_products1 ← alloc.vec.Vec.push new_products p
-    ok (cont (iter1, new_products1))
-
 /-- [automata_builder::automata::terms::{impl core::ops::bit::BitOr<automata_builder::automata::terms::Expression, automata_builder::automata::terms::Expression> for automata_builder::automata::terms::Expression}::bitor]: loop 0:
     Source: 'src/automata/terms.rs', lines 753:8-755:9
     Visibility: public -/
@@ -25771,33 +23738,17 @@ def
   (new_products : alloc.vec.Vec automata.terms.Product) :
   Result (alloc.vec.Vec automata.terms.Product)
   := do
-  loop
-    (fun (iter1, new_products1) =>
-      automata.terms.Expression.Insts.CoreOpsBitBitOrExpressionExpression.bitor_loop0.body
-      iter1 new_products1)
-    (iter, new_products)
-
-/-- [automata_builder::automata::terms::{impl core::ops::bit::BitOr<automata_builder::automata::terms::Expression, automata_builder::automata::terms::Expression> for automata_builder::automata::terms::Expression}::bitor]: loop body 1:
-    Source: 'src/automata/terms.rs', lines 756:8-758:9
-    Visibility: public -/
-@[rust_loop_body]
-def
-  automata.terms.Expression.Insts.CoreOpsBitBitOrExpressionExpression.bitor_loop1.body
-  (iter : core.slice.iter.Iter automata.terms.Product)
-  (new_products : alloc.vec.Vec automata.terms.Product) :
-  Result (ControlFlow ((core.slice.iter.Iter automata.terms.Product) ×
-    (alloc.vec.Vec automata.terms.Product)) (alloc.vec.Vec
-    automata.terms.Product))
-  := do
   let (o, iter1) ← core.slice.iter.IteratorSliceIter.next iter
   match o with
-  | none => ok (done new_products)
+  | none => ok new_products
   | some product =>
     let p ←
       automata.terms.Product.Insts.Automata_builderAutomataTermsAbstractExpressionProductExpression.copy
         product
     let new_products1 ← alloc.vec.Vec.push new_products p
-    ok (cont (iter1, new_products1))
+    automata.terms.Expression.Insts.CoreOpsBitBitOrExpressionExpression.bitor_loop0
+      iter1 new_products1
+partial_fixpoint
 
 /-- [automata_builder::automata::terms::{impl core::ops::bit::BitOr<automata_builder::automata::terms::Expression, automata_builder::automata::terms::Expression> for automata_builder::automata::terms::Expression}::bitor]: loop 1:
     Source: 'src/automata/terms.rs', lines 756:8-758:9
@@ -25809,11 +23760,17 @@ def
   (new_products : alloc.vec.Vec automata.terms.Product) :
   Result (alloc.vec.Vec automata.terms.Product)
   := do
-  loop
-    (fun (iter1, new_products1) =>
-      automata.terms.Expression.Insts.CoreOpsBitBitOrExpressionExpression.bitor_loop1.body
-      iter1 new_products1)
-    (iter, new_products)
+  let (o, iter1) ← core.slice.iter.IteratorSliceIter.next iter
+  match o with
+  | none => ok new_products
+  | some product =>
+    let p ←
+      automata.terms.Product.Insts.Automata_builderAutomataTermsAbstractExpressionProductExpression.copy
+        product
+    let new_products1 ← alloc.vec.Vec.push new_products p
+    automata.terms.Expression.Insts.CoreOpsBitBitOrExpressionExpression.bitor_loop1
+      iter1 new_products1
+partial_fixpoint
 
 /-- [automata_builder::automata::terms::{impl core::ops::bit::BitOr<automata_builder::automata::terms::Expression, automata_builder::automata::terms::Expression> for automata_builder::automata::terms::Expression}::bitor]:
     Source: 'src/automata/terms.rs', lines 751:4-760:5
@@ -25998,24 +23955,6 @@ def
     automata.terms.AbstractExpressionExpressionExpressionExpression._expand.closure_1.Insts.CoreOpsFunctionFnTupleExpression.call
 }
 
-/-- [automata_builder::automata::terms::{impl core::ops::arith::Mul<automata_builder::automata::terms::Product, automata_builder::automata::terms::Product> for automata_builder::automata::terms::Product}::mul]: loop body 0:
-    Source: 'src/automata/terms.rs', lines 425:8-427:9
-    Visibility: public -/
-@[rust_loop_body]
-def automata.terms.Product.Insts.CoreOpsArithMulProductProduct.mul_loop0.body
-  (iter : core.slice.iter.Iter automata.terms.Term)
-  (new_terms : alloc.vec.Vec automata.terms.Term) :
-  Result (ControlFlow ((core.slice.iter.Iter automata.terms.Term) ×
-    (alloc.vec.Vec automata.terms.Term)) (alloc.vec.Vec automata.terms.Term))
-  := do
-  let (o, iter1) ← core.slice.iter.IteratorSliceIter.next iter
-  match o with
-  | none => ok (done new_terms)
-  | some term =>
-    let t ← automata.terms.Term.Insts.CoreCloneClone.clone term
-    let new_terms1 ← alloc.vec.Vec.push new_terms t
-    ok (cont (iter1, new_terms1))
-
 /-- [automata_builder::automata::terms::{impl core::ops::arith::Mul<automata_builder::automata::terms::Product, automata_builder::automata::terms::Product> for automata_builder::automata::terms::Product}::mul]: loop 0:
     Source: 'src/automata/terms.rs', lines 425:8-427:9
     Visibility: public -/
@@ -26025,29 +23964,15 @@ def automata.terms.Product.Insts.CoreOpsArithMulProductProduct.mul_loop0
   (new_terms : alloc.vec.Vec automata.terms.Term) :
   Result (alloc.vec.Vec automata.terms.Term)
   := do
-  loop
-    (fun (iter1, new_terms1) =>
-      automata.terms.Product.Insts.CoreOpsArithMulProductProduct.mul_loop0.body
-      iter1 new_terms1)
-    (iter, new_terms)
-
-/-- [automata_builder::automata::terms::{impl core::ops::arith::Mul<automata_builder::automata::terms::Product, automata_builder::automata::terms::Product> for automata_builder::automata::terms::Product}::mul]: loop body 1:
-    Source: 'src/automata/terms.rs', lines 428:8-430:9
-    Visibility: public -/
-@[rust_loop_body]
-def automata.terms.Product.Insts.CoreOpsArithMulProductProduct.mul_loop1.body
-  (iter : core.slice.iter.Iter automata.terms.Term)
-  (new_terms : alloc.vec.Vec automata.terms.Term) :
-  Result (ControlFlow ((core.slice.iter.Iter automata.terms.Term) ×
-    (alloc.vec.Vec automata.terms.Term)) (alloc.vec.Vec automata.terms.Term))
-  := do
   let (o, iter1) ← core.slice.iter.IteratorSliceIter.next iter
   match o with
-  | none => ok (done new_terms)
+  | none => ok new_terms
   | some term =>
     let t ← automata.terms.Term.Insts.CoreCloneClone.clone term
     let new_terms1 ← alloc.vec.Vec.push new_terms t
-    ok (cont (iter1, new_terms1))
+    automata.terms.Product.Insts.CoreOpsArithMulProductProduct.mul_loop0 iter1
+      new_terms1
+partial_fixpoint
 
 /-- [automata_builder::automata::terms::{impl core::ops::arith::Mul<automata_builder::automata::terms::Product, automata_builder::automata::terms::Product> for automata_builder::automata::terms::Product}::mul]: loop 1:
     Source: 'src/automata/terms.rs', lines 428:8-430:9
@@ -26058,11 +23983,15 @@ def automata.terms.Product.Insts.CoreOpsArithMulProductProduct.mul_loop1
   (new_terms : alloc.vec.Vec automata.terms.Term) :
   Result (alloc.vec.Vec automata.terms.Term)
   := do
-  loop
-    (fun (iter1, new_terms1) =>
-      automata.terms.Product.Insts.CoreOpsArithMulProductProduct.mul_loop1.body
-      iter1 new_terms1)
-    (iter, new_terms)
+  let (o, iter1) ← core.slice.iter.IteratorSliceIter.next iter
+  match o with
+  | none => ok new_terms
+  | some term =>
+    let t ← automata.terms.Term.Insts.CoreCloneClone.clone term
+    let new_terms1 ← alloc.vec.Vec.push new_terms t
+    automata.terms.Product.Insts.CoreOpsArithMulProductProduct.mul_loop1 iter1
+      new_terms1
+partial_fixpoint
 
 /-- [automata_builder::automata::terms::{impl core::ops::arith::Mul<automata_builder::automata::terms::Product, automata_builder::automata::terms::Product> for automata_builder::automata::terms::Product}::mul]:
     Source: 'src/automata/terms.rs', lines 423:4-434:5
@@ -26091,35 +24020,6 @@ def automata.terms.Product.Insts.CoreOpsArithMulProductProduct.mul
     let (pf1, _) ← automata.terms.ProductFactory.with_optimized pf false
     automata.terms.ProductFactory.to_product pf1
 
-/-- [automata_builder::automata::terms::{impl core::ops::arith::Mul<automata_builder::automata::terms::Expression, automata_builder::automata::terms::Expression> for automata_builder::automata::terms::Expression}::mul]: loop body 1:
-    Source: 'src/automata/terms.rs', lines 716:12-719:13
-    Visibility: public -/
-@[rust_loop_body]
-def
-  automata.terms.Expression.Insts.CoreOpsArithMulExpressionExpression.mul_loop0_loop0.body
-  (product : automata.terms.Product)
-  (iter : core.slice.iter.Iter automata.terms.Product)
-  (multiplied_products : alloc.vec.Vec automata.terms.Product) :
-  Result (ControlFlow ((core.slice.iter.Iter automata.terms.Product) ×
-    (alloc.vec.Vec automata.terms.Product)) (alloc.vec.Vec
-    automata.terms.Product))
-  := do
-  let (o, iter1) ← core.slice.iter.IteratorSliceIter.next iter
-  match o with
-  | none => ok (done multiplied_products)
-  | some rhs_product =>
-    let p ←
-      automata.terms.Product.Insts.Automata_builderAutomataTermsAbstractExpressionProductExpression.copy
-        product
-    let p1 ←
-      automata.terms.Product.Insts.Automata_builderAutomataTermsAbstractExpressionProductExpression.copy
-        rhs_product
-    let new_product ←
-      automata.terms.Product.Insts.CoreOpsArithMulProductProduct.mul p p1
-    let multiplied_products1 ←
-      alloc.vec.Vec.push multiplied_products new_product
-    ok (cont (iter1, multiplied_products1))
-
 /-- [automata_builder::automata::terms::{impl core::ops::arith::Mul<automata_builder::automata::terms::Expression, automata_builder::automata::terms::Expression> for automata_builder::automata::terms::Expression}::mul]: loop 1:
     Source: 'src/automata/terms.rs', lines 716:12-719:13
     Visibility: public -/
@@ -26131,35 +24031,23 @@ def
   (product : automata.terms.Product) :
   Result (alloc.vec.Vec automata.terms.Product)
   := do
-  loop
-    (fun (iter1, multiplied_products1) =>
-      automata.terms.Expression.Insts.CoreOpsArithMulExpressionExpression.mul_loop0_loop0.body
-      product iter1 multiplied_products1)
-    (iter, multiplied_products)
-
-/-- [automata_builder::automata::terms::{impl core::ops::arith::Mul<automata_builder::automata::terms::Expression, automata_builder::automata::terms::Expression> for automata_builder::automata::terms::Expression}::mul]: loop body 0:
-    Source: 'src/automata/terms.rs', lines 715:8-720:9
-    Visibility: public -/
-@[rust_loop_body]
-def
-  automata.terms.Expression.Insts.CoreOpsArithMulExpressionExpression.mul_loop0.body
-  (rhs : automata.terms.Expression)
-  (iter : core.slice.iter.Iter automata.terms.Product)
-  (multiplied_products : alloc.vec.Vec automata.terms.Product) :
-  Result (ControlFlow ((core.slice.iter.Iter automata.terms.Product) ×
-    (alloc.vec.Vec automata.terms.Product)) (alloc.vec.Vec
-    automata.terms.Product))
-  := do
   let (o, iter1) ← core.slice.iter.IteratorSliceIter.next iter
   match o with
-  | none => ok (done multiplied_products)
-  | some product =>
-    let s := alloc.vec.Vec.deref rhs.products
-    let iter2 ← core.slice.Slice.iter s
+  | none => ok multiplied_products
+  | some rhs_product =>
+    let p ←
+      automata.terms.Product.Insts.Automata_builderAutomataTermsAbstractExpressionProductExpression.copy
+        product
+    let p1 ←
+      automata.terms.Product.Insts.Automata_builderAutomataTermsAbstractExpressionProductExpression.copy
+        rhs_product
+    let new_product ←
+      automata.terms.Product.Insts.CoreOpsArithMulProductProduct.mul p p1
     let multiplied_products1 ←
-      automata.terms.Expression.Insts.CoreOpsArithMulExpressionExpression.mul_loop0_loop0
-        iter2 multiplied_products product
-    ok (cont (iter1, multiplied_products1))
+      alloc.vec.Vec.push multiplied_products new_product
+    automata.terms.Expression.Insts.CoreOpsArithMulExpressionExpression.mul_loop0_loop0
+      iter1 multiplied_products1 product
+partial_fixpoint
 
 /-- [automata_builder::automata::terms::{impl core::ops::arith::Mul<automata_builder::automata::terms::Expression, automata_builder::automata::terms::Expression> for automata_builder::automata::terms::Expression}::mul]: loop 0:
     Source: 'src/automata/terms.rs', lines 715:8-720:9
@@ -26172,11 +24060,18 @@ def
   (multiplied_products : alloc.vec.Vec automata.terms.Product) :
   Result (alloc.vec.Vec automata.terms.Product)
   := do
-  loop
-    (fun (iter1, multiplied_products1) =>
-      automata.terms.Expression.Insts.CoreOpsArithMulExpressionExpression.mul_loop0.body
-      rhs iter1 multiplied_products1)
-    (iter, multiplied_products)
+  let (o, iter1) ← core.slice.iter.IteratorSliceIter.next iter
+  match o with
+  | none => ok multiplied_products
+  | some product =>
+    let s := alloc.vec.Vec.deref rhs.products
+    let iter2 ← core.slice.Slice.iter s
+    let multiplied_products1 ←
+      automata.terms.Expression.Insts.CoreOpsArithMulExpressionExpression.mul_loop0_loop0
+        iter2 multiplied_products product
+    automata.terms.Expression.Insts.CoreOpsArithMulExpressionExpression.mul_loop0
+      iter1 rhs multiplied_products1
+partial_fixpoint
 
 /-- [automata_builder::automata::terms::{impl core::ops::arith::Mul<automata_builder::automata::terms::Expression, automata_builder::automata::terms::Expression> for automata_builder::automata::terms::Expression}::mul]:
     Source: 'src/automata/terms.rs', lines 713:4-722:5
@@ -26192,41 +24087,6 @@ def automata.terms.Expression.Insts.CoreOpsArithMulExpressionExpression.mul
       iter rhs (alloc.vec.Vec.new automata.terms.Product)
   automata.terms.Expression.new multiplied_products
 
-/-- [automata_builder::automata::terms::{automata_builder::automata::terms::Product}::_assign_base_indexes]: loop body 0:
-    Source: 'src/automata/terms.rs', lines 349:8-352:9 -/
-@[rust_loop_body]
-def automata.terms.Product._assign_base_indexes_loop.body
-  (product_idx : Std.U64)
-  (iter : core.iter.adapters.enumerate.Enumerate (core.slice.iter.IterMut
-  automata.terms.Term))
-  (back : core.iter.adapters.enumerate.Enumerate (core.slice.iter.IterMut
-  automata.terms.Term) → core.iter.adapters.enumerate.Enumerate
-  (core.slice.iter.IterMut automata.terms.Term)) :
-  Result (ControlFlow ((core.iter.adapters.enumerate.Enumerate
-    (core.slice.iter.IterMut automata.terms.Term)) ×
-    (core.iter.adapters.enumerate.Enumerate (core.slice.iter.IterMut
-    automata.terms.Term) → core.iter.adapters.enumerate.Enumerate
-    (core.slice.iter.IterMut automata.terms.Term)))
-    (core.iter.adapters.enumerate.Enumerate (core.slice.iter.IterMut
-    automata.terms.Term)))
-  := do
-  let (o, iter1, next_back) ←
-    core.iter.adapters.enumerate.IteratorEnumerate.next
-      (core.slice.iter.IterMut.Insts.CoreIterTraitsIteratorIteratorMutAT
-      automata.terms.Term) iter
-  match o with
-  | none => ok (done (let e := next_back iter1 none
-                      back e))
-  | some p =>
-    let (index, term) := p
-    let i ← lift (UScalar.cast .U64 index)
-    let term1 ←
-      automata.terms.Term.insert_expr_position term
-        { product_idx, term_idx := i } false
-    ok (cont (iter1,
-      fun e => let e1 := next_back e (some (index, term1))
-               back e1))
-
 /-- [automata_builder::automata::terms::{automata_builder::automata::terms::Product}::_assign_base_indexes]: loop 0:
     Source: 'src/automata/terms.rs', lines 349:8-352:9 -/
 @[rust_loop]
@@ -26239,11 +24099,23 @@ def automata.terms.Product._assign_base_indexes_loop
   Result (core.iter.adapters.enumerate.Enumerate (core.slice.iter.IterMut
     automata.terms.Term))
   := do
-  loop
-    (fun (iter1, back1) =>
-      automata.terms.Product._assign_base_indexes_loop.body product_idx iter1
-      back1)
-    (iter, back)
+  let (o, iter1, next_back) ←
+    core.iter.adapters.enumerate.IteratorEnumerate.next
+      (core.slice.iter.IterMut.Insts.CoreIterTraitsIteratorIteratorMutAT
+      automata.terms.Term) iter
+  match o with
+  | none => ok (let e := next_back iter1 none
+                back e)
+  | some p =>
+    let (index, term) := p
+    let i ← lift (UScalar.cast .U64 index)
+    let term1 ←
+      automata.terms.Term.insert_expr_position term
+        { product_idx, term_idx := i } false
+    automata.terms.Product._assign_base_indexes_loop iter1
+      (fun e => let e1 := next_back e (some (index, term1))
+                back e1) product_idx
+partial_fixpoint
 
 /-- [automata_builder::automata::terms::{automata_builder::automata::terms::Product}::_assign_base_indexes]:
     Source: 'src/automata/terms.rs', lines 348:4-353:5 -/
@@ -26265,39 +24137,6 @@ def automata.terms.Product._assign_base_indexes
   let v := deref_mut_back s1
   ok { self with _terms := v }
 
-/-- [automata_builder::automata::terms::{automata_builder::automata::terms::Expression}::_assign_expr_positions]: loop body 0:
-    Source: 'src/automata/terms.rs', lines 644:8-646:9
-    Visibility: public -/
-@[rust_loop_body]
-def automata.terms.Expression._assign_expr_positions_loop.body
-  (iter : core.iter.adapters.enumerate.Enumerate (core.slice.iter.IterMut
-  automata.terms.Product))
-  (back : core.iter.adapters.enumerate.Enumerate (core.slice.iter.IterMut
-  automata.terms.Product) → core.iter.adapters.enumerate.Enumerate
-  (core.slice.iter.IterMut automata.terms.Product)) :
-  Result (ControlFlow ((core.iter.adapters.enumerate.Enumerate
-    (core.slice.iter.IterMut automata.terms.Product)) ×
-    (core.iter.adapters.enumerate.Enumerate (core.slice.iter.IterMut
-    automata.terms.Product) → core.iter.adapters.enumerate.Enumerate
-    (core.slice.iter.IterMut automata.terms.Product)))
-    (core.iter.adapters.enumerate.Enumerate (core.slice.iter.IterMut
-    automata.terms.Product)))
-  := do
-  let (o, iter1, next_back) ←
-    core.iter.adapters.enumerate.IteratorEnumerate.next
-      (core.slice.iter.IterMut.Insts.CoreIterTraitsIteratorIteratorMutAT
-      automata.terms.Product) iter
-  match o with
-  | none => ok (done (let e := next_back iter1 none
-                      back e))
-  | some p =>
-    let (product_index, product) := p
-    let i ← lift (UScalar.cast .U64 product_index)
-    let product1 ← automata.terms.Product._assign_base_indexes product i
-    ok (cont (iter1,
-      fun e => let e1 := next_back e (some (product_index, product1))
-               back e1))
-
 /-- [automata_builder::automata::terms::{automata_builder::automata::terms::Expression}::_assign_expr_positions]: loop 0:
     Source: 'src/automata/terms.rs', lines 644:8-646:9
     Visibility: public -/
@@ -26311,10 +24150,21 @@ def automata.terms.Expression._assign_expr_positions_loop
   Result (core.iter.adapters.enumerate.Enumerate (core.slice.iter.IterMut
     automata.terms.Product))
   := do
-  loop
-    (fun (iter1, back1) =>
-      automata.terms.Expression._assign_expr_positions_loop.body iter1 back1)
-    (iter, back)
+  let (o, iter1, next_back) ←
+    core.iter.adapters.enumerate.IteratorEnumerate.next
+      (core.slice.iter.IterMut.Insts.CoreIterTraitsIteratorIteratorMutAT
+      automata.terms.Product) iter
+  match o with
+  | none => ok (let e := next_back iter1 none
+                back e)
+  | some p =>
+    let (product_index, product) := p
+    let i ← lift (UScalar.cast .U64 product_index)
+    let product1 ← automata.terms.Product._assign_base_indexes product i
+    automata.terms.Expression._assign_expr_positions_loop iter1
+      (fun e => let e1 := next_back e (some (product_index, product1))
+                back e1)
+partial_fixpoint
 
 /-- [automata_builder::automata::terms::{automata_builder::automata::terms::Expression}::_assign_expr_positions]:
     Source: 'src/automata/terms.rs', lines 643:4-647:5
@@ -26345,27 +24195,6 @@ def
   let i ← self.position + offset
   automata.terms.Term.new i self.state self._optimized
 
-/-- [automata_builder::automata::terms::{impl automata_builder::automata::terms::AbstractExpression<automata_builder::automata::terms::Product, automata_builder::automata::terms::Expression> for automata_builder::automata::terms::Product}::offset]: loop body 0:
-    Source: 'src/automata/terms.rs', lines 526:8-528:9
-    Visibility: public -/
-@[rust_loop_body]
-def
-  automata.terms.Product.Insts.Automata_builderAutomataTermsAbstractExpressionProductExpression.offset_loop.body
-  (offset : Std.I64) (iter : core.slice.iter.Iter automata.terms.Term)
-  (new_terms : alloc.vec.Vec automata.terms.Term) :
-  Result (ControlFlow ((core.slice.iter.Iter automata.terms.Term) ×
-    (alloc.vec.Vec automata.terms.Term)) (alloc.vec.Vec automata.terms.Term))
-  := do
-  let (o, iter1) ← core.slice.iter.IteratorSliceIter.next iter
-  match o with
-  | none => ok (done new_terms)
-  | some term =>
-    let t ←
-      automata.terms.Term.Insts.Automata_builderAutomataTermsAbstractExpressionProductExpression.offset
-        term offset
-    let new_terms1 ← alloc.vec.Vec.push new_terms t
-    ok (cont (iter1, new_terms1))
-
 /-- [automata_builder::automata::terms::{impl automata_builder::automata::terms::AbstractExpression<automata_builder::automata::terms::Product, automata_builder::automata::terms::Expression> for automata_builder::automata::terms::Product}::offset]: loop 0:
     Source: 'src/automata/terms.rs', lines 526:8-528:9
     Visibility: public -/
@@ -26376,11 +24205,17 @@ def
   (new_terms : alloc.vec.Vec automata.terms.Term) :
   Result (alloc.vec.Vec automata.terms.Term)
   := do
-  loop
-    (fun (iter1, new_terms1) =>
-      automata.terms.Product.Insts.Automata_builderAutomataTermsAbstractExpressionProductExpression.offset_loop.body
-      offset iter1 new_terms1)
-    (iter, new_terms)
+  let (o, iter1) ← core.slice.iter.IteratorSliceIter.next iter
+  match o with
+  | none => ok new_terms
+  | some term =>
+    let t ←
+      automata.terms.Term.Insts.Automata_builderAutomataTermsAbstractExpressionProductExpression.offset
+        term offset
+    let new_terms1 ← alloc.vec.Vec.push new_terms t
+    automata.terms.Product.Insts.Automata_builderAutomataTermsAbstractExpressionProductExpression.offset_loop
+      iter1 offset new_terms1
+partial_fixpoint
 
 /-- [automata_builder::automata::terms::{impl automata_builder::automata::terms::AbstractExpression<automata_builder::automata::terms::Product, automata_builder::automata::terms::Expression> for automata_builder::automata::terms::Product}::offset]:
     Source: 'src/automata/terms.rs', lines 524:4-530:5
@@ -26397,28 +24232,6 @@ def
       iter offset (alloc.vec.Vec.new automata.terms.Term)
   automata.terms.Product.new new_terms
 
-/-- [automata_builder::automata::terms::{impl automata_builder::automata::terms::AbstractExpression<automata_builder::automata::terms::Expression, automata_builder::automata::terms::Expression> for automata_builder::automata::terms::Expression}::offset]: loop body 0:
-    Source: 'src/automata/terms.rs', lines 807:8-809:9
-    Visibility: public -/
-@[rust_loop_body]
-def
-  automata.terms.Expression.Insts.Automata_builderAutomataTermsAbstractExpressionExpressionExpression.offset_loop.body
-  (offset : Std.I64) (iter : core.slice.iter.Iter automata.terms.Product)
-  (products : alloc.vec.Vec automata.terms.Product) :
-  Result (ControlFlow ((core.slice.iter.Iter automata.terms.Product) ×
-    (alloc.vec.Vec automata.terms.Product)) (alloc.vec.Vec
-    automata.terms.Product))
-  := do
-  let (o, iter1) ← core.slice.iter.IteratorSliceIter.next iter
-  match o with
-  | none => ok (done products)
-  | some product =>
-    let p ←
-      automata.terms.Product.Insts.Automata_builderAutomataTermsAbstractExpressionProductExpression.offset
-        product offset
-    let products1 ← alloc.vec.Vec.push products p
-    ok (cont (iter1, products1))
-
 /-- [automata_builder::automata::terms::{impl automata_builder::automata::terms::AbstractExpression<automata_builder::automata::terms::Expression, automata_builder::automata::terms::Expression> for automata_builder::automata::terms::Expression}::offset]: loop 0:
     Source: 'src/automata/terms.rs', lines 807:8-809:9
     Visibility: public -/
@@ -26429,11 +24242,17 @@ def
   (products : alloc.vec.Vec automata.terms.Product) :
   Result (alloc.vec.Vec automata.terms.Product)
   := do
-  loop
-    (fun (iter1, products1) =>
-      automata.terms.Expression.Insts.Automata_builderAutomataTermsAbstractExpressionExpressionExpression.offset_loop.body
-      offset iter1 products1)
-    (iter, products)
+  let (o, iter1) ← core.slice.iter.IteratorSliceIter.next iter
+  match o with
+  | none => ok products
+  | some product =>
+    let p ←
+      automata.terms.Product.Insts.Automata_builderAutomataTermsAbstractExpressionProductExpression.offset
+        product offset
+    let products1 ← alloc.vec.Vec.push products p
+    automata.terms.Expression.Insts.Automata_builderAutomataTermsAbstractExpressionExpressionExpression.offset_loop
+      iter1 offset products1
+partial_fixpoint
 
 /-- [automata_builder::automata::terms::{impl automata_builder::automata::terms::AbstractExpression<automata_builder::automata::terms::Expression, automata_builder::automata::terms::Expression> for automata_builder::automata::terms::Expression}::offset]:
     Source: 'src/automata/terms.rs', lines 805:4-811:5
@@ -26450,47 +24269,6 @@ def
       iter offset (alloc.vec.Vec.new automata.terms.Product)
   automata.terms.Expression.new products
 
-/-- [automata_builder::automata::terms::{automata_builder::automata::terms::Product}::to_normalized_vec]: loop body 0:
-    Source: 'src/automata/terms.rs', lines 378:8-382:9
-    Visibility: public -/
-@[rust_loop_body]
-def automata.terms.Product.to_normalized_vec_loop.body
-  (iter : core.slice.iter.Iter automata.terms.Term)
-  (unique_terms_set : std.collections.hash.set.HashSet automata.terms.Term
-  std.hash.random.RandomState alloc.alloc.Global)
-  (unique_terms : alloc.vec.Vec automata.terms.Term) :
-  Result (ControlFlow ((core.slice.iter.Iter automata.terms.Term) ×
-    (std.collections.hash.set.HashSet automata.terms.Term
-    std.hash.random.RandomState alloc.alloc.Global) × (alloc.vec.Vec
-    automata.terms.Term)) (alloc.vec.Vec automata.terms.Term))
-  := do
-  let (o, iter1) ← core.slice.iter.IteratorSliceIter.next iter
-  match o with
-  | none => ok (done unique_terms)
-  | some term =>
-    let b ←
-      std.collections.hash.set.HashSet.contains (Shared0A.Insts.CoreCmpEq
-        automata.terms.Term.Insts.CoreCmpEq) (Shared0T.Insts.CoreHashHash
-        automata.terms.Term.Insts.CoreHashHash)
-        std.hash.random.RandomState.Insts.CoreHashBuildHasherDefaultHasher
-        (Shared0T.Insts.CoreBorrowBorrow automata.terms.Term)
-        automata.terms.Term.Insts.CoreHashHash
-        automata.terms.Term.Insts.CoreCmpEq unique_terms_set term
-    if b
-    then ok (cont (iter1, unique_terms_set, unique_terms))
-    else
-      let (_, unique_terms_set1) ←
-        std.collections.hash.set.HashSet.insert (Shared0A.Insts.CoreCmpEq
-          automata.terms.Term.Insts.CoreCmpEq) (Shared0T.Insts.CoreHashHash
-          automata.terms.Term.Insts.CoreHashHash)
-          std.hash.random.RandomState.Insts.CoreHashBuildHasherDefaultHasher
-          unique_terms_set term
-      let t ←
-        automata.terms.Term.Insts.Automata_builderAutomataTermsAbstractExpressionProductExpression.copy
-          term
-      let unique_terms1 ← alloc.vec.Vec.push unique_terms t
-      ok (cont (iter1, unique_terms_set1, unique_terms1))
-
 /-- [automata_builder::automata::terms::{automata_builder::automata::terms::Product}::to_normalized_vec]: loop 0:
     Source: 'src/automata/terms.rs', lines 378:8-382:9
     Visibility: public -/
@@ -26502,11 +24280,36 @@ def automata.terms.Product.to_normalized_vec_loop
   (unique_terms : alloc.vec.Vec automata.terms.Term) :
   Result (alloc.vec.Vec automata.terms.Term)
   := do
-  loop
-    (fun (iter1, unique_terms_set1, unique_terms1) =>
-      automata.terms.Product.to_normalized_vec_loop.body iter1
-      unique_terms_set1 unique_terms1)
-    (iter, unique_terms_set, unique_terms)
+  let (o, iter1) ← core.slice.iter.IteratorSliceIter.next iter
+  match o with
+  | none => ok unique_terms
+  | some term =>
+    let b ←
+      std.collections.hash.set.HashSet.contains (Shared0A.Insts.CoreCmpEq
+        automata.terms.Term.Insts.CoreCmpEq) (Shared0T.Insts.CoreHashHash
+        automata.terms.Term.Insts.CoreHashHash)
+        std.hash.random.RandomState.Insts.CoreHashBuildHasherDefaultHasher
+        (Shared0T.Insts.CoreBorrowBorrow automata.terms.Term)
+        automata.terms.Term.Insts.CoreHashHash
+        automata.terms.Term.Insts.CoreCmpEq unique_terms_set term
+    if b
+    then
+      automata.terms.Product.to_normalized_vec_loop iter1 unique_terms_set
+        unique_terms
+    else
+      let (_, unique_terms_set1) ←
+        std.collections.hash.set.HashSet.insert (Shared0A.Insts.CoreCmpEq
+          automata.terms.Term.Insts.CoreCmpEq) (Shared0T.Insts.CoreHashHash
+          automata.terms.Term.Insts.CoreHashHash)
+          std.hash.random.RandomState.Insts.CoreHashBuildHasherDefaultHasher
+          unique_terms_set term
+      let t ←
+        automata.terms.Term.Insts.Automata_builderAutomataTermsAbstractExpressionProductExpression.copy
+          term
+      let unique_terms1 ← alloc.vec.Vec.push unique_terms t
+      automata.terms.Product.to_normalized_vec_loop iter1 unique_terms_set1
+        unique_terms1
+partial_fixpoint
 
 /-- [automata_builder::automata::terms::{automata_builder::automata::terms::Product}::to_normalized_vec]:
     Source: 'src/automata/terms.rs', lines 370:4-385:5
@@ -26537,48 +24340,6 @@ def automata.terms.Product.to_normalized
   let norm_terms ← automata.terms.Product.to_normalized_vec self true
   automata.terms.Product.new norm_terms
 
-/-- [automata_builder::automata::terms::{automata_builder::automata::terms::Expression}::to_normalized_vec]: loop body 0:
-    Source: 'src/automata/terms.rs', lines 677:8-682:9
-    Visibility: public -/
-@[rust_loop_body]
-def automata.terms.Expression.to_normalized_vec_loop.body
-  (iter : core.slice.iter.Iter automata.terms.Product)
-  (unique_products_set : std.collections.hash.set.HashSet
-  automata.terms.Product std.hash.random.RandomState alloc.alloc.Global)
-  (unique_products : alloc.vec.Vec automata.terms.Product) :
-  Result (ControlFlow ((core.slice.iter.Iter automata.terms.Product) ×
-    (std.collections.hash.set.HashSet automata.terms.Product
-    std.hash.random.RandomState alloc.alloc.Global) × (alloc.vec.Vec
-    automata.terms.Product)) (alloc.vec.Vec automata.terms.Product))
-  := do
-  let (o, iter1) ← core.slice.iter.IteratorSliceIter.next iter
-  match o with
-  | none => ok (done unique_products)
-  | some un_normalized_product =>
-    let product ← automata.terms.Product.to_normalized un_normalized_product
-    let b ←
-      std.collections.hash.set.HashSet.contains
-        automata.terms.Product.Insts.CoreCmpEq
-        automata.terms.Product.Insts.CoreHashHash
-        std.hash.random.RandomState.Insts.CoreHashBuildHasherDefaultHasher
-        (core.borrow.Borrow.Blanket automata.terms.Product)
-        automata.terms.Product.Insts.CoreHashHash
-        automata.terms.Product.Insts.CoreCmpEq unique_products_set product
-    if b
-    then ok (cont (iter1, unique_products_set, unique_products))
-    else
-      let p ←
-        automata.terms.Product.Insts.Automata_builderAutomataTermsAbstractExpressionProductExpression.copy
-          product
-      let (_, unique_products_set1) ←
-        std.collections.hash.set.HashSet.insert
-          automata.terms.Product.Insts.CoreCmpEq
-          automata.terms.Product.Insts.CoreHashHash
-          std.hash.random.RandomState.Insts.CoreHashBuildHasherDefaultHasher
-          unique_products_set p
-      let unique_products1 ← alloc.vec.Vec.push unique_products p
-      ok (cont (iter1, unique_products_set1, unique_products1))
-
 /-- [automata_builder::automata::terms::{automata_builder::automata::terms::Expression}::to_normalized_vec]: loop 0:
     Source: 'src/automata/terms.rs', lines 677:8-682:9
     Visibility: public -/
@@ -26590,11 +24351,37 @@ def automata.terms.Expression.to_normalized_vec_loop
   (unique_products : alloc.vec.Vec automata.terms.Product) :
   Result (alloc.vec.Vec automata.terms.Product)
   := do
-  loop
-    (fun (iter1, unique_products_set1, unique_products1) =>
-      automata.terms.Expression.to_normalized_vec_loop.body iter1
-      unique_products_set1 unique_products1)
-    (iter, unique_products_set, unique_products)
+  let (o, iter1) ← core.slice.iter.IteratorSliceIter.next iter
+  match o with
+  | none => ok unique_products
+  | some un_normalized_product =>
+    let product ← automata.terms.Product.to_normalized un_normalized_product
+    let b ←
+      std.collections.hash.set.HashSet.contains
+        automata.terms.Product.Insts.CoreCmpEq
+        automata.terms.Product.Insts.CoreHashHash
+        std.hash.random.RandomState.Insts.CoreHashBuildHasherDefaultHasher
+        (core.borrow.Borrow.Blanket automata.terms.Product)
+        automata.terms.Product.Insts.CoreHashHash
+        automata.terms.Product.Insts.CoreCmpEq unique_products_set product
+    if b
+    then
+      automata.terms.Expression.to_normalized_vec_loop iter1
+        unique_products_set unique_products
+    else
+      let p ←
+        automata.terms.Product.Insts.Automata_builderAutomataTermsAbstractExpressionProductExpression.copy
+          product
+      let (_, unique_products_set1) ←
+        std.collections.hash.set.HashSet.insert
+          automata.terms.Product.Insts.CoreCmpEq
+          automata.terms.Product.Insts.CoreHashHash
+          std.hash.random.RandomState.Insts.CoreHashBuildHasherDefaultHasher
+          unique_products_set p
+      let unique_products1 ← alloc.vec.Vec.push unique_products p
+      automata.terms.Expression.to_normalized_vec_loop iter1
+        unique_products_set1 unique_products1
+partial_fixpoint
 
 /-- [automata_builder::automata::terms::{automata_builder::automata::terms::Expression}::to_normalized_vec]:
     Source: 'src/automata/terms.rs', lines 669:4-685:5
@@ -26690,37 +24477,6 @@ def
     automata.terms.Expression._assign_base_expansion_indexes.closure.Insts.CoreOpsFunctionFnMutTupleMut0TermTuple.call_mut
 }
 
-/-- [automata_builder::automata::terms::{automata_builder::automata::terms::Expression}::_assign_base_expansion_indexes]: loop body 0:
-    Source: 'src/automata/terms.rs', lines 636:8-641:9 -/
-@[rust_loop_body]
-def automata.terms.Expression._assign_base_expansion_indexes_loop.body
-  (iter : core.slice.iter.IterMut automata.terms.Product)
-  (back : core.slice.iter.IterMut automata.terms.Product →
-  core.slice.iter.IterMut automata.terms.Product) (expansion_index : Std.Usize)
-  :
-  Result (ControlFlow ((core.slice.iter.IterMut automata.terms.Product) ×
-    (core.slice.iter.IterMut automata.terms.Product → core.slice.iter.IterMut
-    automata.terms.Product) × Std.Usize) (core.slice.iter.IterMut
-    automata.terms.Product))
-  := do
-  let (o, iter1, next_back) ← core.slice.iter.IteratorIterMut.next iter
-  match o with
-  | none => ok (done (let im := next_back iter1 none
-                      back im))
-  | some product =>
-    let (s, deref_mut_back) ← lift (alloc.vec.Vec.deref_mut product._terms)
-    let (im, iter_mut_back) ← core.slice.Slice.iter_mut s
-    let (im1, c) ←
-      core.slice.iter.IterMut.Insts.CoreIterTraitsIteratorIteratorMutAT.for_each
-        automata.terms.Expression._assign_base_expansion_indexes.closure.Insts.CoreOpsFunctionFnMutTupleMut0TermTuple
-        im expansion_index
-    let s1 := iter_mut_back im1
-    let v := deref_mut_back s1
-    ok (cont (iter1,
-      fun im2 =>
-        let im3 := next_back im2 (some { product with _terms := v })
-        back im3, c))
-
 /-- [automata_builder::automata::terms::{automata_builder::automata::terms::Expression}::_assign_base_expansion_indexes]: loop 0:
     Source: 'src/automata/terms.rs', lines 636:8-641:9 -/
 @[rust_loop]
@@ -26731,11 +24487,24 @@ def automata.terms.Expression._assign_base_expansion_indexes_loop
   :
   Result (core.slice.iter.IterMut automata.terms.Product)
   := do
-  loop
-    (fun (iter1, back1, expansion_index1) =>
-      automata.terms.Expression._assign_base_expansion_indexes_loop.body iter1
-      back1 expansion_index1)
-    (iter, back, expansion_index)
+  let (o, iter1, next_back) ← core.slice.iter.IteratorIterMut.next iter
+  match o with
+  | none => ok (let im := next_back iter1 none
+                back im)
+  | some product =>
+    let (s, deref_mut_back) ← lift (alloc.vec.Vec.deref_mut product._terms)
+    let (im, iter_mut_back) ← core.slice.Slice.iter_mut s
+    let (im1, c) ←
+      core.slice.iter.IterMut.Insts.CoreIterTraitsIteratorIteratorMutAT.for_each
+        automata.terms.Expression._assign_base_expansion_indexes.closure.Insts.CoreOpsFunctionFnMutTupleMut0TermTuple
+        im expansion_index
+    let s1 := iter_mut_back im1
+    let v := deref_mut_back s1
+    automata.terms.Expression._assign_base_expansion_indexes_loop iter1
+      (fun im2 =>
+        let im3 := next_back im2 (some { product with _terms := v })
+        back im3) c
+partial_fixpoint
 
 /-- [automata_builder::automata::terms::{automata_builder::automata::terms::Expression}::_assign_base_expansion_indexes]:
     Source: 'src/automata/terms.rs', lines 631:4-642:5 -/
@@ -26809,37 +24578,6 @@ def
     automata.terms.Expression._assign_parent_debug_info.closure.Insts.CoreOpsFunctionFnMutTupleMut0TermTuple.call_mut
 }
 
-/-- [automata_builder::automata::terms::{automata_builder::automata::terms::Expression}::_assign_parent_debug_info]: loop body 0:
-    Source: 'src/automata/terms.rs', lines 624:8-629:9
-    Visibility: public -/
-@[rust_loop_body]
-def automata.terms.Expression._assign_parent_debug_info_loop.body
-  (parent_debug_info : automata.terms.ExprDebugInfo)
-  (iter : core.slice.iter.IterMut automata.terms.Product)
-  (back : core.slice.iter.IterMut automata.terms.Product →
-  core.slice.iter.IterMut automata.terms.Product) :
-  Result (ControlFlow ((core.slice.iter.IterMut automata.terms.Product) ×
-    (core.slice.iter.IterMut automata.terms.Product → core.slice.iter.IterMut
-    automata.terms.Product)) (core.slice.iter.IterMut automata.terms.Product))
-  := do
-  let (o, iter1, next_back) ← core.slice.iter.IteratorIterMut.next iter
-  match o with
-  | none => ok (done (let im := next_back iter1 none
-                      back im))
-  | some product =>
-    let (s, deref_mut_back) ← lift (alloc.vec.Vec.deref_mut product._terms)
-    let (im, iter_mut_back) ← core.slice.Slice.iter_mut s
-    let im1 ←
-      core.slice.iter.IterMut.Insts.CoreIterTraitsIteratorIteratorMutAT.for_each
-        automata.terms.Expression._assign_parent_debug_info.closure.Insts.CoreOpsFunctionFnMutTupleMut0TermTuple
-        im parent_debug_info
-    let s1 := iter_mut_back im1
-    let v := deref_mut_back s1
-    ok (cont (iter1,
-      fun im2 =>
-        let im3 := next_back im2 (some { product with _terms := v })
-        back im3))
-
 /-- [automata_builder::automata::terms::{automata_builder::automata::terms::Expression}::_assign_parent_debug_info]: loop 0:
     Source: 'src/automata/terms.rs', lines 624:8-629:9
     Visibility: public -/
@@ -26851,11 +24589,24 @@ def automata.terms.Expression._assign_parent_debug_info_loop
   (parent_debug_info : automata.terms.ExprDebugInfo) :
   Result (core.slice.iter.IterMut automata.terms.Product)
   := do
-  loop
-    (fun (iter1, back1) =>
-      automata.terms.Expression._assign_parent_debug_info_loop.body
-      parent_debug_info iter1 back1)
-    (iter, back)
+  let (o, iter1, next_back) ← core.slice.iter.IteratorIterMut.next iter
+  match o with
+  | none => ok (let im := next_back iter1 none
+                back im)
+  | some product =>
+    let (s, deref_mut_back) ← lift (alloc.vec.Vec.deref_mut product._terms)
+    let (im, iter_mut_back) ← core.slice.Slice.iter_mut s
+    let im1 ←
+      core.slice.iter.IterMut.Insts.CoreIterTraitsIteratorIteratorMutAT.for_each
+        automata.terms.Expression._assign_parent_debug_info.closure.Insts.CoreOpsFunctionFnMutTupleMut0TermTuple
+        im parent_debug_info
+    let s1 := iter_mut_back im1
+    let v := deref_mut_back s1
+    automata.terms.Expression._assign_parent_debug_info_loop iter1
+      (fun im2 =>
+        let im3 := next_back im2 (some { product with _terms := v })
+        back im3) parent_debug_info
+partial_fixpoint
 
 /-- [automata_builder::automata::terms::{automata_builder::automata::terms::Expression}::_assign_parent_debug_info]:
     Source: 'src/automata/terms.rs', lines 621:4-630:5
@@ -26907,35 +24658,6 @@ def
   then automata.terms.Expression.to_normalized expanded_expr1 true
   else ok expanded_expr1
 
-/-- [automata_builder::automata::terms::{impl automata_builder::automata::terms::AbstractExpression<automata_builder::automata::terms::Product, automata_builder::automata::terms::Expression> for automata_builder::automata::terms::Product}::_expand]: loop body 0:
-    Source: 'src/automata/terms.rs', lines 546:8-550:9
-    Visibility: public -/
-@[rust_loop_body]
-def
-  automata.terms.Product.Insts.Automata_builderAutomataTermsAbstractExpressionProductExpression._expand_loop.body
-  (expansion_mapping : std.collections.hash.map.HashMap Std.U32
-  automata.terms.Expression std.hash.random.RandomState alloc.alloc.Global)
-  (include_debug_info : Bool) (fold : Bool)
-  (iter : core.iter.adapters.skip.Skip (core.slice.iter.Iter
-  automata.terms.Term)) (result : automata.terms.Expression) :
-  Result (ControlFlow ((core.iter.adapters.skip.Skip (core.slice.iter.Iter
-    automata.terms.Term)) × automata.terms.Expression)
-    automata.terms.Expression)
-  := do
-  let (o, iter1) ←
-    core.iter.adapters.skip.Skip.Insts.CoreIterTraitsIteratorIterator.next
-      (core.iter.traits.iterator.IteratorSliceIter automata.terms.Term) iter
-  match o with
-  | none => ok (done result)
-  | some term =>
-    let e ←
-      automata.terms.Term.Insts.Automata_builderAutomataTermsAbstractExpressionProductExpression._expand
-        term expansion_mapping include_debug_info fold
-    let result1 ←
-      automata.terms.Expression.Insts.CoreOpsArithMulExpressionExpression.mul
-        result e
-    ok (cont (iter1, result1))
-
 /-- [automata_builder::automata::terms::{impl automata_builder::automata::terms::AbstractExpression<automata_builder::automata::terms::Product, automata_builder::automata::terms::Expression> for automata_builder::automata::terms::Product}::_expand]: loop 0:
     Source: 'src/automata/terms.rs', lines 546:8-550:9
     Visibility: public -/
@@ -26950,11 +24672,21 @@ def
   (result : automata.terms.Expression) :
   Result automata.terms.Expression
   := do
-  loop
-    (fun (iter1, result1) =>
-      automata.terms.Product.Insts.Automata_builderAutomataTermsAbstractExpressionProductExpression._expand_loop.body
-      expansion_mapping include_debug_info fold iter1 result1)
-    (iter, result)
+  let (o, iter1) ←
+    core.iter.adapters.skip.Skip.Insts.CoreIterTraitsIteratorIterator.next
+      (core.iter.traits.iterator.IteratorSliceIter automata.terms.Term) iter
+  match o with
+  | none => ok result
+  | some term =>
+    let e ←
+      automata.terms.Term.Insts.Automata_builderAutomataTermsAbstractExpressionProductExpression._expand
+        term expansion_mapping include_debug_info fold
+    let result1 ←
+      automata.terms.Expression.Insts.CoreOpsArithMulExpressionExpression.mul
+        result e
+    automata.terms.Product.Insts.Automata_builderAutomataTermsAbstractExpressionProductExpression._expand_loop
+      iter1 expansion_mapping include_debug_info fold result1
+partial_fixpoint
 
 /-- [automata_builder::automata::terms::{impl automata_builder::automata::terms::AbstractExpression<automata_builder::automata::terms::Product, automata_builder::automata::terms::Expression> for automata_builder::automata::terms::Product}::_expand]:
     Source: 'src/automata/terms.rs', lines 531:4-553:5
@@ -27075,28 +24807,6 @@ def
     automata.terms.AbstractExpressionExpressionExpressionExpression._expand.closure.Insts.CoreOpsFunctionFnTupleShared0ProductExpression.call
 }
 
-/-- [automata_builder::automata::terms::{impl automata_builder::automata::terms::AbstractExpression<automata_builder::automata::terms::Expression, automata_builder::automata::terms::Expression> for automata_builder::automata::terms::Expression}::copy]: loop body 0:
-    Source: 'src/automata/terms.rs', lines 790:8-792:9
-    Visibility: public -/
-@[rust_loop_body]
-def
-  automata.terms.Expression.Insts.Automata_builderAutomataTermsAbstractExpressionExpressionExpression.copy_loop.body
-  (iter : core.slice.iter.Iter automata.terms.Product)
-  (products : alloc.vec.Vec automata.terms.Product) :
-  Result (ControlFlow ((core.slice.iter.Iter automata.terms.Product) ×
-    (alloc.vec.Vec automata.terms.Product)) (alloc.vec.Vec
-    automata.terms.Product))
-  := do
-  let (o, iter1) ← core.slice.iter.IteratorSliceIter.next iter
-  match o with
-  | none => ok (done products)
-  | some product =>
-    let p ←
-      automata.terms.Product.Insts.Automata_builderAutomataTermsAbstractExpressionProductExpression.copy
-        product
-    let products1 ← alloc.vec.Vec.push products p
-    ok (cont (iter1, products1))
-
 /-- [automata_builder::automata::terms::{impl automata_builder::automata::terms::AbstractExpression<automata_builder::automata::terms::Expression, automata_builder::automata::terms::Expression> for automata_builder::automata::terms::Expression}::copy]: loop 0:
     Source: 'src/automata/terms.rs', lines 790:8-792:9
     Visibility: public -/
@@ -27107,11 +24817,17 @@ def
   (products : alloc.vec.Vec automata.terms.Product) :
   Result (alloc.vec.Vec automata.terms.Product)
   := do
-  loop
-    (fun (iter1, products1) =>
-      automata.terms.Expression.Insts.Automata_builderAutomataTermsAbstractExpressionExpressionExpression.copy_loop.body
-      iter1 products1)
-    (iter, products)
+  let (o, iter1) ← core.slice.iter.IteratorSliceIter.next iter
+  match o with
+  | none => ok products
+  | some product =>
+    let p ←
+      automata.terms.Product.Insts.Automata_builderAutomataTermsAbstractExpressionProductExpression.copy
+        product
+    let products1 ← alloc.vec.Vec.push products p
+    automata.terms.Expression.Insts.Automata_builderAutomataTermsAbstractExpressionExpressionExpression.copy_loop
+      iter1 products1
+partial_fixpoint
 
 /-- [automata_builder::automata::terms::{impl automata_builder::automata::terms::AbstractExpression<automata_builder::automata::terms::Expression, automata_builder::automata::terms::Expression> for automata_builder::automata::terms::Expression}::copy]:
     Source: 'src/automata/terms.rs', lines 788:4-794:5
@@ -27126,39 +24842,6 @@ def
       iter (alloc.vec.Vec.new automata.terms.Product)
   ok { self with products }
 
-/-- [automata_builder::automata::terms::{automata_builder::automata::terms::Expression}::_assign_base_indexes]: loop body 0:
-    Source: 'src/automata/terms.rs', lines 608:8-610:9
-    Visibility: public -/
-@[rust_loop_body]
-def automata.terms.Expression._assign_base_indexes_loop.body
-  (iter : core.iter.adapters.enumerate.Enumerate (core.slice.iter.IterMut
-  automata.terms.Product))
-  (back : core.iter.adapters.enumerate.Enumerate (core.slice.iter.IterMut
-  automata.terms.Product) → core.iter.adapters.enumerate.Enumerate
-  (core.slice.iter.IterMut automata.terms.Product)) :
-  Result (ControlFlow ((core.iter.adapters.enumerate.Enumerate
-    (core.slice.iter.IterMut automata.terms.Product)) ×
-    (core.iter.adapters.enumerate.Enumerate (core.slice.iter.IterMut
-    automata.terms.Product) → core.iter.adapters.enumerate.Enumerate
-    (core.slice.iter.IterMut automata.terms.Product)))
-    (core.iter.adapters.enumerate.Enumerate (core.slice.iter.IterMut
-    automata.terms.Product)))
-  := do
-  let (o, iter1, next_back) ←
-    core.iter.adapters.enumerate.IteratorEnumerate.next
-      (core.slice.iter.IterMut.Insts.CoreIterTraitsIteratorIteratorMutAT
-      automata.terms.Product) iter
-  match o with
-  | none => ok (done (let e := next_back iter1 none
-                      back e))
-  | some p =>
-    let (index, product) := p
-    let i ← lift (UScalar.cast .U64 index)
-    let product1 ← automata.terms.Product._assign_base_indexes product i
-    ok (cont (iter1,
-      fun e => let e1 := next_back e (some (index, product1))
-               back e1))
-
 /-- [automata_builder::automata::terms::{automata_builder::automata::terms::Expression}::_assign_base_indexes]: loop 0:
     Source: 'src/automata/terms.rs', lines 608:8-610:9
     Visibility: public -/
@@ -27172,10 +24855,21 @@ def automata.terms.Expression._assign_base_indexes_loop
   Result (core.iter.adapters.enumerate.Enumerate (core.slice.iter.IterMut
     automata.terms.Product))
   := do
-  loop
-    (fun (iter1, back1) =>
-      automata.terms.Expression._assign_base_indexes_loop.body iter1 back1)
-    (iter, back)
+  let (o, iter1, next_back) ←
+    core.iter.adapters.enumerate.IteratorEnumerate.next
+      (core.slice.iter.IterMut.Insts.CoreIterTraitsIteratorIteratorMutAT
+      automata.terms.Product) iter
+  match o with
+  | none => ok (let e := next_back iter1 none
+                back e)
+  | some p =>
+    let (index, product) := p
+    let i ← lift (UScalar.cast .U64 index)
+    let product1 ← automata.terms.Product._assign_base_indexes product i
+    automata.terms.Expression._assign_base_indexes_loop iter1
+      (fun e => let e1 := next_back e (some (index, product1))
+                back e1)
+partial_fixpoint
 
 /-- [automata_builder::automata::terms::{automata_builder::automata::terms::Expression}::_assign_base_indexes]:
     Source: 'src/automata/terms.rs', lines 607:4-611:5
@@ -27195,29 +24889,6 @@ def automata.terms.Expression._assign_base_indexes
   let v := deref_mut_back s1
   ok { self with products := v }
 
-/-- [automata_builder::automata::terms::{impl automata_builder::automata::terms::AbstractExpression<automata_builder::automata::terms::Expression, automata_builder::automata::terms::Expression> for automata_builder::automata::terms::Expression}::_expand_steps]: loop body 0:
-    Source: 'src/automata/terms.rs', lines 842:8-846:9
-    Visibility: public -/
-@[rust_loop_body]
-def
-  automata.terms.Expression.Insts.Automata_builderAutomataTermsAbstractExpressionExpressionExpression._expand_steps_loop.body
-  (expansion_mapping : std.collections.hash.map.HashMap Std.U32
-  automata.terms.Expression std.hash.random.RandomState alloc.alloc.Global)
-  (include_debug_info : Bool) (fold : Bool)
-  (iter : core.ops.range.Range Std.U64) (result : automata.terms.Expression) :
-  Result (ControlFlow ((core.ops.range.Range Std.U64) ×
-    automata.terms.Expression) automata.terms.Expression)
-  := do
-  let (o, iter1) ←
-    core.iter.range.IteratorRange.next core.iter.range.StepU64 iter
-  match o with
-  | none => ok (done result)
-  | some _ =>
-    let result1 ←
-      automata.terms.Expression.Insts.Automata_builderAutomataTermsAbstractExpressionExpressionExpression._expand
-        result expansion_mapping include_debug_info fold
-    ok (cont (iter1, result1))
-
 /-- [automata_builder::automata::terms::{impl automata_builder::automata::terms::AbstractExpression<automata_builder::automata::terms::Expression, automata_builder::automata::terms::Expression> for automata_builder::automata::terms::Expression}::_expand_steps]: loop 0:
     Source: 'src/automata/terms.rs', lines 842:8-846:9
     Visibility: public -/
@@ -27231,11 +24902,17 @@ def
   (result : automata.terms.Expression) :
   Result automata.terms.Expression
   := do
-  loop
-    (fun (iter1, result1) =>
-      automata.terms.Expression.Insts.Automata_builderAutomataTermsAbstractExpressionExpressionExpression._expand_steps_loop.body
-      expansion_mapping include_debug_info fold iter1 result1)
-    (iter, result)
+  let (o, iter1) ←
+    core.iter.range.IteratorRange.next core.iter.range.StepU64 iter
+  match o with
+  | none => ok result
+  | some _ =>
+    let result1 ←
+      automata.terms.Expression.Insts.Automata_builderAutomataTermsAbstractExpressionExpressionExpression._expand
+        result expansion_mapping include_debug_info fold
+    automata.terms.Expression.Insts.Automata_builderAutomataTermsAbstractExpressionExpressionExpression._expand_steps_loop
+      iter1 expansion_mapping include_debug_info fold result1
+partial_fixpoint
 
 /-- [automata_builder::automata::terms::{impl automata_builder::automata::terms::AbstractExpression<automata_builder::automata::terms::Expression, automata_builder::automata::terms::Expression> for automata_builder::automata::terms::Expression}::_expand_steps]:
     Source: 'src/automata/terms.rs', lines 836:4-848:5
@@ -27374,25 +25051,6 @@ def automata.terms.Product._get_term
   core.slice.Slice.get (core.slice.index.SliceIndexUsizeSlice
     automata.terms.Term) s index
 
-/-- [automata_builder::automata::terms::{automata_builder::automata::terms::Product}::pad_terms]: loop body 0:
-    Source: 'src/automata/terms.rs', lines 342:12-342:73
-    Visibility: public -/
-@[rust_loop_body]
-def automata.terms.Product.pad_terms_loop.body
-  (last_term : automata.terms.Term) (iter : core.ops.range.Range Std.Usize)
-  (new_terms : alloc.vec.Vec automata.terms.Term) :
-  Result (ControlFlow ((core.ops.range.Range Std.Usize) × (alloc.vec.Vec
-    automata.terms.Term)) (alloc.vec.Vec automata.terms.Term))
-  := do
-  let (o, iter1) ←
-    core.iter.range.IteratorRange.next core.iter.range.StepUsize iter
-  match o with
-  | none => ok (done new_terms)
-  | some _ =>
-    let t ← automata.terms.Term.Insts.CoreCloneClone.clone last_term
-    let new_terms1 ← alloc.vec.Vec.push new_terms t
-    ok (cont (iter1, new_terms1))
-
 /-- [automata_builder::automata::terms::{automata_builder::automata::terms::Product}::pad_terms]: loop 0:
     Source: 'src/automata/terms.rs', lines 342:12-342:73
     Visibility: public -/
@@ -27403,10 +25061,15 @@ def automata.terms.Product.pad_terms_loop
   (last_term : automata.terms.Term) :
   Result (alloc.vec.Vec automata.terms.Term)
   := do
-  loop
-    (fun (iter1, new_terms1) => automata.terms.Product.pad_terms_loop.body
-      last_term iter1 new_terms1)
-    (iter, new_terms)
+  let (o, iter1) ←
+    core.iter.range.IteratorRange.next core.iter.range.StepUsize iter
+  match o with
+  | none => ok new_terms
+  | some _ =>
+    let t ← automata.terms.Term.Insts.CoreCloneClone.clone last_term
+    let new_terms1 ← alloc.vec.Vec.push new_terms t
+    automata.terms.Product.pad_terms_loop iter1 new_terms1 last_term
+partial_fixpoint
 
 /-- [automata_builder::automata::terms::{automata_builder::automata::terms::Product}::pad_terms]:
     Source: 'src/automata/terms.rs', lines 335:4-347:5
@@ -27433,32 +25096,6 @@ def automata.terms.Product.pad_terms
     ok (some p)
   else ok none
 
-/-- [automata_builder::automata::terms::{automata_builder::automata::terms::Product}::reduce]: loop body 0:
-    Source: 'src/automata/terms.rs', lines 357:8-359:9
-    Visibility: public -/
-@[rust_loop_body]
-def automata.terms.Product.reduce_loop.body
-  (iter : core.slice.iter.Iter automata.terms.Term)
-  (terms_set : indexmap.set.IndexSet automata.terms.Term
-  std.hash.random.RandomState) :
-  Result (ControlFlow ((core.slice.iter.Iter automata.terms.Term) ×
-    (indexmap.set.IndexSet automata.terms.Term std.hash.random.RandomState))
-    (indexmap.set.IndexSet automata.terms.Term std.hash.random.RandomState))
-  := do
-  let (o, iter1) ← core.slice.iter.IteratorSliceIter.next iter
-  match o with
-  | none => ok (done terms_set)
-  | some term =>
-    let t ←
-      automata.terms.Term.Insts.Automata_builderAutomataTermsAbstractExpressionProductExpression.copy
-        term
-    let (_, terms_set1) ←
-      indexmap.set.IndexSet.insert automata.terms.Term.Insts.CoreHashHash
-        automata.terms.Term.Insts.CoreCmpEq
-        std.hash.random.RandomState.Insts.CoreHashBuildHasherDefaultHasher
-        terms_set t
-    ok (cont (iter1, terms_set1))
-
 /-- [automata_builder::automata::terms::{automata_builder::automata::terms::Product}::reduce]: loop 0:
     Source: 'src/automata/terms.rs', lines 357:8-359:9
     Visibility: public -/
@@ -27470,10 +25107,20 @@ def automata.terms.Product.reduce_loop
   Result (indexmap.set.IndexSet automata.terms.Term
     std.hash.random.RandomState)
   := do
-  loop
-    (fun (iter1, terms_set1) => automata.terms.Product.reduce_loop.body iter1
-      terms_set1)
-    (iter, terms_set)
+  let (o, iter1) ← core.slice.iter.IteratorSliceIter.next iter
+  match o with
+  | none => ok terms_set
+  | some term =>
+    let t ←
+      automata.terms.Term.Insts.Automata_builderAutomataTermsAbstractExpressionProductExpression.copy
+        term
+    let (_, terms_set1) ←
+      indexmap.set.IndexSet.insert automata.terms.Term.Insts.CoreHashHash
+        automata.terms.Term.Insts.CoreCmpEq
+        std.hash.random.RandomState.Insts.CoreHashBuildHasherDefaultHasher
+        terms_set t
+    automata.terms.Product.reduce_loop iter1 terms_set1
+partial_fixpoint
 
 /-- [automata_builder::automata::terms::{automata_builder::automata::terms::Product}::reduce]:
     Source: 'src/automata/terms.rs', lines 354:4-363:5
@@ -27625,34 +25272,6 @@ def automata.terms.Product.Insts.CoreOpsArithMulTermProduct :
   mul := automata.terms.Product.Insts.CoreOpsArithMulTermProduct.mul
 }
 
-/-- [automata_builder::automata::terms::{impl core::ops::arith::Mul<automata_builder::automata::terms::Expression, automata_builder::automata::terms::Expression> for automata_builder::automata::terms::Product}::mul]: loop body 0:
-    Source: 'src/automata/terms.rs', lines 465:8-467:9
-    Visibility: public -/
-@[rust_loop_body]
-def
-  automata.terms.Product.Insts.CoreOpsArithMulExpressionExpression.mul_loop.body
-  (self : automata.terms.Product)
-  (iter : core.slice.iter.Iter automata.terms.Product)
-  (new_products : alloc.vec.Vec automata.terms.Product) :
-  Result (ControlFlow ((core.slice.iter.Iter automata.terms.Product) ×
-    (alloc.vec.Vec automata.terms.Product)) (alloc.vec.Vec
-    automata.terms.Product))
-  := do
-  let (o, iter1) ← core.slice.iter.IteratorSliceIter.next iter
-  match o with
-  | none => ok (done new_products)
-  | some product =>
-    let p ←
-      automata.terms.Product.Insts.Automata_builderAutomataTermsAbstractExpressionProductExpression.copy
-        self
-    let p1 ←
-      automata.terms.Product.Insts.Automata_builderAutomataTermsAbstractExpressionProductExpression.copy
-        product
-    let p2 ←
-      automata.terms.Product.Insts.CoreOpsArithMulProductProduct.mul p p1
-    let new_products1 ← alloc.vec.Vec.push new_products p2
-    ok (cont (iter1, new_products1))
-
 /-- [automata_builder::automata::terms::{impl core::ops::arith::Mul<automata_builder::automata::terms::Expression, automata_builder::automata::terms::Expression> for automata_builder::automata::terms::Product}::mul]: loop 0:
     Source: 'src/automata/terms.rs', lines 465:8-467:9
     Visibility: public -/
@@ -27663,11 +25282,22 @@ def automata.terms.Product.Insts.CoreOpsArithMulExpressionExpression.mul_loop
   (new_products : alloc.vec.Vec automata.terms.Product) :
   Result (alloc.vec.Vec automata.terms.Product)
   := do
-  loop
-    (fun (iter1, new_products1) =>
-      automata.terms.Product.Insts.CoreOpsArithMulExpressionExpression.mul_loop.body
-      self iter1 new_products1)
-    (iter, new_products)
+  let (o, iter1) ← core.slice.iter.IteratorSliceIter.next iter
+  match o with
+  | none => ok new_products
+  | some product =>
+    let p ←
+      automata.terms.Product.Insts.Automata_builderAutomataTermsAbstractExpressionProductExpression.copy
+        self
+    let p1 ←
+      automata.terms.Product.Insts.Automata_builderAutomataTermsAbstractExpressionProductExpression.copy
+        product
+    let p2 ←
+      automata.terms.Product.Insts.CoreOpsArithMulProductProduct.mul p p1
+    let new_products1 ← alloc.vec.Vec.push new_products p2
+    automata.terms.Product.Insts.CoreOpsArithMulExpressionExpression.mul_loop
+      iter1 self new_products1
+partial_fixpoint
 
 /-- [automata_builder::automata::terms::{impl core::ops::arith::Mul<automata_builder::automata::terms::Expression, automata_builder::automata::terms::Expression> for automata_builder::automata::terms::Product}::mul]:
     Source: 'src/automata/terms.rs', lines 463:4-469:5
@@ -27799,29 +25429,6 @@ def
   let ret := alloc.slice.Slice.into_vec y
   automata.terms.Expression.new ret
 
-/-- [automata_builder::automata::terms::{impl automata_builder::automata::terms::AbstractExpression<automata_builder::automata::terms::Product, automata_builder::automata::terms::Expression> for automata_builder::automata::terms::Product}::_expand_steps]: loop body 0:
-    Source: 'src/automata/terms.rs', lines 563:8-567:9
-    Visibility: public -/
-@[rust_loop_body]
-def
-  automata.terms.Product.Insts.Automata_builderAutomataTermsAbstractExpressionProductExpression._expand_steps_loop.body
-  (expansion_mapping : std.collections.hash.map.HashMap Std.U32
-  automata.terms.Expression std.hash.random.RandomState alloc.alloc.Global)
-  (include_debug_info : Bool) (fold : Bool)
-  (iter : core.ops.range.Range Std.U64) (result : automata.terms.Expression) :
-  Result (ControlFlow ((core.ops.range.Range Std.U64) ×
-    automata.terms.Expression) automata.terms.Expression)
-  := do
-  let (o, iter1) ←
-    core.iter.range.IteratorRange.next core.iter.range.StepU64 iter
-  match o with
-  | none => ok (done result)
-  | some _ =>
-    let result1 ←
-      automata.terms.Expression.Insts.Automata_builderAutomataTermsAbstractExpressionExpressionExpression._expand
-        result expansion_mapping include_debug_info fold
-    ok (cont (iter1, result1))
-
 /-- [automata_builder::automata::terms::{impl automata_builder::automata::terms::AbstractExpression<automata_builder::automata::terms::Product, automata_builder::automata::terms::Expression> for automata_builder::automata::terms::Product}::_expand_steps]: loop 0:
     Source: 'src/automata/terms.rs', lines 563:8-567:9
     Visibility: public -/
@@ -27835,11 +25442,17 @@ def
   (result : automata.terms.Expression) :
   Result automata.terms.Expression
   := do
-  loop
-    (fun (iter1, result1) =>
-      automata.terms.Product.Insts.Automata_builderAutomataTermsAbstractExpressionProductExpression._expand_steps_loop.body
-      expansion_mapping include_debug_info fold iter1 result1)
-    (iter, result)
+  let (o, iter1) ←
+    core.iter.range.IteratorRange.next core.iter.range.StepU64 iter
+  match o with
+  | none => ok result
+  | some _ =>
+    let result1 ←
+      automata.terms.Expression.Insts.Automata_builderAutomataTermsAbstractExpressionExpressionExpression._expand
+        result expansion_mapping include_debug_info fold
+    automata.terms.Product.Insts.Automata_builderAutomataTermsAbstractExpressionProductExpression._expand_steps_loop
+      iter1 expansion_mapping include_debug_info fold result1
+partial_fixpoint
 
 /-- [automata_builder::automata::terms::{impl automata_builder::automata::terms::AbstractExpression<automata_builder::automata::terms::Product, automata_builder::automata::terms::Expression> for automata_builder::automata::terms::Product}::_expand_steps]:
     Source: 'src/automata/terms.rs', lines 554:4-569:5
@@ -27865,28 +25478,6 @@ def
     { start := 1#u64, «end» := steps } expansion_mapping include_debug_info
     fold result
 
-/-- [automata_builder::automata::terms::{impl automata_builder::automata::terms::AbstractExpression<automata_builder::automata::terms::Product, automata_builder::automata::terms::Expression> for automata_builder::automata::terms::Product}::_sub]: loop body 0:
-    Source: 'src/automata/terms.rs', lines 517:8-523:5
-    Visibility: public -/
-@[rust_loop_body]
-def
-  automata.terms.Product.Insts.Automata_builderAutomataTermsAbstractExpressionProductExpression._sub_loop.body
-  (substitutions : std.collections.hash.map.HashMap Std.I64 Std.U32
-  std.hash.random.RandomState alloc.alloc.Global) (default : Std.U32)
-  (iter : core.slice.iter.Iter automata.terms.Term) :
-  Result (ControlFlow (core.slice.iter.Iter automata.terms.Term) Bool)
-  := do
-  let (o, iter1) ← core.slice.iter.IteratorSliceIter.next iter
-  match o with
-  | none => ok (done true)
-  | some term =>
-    let b ←
-      automata.terms.Term.Insts.Automata_builderAutomataTermsAbstractExpressionProductExpression._sub
-        term substitutions default
-    if b
-    then ok (cont iter1)
-    else ok (done false)
-
 /-- [automata_builder::automata::terms::{impl automata_builder::automata::terms::AbstractExpression<automata_builder::automata::terms::Product, automata_builder::automata::terms::Expression> for automata_builder::automata::terms::Product}::_sub]: loop 0:
     Source: 'src/automata/terms.rs', lines 517:8-523:5
     Visibility: public -/
@@ -27898,11 +25489,19 @@ def
   std.hash.random.RandomState alloc.alloc.Global) (default : Std.U32) :
   Result Bool
   := do
-  loop
-    (fun iter1 =>
-      automata.terms.Product.Insts.Automata_builderAutomataTermsAbstractExpressionProductExpression._sub_loop.body
-      substitutions default iter1)
-    iter
+  let (o, iter1) ← core.slice.iter.IteratorSliceIter.next iter
+  match o with
+  | none => ok true
+  | some term =>
+    let b ←
+      automata.terms.Term.Insts.Automata_builderAutomataTermsAbstractExpressionProductExpression._sub
+        term substitutions default
+    if b
+    then
+      automata.terms.Product.Insts.Automata_builderAutomataTermsAbstractExpressionProductExpression._sub_loop
+        iter1 substitutions default
+    else ok false
+partial_fixpoint
 
 /-- [automata_builder::automata::terms::{impl automata_builder::automata::terms::AbstractExpression<automata_builder::automata::terms::Product, automata_builder::automata::terms::Expression> for automata_builder::automata::terms::Product}::_sub]:
     Source: 'src/automata/terms.rs', lines 516:4-523:5
@@ -28018,26 +25617,6 @@ def automata.terms.Expression._get_product
   core.slice.Slice.get (core.slice.index.SliceIndexUsizeSlice
     automata.terms.Product) s index
 
-/-- [automata_builder::automata::terms::{automata_builder::automata::terms::Expression}::_to_flat_terms]: loop body 1:
-    Source: 'src/automata/terms.rs', lines 615:12-617:13
-    Visibility: public -/
-@[rust_loop_body]
-def automata.terms.Expression._to_flat_terms_loop0_loop0.body
-  (iter : core.slice.iter.Iter automata.terms.Term)
-  (flat_terms : alloc.vec.Vec automata.terms.Term) :
-  Result (ControlFlow ((core.slice.iter.Iter automata.terms.Term) ×
-    (alloc.vec.Vec automata.terms.Term)) (alloc.vec.Vec automata.terms.Term))
-  := do
-  let (o, iter1) ← core.slice.iter.IteratorSliceIter.next iter
-  match o with
-  | none => ok (done flat_terms)
-  | some term =>
-    let t ←
-      automata.terms.Term.Insts.Automata_builderAutomataTermsAbstractExpressionProductExpression.copy
-        term
-    let flat_terms1 ← alloc.vec.Vec.push flat_terms t
-    ok (cont (iter1, flat_terms1))
-
 /-- [automata_builder::automata::terms::{automata_builder::automata::terms::Expression}::_to_flat_terms]: loop 1:
     Source: 'src/automata/terms.rs', lines 615:12-617:13
     Visibility: public -/
@@ -28047,31 +25626,16 @@ def automata.terms.Expression._to_flat_terms_loop0_loop0
   (flat_terms : alloc.vec.Vec automata.terms.Term) :
   Result (alloc.vec.Vec automata.terms.Term)
   := do
-  loop
-    (fun (iter1, flat_terms1) =>
-      automata.terms.Expression._to_flat_terms_loop0_loop0.body iter1
-      flat_terms1)
-    (iter, flat_terms)
-
-/-- [automata_builder::automata::terms::{automata_builder::automata::terms::Expression}::_to_flat_terms]: loop body 0:
-    Source: 'src/automata/terms.rs', lines 614:8-618:9
-    Visibility: public -/
-@[rust_loop_body]
-def automata.terms.Expression._to_flat_terms_loop0.body
-  (iter : core.slice.iter.Iter automata.terms.Product)
-  (flat_terms : alloc.vec.Vec automata.terms.Term) :
-  Result (ControlFlow ((core.slice.iter.Iter automata.terms.Product) ×
-    (alloc.vec.Vec automata.terms.Term)) (alloc.vec.Vec automata.terms.Term))
-  := do
   let (o, iter1) ← core.slice.iter.IteratorSliceIter.next iter
   match o with
-  | none => ok (done flat_terms)
-  | some product =>
-    let s := alloc.vec.Vec.deref product._terms
-    let iter2 ← core.slice.Slice.iter s
-    let flat_terms1 ←
-      automata.terms.Expression._to_flat_terms_loop0_loop0 iter2 flat_terms
-    ok (cont (iter1, flat_terms1))
+  | none => ok flat_terms
+  | some term =>
+    let t ←
+      automata.terms.Term.Insts.Automata_builderAutomataTermsAbstractExpressionProductExpression.copy
+        term
+    let flat_terms1 ← alloc.vec.Vec.push flat_terms t
+    automata.terms.Expression._to_flat_terms_loop0_loop0 iter1 flat_terms1
+partial_fixpoint
 
 /-- [automata_builder::automata::terms::{automata_builder::automata::terms::Expression}::_to_flat_terms]: loop 0:
     Source: 'src/automata/terms.rs', lines 614:8-618:9
@@ -28082,10 +25646,16 @@ def automata.terms.Expression._to_flat_terms_loop0
   (flat_terms : alloc.vec.Vec automata.terms.Term) :
   Result (alloc.vec.Vec automata.terms.Term)
   := do
-  loop
-    (fun (iter1, flat_terms1) =>
-      automata.terms.Expression._to_flat_terms_loop0.body iter1 flat_terms1)
-    (iter, flat_terms)
+  let (o, iter1) ← core.slice.iter.IteratorSliceIter.next iter
+  match o with
+  | none => ok flat_terms
+  | some product =>
+    let s := alloc.vec.Vec.deref product._terms
+    let iter2 ← core.slice.Slice.iter s
+    let flat_terms1 ←
+      automata.terms.Expression._to_flat_terms_loop0_loop0 iter2 flat_terms
+    automata.terms.Expression._to_flat_terms_loop0 iter1 flat_terms1
+partial_fixpoint
 
 /-- [automata_builder::automata::terms::{automata_builder::automata::terms::Expression}::_to_flat_terms]:
     Source: 'src/automata/terms.rs', lines 612:4-620:5
@@ -28099,24 +25669,6 @@ def automata.terms.Expression._to_flat_terms
   automata.terms.Expression._to_flat_terms_loop0 iter (alloc.vec.Vec.new
     automata.terms.Term)
 
-/-- [automata_builder::automata::terms::{automata_builder::automata::terms::Expression}::pad_products]: loop body 0:
-    Source: 'src/automata/terms.rs', lines 652:8-654:9
-    Visibility: public -/
-@[rust_loop_body]
-def automata.terms.Expression.pad_products_loop.body
-  (new_num_products : Std.Usize) (last_product : automata.terms.Product)
-  (new_products : alloc.vec.Vec automata.terms.Product) :
-  Result (ControlFlow (alloc.vec.Vec automata.terms.Product) (alloc.vec.Vec
-    automata.terms.Product))
-  := do
-  let i := alloc.vec.Vec.len new_products
-  if i < new_num_products
-  then
-    let p ← automata.terms.Product.Insts.CoreCloneClone.clone last_product
-    let new_products1 ← alloc.vec.Vec.push new_products p
-    ok (cont new_products1)
-  else ok (done new_products)
-
 /-- [automata_builder::automata::terms::{automata_builder::automata::terms::Expression}::pad_products]: loop 0:
     Source: 'src/automata/terms.rs', lines 652:8-654:9
     Visibility: public -/
@@ -28127,10 +25679,15 @@ def automata.terms.Expression.pad_products_loop
   (last_product : automata.terms.Product) :
   Result (alloc.vec.Vec automata.terms.Product)
   := do
-  loop
-    (fun new_products1 => automata.terms.Expression.pad_products_loop.body
-      new_num_products last_product new_products1)
-    new_products
+  let i := alloc.vec.Vec.len new_products
+  if i < new_num_products
+  then
+    let p ← automata.terms.Product.Insts.CoreCloneClone.clone last_product
+    let new_products1 ← alloc.vec.Vec.push new_products p
+    automata.terms.Expression.pad_products_loop new_num_products new_products1
+      last_product
+  else ok new_products
+partial_fixpoint
 
 /-- [automata_builder::automata::terms::{automata_builder::automata::terms::Expression}::pad_products]:
     Source: 'src/automata/terms.rs', lines 648:4-656:5
@@ -28151,30 +25708,6 @@ def automata.terms.Expression.pad_products
   let e ← automata.terms.Expression.new new_products1
   ok (some e)
 
-/-- [automata_builder::automata::terms::{automata_builder::automata::terms::Expression}::reduce]: loop body 0:
-    Source: 'src/automata/terms.rs', lines 659:8-661:9
-    Visibility: public -/
-@[rust_loop_body]
-def automata.terms.Expression.reduce_loop.body
-  (iter : core.slice.iter.Iter automata.terms.Product)
-  (products_set : indexmap.set.IndexSet automata.terms.Product
-  std.hash.random.RandomState) :
-  Result (ControlFlow ((core.slice.iter.Iter automata.terms.Product) ×
-    (indexmap.set.IndexSet automata.terms.Product std.hash.random.RandomState))
-    (indexmap.set.IndexSet automata.terms.Product std.hash.random.RandomState))
-  := do
-  let (o, iter1) ← core.slice.iter.IteratorSliceIter.next iter
-  match o with
-  | none => ok (done products_set)
-  | some product =>
-    let p ← automata.terms.Product.reduce product
-    let (_, products_set1) ←
-      indexmap.set.IndexSet.insert automata.terms.Product.Insts.CoreHashHash
-        automata.terms.Product.Insts.CoreCmpEq
-        std.hash.random.RandomState.Insts.CoreHashBuildHasherDefaultHasher
-        products_set p
-    ok (cont (iter1, products_set1))
-
 /-- [automata_builder::automata::terms::{automata_builder::automata::terms::Expression}::reduce]: loop 0:
     Source: 'src/automata/terms.rs', lines 659:8-661:9
     Visibility: public -/
@@ -28186,10 +25719,18 @@ def automata.terms.Expression.reduce_loop
   Result (indexmap.set.IndexSet automata.terms.Product
     std.hash.random.RandomState)
   := do
-  loop
-    (fun (iter1, products_set1) => automata.terms.Expression.reduce_loop.body
-      iter1 products_set1)
-    (iter, products_set)
+  let (o, iter1) ← core.slice.iter.IteratorSliceIter.next iter
+  match o with
+  | none => ok products_set
+  | some product =>
+    let p ← automata.terms.Product.reduce product
+    let (_, products_set1) ←
+      indexmap.set.IndexSet.insert automata.terms.Product.Insts.CoreHashHash
+        automata.terms.Product.Insts.CoreCmpEq
+        std.hash.random.RandomState.Insts.CoreHashBuildHasherDefaultHasher
+        products_set p
+    automata.terms.Expression.reduce_loop iter1 products_set1
+partial_fixpoint
 
 /-- [automata_builder::automata::terms::{automata_builder::automata::terms::Expression}::reduce]:
     Source: 'src/automata/terms.rs', lines 657:4-665:5
@@ -28243,24 +25784,6 @@ impl_def Shared0Expression.Insts.CoreCmpPartialEqExpression :
     Shared0Expression.Insts.CoreCmpPartialEqExpression
 }
 
-/-- [automata_builder::automata::terms::{impl core::hash::Hash for automata_builder::automata::terms::Expression}::hash]: loop body 0:
-    Source: 'src/automata/terms.rs', lines 698:8-700:9
-    Visibility: public -/
-@[rust_loop_body]
-def automata.terms.Expression.Insts.CoreHashHash.hash_loop.body
-  {H : Type _} (corehashHasherInst : core.hash.Hasher H)
-  (iter : core.slice.iter.Iter automata.terms.Product) (state : H) :
-  Result (ControlFlow ((core.slice.iter.Iter automata.terms.Product) × H) H)
-  := do
-  let (o, iter1) ← core.slice.iter.IteratorSliceIter.next iter
-  match o with
-  | none => ok (done state)
-  | some product =>
-    let state1 ←
-      automata.terms.Product.Insts.CoreHashHash.hash corehashHasherInst product
-        state
-    ok (cont (iter1, state1))
-
 /-- [automata_builder::automata::terms::{impl core::hash::Hash for automata_builder::automata::terms::Expression}::hash]: loop 0:
     Source: 'src/automata/terms.rs', lines 698:8-700:9
     Visibility: public -/
@@ -28270,11 +25793,16 @@ def automata.terms.Expression.Insts.CoreHashHash.hash_loop
   (iter : core.slice.iter.Iter automata.terms.Product) (state : H) :
   Result H
   := do
-  loop
-    (fun (iter1, state1) =>
-      automata.terms.Expression.Insts.CoreHashHash.hash_loop.body
-      corehashHasherInst iter1 state1)
-    (iter, state)
+  let (o, iter1) ← core.slice.iter.IteratorSliceIter.next iter
+  match o with
+  | none => ok state
+  | some product =>
+    let state1 ←
+      automata.terms.Product.Insts.CoreHashHash.hash corehashHasherInst product
+        state
+    automata.terms.Expression.Insts.CoreHashHash.hash_loop corehashHasherInst
+      iter1 state1
+partial_fixpoint
 
 /-- [automata_builder::automata::terms::{impl core::hash::Hash for automata_builder::automata::terms::Expression}::hash]:
     Source: 'src/automata/terms.rs', lines 697:4-701:5
@@ -28340,29 +25868,6 @@ def automata.terms.Expression.Insts.CoreOpsArithMulExpressionExpression :
     automata.terms.Expression.Insts.CoreOpsArithMulExpressionExpression.mul
 }
 
-/-- [automata_builder::automata::terms::{impl core::ops::arith::Mul<automata_builder::automata::terms::Term, automata_builder::automata::terms::Expression> for automata_builder::automata::terms::Expression}::mul]: loop body 0:
-    Source: 'src/automata/terms.rs', lines 730:8-733:9
-    Visibility: public -/
-@[rust_loop_body]
-def automata.terms.Expression.Insts.CoreOpsArithMulTermExpression.mul_loop.body
-  (rhs : automata.terms.Term)
-  (iter : core.slice.iter.Iter automata.terms.Product)
-  (new_products : alloc.vec.Vec automata.terms.Product) :
-  Result (ControlFlow ((core.slice.iter.Iter automata.terms.Product) ×
-    (alloc.vec.Vec automata.terms.Product)) (alloc.vec.Vec
-    automata.terms.Product))
-  := do
-  let (o, iter1) ← core.slice.iter.IteratorSliceIter.next iter
-  match o with
-  | none => ok (done new_products)
-  | some product =>
-    let t ←
-      automata.terms.Term.Insts.Automata_builderAutomataTermsAbstractExpressionProductExpression.copy
-        rhs
-    let p ← Shared0Product.Insts.CoreOpsArithMulTermProduct.mul product t
-    let new_products1 ← alloc.vec.Vec.push new_products p
-    ok (cont (iter1, new_products1))
-
 /-- [automata_builder::automata::terms::{impl core::ops::arith::Mul<automata_builder::automata::terms::Term, automata_builder::automata::terms::Expression> for automata_builder::automata::terms::Expression}::mul]: loop 0:
     Source: 'src/automata/terms.rs', lines 730:8-733:9
     Visibility: public -/
@@ -28373,11 +25878,18 @@ def automata.terms.Expression.Insts.CoreOpsArithMulTermExpression.mul_loop
   (new_products : alloc.vec.Vec automata.terms.Product) :
   Result (alloc.vec.Vec automata.terms.Product)
   := do
-  loop
-    (fun (iter1, new_products1) =>
-      automata.terms.Expression.Insts.CoreOpsArithMulTermExpression.mul_loop.body
-      rhs iter1 new_products1)
-    (iter, new_products)
+  let (o, iter1) ← core.slice.iter.IteratorSliceIter.next iter
+  match o with
+  | none => ok new_products
+  | some product =>
+    let t ←
+      automata.terms.Term.Insts.Automata_builderAutomataTermsAbstractExpressionProductExpression.copy
+        rhs
+    let p ← Shared0Product.Insts.CoreOpsArithMulTermProduct.mul product t
+    let new_products1 ← alloc.vec.Vec.push new_products p
+    automata.terms.Expression.Insts.CoreOpsArithMulTermExpression.mul_loop
+      iter1 rhs new_products1
+partial_fixpoint
 
 /-- [automata_builder::automata::terms::{impl core::ops::arith::Mul<automata_builder::automata::terms::Term, automata_builder::automata::terms::Expression> for automata_builder::automata::terms::Expression}::mul]:
     Source: 'src/automata/terms.rs', lines 727:4-735:5
@@ -28402,34 +25914,6 @@ def automata.terms.Expression.Insts.CoreOpsArithMulTermExpression :
   mul := automata.terms.Expression.Insts.CoreOpsArithMulTermExpression.mul
 }
 
-/-- [automata_builder::automata::terms::{impl core::ops::arith::Mul<automata_builder::automata::terms::Product, automata_builder::automata::terms::Expression> for automata_builder::automata::terms::Expression}::mul]: loop body 0:
-    Source: 'src/automata/terms.rs', lines 742:8-744:9
-    Visibility: public -/
-@[rust_loop_body]
-def
-  automata.terms.Expression.Insts.CoreOpsArithMulProductExpression.mul_loop.body
-  (rhs : automata.terms.Product)
-  (iter : core.slice.iter.Iter automata.terms.Product)
-  (new_products : alloc.vec.Vec automata.terms.Product) :
-  Result (ControlFlow ((core.slice.iter.Iter automata.terms.Product) ×
-    (alloc.vec.Vec automata.terms.Product)) (alloc.vec.Vec
-    automata.terms.Product))
-  := do
-  let (o, iter1) ← core.slice.iter.IteratorSliceIter.next iter
-  match o with
-  | none => ok (done new_products)
-  | some product =>
-    let p ←
-      automata.terms.Product.Insts.Automata_builderAutomataTermsAbstractExpressionProductExpression.copy
-        product
-    let p1 ←
-      automata.terms.Product.Insts.Automata_builderAutomataTermsAbstractExpressionProductExpression.copy
-        rhs
-    let p2 ←
-      automata.terms.Product.Insts.CoreOpsArithMulProductProduct.mul p p1
-    let new_products1 ← alloc.vec.Vec.push new_products p2
-    ok (cont (iter1, new_products1))
-
 /-- [automata_builder::automata::terms::{impl core::ops::arith::Mul<automata_builder::automata::terms::Product, automata_builder::automata::terms::Expression> for automata_builder::automata::terms::Expression}::mul]: loop 0:
     Source: 'src/automata/terms.rs', lines 742:8-744:9
     Visibility: public -/
@@ -28440,11 +25924,22 @@ def automata.terms.Expression.Insts.CoreOpsArithMulProductExpression.mul_loop
   (new_products : alloc.vec.Vec automata.terms.Product) :
   Result (alloc.vec.Vec automata.terms.Product)
   := do
-  loop
-    (fun (iter1, new_products1) =>
-      automata.terms.Expression.Insts.CoreOpsArithMulProductExpression.mul_loop.body
-      rhs iter1 new_products1)
-    (iter, new_products)
+  let (o, iter1) ← core.slice.iter.IteratorSliceIter.next iter
+  match o with
+  | none => ok new_products
+  | some product =>
+    let p ←
+      automata.terms.Product.Insts.Automata_builderAutomataTermsAbstractExpressionProductExpression.copy
+        product
+    let p1 ←
+      automata.terms.Product.Insts.Automata_builderAutomataTermsAbstractExpressionProductExpression.copy
+        rhs
+    let p2 ←
+      automata.terms.Product.Insts.CoreOpsArithMulProductProduct.mul p p1
+    let new_products1 ← alloc.vec.Vec.push new_products p2
+    automata.terms.Expression.Insts.CoreOpsArithMulProductExpression.mul_loop
+      iter1 rhs new_products1
+partial_fixpoint
 
 /-- [automata_builder::automata::terms::{impl core::ops::arith::Mul<automata_builder::automata::terms::Product, automata_builder::automata::terms::Expression> for automata_builder::automata::terms::Expression}::mul]:
     Source: 'src/automata/terms.rs', lines 740:4-746:5
@@ -28479,28 +25974,6 @@ def automata.terms.Expression.Insts.CoreOpsBitBitOrExpressionExpression :
     automata.terms.Expression.Insts.CoreOpsBitBitOrExpressionExpression.bitor
 }
 
-/-- [automata_builder::automata::terms::{impl core::ops::bit::BitOr<automata_builder::automata::terms::Term, automata_builder::automata::terms::Expression> for automata_builder::automata::terms::Expression}::bitor]: loop body 0:
-    Source: 'src/automata/terms.rs', lines 767:8-769:9
-    Visibility: public -/
-@[rust_loop_body]
-def
-  automata.terms.Expression.Insts.CoreOpsBitBitOrTermExpression.bitor_loop.body
-  (iter : core.slice.iter.Iter automata.terms.Product)
-  (new_products : alloc.vec.Vec automata.terms.Product) :
-  Result (ControlFlow ((core.slice.iter.Iter automata.terms.Product) ×
-    (alloc.vec.Vec automata.terms.Product)) (alloc.vec.Vec
-    automata.terms.Product))
-  := do
-  let (o, iter1) ← core.slice.iter.IteratorSliceIter.next iter
-  match o with
-  | none => ok (done new_products)
-  | some product =>
-    let p ←
-      automata.terms.Product.Insts.Automata_builderAutomataTermsAbstractExpressionProductExpression.copy
-        product
-    let new_products1 ← alloc.vec.Vec.push new_products p
-    ok (cont (iter1, new_products1))
-
 /-- [automata_builder::automata::terms::{impl core::ops::bit::BitOr<automata_builder::automata::terms::Term, automata_builder::automata::terms::Expression> for automata_builder::automata::terms::Expression}::bitor]: loop 0:
     Source: 'src/automata/terms.rs', lines 767:8-769:9
     Visibility: public -/
@@ -28510,11 +25983,17 @@ def automata.terms.Expression.Insts.CoreOpsBitBitOrTermExpression.bitor_loop
   (new_products : alloc.vec.Vec automata.terms.Product) :
   Result (alloc.vec.Vec automata.terms.Product)
   := do
-  loop
-    (fun (iter1, new_products1) =>
-      automata.terms.Expression.Insts.CoreOpsBitBitOrTermExpression.bitor_loop.body
-      iter1 new_products1)
-    (iter, new_products)
+  let (o, iter1) ← core.slice.iter.IteratorSliceIter.next iter
+  match o with
+  | none => ok new_products
+  | some product =>
+    let p ←
+      automata.terms.Product.Insts.Automata_builderAutomataTermsAbstractExpressionProductExpression.copy
+        product
+    let new_products1 ← alloc.vec.Vec.push new_products p
+    automata.terms.Expression.Insts.CoreOpsBitBitOrTermExpression.bitor_loop
+      iter1 new_products1
+partial_fixpoint
 
 /-- [automata_builder::automata::terms::{impl core::ops::bit::BitOr<automata_builder::automata::terms::Term, automata_builder::automata::terms::Expression> for automata_builder::automata::terms::Expression}::bitor]:
     Source: 'src/automata/terms.rs', lines 765:4-772:5
@@ -28541,28 +26020,6 @@ def automata.terms.Expression.Insts.CoreOpsBitBitOrTermExpression :
   bitor := automata.terms.Expression.Insts.CoreOpsBitBitOrTermExpression.bitor
 }
 
-/-- [automata_builder::automata::terms::{impl core::ops::bit::BitOr<automata_builder::automata::terms::Product, automata_builder::automata::terms::Expression> for automata_builder::automata::terms::Expression}::bitor]: loop body 0:
-    Source: 'src/automata/terms.rs', lines 779:8-781:9
-    Visibility: public -/
-@[rust_loop_body]
-def
-  automata.terms.Expression.Insts.CoreOpsBitBitOrProductExpression.bitor_loop.body
-  (iter : core.slice.iter.Iter automata.terms.Product)
-  (new_products : alloc.vec.Vec automata.terms.Product) :
-  Result (ControlFlow ((core.slice.iter.Iter automata.terms.Product) ×
-    (alloc.vec.Vec automata.terms.Product)) (alloc.vec.Vec
-    automata.terms.Product))
-  := do
-  let (o, iter1) ← core.slice.iter.IteratorSliceIter.next iter
-  match o with
-  | none => ok (done new_products)
-  | some product =>
-    let p ←
-      automata.terms.Product.Insts.Automata_builderAutomataTermsAbstractExpressionProductExpression.copy
-        product
-    let new_products1 ← alloc.vec.Vec.push new_products p
-    ok (cont (iter1, new_products1))
-
 /-- [automata_builder::automata::terms::{impl core::ops::bit::BitOr<automata_builder::automata::terms::Product, automata_builder::automata::terms::Expression> for automata_builder::automata::terms::Expression}::bitor]: loop 0:
     Source: 'src/automata/terms.rs', lines 779:8-781:9
     Visibility: public -/
@@ -28572,11 +26029,17 @@ def automata.terms.Expression.Insts.CoreOpsBitBitOrProductExpression.bitor_loop
   (new_products : alloc.vec.Vec automata.terms.Product) :
   Result (alloc.vec.Vec automata.terms.Product)
   := do
-  loop
-    (fun (iter1, new_products1) =>
-      automata.terms.Expression.Insts.CoreOpsBitBitOrProductExpression.bitor_loop.body
-      iter1 new_products1)
-    (iter, new_products)
+  let (o, iter1) ← core.slice.iter.IteratorSliceIter.next iter
+  match o with
+  | none => ok new_products
+  | some product =>
+    let p ←
+      automata.terms.Product.Insts.Automata_builderAutomataTermsAbstractExpressionProductExpression.copy
+        product
+    let new_products1 ← alloc.vec.Vec.push new_products p
+    automata.terms.Expression.Insts.CoreOpsBitBitOrProductExpression.bitor_loop
+      iter1 new_products1
+partial_fixpoint
 
 /-- [automata_builder::automata::terms::{impl core::ops::bit::BitOr<automata_builder::automata::terms::Product, automata_builder::automata::terms::Expression> for automata_builder::automata::terms::Expression}::bitor]:
     Source: 'src/automata/terms.rs', lines 777:4-784:5
@@ -28772,28 +26235,6 @@ def
   automata.terms.Expression.Insts.Automata_builderAutomataTermsAbstractExpressionExpressionExpression.copy
     self
 
-/-- [automata_builder::automata::terms::{impl automata_builder::automata::terms::AbstractExpression<automata_builder::automata::terms::Expression, automata_builder::automata::terms::Expression> for automata_builder::automata::terms::Expression}::_sub]: loop body 0:
-    Source: 'src/automata/terms.rs', lines 798:8-804:5
-    Visibility: public -/
-@[rust_loop_body]
-def
-  automata.terms.Expression.Insts.Automata_builderAutomataTermsAbstractExpressionExpressionExpression._sub_loop.body
-  (substitutions : std.collections.hash.map.HashMap Std.I64 Std.U32
-  std.hash.random.RandomState alloc.alloc.Global) (default : Std.U32)
-  (iter : core.slice.iter.Iter automata.terms.Product) :
-  Result (ControlFlow (core.slice.iter.Iter automata.terms.Product) Bool)
-  := do
-  let (o, iter1) ← core.slice.iter.IteratorSliceIter.next iter
-  match o with
-  | none => ok (done false)
-  | some product =>
-    let b ←
-      automata.terms.Product.Insts.Automata_builderAutomataTermsAbstractExpressionProductExpression._sub
-        product substitutions default
-    if b
-    then ok (done true)
-    else ok (cont iter1)
-
 /-- [automata_builder::automata::terms::{impl automata_builder::automata::terms::AbstractExpression<automata_builder::automata::terms::Expression, automata_builder::automata::terms::Expression> for automata_builder::automata::terms::Expression}::_sub]: loop 0:
     Source: 'src/automata/terms.rs', lines 798:8-804:5
     Visibility: public -/
@@ -28805,11 +26246,19 @@ def
   std.hash.random.RandomState alloc.alloc.Global) (default : Std.U32) :
   Result Bool
   := do
-  loop
-    (fun iter1 =>
-      automata.terms.Expression.Insts.Automata_builderAutomataTermsAbstractExpressionExpressionExpression._sub_loop.body
-      substitutions default iter1)
-    iter
+  let (o, iter1) ← core.slice.iter.IteratorSliceIter.next iter
+  match o with
+  | none => ok false
+  | some product =>
+    let b ←
+      automata.terms.Product.Insts.Automata_builderAutomataTermsAbstractExpressionProductExpression._sub
+        product substitutions default
+    if b
+    then ok true
+    else
+      automata.terms.Expression.Insts.Automata_builderAutomataTermsAbstractExpressionExpressionExpression._sub_loop
+        iter1 substitutions default
+partial_fixpoint
 
 /-- [automata_builder::automata::terms::{impl automata_builder::automata::terms::AbstractExpression<automata_builder::automata::terms::Expression, automata_builder::automata::terms::Expression> for automata_builder::automata::terms::Expression}::_sub]:
     Source: 'src/automata/terms.rs', lines 795:4-804:5
@@ -28858,27 +26307,26 @@ def
     automata.terms.Expression.Insts.Automata_builderAutomataTermsAbstractExpressionExpressionExpression._assign_indexes_as_base
 }
 
-/-- [automata_builder::automata::terms::validate_debug_info_exists]: loop body 1:
+/-- [automata_builder::automata::terms::validate_debug_info_exists]: loop 1:
     Source: 'src/automata/terms.rs', lines 870:8-877:9
     Visibility: public -/
-@[rust_loop_body]
-def automata.terms.validate_debug_info_exists_loop0_loop0.body
-  (product_index : Std.Usize)
+@[rust_loop]
+def automata.terms.validate_debug_info_exists_loop0_loop0
   (iter : core.iter.adapters.enumerate.Enumerate (core.slice.iter.Iter
-  automata.terms.Term)) :
-  Result (ControlFlow (core.iter.adapters.enumerate.Enumerate
-    (core.slice.iter.Iter automata.terms.Term)) Unit)
+  automata.terms.Term)) (product_index : Std.Usize) :
+  Result Unit
   := do
   let (o, iter1) ←
     core.iter.adapters.enumerate.IteratorEnumerate.next
       (core.iter.traits.iterator.IteratorSliceIter automata.terms.Term) iter
   match o with
-  | none => ok (done ())
+  | none => ok ()
   | some p =>
     let (term_index, term) := p
     let b := core.option.Option.is_some term._debug_info.position_info
     if b
-    then ok (cont iter1)
+    then
+      automata.terms.validate_debug_info_exists_loop0_loop0 iter1 product_index
     else
       let a ←
         core.fmt.rt.Argument.new_debug (core.fmt.DebugShared
@@ -28901,45 +26349,7 @@ def automata.terms.validate_debug_info_exists_loop0_loop0.body
             105#u8, 111#u8, 110#u8, 32#u8, 105#u8, 110#u8, 102#u8, 111#u8, 0#u8
             ]) (Array.make 3#usize [ a, a1, a2 ])
       fail panic
-
-/-- [automata_builder::automata::terms::validate_debug_info_exists]: loop 1:
-    Source: 'src/automata/terms.rs', lines 870:8-877:9
-    Visibility: public -/
-@[rust_loop]
-def automata.terms.validate_debug_info_exists_loop0_loop0
-  (iter : core.iter.adapters.enumerate.Enumerate (core.slice.iter.Iter
-  automata.terms.Term)) (product_index : Std.Usize) :
-  Result Unit
-  := do
-  loop
-    (fun iter1 => automata.terms.validate_debug_info_exists_loop0_loop0.body
-      product_index iter1)
-    iter
-
-/-- [automata_builder::automata::terms::validate_debug_info_exists]: loop body 0:
-    Source: 'src/automata/terms.rs', lines 869:4-878:5
-    Visibility: public -/
-@[rust_loop_body]
-def automata.terms.validate_debug_info_exists_loop0.body
-  (iter : core.iter.adapters.enumerate.Enumerate (core.slice.iter.Iter
-  automata.terms.Product)) :
-  Result (ControlFlow (core.iter.adapters.enumerate.Enumerate
-    (core.slice.iter.Iter automata.terms.Product)) Unit)
-  := do
-  let (o, iter1) ←
-    core.iter.adapters.enumerate.IteratorEnumerate.next
-      (core.iter.traits.iterator.IteratorSliceIter automata.terms.Product) iter
-  match o with
-  | none => ok (done ())
-  | some p =>
-    let (product_index, product) := p
-    let s := alloc.vec.Vec.deref product._terms
-    let i ← core.slice.Slice.iter s
-    let iter2 ←
-      core.iter.traits.iterator.Iterator.enumerate.trait_default
-        (core.iter.traits.iterator.IteratorSliceIter automata.terms.Term) i
-    automata.terms.validate_debug_info_exists_loop0_loop0 iter2 product_index
-    ok (cont iter1)
+partial_fixpoint
 
 /-- [automata_builder::automata::terms::validate_debug_info_exists]: loop 0:
     Source: 'src/automata/terms.rs', lines 869:4-878:5
@@ -28950,9 +26360,21 @@ def automata.terms.validate_debug_info_exists_loop0
   automata.terms.Product)) :
   Result Unit
   := do
-  loop
-    (fun iter1 => automata.terms.validate_debug_info_exists_loop0.body iter1)
-    iter
+  let (o, iter1) ←
+    core.iter.adapters.enumerate.IteratorEnumerate.next
+      (core.iter.traits.iterator.IteratorSliceIter automata.terms.Product) iter
+  match o with
+  | none => ok ()
+  | some p =>
+    let (product_index, product) := p
+    let s := alloc.vec.Vec.deref product._terms
+    let i ← core.slice.Slice.iter s
+    let iter2 ←
+      core.iter.traits.iterator.Iterator.enumerate.trait_default
+        (core.iter.traits.iterator.IteratorSliceIter automata.terms.Term) i
+    automata.terms.validate_debug_info_exists_loop0_loop0 iter2 product_index
+    automata.terms.validate_debug_info_exists_loop0 iter1
+partial_fixpoint
 
 /-- [automata_builder::automata::terms::validate_debug_info_exists]:
     Source: 'src/automata/terms.rs', lines 868:0-879:1
@@ -29162,29 +26584,6 @@ def
     automata.terms_multitape.MultiTapeTerm.Insts.CoreOpsArithMulMultiTapeTermMultiTapeProduct.mul
 }
 
-/-- [automata_builder::automata::terms_multitape::{impl core::ops::arith::Mul<automata_builder::automata::terms_multitape::MultiTapeProduct, automata_builder::automata::terms_multitape::MultiTapeProduct> for automata_builder::automata::terms_multitape::MultiTapeTerm}::mul]: loop body 0:
-    Source: 'src/automata/terms_multitape.rs', lines 180:8-182:9
-    Visibility: public -/
-@[rust_loop_body]
-def
-  automata.terms_multitape.MultiTapeTerm.Insts.CoreOpsArithMulMultiTapeProductMultiTapeProduct.mul_loop.body
-  (iter : core.slice.iter.Iter automata.terms_multitape.MultiTapeTerm)
-  (new_terms : alloc.vec.Vec automata.terms_multitape.MultiTapeTerm) :
-  Result (ControlFlow ((core.slice.iter.Iter
-    automata.terms_multitape.MultiTapeTerm) × (alloc.vec.Vec
-    automata.terms_multitape.MultiTapeTerm)) (alloc.vec.Vec
-    automata.terms_multitape.MultiTapeTerm))
-  := do
-  let (o, iter1) ← core.slice.iter.IteratorSliceIter.next iter
-  match o with
-  | none => ok (done new_terms)
-  | some term =>
-    let mtt ←
-      automata.terms_multitape.MultiTapeTerm.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeProductMultiTapeExpression.copy
-        term
-    let new_terms1 ← alloc.vec.Vec.push new_terms mtt
-    ok (cont (iter1, new_terms1))
-
 /-- [automata_builder::automata::terms_multitape::{impl core::ops::arith::Mul<automata_builder::automata::terms_multitape::MultiTapeProduct, automata_builder::automata::terms_multitape::MultiTapeProduct> for automata_builder::automata::terms_multitape::MultiTapeTerm}::mul]: loop 0:
     Source: 'src/automata/terms_multitape.rs', lines 180:8-182:9
     Visibility: public -/
@@ -29195,11 +26594,17 @@ def
   (new_terms : alloc.vec.Vec automata.terms_multitape.MultiTapeTerm) :
   Result (alloc.vec.Vec automata.terms_multitape.MultiTapeTerm)
   := do
-  loop
-    (fun (iter1, new_terms1) =>
-      automata.terms_multitape.MultiTapeTerm.Insts.CoreOpsArithMulMultiTapeProductMultiTapeProduct.mul_loop.body
-      iter1 new_terms1)
-    (iter, new_terms)
+  let (o, iter1) ← core.slice.iter.IteratorSliceIter.next iter
+  match o with
+  | none => ok new_terms
+  | some term =>
+    let mtt ←
+      automata.terms_multitape.MultiTapeTerm.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeProductMultiTapeExpression.copy
+        term
+    let new_terms1 ← alloc.vec.Vec.push new_terms mtt
+    automata.terms_multitape.MultiTapeTerm.Insts.CoreOpsArithMulMultiTapeProductMultiTapeProduct.mul_loop
+      iter1 new_terms1
+partial_fixpoint
 
 /-- [automata_builder::automata::terms_multitape::{impl core::ops::arith::Mul<automata_builder::automata::terms_multitape::MultiTapeProduct, automata_builder::automata::terms_multitape::MultiTapeProduct> for automata_builder::automata::terms_multitape::MultiTapeTerm}::mul]:
     Source: 'src/automata/terms_multitape.rs', lines 177:4-187:5
@@ -29245,35 +26650,6 @@ def
     automata.terms_multitape.MultiTapeTerm.Insts.CoreOpsArithMulMultiTapeProductMultiTapeProduct.mul
 }
 
-/-- [automata_builder::automata::terms_multitape::{impl core::ops::arith::Mul<automata_builder::automata::terms_multitape::MultiTapeExpression, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeTerm}::mul]: loop body 0:
-    Source: 'src/automata/terms_multitape.rs', lines 194:8-196:9
-    Visibility: public -/
-@[rust_loop_body]
-def
-  automata.terms_multitape.MultiTapeTerm.Insts.CoreOpsArithMulMultiTapeExpressionMultiTapeExpression.mul_loop.body
-  (self : automata.terms_multitape.MultiTapeTerm)
-  (iter : core.slice.iter.Iter automata.terms_multitape.MultiTapeProduct)
-  (new_products : alloc.vec.Vec automata.terms_multitape.MultiTapeProduct) :
-  Result (ControlFlow ((core.slice.iter.Iter
-    automata.terms_multitape.MultiTapeProduct) × (alloc.vec.Vec
-    automata.terms_multitape.MultiTapeProduct)) (alloc.vec.Vec
-    automata.terms_multitape.MultiTapeProduct))
-  := do
-  let (o, iter1) ← core.slice.iter.IteratorSliceIter.next iter
-  match o with
-  | none => ok (done new_products)
-  | some product =>
-    let mtt ←
-      automata.terms_multitape.MultiTapeTerm.Insts.CoreCloneClone.clone self
-    let mtp ←
-      automata.terms_multitape.MultiTapeProduct.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeProductMultiTapeExpression.copy
-        product
-    let mtp1 ←
-      automata.terms_multitape.MultiTapeTerm.Insts.CoreOpsArithMulMultiTapeProductMultiTapeProduct.mul
-        mtt mtp
-    let new_products1 ← alloc.vec.Vec.push new_products mtp1
-    ok (cont (iter1, new_products1))
-
 /-- [automata_builder::automata::terms_multitape::{impl core::ops::arith::Mul<automata_builder::automata::terms_multitape::MultiTapeExpression, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeTerm}::mul]: loop 0:
     Source: 'src/automata/terms_multitape.rs', lines 194:8-196:9
     Visibility: public -/
@@ -29285,11 +26661,22 @@ def
   (new_products : alloc.vec.Vec automata.terms_multitape.MultiTapeProduct) :
   Result (alloc.vec.Vec automata.terms_multitape.MultiTapeProduct)
   := do
-  loop
-    (fun (iter1, new_products1) =>
-      automata.terms_multitape.MultiTapeTerm.Insts.CoreOpsArithMulMultiTapeExpressionMultiTapeExpression.mul_loop.body
-      self iter1 new_products1)
-    (iter, new_products)
+  let (o, iter1) ← core.slice.iter.IteratorSliceIter.next iter
+  match o with
+  | none => ok new_products
+  | some product =>
+    let mtt ←
+      automata.terms_multitape.MultiTapeTerm.Insts.CoreCloneClone.clone self
+    let mtp ←
+      automata.terms_multitape.MultiTapeProduct.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeProductMultiTapeExpression.copy
+        product
+    let mtp1 ←
+      automata.terms_multitape.MultiTapeTerm.Insts.CoreOpsArithMulMultiTapeProductMultiTapeProduct.mul
+        mtt mtp
+    let new_products1 ← alloc.vec.Vec.push new_products mtp1
+    automata.terms_multitape.MultiTapeTerm.Insts.CoreOpsArithMulMultiTapeExpressionMultiTapeExpression.mul_loop
+      iter1 self new_products1
+partial_fixpoint
 
 /-- [automata_builder::automata::terms_multitape::{impl core::ops::arith::Mul<automata_builder::automata::terms_multitape::MultiTapeExpression, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeTerm}::mul]:
     Source: 'src/automata/terms_multitape.rs', lines 192:4-198:5
@@ -29464,29 +26851,6 @@ def
   let ret1 := alloc.slice.Slice.into_vec y1
   automata.terms_multitape.MultiTapeExpression.new ret1
 
-/-- [automata_builder::automata::terms_multitape::{impl core::ops::bit::BitOr<automata_builder::automata::terms_multitape::MultiTapeExpression, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeExpression}::bitor]: loop body 0:
-    Source: 'src/automata/terms_multitape.rs', lines 816:8-818:9
-    Visibility: public -/
-@[rust_loop_body]
-def
-  automata.terms_multitape.MultiTapeExpression.Insts.CoreOpsBitBitOrMultiTapeExpressionMultiTapeExpression.bitor_loop0.body
-  (iter : core.slice.iter.Iter automata.terms_multitape.MultiTapeProduct)
-  (new_products : alloc.vec.Vec automata.terms_multitape.MultiTapeProduct) :
-  Result (ControlFlow ((core.slice.iter.Iter
-    automata.terms_multitape.MultiTapeProduct) × (alloc.vec.Vec
-    automata.terms_multitape.MultiTapeProduct)) (alloc.vec.Vec
-    automata.terms_multitape.MultiTapeProduct))
-  := do
-  let (o, iter1) ← core.slice.iter.IteratorSliceIter.next iter
-  match o with
-  | none => ok (done new_products)
-  | some product =>
-    let mtp ←
-      automata.terms_multitape.MultiTapeProduct.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeProductMultiTapeExpression.copy
-        product
-    let new_products1 ← alloc.vec.Vec.push new_products mtp
-    ok (cont (iter1, new_products1))
-
 /-- [automata_builder::automata::terms_multitape::{impl core::ops::bit::BitOr<automata_builder::automata::terms_multitape::MultiTapeExpression, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeExpression}::bitor]: loop 0:
     Source: 'src/automata/terms_multitape.rs', lines 816:8-818:9
     Visibility: public -/
@@ -29497,34 +26861,17 @@ def
   (new_products : alloc.vec.Vec automata.terms_multitape.MultiTapeProduct) :
   Result (alloc.vec.Vec automata.terms_multitape.MultiTapeProduct)
   := do
-  loop
-    (fun (iter1, new_products1) =>
-      automata.terms_multitape.MultiTapeExpression.Insts.CoreOpsBitBitOrMultiTapeExpressionMultiTapeExpression.bitor_loop0.body
-      iter1 new_products1)
-    (iter, new_products)
-
-/-- [automata_builder::automata::terms_multitape::{impl core::ops::bit::BitOr<automata_builder::automata::terms_multitape::MultiTapeExpression, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeExpression}::bitor]: loop body 1:
-    Source: 'src/automata/terms_multitape.rs', lines 819:8-821:9
-    Visibility: public -/
-@[rust_loop_body]
-def
-  automata.terms_multitape.MultiTapeExpression.Insts.CoreOpsBitBitOrMultiTapeExpressionMultiTapeExpression.bitor_loop1.body
-  (iter : core.slice.iter.Iter automata.terms_multitape.MultiTapeProduct)
-  (new_products : alloc.vec.Vec automata.terms_multitape.MultiTapeProduct) :
-  Result (ControlFlow ((core.slice.iter.Iter
-    automata.terms_multitape.MultiTapeProduct) × (alloc.vec.Vec
-    automata.terms_multitape.MultiTapeProduct)) (alloc.vec.Vec
-    automata.terms_multitape.MultiTapeProduct))
-  := do
   let (o, iter1) ← core.slice.iter.IteratorSliceIter.next iter
   match o with
-  | none => ok (done new_products)
+  | none => ok new_products
   | some product =>
     let mtp ←
       automata.terms_multitape.MultiTapeProduct.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeProductMultiTapeExpression.copy
         product
     let new_products1 ← alloc.vec.Vec.push new_products mtp
-    ok (cont (iter1, new_products1))
+    automata.terms_multitape.MultiTapeExpression.Insts.CoreOpsBitBitOrMultiTapeExpressionMultiTapeExpression.bitor_loop0
+      iter1 new_products1
+partial_fixpoint
 
 /-- [automata_builder::automata::terms_multitape::{impl core::ops::bit::BitOr<automata_builder::automata::terms_multitape::MultiTapeExpression, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeExpression}::bitor]: loop 1:
     Source: 'src/automata/terms_multitape.rs', lines 819:8-821:9
@@ -29536,11 +26883,17 @@ def
   (new_products : alloc.vec.Vec automata.terms_multitape.MultiTapeProduct) :
   Result (alloc.vec.Vec automata.terms_multitape.MultiTapeProduct)
   := do
-  loop
-    (fun (iter1, new_products1) =>
-      automata.terms_multitape.MultiTapeExpression.Insts.CoreOpsBitBitOrMultiTapeExpressionMultiTapeExpression.bitor_loop1.body
-      iter1 new_products1)
-    (iter, new_products)
+  let (o, iter1) ← core.slice.iter.IteratorSliceIter.next iter
+  match o with
+  | none => ok new_products
+  | some product =>
+    let mtp ←
+      automata.terms_multitape.MultiTapeProduct.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeProductMultiTapeExpression.copy
+        product
+    let new_products1 ← alloc.vec.Vec.push new_products mtp
+    automata.terms_multitape.MultiTapeExpression.Insts.CoreOpsBitBitOrMultiTapeExpressionMultiTapeExpression.bitor_loop1
+      iter1 new_products1
+partial_fixpoint
 
 /-- [automata_builder::automata::terms_multitape::{impl core::ops::bit::BitOr<automata_builder::automata::terms_multitape::MultiTapeExpression, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeExpression}::bitor]:
     Source: 'src/automata/terms_multitape.rs', lines 814:4-823:5
@@ -29735,28 +27088,6 @@ def
     automata.terms_multitape.AbstractMultiTapeExpressionMultiTapeExpressionMultiTapeExpressionMultiTapeExpression._expand.closure_1.Insts.CoreOpsFunctionFnTupleMultiTapeExpression.call
 }
 
-/-- [automata_builder::automata::terms_multitape::{impl core::ops::arith::Mul<automata_builder::automata::terms_multitape::MultiTapeProduct, automata_builder::automata::terms_multitape::MultiTapeProduct> for automata_builder::automata::terms_multitape::MultiTapeProduct}::mul]: loop body 0:
-    Source: 'src/automata/terms_multitape.rs', lines 485:8-487:9
-    Visibility: public -/
-@[rust_loop_body]
-def
-  automata.terms_multitape.MultiTapeProduct.Insts.CoreOpsArithMulMultiTapeProductMultiTapeProduct.mul_loop0.body
-  (iter : core.slice.iter.Iter automata.terms_multitape.MultiTapeTerm)
-  (new_terms : alloc.vec.Vec automata.terms_multitape.MultiTapeTerm) :
-  Result (ControlFlow ((core.slice.iter.Iter
-    automata.terms_multitape.MultiTapeTerm) × (alloc.vec.Vec
-    automata.terms_multitape.MultiTapeTerm)) (alloc.vec.Vec
-    automata.terms_multitape.MultiTapeTerm))
-  := do
-  let (o, iter1) ← core.slice.iter.IteratorSliceIter.next iter
-  match o with
-  | none => ok (done new_terms)
-  | some term =>
-    let mtt ←
-      automata.terms_multitape.MultiTapeTerm.Insts.CoreCloneClone.clone term
-    let new_terms1 ← alloc.vec.Vec.push new_terms mtt
-    ok (cont (iter1, new_terms1))
-
 /-- [automata_builder::automata::terms_multitape::{impl core::ops::arith::Mul<automata_builder::automata::terms_multitape::MultiTapeProduct, automata_builder::automata::terms_multitape::MultiTapeProduct> for automata_builder::automata::terms_multitape::MultiTapeProduct}::mul]: loop 0:
     Source: 'src/automata/terms_multitape.rs', lines 485:8-487:9
     Visibility: public -/
@@ -29767,33 +27098,16 @@ def
   (new_terms : alloc.vec.Vec automata.terms_multitape.MultiTapeTerm) :
   Result (alloc.vec.Vec automata.terms_multitape.MultiTapeTerm)
   := do
-  loop
-    (fun (iter1, new_terms1) =>
-      automata.terms_multitape.MultiTapeProduct.Insts.CoreOpsArithMulMultiTapeProductMultiTapeProduct.mul_loop0.body
-      iter1 new_terms1)
-    (iter, new_terms)
-
-/-- [automata_builder::automata::terms_multitape::{impl core::ops::arith::Mul<automata_builder::automata::terms_multitape::MultiTapeProduct, automata_builder::automata::terms_multitape::MultiTapeProduct> for automata_builder::automata::terms_multitape::MultiTapeProduct}::mul]: loop body 1:
-    Source: 'src/automata/terms_multitape.rs', lines 488:8-490:9
-    Visibility: public -/
-@[rust_loop_body]
-def
-  automata.terms_multitape.MultiTapeProduct.Insts.CoreOpsArithMulMultiTapeProductMultiTapeProduct.mul_loop1.body
-  (iter : core.slice.iter.Iter automata.terms_multitape.MultiTapeTerm)
-  (new_terms : alloc.vec.Vec automata.terms_multitape.MultiTapeTerm) :
-  Result (ControlFlow ((core.slice.iter.Iter
-    automata.terms_multitape.MultiTapeTerm) × (alloc.vec.Vec
-    automata.terms_multitape.MultiTapeTerm)) (alloc.vec.Vec
-    automata.terms_multitape.MultiTapeTerm))
-  := do
   let (o, iter1) ← core.slice.iter.IteratorSliceIter.next iter
   match o with
-  | none => ok (done new_terms)
+  | none => ok new_terms
   | some term =>
     let mtt ←
       automata.terms_multitape.MultiTapeTerm.Insts.CoreCloneClone.clone term
     let new_terms1 ← alloc.vec.Vec.push new_terms mtt
-    ok (cont (iter1, new_terms1))
+    automata.terms_multitape.MultiTapeProduct.Insts.CoreOpsArithMulMultiTapeProductMultiTapeProduct.mul_loop0
+      iter1 new_terms1
+partial_fixpoint
 
 /-- [automata_builder::automata::terms_multitape::{impl core::ops::arith::Mul<automata_builder::automata::terms_multitape::MultiTapeProduct, automata_builder::automata::terms_multitape::MultiTapeProduct> for automata_builder::automata::terms_multitape::MultiTapeProduct}::mul]: loop 1:
     Source: 'src/automata/terms_multitape.rs', lines 488:8-490:9
@@ -29805,11 +27119,16 @@ def
   (new_terms : alloc.vec.Vec automata.terms_multitape.MultiTapeTerm) :
   Result (alloc.vec.Vec automata.terms_multitape.MultiTapeTerm)
   := do
-  loop
-    (fun (iter1, new_terms1) =>
-      automata.terms_multitape.MultiTapeProduct.Insts.CoreOpsArithMulMultiTapeProductMultiTapeProduct.mul_loop1.body
-      iter1 new_terms1)
-    (iter, new_terms)
+  let (o, iter1) ← core.slice.iter.IteratorSliceIter.next iter
+  match o with
+  | none => ok new_terms
+  | some term =>
+    let mtt ←
+      automata.terms_multitape.MultiTapeTerm.Insts.CoreCloneClone.clone term
+    let new_terms1 ← alloc.vec.Vec.push new_terms mtt
+    automata.terms_multitape.MultiTapeProduct.Insts.CoreOpsArithMulMultiTapeProductMultiTapeProduct.mul_loop1
+      iter1 new_terms1
+partial_fixpoint
 
 /-- [automata_builder::automata::terms_multitape::{impl core::ops::arith::Mul<automata_builder::automata::terms_multitape::MultiTapeProduct, automata_builder::automata::terms_multitape::MultiTapeProduct> for automata_builder::automata::terms_multitape::MultiTapeProduct}::mul]:
     Source: 'src/automata/terms_multitape.rs', lines 483:4-495:5
@@ -29843,38 +27162,6 @@ def
         false
     automata.terms_multitape.MultiTapeProductFactory.to_product mtpf1
 
-/-- [automata_builder::automata::terms_multitape::{impl core::ops::arith::Mul<automata_builder::automata::terms_multitape::MultiTapeExpression, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeExpression}::mul]: loop body 1:
-    Source: 'src/automata/terms_multitape.rs', lines 779:12-782:13
-    Visibility: public -/
-@[rust_loop_body]
-def
-  automata.terms_multitape.MultiTapeExpression.Insts.CoreOpsArithMulMultiTapeExpressionMultiTapeExpression.mul_loop0_loop0.body
-  (product : automata.terms_multitape.MultiTapeProduct)
-  (iter : core.slice.iter.Iter automata.terms_multitape.MultiTapeProduct)
-  (multiplied_products : alloc.vec.Vec
-  automata.terms_multitape.MultiTapeProduct) :
-  Result (ControlFlow ((core.slice.iter.Iter
-    automata.terms_multitape.MultiTapeProduct) × (alloc.vec.Vec
-    automata.terms_multitape.MultiTapeProduct)) (alloc.vec.Vec
-    automata.terms_multitape.MultiTapeProduct))
-  := do
-  let (o, iter1) ← core.slice.iter.IteratorSliceIter.next iter
-  match o with
-  | none => ok (done multiplied_products)
-  | some rhs_product =>
-    let mtp ←
-      automata.terms_multitape.MultiTapeProduct.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeProductMultiTapeExpression.copy
-        product
-    let mtp1 ←
-      automata.terms_multitape.MultiTapeProduct.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeProductMultiTapeExpression.copy
-        rhs_product
-    let new_product ←
-      automata.terms_multitape.MultiTapeProduct.Insts.CoreOpsArithMulMultiTapeProductMultiTapeProduct.mul
-        mtp mtp1
-    let multiplied_products1 ←
-      alloc.vec.Vec.push multiplied_products new_product
-    ok (cont (iter1, multiplied_products1))
-
 /-- [automata_builder::automata::terms_multitape::{impl core::ops::arith::Mul<automata_builder::automata::terms_multitape::MultiTapeExpression, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeExpression}::mul]: loop 1:
     Source: 'src/automata/terms_multitape.rs', lines 779:12-782:13
     Visibility: public -/
@@ -29887,37 +27174,24 @@ def
   (product : automata.terms_multitape.MultiTapeProduct) :
   Result (alloc.vec.Vec automata.terms_multitape.MultiTapeProduct)
   := do
-  loop
-    (fun (iter1, multiplied_products1) =>
-      automata.terms_multitape.MultiTapeExpression.Insts.CoreOpsArithMulMultiTapeExpressionMultiTapeExpression.mul_loop0_loop0.body
-      product iter1 multiplied_products1)
-    (iter, multiplied_products)
-
-/-- [automata_builder::automata::terms_multitape::{impl core::ops::arith::Mul<automata_builder::automata::terms_multitape::MultiTapeExpression, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeExpression}::mul]: loop body 0:
-    Source: 'src/automata/terms_multitape.rs', lines 778:8-783:9
-    Visibility: public -/
-@[rust_loop_body]
-def
-  automata.terms_multitape.MultiTapeExpression.Insts.CoreOpsArithMulMultiTapeExpressionMultiTapeExpression.mul_loop0.body
-  (rhs : automata.terms_multitape.MultiTapeExpression)
-  (iter : core.slice.iter.Iter automata.terms_multitape.MultiTapeProduct)
-  (multiplied_products : alloc.vec.Vec
-  automata.terms_multitape.MultiTapeProduct) :
-  Result (ControlFlow ((core.slice.iter.Iter
-    automata.terms_multitape.MultiTapeProduct) × (alloc.vec.Vec
-    automata.terms_multitape.MultiTapeProduct)) (alloc.vec.Vec
-    automata.terms_multitape.MultiTapeProduct))
-  := do
   let (o, iter1) ← core.slice.iter.IteratorSliceIter.next iter
   match o with
-  | none => ok (done multiplied_products)
-  | some product =>
-    let s := alloc.vec.Vec.deref rhs.products
-    let iter2 ← core.slice.Slice.iter s
+  | none => ok multiplied_products
+  | some rhs_product =>
+    let mtp ←
+      automata.terms_multitape.MultiTapeProduct.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeProductMultiTapeExpression.copy
+        product
+    let mtp1 ←
+      automata.terms_multitape.MultiTapeProduct.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeProductMultiTapeExpression.copy
+        rhs_product
+    let new_product ←
+      automata.terms_multitape.MultiTapeProduct.Insts.CoreOpsArithMulMultiTapeProductMultiTapeProduct.mul
+        mtp mtp1
     let multiplied_products1 ←
-      automata.terms_multitape.MultiTapeExpression.Insts.CoreOpsArithMulMultiTapeExpressionMultiTapeExpression.mul_loop0_loop0
-        iter2 multiplied_products product
-    ok (cont (iter1, multiplied_products1))
+      alloc.vec.Vec.push multiplied_products new_product
+    automata.terms_multitape.MultiTapeExpression.Insts.CoreOpsArithMulMultiTapeExpressionMultiTapeExpression.mul_loop0_loop0
+      iter1 multiplied_products1 product
+partial_fixpoint
 
 /-- [automata_builder::automata::terms_multitape::{impl core::ops::arith::Mul<automata_builder::automata::terms_multitape::MultiTapeExpression, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeExpression}::mul]: loop 0:
     Source: 'src/automata/terms_multitape.rs', lines 778:8-783:9
@@ -29931,11 +27205,18 @@ def
   automata.terms_multitape.MultiTapeProduct) :
   Result (alloc.vec.Vec automata.terms_multitape.MultiTapeProduct)
   := do
-  loop
-    (fun (iter1, multiplied_products1) =>
-      automata.terms_multitape.MultiTapeExpression.Insts.CoreOpsArithMulMultiTapeExpressionMultiTapeExpression.mul_loop0.body
-      rhs iter1 multiplied_products1)
-    (iter, multiplied_products)
+  let (o, iter1) ← core.slice.iter.IteratorSliceIter.next iter
+  match o with
+  | none => ok multiplied_products
+  | some product =>
+    let s := alloc.vec.Vec.deref rhs.products
+    let iter2 ← core.slice.Slice.iter s
+    let multiplied_products1 ←
+      automata.terms_multitape.MultiTapeExpression.Insts.CoreOpsArithMulMultiTapeExpressionMultiTapeExpression.mul_loop0_loop0
+        iter2 multiplied_products product
+    automata.terms_multitape.MultiTapeExpression.Insts.CoreOpsArithMulMultiTapeExpressionMultiTapeExpression.mul_loop0
+      iter1 rhs multiplied_products1
+partial_fixpoint
 
 /-- [automata_builder::automata::terms_multitape::{impl core::ops::arith::Mul<automata_builder::automata::terms_multitape::MultiTapeExpression, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeExpression}::mul]:
     Source: 'src/automata/terms_multitape.rs', lines 776:4-785:5
@@ -29953,43 +27234,6 @@ def
       iter rhs (alloc.vec.Vec.new automata.terms_multitape.MultiTapeProduct)
   automata.terms_multitape.MultiTapeExpression.new multiplied_products
 
-/-- [automata_builder::automata::terms_multitape::{automata_builder::automata::terms_multitape::MultiTapeProduct}::_assign_base_indexes]: loop body 0:
-    Source: 'src/automata/terms_multitape.rs', lines 390:8-393:9 -/
-@[rust_loop_body]
-def automata.terms_multitape.MultiTapeProduct._assign_base_indexes_loop.body
-  (product_idx : Std.U64)
-  (iter : core.iter.adapters.enumerate.Enumerate (core.slice.iter.IterMut
-  automata.terms_multitape.MultiTapeTerm))
-  (back : core.iter.adapters.enumerate.Enumerate (core.slice.iter.IterMut
-  automata.terms_multitape.MultiTapeTerm) →
-  core.iter.adapters.enumerate.Enumerate (core.slice.iter.IterMut
-  automata.terms_multitape.MultiTapeTerm)) :
-  Result (ControlFlow ((core.iter.adapters.enumerate.Enumerate
-    (core.slice.iter.IterMut automata.terms_multitape.MultiTapeTerm)) ×
-    (core.iter.adapters.enumerate.Enumerate (core.slice.iter.IterMut
-    automata.terms_multitape.MultiTapeTerm) →
-    core.iter.adapters.enumerate.Enumerate (core.slice.iter.IterMut
-    automata.terms_multitape.MultiTapeTerm)))
-    (core.iter.adapters.enumerate.Enumerate (core.slice.iter.IterMut
-    automata.terms_multitape.MultiTapeTerm)))
-  := do
-  let (o, iter1, next_back) ←
-    core.iter.adapters.enumerate.IteratorEnumerate.next
-      (core.slice.iter.IterMut.Insts.CoreIterTraitsIteratorIteratorMutAT
-      automata.terms_multitape.MultiTapeTerm) iter
-  match o with
-  | none => ok (done (let e := next_back iter1 none
-                      back e))
-  | some p =>
-    let (index, term) := p
-    let i ← lift (UScalar.cast .U64 index)
-    let term1 ←
-      automata.terms_multitape.MultiTapeTerm.insert_expr_position term
-        { product_idx, term_idx := i } false
-    ok (cont (iter1,
-      fun e => let e1 := next_back e (some (index, term1))
-               back e1))
-
 /-- [automata_builder::automata::terms_multitape::{automata_builder::automata::terms_multitape::MultiTapeProduct}::_assign_base_indexes]: loop 0:
     Source: 'src/automata/terms_multitape.rs', lines 390:8-393:9 -/
 @[rust_loop]
@@ -30003,11 +27247,23 @@ def automata.terms_multitape.MultiTapeProduct._assign_base_indexes_loop
   Result (core.iter.adapters.enumerate.Enumerate (core.slice.iter.IterMut
     automata.terms_multitape.MultiTapeTerm))
   := do
-  loop
-    (fun (iter1, back1) =>
-      automata.terms_multitape.MultiTapeProduct._assign_base_indexes_loop.body
-      product_idx iter1 back1)
-    (iter, back)
+  let (o, iter1, next_back) ←
+    core.iter.adapters.enumerate.IteratorEnumerate.next
+      (core.slice.iter.IterMut.Insts.CoreIterTraitsIteratorIteratorMutAT
+      automata.terms_multitape.MultiTapeTerm) iter
+  match o with
+  | none => ok (let e := next_back iter1 none
+                back e)
+  | some p =>
+    let (index, term) := p
+    let i ← lift (UScalar.cast .U64 index)
+    let term1 ←
+      automata.terms_multitape.MultiTapeTerm.insert_expr_position term
+        { product_idx, term_idx := i } false
+    automata.terms_multitape.MultiTapeProduct._assign_base_indexes_loop iter1
+      (fun e => let e1 := next_back e (some (index, term1))
+                back e1) product_idx
+partial_fixpoint
 
 /-- [automata_builder::automata::terms_multitape::{automata_builder::automata::terms_multitape::MultiTapeProduct}::_assign_base_indexes]:
     Source: 'src/automata/terms_multitape.rs', lines 389:4-394:5 -/
@@ -30029,43 +27285,6 @@ def automata.terms_multitape.MultiTapeProduct._assign_base_indexes
   let v := deref_mut_back s1
   ok { self with _terms := v }
 
-/-- [automata_builder::automata::terms_multitape::{automata_builder::automata::terms_multitape::MultiTapeExpression}::_assign_expr_positions]: loop body 0:
-    Source: 'src/automata/terms_multitape.rs', lines 707:8-709:9
-    Visibility: public -/
-@[rust_loop_body]
-def
-  automata.terms_multitape.MultiTapeExpression._assign_expr_positions_loop.body
-  (iter : core.iter.adapters.enumerate.Enumerate (core.slice.iter.IterMut
-  automata.terms_multitape.MultiTapeProduct))
-  (back : core.iter.adapters.enumerate.Enumerate (core.slice.iter.IterMut
-  automata.terms_multitape.MultiTapeProduct) →
-  core.iter.adapters.enumerate.Enumerate (core.slice.iter.IterMut
-  automata.terms_multitape.MultiTapeProduct)) :
-  Result (ControlFlow ((core.iter.adapters.enumerate.Enumerate
-    (core.slice.iter.IterMut automata.terms_multitape.MultiTapeProduct)) ×
-    (core.iter.adapters.enumerate.Enumerate (core.slice.iter.IterMut
-    automata.terms_multitape.MultiTapeProduct) →
-    core.iter.adapters.enumerate.Enumerate (core.slice.iter.IterMut
-    automata.terms_multitape.MultiTapeProduct)))
-    (core.iter.adapters.enumerate.Enumerate (core.slice.iter.IterMut
-    automata.terms_multitape.MultiTapeProduct)))
-  := do
-  let (o, iter1, next_back) ←
-    core.iter.adapters.enumerate.IteratorEnumerate.next
-      (core.slice.iter.IterMut.Insts.CoreIterTraitsIteratorIteratorMutAT
-      automata.terms_multitape.MultiTapeProduct) iter
-  match o with
-  | none => ok (done (let e := next_back iter1 none
-                      back e))
-  | some p =>
-    let (product_index, product) := p
-    let i ← lift (UScalar.cast .U64 product_index)
-    let product1 ←
-      automata.terms_multitape.MultiTapeProduct._assign_base_indexes product i
-    ok (cont (iter1,
-      fun e => let e1 := next_back e (some (product_index, product1))
-               back e1))
-
 /-- [automata_builder::automata::terms_multitape::{automata_builder::automata::terms_multitape::MultiTapeExpression}::_assign_expr_positions]: loop 0:
     Source: 'src/automata/terms_multitape.rs', lines 707:8-709:9
     Visibility: public -/
@@ -30080,11 +27299,23 @@ def automata.terms_multitape.MultiTapeExpression._assign_expr_positions_loop
   Result (core.iter.adapters.enumerate.Enumerate (core.slice.iter.IterMut
     automata.terms_multitape.MultiTapeProduct))
   := do
-  loop
-    (fun (iter1, back1) =>
-      automata.terms_multitape.MultiTapeExpression._assign_expr_positions_loop.body
-      iter1 back1)
-    (iter, back)
+  let (o, iter1, next_back) ←
+    core.iter.adapters.enumerate.IteratorEnumerate.next
+      (core.slice.iter.IterMut.Insts.CoreIterTraitsIteratorIteratorMutAT
+      automata.terms_multitape.MultiTapeProduct) iter
+  match o with
+  | none => ok (let e := next_back iter1 none
+                back e)
+  | some p =>
+    let (product_index, product) := p
+    let i ← lift (UScalar.cast .U64 product_index)
+    let product1 ←
+      automata.terms_multitape.MultiTapeProduct._assign_base_indexes product i
+    automata.terms_multitape.MultiTapeExpression._assign_expr_positions_loop
+      iter1
+      (fun e => let e1 := next_back e (some (product_index, product1))
+                back e1)
+partial_fixpoint
 
 /-- [automata_builder::automata::terms_multitape::{automata_builder::automata::terms_multitape::MultiTapeExpression}::_assign_expr_positions]:
     Source: 'src/automata/terms_multitape.rs', lines 706:4-710:5
@@ -30118,30 +27349,6 @@ def
   let i ← self.position + offset
   automata.terms_multitape.MultiTapeTerm.new i self.state self._optimized
 
-/-- [automata_builder::automata::terms_multitape::{impl automata_builder::automata::terms_multitape::AbstractMultiTapeExpression<automata_builder::automata::terms_multitape::MultiTapeProduct, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeProduct}::offset]: loop body 0:
-    Source: 'src/automata/terms_multitape.rs', lines 589:8-591:9
-    Visibility: public -/
-@[rust_loop_body]
-def
-  automata.terms_multitape.MultiTapeProduct.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeProductMultiTapeExpression.offset_loop.body
-  (offset : Std.I64)
-  (iter : core.slice.iter.Iter automata.terms_multitape.MultiTapeTerm)
-  (new_terms : alloc.vec.Vec automata.terms_multitape.MultiTapeTerm) :
-  Result (ControlFlow ((core.slice.iter.Iter
-    automata.terms_multitape.MultiTapeTerm) × (alloc.vec.Vec
-    automata.terms_multitape.MultiTapeTerm)) (alloc.vec.Vec
-    automata.terms_multitape.MultiTapeTerm))
-  := do
-  let (o, iter1) ← core.slice.iter.IteratorSliceIter.next iter
-  match o with
-  | none => ok (done new_terms)
-  | some term =>
-    let mtt ←
-      automata.terms_multitape.MultiTapeTerm.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeProductMultiTapeExpression.offset
-        term offset
-    let new_terms1 ← alloc.vec.Vec.push new_terms mtt
-    ok (cont (iter1, new_terms1))
-
 /-- [automata_builder::automata::terms_multitape::{impl automata_builder::automata::terms_multitape::AbstractMultiTapeExpression<automata_builder::automata::terms_multitape::MultiTapeProduct, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeProduct}::offset]: loop 0:
     Source: 'src/automata/terms_multitape.rs', lines 589:8-591:9
     Visibility: public -/
@@ -30153,11 +27360,17 @@ def
   (new_terms : alloc.vec.Vec automata.terms_multitape.MultiTapeTerm) :
   Result (alloc.vec.Vec automata.terms_multitape.MultiTapeTerm)
   := do
-  loop
-    (fun (iter1, new_terms1) =>
-      automata.terms_multitape.MultiTapeProduct.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeProductMultiTapeExpression.offset_loop.body
-      offset iter1 new_terms1)
-    (iter, new_terms)
+  let (o, iter1) ← core.slice.iter.IteratorSliceIter.next iter
+  match o with
+  | none => ok new_terms
+  | some term =>
+    let mtt ←
+      automata.terms_multitape.MultiTapeTerm.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeProductMultiTapeExpression.offset
+        term offset
+    let new_terms1 ← alloc.vec.Vec.push new_terms mtt
+    automata.terms_multitape.MultiTapeProduct.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeProductMultiTapeExpression.offset_loop
+      iter1 offset new_terms1
+partial_fixpoint
 
 /-- [automata_builder::automata::terms_multitape::{impl automata_builder::automata::terms_multitape::AbstractMultiTapeExpression<automata_builder::automata::terms_multitape::MultiTapeProduct, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeProduct}::offset]:
     Source: 'src/automata/terms_multitape.rs', lines 587:4-593:5
@@ -30174,30 +27387,6 @@ def
       iter offset (alloc.vec.Vec.new automata.terms_multitape.MultiTapeTerm)
   automata.terms_multitape.MultiTapeProduct.new new_terms
 
-/-- [automata_builder::automata::terms_multitape::{impl automata_builder::automata::terms_multitape::AbstractMultiTapeExpression<automata_builder::automata::terms_multitape::MultiTapeExpression, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeExpression}::offset]: loop body 0:
-    Source: 'src/automata/terms_multitape.rs', lines 871:8-873:9
-    Visibility: public -/
-@[rust_loop_body]
-def
-  automata.terms_multitape.MultiTapeExpression.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeExpressionMultiTapeExpression.offset_loop.body
-  (offset : Std.I64)
-  (iter : core.slice.iter.Iter automata.terms_multitape.MultiTapeProduct)
-  (products : alloc.vec.Vec automata.terms_multitape.MultiTapeProduct) :
-  Result (ControlFlow ((core.slice.iter.Iter
-    automata.terms_multitape.MultiTapeProduct) × (alloc.vec.Vec
-    automata.terms_multitape.MultiTapeProduct)) (alloc.vec.Vec
-    automata.terms_multitape.MultiTapeProduct))
-  := do
-  let (o, iter1) ← core.slice.iter.IteratorSliceIter.next iter
-  match o with
-  | none => ok (done products)
-  | some product =>
-    let mtp ←
-      automata.terms_multitape.MultiTapeProduct.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeProductMultiTapeExpression.offset
-        product offset
-    let products1 ← alloc.vec.Vec.push products mtp
-    ok (cont (iter1, products1))
-
 /-- [automata_builder::automata::terms_multitape::{impl automata_builder::automata::terms_multitape::AbstractMultiTapeExpression<automata_builder::automata::terms_multitape::MultiTapeExpression, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeExpression}::offset]: loop 0:
     Source: 'src/automata/terms_multitape.rs', lines 871:8-873:9
     Visibility: public -/
@@ -30209,11 +27398,17 @@ def
   (products : alloc.vec.Vec automata.terms_multitape.MultiTapeProduct) :
   Result (alloc.vec.Vec automata.terms_multitape.MultiTapeProduct)
   := do
-  loop
-    (fun (iter1, products1) =>
-      automata.terms_multitape.MultiTapeExpression.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeExpressionMultiTapeExpression.offset_loop.body
-      offset iter1 products1)
-    (iter, products)
+  let (o, iter1) ← core.slice.iter.IteratorSliceIter.next iter
+  match o with
+  | none => ok products
+  | some product =>
+    let mtp ←
+      automata.terms_multitape.MultiTapeProduct.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeProductMultiTapeExpression.offset
+        product offset
+    let products1 ← alloc.vec.Vec.push products mtp
+    automata.terms_multitape.MultiTapeExpression.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeExpressionMultiTapeExpression.offset_loop
+      iter1 offset products1
+partial_fixpoint
 
 /-- [automata_builder::automata::terms_multitape::{impl automata_builder::automata::terms_multitape::AbstractMultiTapeExpression<automata_builder::automata::terms_multitape::MultiTapeExpression, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeExpression}::offset]:
     Source: 'src/automata/terms_multitape.rs', lines 869:4-875:5
@@ -30230,26 +27425,21 @@ def
       iter offset (alloc.vec.Vec.new automata.terms_multitape.MultiTapeProduct)
   automata.terms_multitape.MultiTapeExpression.new products
 
-/-- [automata_builder::automata::terms_multitape::{automata_builder::automata::terms_multitape::MultiTapeProduct}::to_normalized_vec]: loop body 0:
+/-- [automata_builder::automata::terms_multitape::{automata_builder::automata::terms_multitape::MultiTapeProduct}::to_normalized_vec]: loop 0:
     Source: 'src/automata/terms_multitape.rs', lines 419:8-423:9
     Visibility: public -/
-@[rust_loop_body]
-def automata.terms_multitape.MultiTapeProduct.to_normalized_vec_loop.body
+@[rust_loop]
+def automata.terms_multitape.MultiTapeProduct.to_normalized_vec_loop
   (iter : core.slice.iter.Iter automata.terms_multitape.MultiTapeTerm)
   (unique_terms_set : std.collections.hash.set.HashSet
   automata.terms_multitape.MultiTapeTerm std.hash.random.RandomState
   alloc.alloc.Global)
   (unique_terms : alloc.vec.Vec automata.terms_multitape.MultiTapeTerm) :
-  Result (ControlFlow ((core.slice.iter.Iter
-    automata.terms_multitape.MultiTapeTerm) ×
-    (std.collections.hash.set.HashSet automata.terms_multitape.MultiTapeTerm
-    std.hash.random.RandomState alloc.alloc.Global) × (alloc.vec.Vec
-    automata.terms_multitape.MultiTapeTerm)) (alloc.vec.Vec
-    automata.terms_multitape.MultiTapeTerm))
+  Result (alloc.vec.Vec automata.terms_multitape.MultiTapeTerm)
   := do
   let (o, iter1) ← core.slice.iter.IteratorSliceIter.next iter
   match o with
-  | none => ok (done unique_terms)
+  | none => ok unique_terms
   | some term =>
     let b ←
       std.collections.hash.set.HashSet.contains (Shared0A.Insts.CoreCmpEq
@@ -30263,7 +27453,9 @@ def automata.terms_multitape.MultiTapeProduct.to_normalized_vec_loop.body
         automata.terms_multitape.MultiTapeTerm.Insts.CoreCmpEq unique_terms_set
         term
     if b
-    then ok (cont (iter1, unique_terms_set, unique_terms))
+    then
+      automata.terms_multitape.MultiTapeProduct.to_normalized_vec_loop iter1
+        unique_terms_set unique_terms
     else
       let (_, unique_terms_set1) ←
         std.collections.hash.set.HashSet.insert (Shared0A.Insts.CoreCmpEq
@@ -30276,25 +27468,9 @@ def automata.terms_multitape.MultiTapeProduct.to_normalized_vec_loop.body
         automata.terms_multitape.MultiTapeTerm.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeProductMultiTapeExpression.copy
           term
       let unique_terms1 ← alloc.vec.Vec.push unique_terms mtt
-      ok (cont (iter1, unique_terms_set1, unique_terms1))
-
-/-- [automata_builder::automata::terms_multitape::{automata_builder::automata::terms_multitape::MultiTapeProduct}::to_normalized_vec]: loop 0:
-    Source: 'src/automata/terms_multitape.rs', lines 419:8-423:9
-    Visibility: public -/
-@[rust_loop]
-def automata.terms_multitape.MultiTapeProduct.to_normalized_vec_loop
-  (iter : core.slice.iter.Iter automata.terms_multitape.MultiTapeTerm)
-  (unique_terms_set : std.collections.hash.set.HashSet
-  automata.terms_multitape.MultiTapeTerm std.hash.random.RandomState
-  alloc.alloc.Global)
-  (unique_terms : alloc.vec.Vec automata.terms_multitape.MultiTapeTerm) :
-  Result (alloc.vec.Vec automata.terms_multitape.MultiTapeTerm)
-  := do
-  loop
-    (fun (iter1, unique_terms_set1, unique_terms1) =>
-      automata.terms_multitape.MultiTapeProduct.to_normalized_vec_loop.body
-      iter1 unique_terms_set1 unique_terms1)
-    (iter, unique_terms_set, unique_terms)
+      automata.terms_multitape.MultiTapeProduct.to_normalized_vec_loop iter1
+        unique_terms_set1 unique_terms1
+partial_fixpoint
 
 /-- [automata_builder::automata::terms_multitape::{automata_builder::automata::terms_multitape::MultiTapeProduct}::to_normalized_vec]:
     Source: 'src/automata/terms_multitape.rs', lines 411:4-426:5
@@ -30332,26 +27508,21 @@ def automata.terms_multitape.MultiTapeProduct.to_normalized
     automata.terms_multitape.MultiTapeProduct.to_normalized_vec self true
   automata.terms_multitape.MultiTapeProduct.new norm_terms
 
-/-- [automata_builder::automata::terms_multitape::{automata_builder::automata::terms_multitape::MultiTapeExpression}::to_normalized_vec]: loop body 0:
+/-- [automata_builder::automata::terms_multitape::{automata_builder::automata::terms_multitape::MultiTapeExpression}::to_normalized_vec]: loop 0:
     Source: 'src/automata/terms_multitape.rs', lines 740:8-745:9
     Visibility: public -/
-@[rust_loop_body]
-def automata.terms_multitape.MultiTapeExpression.to_normalized_vec_loop.body
+@[rust_loop]
+def automata.terms_multitape.MultiTapeExpression.to_normalized_vec_loop
   (iter : core.slice.iter.Iter automata.terms_multitape.MultiTapeProduct)
   (unique_products_set : std.collections.hash.set.HashSet
   automata.terms_multitape.MultiTapeProduct std.hash.random.RandomState
   alloc.alloc.Global)
   (unique_products : alloc.vec.Vec automata.terms_multitape.MultiTapeProduct) :
-  Result (ControlFlow ((core.slice.iter.Iter
-    automata.terms_multitape.MultiTapeProduct) ×
-    (std.collections.hash.set.HashSet automata.terms_multitape.MultiTapeProduct
-    std.hash.random.RandomState alloc.alloc.Global) × (alloc.vec.Vec
-    automata.terms_multitape.MultiTapeProduct)) (alloc.vec.Vec
-    automata.terms_multitape.MultiTapeProduct))
+  Result (alloc.vec.Vec automata.terms_multitape.MultiTapeProduct)
   := do
   let (o, iter1) ← core.slice.iter.IteratorSliceIter.next iter
   match o with
-  | none => ok (done unique_products)
+  | none => ok unique_products
   | some un_normalized_product =>
     let product ←
       automata.terms_multitape.MultiTapeProduct.to_normalized
@@ -30366,7 +27537,9 @@ def automata.terms_multitape.MultiTapeExpression.to_normalized_vec_loop.body
         automata.terms_multitape.MultiTapeProduct.Insts.CoreCmpEq
         unique_products_set product
     if b
-    then ok (cont (iter1, unique_products_set, unique_products))
+    then
+      automata.terms_multitape.MultiTapeExpression.to_normalized_vec_loop iter1
+        unique_products_set unique_products
     else
       let mtp ←
         automata.terms_multitape.MultiTapeProduct.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeProductMultiTapeExpression.copy
@@ -30378,25 +27551,9 @@ def automata.terms_multitape.MultiTapeExpression.to_normalized_vec_loop.body
           std.hash.random.RandomState.Insts.CoreHashBuildHasherDefaultHasher
           unique_products_set mtp
       let unique_products1 ← alloc.vec.Vec.push unique_products mtp
-      ok (cont (iter1, unique_products_set1, unique_products1))
-
-/-- [automata_builder::automata::terms_multitape::{automata_builder::automata::terms_multitape::MultiTapeExpression}::to_normalized_vec]: loop 0:
-    Source: 'src/automata/terms_multitape.rs', lines 740:8-745:9
-    Visibility: public -/
-@[rust_loop]
-def automata.terms_multitape.MultiTapeExpression.to_normalized_vec_loop
-  (iter : core.slice.iter.Iter automata.terms_multitape.MultiTapeProduct)
-  (unique_products_set : std.collections.hash.set.HashSet
-  automata.terms_multitape.MultiTapeProduct std.hash.random.RandomState
-  alloc.alloc.Global)
-  (unique_products : alloc.vec.Vec automata.terms_multitape.MultiTapeProduct) :
-  Result (alloc.vec.Vec automata.terms_multitape.MultiTapeProduct)
-  := do
-  loop
-    (fun (iter1, unique_products_set1, unique_products1) =>
-      automata.terms_multitape.MultiTapeExpression.to_normalized_vec_loop.body
-      iter1 unique_products_set1 unique_products1)
-    (iter, unique_products_set, unique_products)
+      automata.terms_multitape.MultiTapeExpression.to_normalized_vec_loop iter1
+        unique_products_set1 unique_products1
+partial_fixpoint
 
 /-- [automata_builder::automata::terms_multitape::{automata_builder::automata::terms_multitape::MultiTapeExpression}::to_normalized_vec]:
     Source: 'src/automata/terms_multitape.rs', lines 732:4-748:5
@@ -30499,39 +27656,6 @@ def
     automata.terms_multitape.MultiTapeExpression._assign_base_expansion_indexes.closure.Insts.CoreOpsFunctionFnMutTupleMut0MultiTapeTermTuple.call_mut
 }
 
-/-- [automata_builder::automata::terms_multitape::{automata_builder::automata::terms_multitape::MultiTapeExpression}::_assign_base_expansion_indexes]: loop body 0:
-    Source: 'src/automata/terms_multitape.rs', lines 699:8-704:9 -/
-@[rust_loop_body]
-def
-  automata.terms_multitape.MultiTapeExpression._assign_base_expansion_indexes_loop.body
-  (iter : core.slice.iter.IterMut automata.terms_multitape.MultiTapeProduct)
-  (back : core.slice.iter.IterMut automata.terms_multitape.MultiTapeProduct →
-  core.slice.iter.IterMut automata.terms_multitape.MultiTapeProduct)
-  (expansion_index : Std.Usize) :
-  Result (ControlFlow ((core.slice.iter.IterMut
-    automata.terms_multitape.MultiTapeProduct) × (core.slice.iter.IterMut
-    automata.terms_multitape.MultiTapeProduct → core.slice.iter.IterMut
-    automata.terms_multitape.MultiTapeProduct) × Std.Usize)
-    (core.slice.iter.IterMut automata.terms_multitape.MultiTapeProduct))
-  := do
-  let (o, iter1, next_back) ← core.slice.iter.IteratorIterMut.next iter
-  match o with
-  | none => ok (done (let im := next_back iter1 none
-                      back im))
-  | some product =>
-    let (s, deref_mut_back) ← lift (alloc.vec.Vec.deref_mut product._terms)
-    let (im, iter_mut_back) ← core.slice.Slice.iter_mut s
-    let (im1, c) ←
-      core.slice.iter.IterMut.Insts.CoreIterTraitsIteratorIteratorMutAT.for_each
-        automata.terms_multitape.MultiTapeExpression._assign_base_expansion_indexes.closure.Insts.CoreOpsFunctionFnMutTupleMut0MultiTapeTermTuple
-        im expansion_index
-    let s1 := iter_mut_back im1
-    let v := deref_mut_back s1
-    ok (cont (iter1,
-      fun im2 =>
-        let im3 := next_back im2 (some { product with _terms := v })
-        back im3, c))
-
 /-- [automata_builder::automata::terms_multitape::{automata_builder::automata::terms_multitape::MultiTapeExpression}::_assign_base_expansion_indexes]: loop 0:
     Source: 'src/automata/terms_multitape.rs', lines 699:8-704:9 -/
 @[rust_loop]
@@ -30543,11 +27667,25 @@ def
   (expansion_index : Std.Usize) :
   Result (core.slice.iter.IterMut automata.terms_multitape.MultiTapeProduct)
   := do
-  loop
-    (fun (iter1, back1, expansion_index1) =>
-      automata.terms_multitape.MultiTapeExpression._assign_base_expansion_indexes_loop.body
-      iter1 back1 expansion_index1)
-    (iter, back, expansion_index)
+  let (o, iter1, next_back) ← core.slice.iter.IteratorIterMut.next iter
+  match o with
+  | none => ok (let im := next_back iter1 none
+                back im)
+  | some product =>
+    let (s, deref_mut_back) ← lift (alloc.vec.Vec.deref_mut product._terms)
+    let (im, iter_mut_back) ← core.slice.Slice.iter_mut s
+    let (im1, c) ←
+      core.slice.iter.IterMut.Insts.CoreIterTraitsIteratorIteratorMutAT.for_each
+        automata.terms_multitape.MultiTapeExpression._assign_base_expansion_indexes.closure.Insts.CoreOpsFunctionFnMutTupleMut0MultiTapeTermTuple
+        im expansion_index
+    let s1 := iter_mut_back im1
+    let v := deref_mut_back s1
+    automata.terms_multitape.MultiTapeExpression._assign_base_expansion_indexes_loop
+      iter1
+      (fun im2 =>
+        let im3 := next_back im2 (some { product with _terms := v })
+        back im3) c
+partial_fixpoint
 
 /-- [automata_builder::automata::terms_multitape::{automata_builder::automata::terms_multitape::MultiTapeExpression}::_assign_base_expansion_indexes]:
     Source: 'src/automata/terms_multitape.rs', lines 694:4-705:5 -/
@@ -30626,40 +27764,6 @@ def
     automata.terms_multitape.MultiTapeExpression._assign_parent_debug_info.closure.Insts.CoreOpsFunctionFnMutTupleMut0MultiTapeTermTuple.call_mut
 }
 
-/-- [automata_builder::automata::terms_multitape::{automata_builder::automata::terms_multitape::MultiTapeExpression}::_assign_parent_debug_info]: loop body 0:
-    Source: 'src/automata/terms_multitape.rs', lines 687:8-692:9
-    Visibility: public -/
-@[rust_loop_body]
-def
-  automata.terms_multitape.MultiTapeExpression._assign_parent_debug_info_loop.body
-  (parent_debug_info : automata.terms.ExprDebugInfo)
-  (iter : core.slice.iter.IterMut automata.terms_multitape.MultiTapeProduct)
-  (back : core.slice.iter.IterMut automata.terms_multitape.MultiTapeProduct →
-  core.slice.iter.IterMut automata.terms_multitape.MultiTapeProduct) :
-  Result (ControlFlow ((core.slice.iter.IterMut
-    automata.terms_multitape.MultiTapeProduct) × (core.slice.iter.IterMut
-    automata.terms_multitape.MultiTapeProduct → core.slice.iter.IterMut
-    automata.terms_multitape.MultiTapeProduct)) (core.slice.iter.IterMut
-    automata.terms_multitape.MultiTapeProduct))
-  := do
-  let (o, iter1, next_back) ← core.slice.iter.IteratorIterMut.next iter
-  match o with
-  | none => ok (done (let im := next_back iter1 none
-                      back im))
-  | some product =>
-    let (s, deref_mut_back) ← lift (alloc.vec.Vec.deref_mut product._terms)
-    let (im, iter_mut_back) ← core.slice.Slice.iter_mut s
-    let im1 ←
-      core.slice.iter.IterMut.Insts.CoreIterTraitsIteratorIteratorMutAT.for_each
-        automata.terms_multitape.MultiTapeExpression._assign_parent_debug_info.closure.Insts.CoreOpsFunctionFnMutTupleMut0MultiTapeTermTuple
-        im parent_debug_info
-    let s1 := iter_mut_back im1
-    let v := deref_mut_back s1
-    ok (cont (iter1,
-      fun im2 =>
-        let im3 := next_back im2 (some { product with _terms := v })
-        back im3))
-
 /-- [automata_builder::automata::terms_multitape::{automata_builder::automata::terms_multitape::MultiTapeExpression}::_assign_parent_debug_info]: loop 0:
     Source: 'src/automata/terms_multitape.rs', lines 687:8-692:9
     Visibility: public -/
@@ -30671,11 +27775,25 @@ def automata.terms_multitape.MultiTapeExpression._assign_parent_debug_info_loop
   (parent_debug_info : automata.terms.ExprDebugInfo) :
   Result (core.slice.iter.IterMut automata.terms_multitape.MultiTapeProduct)
   := do
-  loop
-    (fun (iter1, back1) =>
-      automata.terms_multitape.MultiTapeExpression._assign_parent_debug_info_loop.body
-      parent_debug_info iter1 back1)
-    (iter, back)
+  let (o, iter1, next_back) ← core.slice.iter.IteratorIterMut.next iter
+  match o with
+  | none => ok (let im := next_back iter1 none
+                back im)
+  | some product =>
+    let (s, deref_mut_back) ← lift (alloc.vec.Vec.deref_mut product._terms)
+    let (im, iter_mut_back) ← core.slice.Slice.iter_mut s
+    let im1 ←
+      core.slice.iter.IterMut.Insts.CoreIterTraitsIteratorIteratorMutAT.for_each
+        automata.terms_multitape.MultiTapeExpression._assign_parent_debug_info.closure.Insts.CoreOpsFunctionFnMutTupleMut0MultiTapeTermTuple
+        im parent_debug_info
+    let s1 := iter_mut_back im1
+    let v := deref_mut_back s1
+    automata.terms_multitape.MultiTapeExpression._assign_parent_debug_info_loop
+      iter1
+      (fun im2 =>
+        let im3 := next_back im2 (some { product with _terms := v })
+        back im3) parent_debug_info
+partial_fixpoint
 
 /-- [automata_builder::automata::terms_multitape::{automata_builder::automata::terms_multitape::MultiTapeExpression}::_assign_parent_debug_info]:
     Source: 'src/automata/terms_multitape.rs', lines 684:4-693:5
@@ -30733,38 +27851,6 @@ def
       true
   else ok expanded_expr1
 
-/-- [automata_builder::automata::terms_multitape::{impl automata_builder::automata::terms_multitape::AbstractMultiTapeExpression<automata_builder::automata::terms_multitape::MultiTapeProduct, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeProduct}::_expand]: loop body 0:
-    Source: 'src/automata/terms_multitape.rs', lines 609:8-613:9
-    Visibility: public -/
-@[rust_loop_body]
-def
-  automata.terms_multitape.MultiTapeProduct.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeProductMultiTapeExpression._expand_loop.body
-  (expansion_mapping : std.collections.hash.map.HashMap (Std.U16 × Std.U32)
-  automata.terms_multitape.MultiTapeExpression std.hash.random.RandomState
-  alloc.alloc.Global) (include_debug_info : Bool) (fold : Bool)
-  (iter : core.iter.adapters.skip.Skip (core.slice.iter.Iter
-  automata.terms_multitape.MultiTapeTerm))
-  (result : automata.terms_multitape.MultiTapeExpression) :
-  Result (ControlFlow ((core.iter.adapters.skip.Skip (core.slice.iter.Iter
-    automata.terms_multitape.MultiTapeTerm)) ×
-    automata.terms_multitape.MultiTapeExpression)
-    automata.terms_multitape.MultiTapeExpression)
-  := do
-  let (o, iter1) ←
-    core.iter.adapters.skip.Skip.Insts.CoreIterTraitsIteratorIterator.next
-      (core.iter.traits.iterator.IteratorSliceIter
-      automata.terms_multitape.MultiTapeTerm) iter
-  match o with
-  | none => ok (done result)
-  | some term =>
-    let mte ←
-      automata.terms_multitape.MultiTapeTerm.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeProductMultiTapeExpression._expand
-        term expansion_mapping include_debug_info fold
-    let result1 ←
-      automata.terms_multitape.MultiTapeExpression.Insts.CoreOpsArithMulMultiTapeExpressionMultiTapeExpression.mul
-        result mte
-    ok (cont (iter1, result1))
-
 /-- [automata_builder::automata::terms_multitape::{impl automata_builder::automata::terms_multitape::AbstractMultiTapeExpression<automata_builder::automata::terms_multitape::MultiTapeProduct, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeProduct}::_expand]: loop 0:
     Source: 'src/automata/terms_multitape.rs', lines 609:8-613:9
     Visibility: public -/
@@ -30779,11 +27865,22 @@ def
   (result : automata.terms_multitape.MultiTapeExpression) :
   Result automata.terms_multitape.MultiTapeExpression
   := do
-  loop
-    (fun (iter1, result1) =>
-      automata.terms_multitape.MultiTapeProduct.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeProductMultiTapeExpression._expand_loop.body
-      expansion_mapping include_debug_info fold iter1 result1)
-    (iter, result)
+  let (o, iter1) ←
+    core.iter.adapters.skip.Skip.Insts.CoreIterTraitsIteratorIterator.next
+      (core.iter.traits.iterator.IteratorSliceIter
+      automata.terms_multitape.MultiTapeTerm) iter
+  match o with
+  | none => ok result
+  | some term =>
+    let mte ←
+      automata.terms_multitape.MultiTapeTerm.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeProductMultiTapeExpression._expand
+        term expansion_mapping include_debug_info fold
+    let result1 ←
+      automata.terms_multitape.MultiTapeExpression.Insts.CoreOpsArithMulMultiTapeExpressionMultiTapeExpression.mul
+        result mte
+    automata.terms_multitape.MultiTapeProduct.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeProductMultiTapeExpression._expand_loop
+      iter1 expansion_mapping include_debug_info fold result1
+partial_fixpoint
 
 /-- [automata_builder::automata::terms_multitape::{impl automata_builder::automata::terms_multitape::AbstractMultiTapeExpression<automata_builder::automata::terms_multitape::MultiTapeProduct, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeProduct}::_expand]:
     Source: 'src/automata/terms_multitape.rs', lines 594:4-616:5
@@ -30911,29 +28008,6 @@ def
     automata.terms_multitape.AbstractMultiTapeExpressionMultiTapeExpressionMultiTapeExpressionMultiTapeExpression._expand.closure.Insts.CoreOpsFunctionFnTupleShared0MultiTapeProductMultiTapeExpression.call
 }
 
-/-- [automata_builder::automata::terms_multitape::{impl automata_builder::automata::terms_multitape::AbstractMultiTapeExpression<automata_builder::automata::terms_multitape::MultiTapeExpression, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeExpression}::copy]: loop body 0:
-    Source: 'src/automata/terms_multitape.rs', lines 853:8-855:9
-    Visibility: public -/
-@[rust_loop_body]
-def
-  automata.terms_multitape.MultiTapeExpression.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeExpressionMultiTapeExpression.copy_loop.body
-  (iter : core.slice.iter.Iter automata.terms_multitape.MultiTapeProduct)
-  (products : alloc.vec.Vec automata.terms_multitape.MultiTapeProduct) :
-  Result (ControlFlow ((core.slice.iter.Iter
-    automata.terms_multitape.MultiTapeProduct) × (alloc.vec.Vec
-    automata.terms_multitape.MultiTapeProduct)) (alloc.vec.Vec
-    automata.terms_multitape.MultiTapeProduct))
-  := do
-  let (o, iter1) ← core.slice.iter.IteratorSliceIter.next iter
-  match o with
-  | none => ok (done products)
-  | some product =>
-    let mtp ←
-      automata.terms_multitape.MultiTapeProduct.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeProductMultiTapeExpression.copy
-        product
-    let products1 ← alloc.vec.Vec.push products mtp
-    ok (cont (iter1, products1))
-
 /-- [automata_builder::automata::terms_multitape::{impl automata_builder::automata::terms_multitape::AbstractMultiTapeExpression<automata_builder::automata::terms_multitape::MultiTapeExpression, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeExpression}::copy]: loop 0:
     Source: 'src/automata/terms_multitape.rs', lines 853:8-855:9
     Visibility: public -/
@@ -30944,11 +28018,17 @@ def
   (products : alloc.vec.Vec automata.terms_multitape.MultiTapeProduct) :
   Result (alloc.vec.Vec automata.terms_multitape.MultiTapeProduct)
   := do
-  loop
-    (fun (iter1, products1) =>
-      automata.terms_multitape.MultiTapeExpression.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeExpressionMultiTapeExpression.copy_loop.body
-      iter1 products1)
-    (iter, products)
+  let (o, iter1) ← core.slice.iter.IteratorSliceIter.next iter
+  match o with
+  | none => ok products
+  | some product =>
+    let mtp ←
+      automata.terms_multitape.MultiTapeProduct.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeProductMultiTapeExpression.copy
+        product
+    let products1 ← alloc.vec.Vec.push products mtp
+    automata.terms_multitape.MultiTapeExpression.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeExpressionMultiTapeExpression.copy_loop
+      iter1 products1
+partial_fixpoint
 
 /-- [automata_builder::automata::terms_multitape::{impl automata_builder::automata::terms_multitape::AbstractMultiTapeExpression<automata_builder::automata::terms_multitape::MultiTapeExpression, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeExpression}::copy]:
     Source: 'src/automata/terms_multitape.rs', lines 851:4-857:5
@@ -30965,42 +28045,6 @@ def
       iter (alloc.vec.Vec.new automata.terms_multitape.MultiTapeProduct)
   ok { self with products }
 
-/-- [automata_builder::automata::terms_multitape::{automata_builder::automata::terms_multitape::MultiTapeExpression}::_assign_base_indexes]: loop body 0:
-    Source: 'src/automata/terms_multitape.rs', lines 671:8-673:9
-    Visibility: public -/
-@[rust_loop_body]
-def automata.terms_multitape.MultiTapeExpression._assign_base_indexes_loop.body
-  (iter : core.iter.adapters.enumerate.Enumerate (core.slice.iter.IterMut
-  automata.terms_multitape.MultiTapeProduct))
-  (back : core.iter.adapters.enumerate.Enumerate (core.slice.iter.IterMut
-  automata.terms_multitape.MultiTapeProduct) →
-  core.iter.adapters.enumerate.Enumerate (core.slice.iter.IterMut
-  automata.terms_multitape.MultiTapeProduct)) :
-  Result (ControlFlow ((core.iter.adapters.enumerate.Enumerate
-    (core.slice.iter.IterMut automata.terms_multitape.MultiTapeProduct)) ×
-    (core.iter.adapters.enumerate.Enumerate (core.slice.iter.IterMut
-    automata.terms_multitape.MultiTapeProduct) →
-    core.iter.adapters.enumerate.Enumerate (core.slice.iter.IterMut
-    automata.terms_multitape.MultiTapeProduct)))
-    (core.iter.adapters.enumerate.Enumerate (core.slice.iter.IterMut
-    automata.terms_multitape.MultiTapeProduct)))
-  := do
-  let (o, iter1, next_back) ←
-    core.iter.adapters.enumerate.IteratorEnumerate.next
-      (core.slice.iter.IterMut.Insts.CoreIterTraitsIteratorIteratorMutAT
-      automata.terms_multitape.MultiTapeProduct) iter
-  match o with
-  | none => ok (done (let e := next_back iter1 none
-                      back e))
-  | some p =>
-    let (index, product) := p
-    let i ← lift (UScalar.cast .U64 index)
-    let product1 ←
-      automata.terms_multitape.MultiTapeProduct._assign_base_indexes product i
-    ok (cont (iter1,
-      fun e => let e1 := next_back e (some (index, product1))
-               back e1))
-
 /-- [automata_builder::automata::terms_multitape::{automata_builder::automata::terms_multitape::MultiTapeExpression}::_assign_base_indexes]: loop 0:
     Source: 'src/automata/terms_multitape.rs', lines 671:8-673:9
     Visibility: public -/
@@ -31015,11 +28059,22 @@ def automata.terms_multitape.MultiTapeExpression._assign_base_indexes_loop
   Result (core.iter.adapters.enumerate.Enumerate (core.slice.iter.IterMut
     automata.terms_multitape.MultiTapeProduct))
   := do
-  loop
-    (fun (iter1, back1) =>
-      automata.terms_multitape.MultiTapeExpression._assign_base_indexes_loop.body
-      iter1 back1)
-    (iter, back)
+  let (o, iter1, next_back) ←
+    core.iter.adapters.enumerate.IteratorEnumerate.next
+      (core.slice.iter.IterMut.Insts.CoreIterTraitsIteratorIteratorMutAT
+      automata.terms_multitape.MultiTapeProduct) iter
+  match o with
+  | none => ok (let e := next_back iter1 none
+                back e)
+  | some p =>
+    let (index, product) := p
+    let i ← lift (UScalar.cast .U64 index)
+    let product1 ←
+      automata.terms_multitape.MultiTapeProduct._assign_base_indexes product i
+    automata.terms_multitape.MultiTapeExpression._assign_base_indexes_loop
+      iter1 (fun e => let e1 := next_back e (some (index, product1))
+                      back e1)
+partial_fixpoint
 
 /-- [automata_builder::automata::terms_multitape::{automata_builder::automata::terms_multitape::MultiTapeExpression}::_assign_base_indexes]:
     Source: 'src/automata/terms_multitape.rs', lines 670:4-674:5
@@ -31042,31 +28097,6 @@ def automata.terms_multitape.MultiTapeExpression._assign_base_indexes
   let v := deref_mut_back s1
   ok { self with products := v }
 
-/-- [automata_builder::automata::terms_multitape::{impl automata_builder::automata::terms_multitape::AbstractMultiTapeExpression<automata_builder::automata::terms_multitape::MultiTapeExpression, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeExpression}::_expand_steps]: loop body 0:
-    Source: 'src/automata/terms_multitape.rs', lines 906:8-910:9
-    Visibility: public -/
-@[rust_loop_body]
-def
-  automata.terms_multitape.MultiTapeExpression.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeExpressionMultiTapeExpression._expand_steps_loop.body
-  (expansion_mapping : std.collections.hash.map.HashMap (Std.U16 × Std.U32)
-  automata.terms_multitape.MultiTapeExpression std.hash.random.RandomState
-  alloc.alloc.Global) (include_debug_info : Bool) (fold : Bool)
-  (iter : core.ops.range.Range Std.U64)
-  (result : automata.terms_multitape.MultiTapeExpression) :
-  Result (ControlFlow ((core.ops.range.Range Std.U64) ×
-    automata.terms_multitape.MultiTapeExpression)
-    automata.terms_multitape.MultiTapeExpression)
-  := do
-  let (o, iter1) ←
-    core.iter.range.IteratorRange.next core.iter.range.StepU64 iter
-  match o with
-  | none => ok (done result)
-  | some _ =>
-    let result1 ←
-      automata.terms_multitape.MultiTapeExpression.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeExpressionMultiTapeExpression._expand
-        result expansion_mapping include_debug_info fold
-    ok (cont (iter1, result1))
-
 /-- [automata_builder::automata::terms_multitape::{impl automata_builder::automata::terms_multitape::AbstractMultiTapeExpression<automata_builder::automata::terms_multitape::MultiTapeExpression, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeExpression}::_expand_steps]: loop 0:
     Source: 'src/automata/terms_multitape.rs', lines 906:8-910:9
     Visibility: public -/
@@ -31080,11 +28110,17 @@ def
   (result : automata.terms_multitape.MultiTapeExpression) :
   Result automata.terms_multitape.MultiTapeExpression
   := do
-  loop
-    (fun (iter1, result1) =>
-      automata.terms_multitape.MultiTapeExpression.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeExpressionMultiTapeExpression._expand_steps_loop.body
-      expansion_mapping include_debug_info fold iter1 result1)
-    (iter, result)
+  let (o, iter1) ←
+    core.iter.range.IteratorRange.next core.iter.range.StepU64 iter
+  match o with
+  | none => ok result
+  | some _ =>
+    let result1 ←
+      automata.terms_multitape.MultiTapeExpression.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeExpressionMultiTapeExpression._expand
+        result expansion_mapping include_debug_info fold
+    automata.terms_multitape.MultiTapeExpression.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeExpressionMultiTapeExpression._expand_steps_loop
+      iter1 expansion_mapping include_debug_info fold result1
+partial_fixpoint
 
 /-- [automata_builder::automata::terms_multitape::{impl automata_builder::automata::terms_multitape::AbstractMultiTapeExpression<automata_builder::automata::terms_multitape::MultiTapeExpression, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeExpression}::_expand_steps]:
     Source: 'src/automata/terms_multitape.rs', lines 900:4-912:5
@@ -31228,28 +28264,6 @@ def automata.terms_multitape.MultiTapeProduct._get_term
   core.slice.Slice.get (core.slice.index.SliceIndexUsizeSlice
     automata.terms_multitape.MultiTapeTerm) s index
 
-/-- [automata_builder::automata::terms_multitape::{automata_builder::automata::terms_multitape::MultiTapeProduct}::pad_terms]: loop body 0:
-    Source: 'src/automata/terms_multitape.rs', lines 383:12-383:73 -/
-@[rust_loop_body]
-def automata.terms_multitape.MultiTapeProduct.pad_terms_loop.body
-  (last_term : automata.terms_multitape.MultiTapeTerm)
-  (iter : core.ops.range.Range Std.Usize)
-  (new_terms : alloc.vec.Vec automata.terms_multitape.MultiTapeTerm) :
-  Result (ControlFlow ((core.ops.range.Range Std.Usize) × (alloc.vec.Vec
-    automata.terms_multitape.MultiTapeTerm)) (alloc.vec.Vec
-    automata.terms_multitape.MultiTapeTerm))
-  := do
-  let (o, iter1) ←
-    core.iter.range.IteratorRange.next core.iter.range.StepUsize iter
-  match o with
-  | none => ok (done new_terms)
-  | some _ =>
-    let mtt ←
-      automata.terms_multitape.MultiTapeTerm.Insts.CoreCloneClone.clone
-        last_term
-    let new_terms1 ← alloc.vec.Vec.push new_terms mtt
-    ok (cont (iter1, new_terms1))
-
 /-- [automata_builder::automata::terms_multitape::{automata_builder::automata::terms_multitape::MultiTapeProduct}::pad_terms]: loop 0:
     Source: 'src/automata/terms_multitape.rs', lines 383:12-383:73 -/
 @[rust_loop]
@@ -31259,11 +28273,18 @@ def automata.terms_multitape.MultiTapeProduct.pad_terms_loop
   (last_term : automata.terms_multitape.MultiTapeTerm) :
   Result (alloc.vec.Vec automata.terms_multitape.MultiTapeTerm)
   := do
-  loop
-    (fun (iter1, new_terms1) =>
-      automata.terms_multitape.MultiTapeProduct.pad_terms_loop.body last_term
-      iter1 new_terms1)
-    (iter, new_terms)
+  let (o, iter1) ←
+    core.iter.range.IteratorRange.next core.iter.range.StepUsize iter
+  match o with
+  | none => ok new_terms
+  | some _ =>
+    let mtt ←
+      automata.terms_multitape.MultiTapeTerm.Insts.CoreCloneClone.clone
+        last_term
+    let new_terms1 ← alloc.vec.Vec.push new_terms mtt
+    automata.terms_multitape.MultiTapeProduct.pad_terms_loop iter1 new_terms1
+      last_term
+partial_fixpoint
 
 /-- [automata_builder::automata::terms_multitape::{automata_builder::automata::terms_multitape::MultiTapeProduct}::pad_terms]:
     Source: 'src/automata/terms_multitape.rs', lines 376:4-388:5 -/
@@ -31289,35 +28310,6 @@ def automata.terms_multitape.MultiTapeProduct.pad_terms
     ok (some mtp)
   else ok none
 
-/-- [automata_builder::automata::terms_multitape::{automata_builder::automata::terms_multitape::MultiTapeProduct}::reduce]: loop body 0:
-    Source: 'src/automata/terms_multitape.rs', lines 398:8-400:9
-    Visibility: public -/
-@[rust_loop_body]
-def automata.terms_multitape.MultiTapeProduct.reduce_loop.body
-  (iter : core.slice.iter.Iter automata.terms_multitape.MultiTapeTerm)
-  (terms_set : indexmap.set.IndexSet automata.terms_multitape.MultiTapeTerm
-  std.hash.random.RandomState) :
-  Result (ControlFlow ((core.slice.iter.Iter
-    automata.terms_multitape.MultiTapeTerm) × (indexmap.set.IndexSet
-    automata.terms_multitape.MultiTapeTerm std.hash.random.RandomState))
-    (indexmap.set.IndexSet automata.terms_multitape.MultiTapeTerm
-    std.hash.random.RandomState))
-  := do
-  let (o, iter1) ← core.slice.iter.IteratorSliceIter.next iter
-  match o with
-  | none => ok (done terms_set)
-  | some term =>
-    let mtt ←
-      automata.terms_multitape.MultiTapeTerm.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeProductMultiTapeExpression.copy
-        term
-    let (_, terms_set1) ←
-      indexmap.set.IndexSet.insert
-        automata.terms_multitape.MultiTapeTerm.Insts.CoreHashHash
-        automata.terms_multitape.MultiTapeTerm.Insts.CoreCmpEq
-        std.hash.random.RandomState.Insts.CoreHashBuildHasherDefaultHasher
-        terms_set mtt
-    ok (cont (iter1, terms_set1))
-
 /-- [automata_builder::automata::terms_multitape::{automata_builder::automata::terms_multitape::MultiTapeProduct}::reduce]: loop 0:
     Source: 'src/automata/terms_multitape.rs', lines 398:8-400:9
     Visibility: public -/
@@ -31329,11 +28321,21 @@ def automata.terms_multitape.MultiTapeProduct.reduce_loop
   Result (indexmap.set.IndexSet automata.terms_multitape.MultiTapeTerm
     std.hash.random.RandomState)
   := do
-  loop
-    (fun (iter1, terms_set1) =>
-      automata.terms_multitape.MultiTapeProduct.reduce_loop.body iter1
-      terms_set1)
-    (iter, terms_set)
+  let (o, iter1) ← core.slice.iter.IteratorSliceIter.next iter
+  match o with
+  | none => ok terms_set
+  | some term =>
+    let mtt ←
+      automata.terms_multitape.MultiTapeTerm.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeProductMultiTapeExpression.copy
+        term
+    let (_, terms_set1) ←
+      indexmap.set.IndexSet.insert
+        automata.terms_multitape.MultiTapeTerm.Insts.CoreHashHash
+        automata.terms_multitape.MultiTapeTerm.Insts.CoreCmpEq
+        std.hash.random.RandomState.Insts.CoreHashBuildHasherDefaultHasher
+        terms_set mtt
+    automata.terms_multitape.MultiTapeProduct.reduce_loop iter1 terms_set1
+partial_fixpoint
 
 /-- [automata_builder::automata::terms_multitape::{automata_builder::automata::terms_multitape::MultiTapeProduct}::reduce]:
     Source: 'src/automata/terms_multitape.rs', lines 395:4-404:5
@@ -31396,34 +28398,6 @@ def automata.terms_multitape.MultiTapeProduct.to_hashset
     (core.iter.traits.iterator.IteratorSliceIter
     automata.terms_multitape.MultiTapeTerm)) i
 
-/-- [automata_builder::automata::terms_multitape::{automata_builder::automata::terms_multitape::MultiTapeProduct}::is_satisfiable_with]: loop body 0:
-    Source: 'src/automata/terms_multitape.rs', lines 437:8-441:9
-    Visibility: public -/
-@[rust_loop_body]
-def automata.terms_multitape.MultiTapeProduct.is_satisfiable_with_loop0.body
-  (iter : core.slice.iter.Iter automata.terms_multitape.MultiTapeTerm)
-  (allocations : std.collections.hash.map.HashMap (Std.I64 × Std.U16) Std.U32
-  std.hash.random.RandomState alloc.alloc.Global) :
-  Result (ControlFlow ((core.slice.iter.Iter
-    automata.terms_multitape.MultiTapeTerm) ×
-    (std.collections.hash.map.HashMap (Std.I64 × Std.U16) Std.U32
-    std.hash.random.RandomState alloc.alloc.Global))
-    (std.collections.hash.map.HashMap (Std.I64 × Std.U16) Std.U32
-    std.hash.random.RandomState alloc.alloc.Global))
-  := do
-  let (o, iter1) ← core.slice.iter.IteratorSliceIter.next iter
-  match o with
-  | none => ok (done allocations)
-  | some term =>
-    let (tape_no, cell_state) := term.state
-    let (_, allocations1) ←
-      std.collections.hash.map.HashMap.insert (Pair.Insts.CoreCmpEq
-        core.cmp.EqI64 core.cmp.EqU16) (Pair.Insts.CoreHashHash
-        I64.Insts.CoreHashHash U16.Insts.CoreHashHash)
-        std.hash.random.RandomState.Insts.CoreHashBuildHasherDefaultHasher
-        allocations (term.position, tape_no) cell_state
-    ok (cont (iter1, allocations1))
-
 /-- [automata_builder::automata::terms_multitape::{automata_builder::automata::terms_multitape::MultiTapeProduct}::is_satisfiable_with]: loop 0:
     Source: 'src/automata/terms_multitape.rs', lines 437:8-441:9
     Visibility: public -/
@@ -31435,26 +28409,34 @@ def automata.terms_multitape.MultiTapeProduct.is_satisfiable_with_loop0
   Result (std.collections.hash.map.HashMap (Std.I64 × Std.U16) Std.U32
     std.hash.random.RandomState alloc.alloc.Global)
   := do
-  loop
-    (fun (iter1, allocations1) =>
-      automata.terms_multitape.MultiTapeProduct.is_satisfiable_with_loop0.body
-      iter1 allocations1)
-    (iter, allocations)
+  let (o, iter1) ← core.slice.iter.IteratorSliceIter.next iter
+  match o with
+  | none => ok allocations
+  | some term =>
+    let (tape_no, cell_state) := term.state
+    let (_, allocations1) ←
+      std.collections.hash.map.HashMap.insert (Pair.Insts.CoreCmpEq
+        core.cmp.EqI64 core.cmp.EqU16) (Pair.Insts.CoreHashHash
+        I64.Insts.CoreHashHash U16.Insts.CoreHashHash)
+        std.hash.random.RandomState.Insts.CoreHashBuildHasherDefaultHasher
+        allocations (term.position, tape_no) cell_state
+    automata.terms_multitape.MultiTapeProduct.is_satisfiable_with_loop0 iter1
+      allocations1
+partial_fixpoint
 
-/-- [automata_builder::automata::terms_multitape::{automata_builder::automata::terms_multitape::MultiTapeProduct}::is_satisfiable_with]: loop body 1:
+/-- [automata_builder::automata::terms_multitape::{automata_builder::automata::terms_multitape::MultiTapeProduct}::is_satisfiable_with]: loop 1:
     Source: 'src/automata/terms_multitape.rs', lines 442:8-455:5
     Visibility: public -/
-@[rust_loop_body]
-def automata.terms_multitape.MultiTapeProduct.is_satisfiable_with_loop1.body
+@[rust_loop]
+def automata.terms_multitape.MultiTapeProduct.is_satisfiable_with_loop1
+  (iter : core.slice.iter.Iter automata.terms_multitape.MultiTapeTerm)
   (allocations : std.collections.hash.map.HashMap (Std.I64 × Std.U16) Std.U32
-  std.hash.random.RandomState alloc.alloc.Global)
-  (iter : core.slice.iter.Iter automata.terms_multitape.MultiTapeTerm) :
-  Result (ControlFlow (core.slice.iter.Iter
-    automata.terms_multitape.MultiTapeTerm) Bool)
+  std.hash.random.RandomState alloc.alloc.Global) :
+  Result Bool
   := do
   let (o, iter1) ← core.slice.iter.IteratorSliceIter.next iter
   match o with
-  | none => ok (done true)
+  | none => ok true
   | some other_term =>
     let (tape_no, cell_state) := other_term.state
     let o1 ←
@@ -31468,24 +28450,11 @@ def automata.terms_multitape.MultiTapeProduct.is_satisfiable_with_loop1.body
         (other_term.position, tape_no)
     let existing_write ← lift (core.option.Option.unwrap_or o1 cell_state)
     if existing_write != cell_state
-    then ok (done false)
-    else ok (cont iter1)
-
-/-- [automata_builder::automata::terms_multitape::{automata_builder::automata::terms_multitape::MultiTapeProduct}::is_satisfiable_with]: loop 1:
-    Source: 'src/automata/terms_multitape.rs', lines 442:8-455:5
-    Visibility: public -/
-@[rust_loop]
-def automata.terms_multitape.MultiTapeProduct.is_satisfiable_with_loop1
-  (iter : core.slice.iter.Iter automata.terms_multitape.MultiTapeTerm)
-  (allocations : std.collections.hash.map.HashMap (Std.I64 × Std.U16) Std.U32
-  std.hash.random.RandomState alloc.alloc.Global) :
-  Result Bool
-  := do
-  loop
-    (fun iter1 =>
-      automata.terms_multitape.MultiTapeProduct.is_satisfiable_with_loop1.body
-      allocations iter1)
-    iter
+    then ok false
+    else
+      automata.terms_multitape.MultiTapeProduct.is_satisfiable_with_loop1 iter1
+        allocations
+partial_fixpoint
 
 /-- [automata_builder::automata::terms_multitape::{automata_builder::automata::terms_multitape::MultiTapeProduct}::is_satisfiable_with]:
     Source: 'src/automata/terms_multitape.rs', lines 433:4-455:5
@@ -31633,36 +28602,6 @@ def
     automata.terms_multitape.MultiTapeProduct.Insts.CoreOpsArithMulMultiTapeTermMultiTapeProduct.mul
 }
 
-/-- [automata_builder::automata::terms_multitape::{impl core::ops::arith::Mul<automata_builder::automata::terms_multitape::MultiTapeExpression, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeProduct}::mul]: loop body 0:
-    Source: 'src/automata/terms_multitape.rs', lines 525:8-527:9
-    Visibility: public -/
-@[rust_loop_body]
-def
-  automata.terms_multitape.MultiTapeProduct.Insts.CoreOpsArithMulMultiTapeExpressionMultiTapeExpression.mul_loop.body
-  (self : automata.terms_multitape.MultiTapeProduct)
-  (iter : core.slice.iter.Iter automata.terms_multitape.MultiTapeProduct)
-  (new_products : alloc.vec.Vec automata.terms_multitape.MultiTapeProduct) :
-  Result (ControlFlow ((core.slice.iter.Iter
-    automata.terms_multitape.MultiTapeProduct) × (alloc.vec.Vec
-    automata.terms_multitape.MultiTapeProduct)) (alloc.vec.Vec
-    automata.terms_multitape.MultiTapeProduct))
-  := do
-  let (o, iter1) ← core.slice.iter.IteratorSliceIter.next iter
-  match o with
-  | none => ok (done new_products)
-  | some product =>
-    let mtp ←
-      automata.terms_multitape.MultiTapeProduct.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeProductMultiTapeExpression.copy
-        self
-    let mtp1 ←
-      automata.terms_multitape.MultiTapeProduct.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeProductMultiTapeExpression.copy
-        product
-    let mtp2 ←
-      automata.terms_multitape.MultiTapeProduct.Insts.CoreOpsArithMulMultiTapeProductMultiTapeProduct.mul
-        mtp mtp1
-    let new_products1 ← alloc.vec.Vec.push new_products mtp2
-    ok (cont (iter1, new_products1))
-
 /-- [automata_builder::automata::terms_multitape::{impl core::ops::arith::Mul<automata_builder::automata::terms_multitape::MultiTapeExpression, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeProduct}::mul]: loop 0:
     Source: 'src/automata/terms_multitape.rs', lines 525:8-527:9
     Visibility: public -/
@@ -31674,11 +28613,23 @@ def
   (new_products : alloc.vec.Vec automata.terms_multitape.MultiTapeProduct) :
   Result (alloc.vec.Vec automata.terms_multitape.MultiTapeProduct)
   := do
-  loop
-    (fun (iter1, new_products1) =>
-      automata.terms_multitape.MultiTapeProduct.Insts.CoreOpsArithMulMultiTapeExpressionMultiTapeExpression.mul_loop.body
-      self iter1 new_products1)
-    (iter, new_products)
+  let (o, iter1) ← core.slice.iter.IteratorSliceIter.next iter
+  match o with
+  | none => ok new_products
+  | some product =>
+    let mtp ←
+      automata.terms_multitape.MultiTapeProduct.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeProductMultiTapeExpression.copy
+        self
+    let mtp1 ←
+      automata.terms_multitape.MultiTapeProduct.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeProductMultiTapeExpression.copy
+        product
+    let mtp2 ←
+      automata.terms_multitape.MultiTapeProduct.Insts.CoreOpsArithMulMultiTapeProductMultiTapeProduct.mul
+        mtp mtp1
+    let new_products1 ← alloc.vec.Vec.push new_products mtp2
+    automata.terms_multitape.MultiTapeProduct.Insts.CoreOpsArithMulMultiTapeExpressionMultiTapeExpression.mul_loop
+      iter1 self new_products1
+partial_fixpoint
 
 /-- [automata_builder::automata::terms_multitape::{impl core::ops::arith::Mul<automata_builder::automata::terms_multitape::MultiTapeExpression, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeProduct}::mul]:
     Source: 'src/automata/terms_multitape.rs', lines 523:4-529:5
@@ -31825,31 +28776,6 @@ def
   let ret := alloc.slice.Slice.into_vec y
   automata.terms_multitape.MultiTapeExpression.new ret
 
-/-- [automata_builder::automata::terms_multitape::{impl automata_builder::automata::terms_multitape::AbstractMultiTapeExpression<automata_builder::automata::terms_multitape::MultiTapeProduct, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeProduct}::_expand_steps]: loop body 0:
-    Source: 'src/automata/terms_multitape.rs', lines 626:8-630:9
-    Visibility: public -/
-@[rust_loop_body]
-def
-  automata.terms_multitape.MultiTapeProduct.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeProductMultiTapeExpression._expand_steps_loop.body
-  (expansion_mapping : std.collections.hash.map.HashMap (Std.U16 × Std.U32)
-  automata.terms_multitape.MultiTapeExpression std.hash.random.RandomState
-  alloc.alloc.Global) (include_debug_info : Bool) (fold : Bool)
-  (iter : core.ops.range.Range Std.U64)
-  (result : automata.terms_multitape.MultiTapeExpression) :
-  Result (ControlFlow ((core.ops.range.Range Std.U64) ×
-    automata.terms_multitape.MultiTapeExpression)
-    automata.terms_multitape.MultiTapeExpression)
-  := do
-  let (o, iter1) ←
-    core.iter.range.IteratorRange.next core.iter.range.StepU64 iter
-  match o with
-  | none => ok (done result)
-  | some _ =>
-    let result1 ←
-      automata.terms_multitape.MultiTapeExpression.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeExpressionMultiTapeExpression._expand
-        result expansion_mapping include_debug_info fold
-    ok (cont (iter1, result1))
-
 /-- [automata_builder::automata::terms_multitape::{impl automata_builder::automata::terms_multitape::AbstractMultiTapeExpression<automata_builder::automata::terms_multitape::MultiTapeProduct, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeProduct}::_expand_steps]: loop 0:
     Source: 'src/automata/terms_multitape.rs', lines 626:8-630:9
     Visibility: public -/
@@ -31863,11 +28789,17 @@ def
   (result : automata.terms_multitape.MultiTapeExpression) :
   Result automata.terms_multitape.MultiTapeExpression
   := do
-  loop
-    (fun (iter1, result1) =>
-      automata.terms_multitape.MultiTapeProduct.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeProductMultiTapeExpression._expand_steps_loop.body
-      expansion_mapping include_debug_info fold iter1 result1)
-    (iter, result)
+  let (o, iter1) ←
+    core.iter.range.IteratorRange.next core.iter.range.StepU64 iter
+  match o with
+  | none => ok result
+  | some _ =>
+    let result1 ←
+      automata.terms_multitape.MultiTapeExpression.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeExpressionMultiTapeExpression._expand
+        result expansion_mapping include_debug_info fold
+    automata.terms_multitape.MultiTapeProduct.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeProductMultiTapeExpression._expand_steps_loop
+      iter1 expansion_mapping include_debug_info fold result1
+partial_fixpoint
 
 /-- [automata_builder::automata::terms_multitape::{impl automata_builder::automata::terms_multitape::AbstractMultiTapeExpression<automata_builder::automata::terms_multitape::MultiTapeProduct, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeProduct}::_expand_steps]:
     Source: 'src/automata/terms_multitape.rs', lines 617:4-632:5
@@ -31894,30 +28826,6 @@ def
     { start := 1#u64, «end» := steps } expansion_mapping include_debug_info
     fold result
 
-/-- [automata_builder::automata::terms_multitape::{impl automata_builder::automata::terms_multitape::AbstractMultiTapeExpression<automata_builder::automata::terms_multitape::MultiTapeProduct, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeProduct}::_sub]: loop body 0:
-    Source: 'src/automata/terms_multitape.rs', lines 580:8-586:5
-    Visibility: public -/
-@[rust_loop_body]
-def
-  automata.terms_multitape.MultiTapeProduct.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeProductMultiTapeExpression._sub_loop.body
-  (substitutions : std.collections.hash.map.HashMap Std.I64 (Std.U16 ×
-  Std.U32) std.hash.random.RandomState alloc.alloc.Global)
-  (default : (Std.U16 × Std.U32))
-  (iter : core.slice.iter.Iter automata.terms_multitape.MultiTapeTerm) :
-  Result (ControlFlow (core.slice.iter.Iter
-    automata.terms_multitape.MultiTapeTerm) Bool)
-  := do
-  let (o, iter1) ← core.slice.iter.IteratorSliceIter.next iter
-  match o with
-  | none => ok (done true)
-  | some term =>
-    let b ←
-      automata.terms_multitape.MultiTapeTerm.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeProductMultiTapeExpression._sub
-        term substitutions default
-    if b
-    then ok (cont iter1)
-    else ok (done false)
-
 /-- [automata_builder::automata::terms_multitape::{impl automata_builder::automata::terms_multitape::AbstractMultiTapeExpression<automata_builder::automata::terms_multitape::MultiTapeProduct, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeProduct}::_sub]: loop 0:
     Source: 'src/automata/terms_multitape.rs', lines 580:8-586:5
     Visibility: public -/
@@ -31930,11 +28838,19 @@ def
   (default : (Std.U16 × Std.U32)) :
   Result Bool
   := do
-  loop
-    (fun iter1 =>
-      automata.terms_multitape.MultiTapeProduct.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeProductMultiTapeExpression._sub_loop.body
-      substitutions default iter1)
-    iter
+  let (o, iter1) ← core.slice.iter.IteratorSliceIter.next iter
+  match o with
+  | none => ok true
+  | some term =>
+    let b ←
+      automata.terms_multitape.MultiTapeTerm.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeProductMultiTapeExpression._sub
+        term substitutions default
+    if b
+    then
+      automata.terms_multitape.MultiTapeProduct.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeProductMultiTapeExpression._sub_loop
+        iter1 substitutions default
+    else ok false
+partial_fixpoint
 
 /-- [automata_builder::automata::terms_multitape::{impl automata_builder::automata::terms_multitape::AbstractMultiTapeExpression<automata_builder::automata::terms_multitape::MultiTapeProduct, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeProduct}::_sub]:
     Source: 'src/automata/terms_multitape.rs', lines 576:4-586:5
@@ -32052,29 +28968,6 @@ def automata.terms_multitape.MultiTapeExpression._get_product
   core.slice.Slice.get (core.slice.index.SliceIndexUsizeSlice
     automata.terms_multitape.MultiTapeProduct) s index
 
-/-- [automata_builder::automata::terms_multitape::{automata_builder::automata::terms_multitape::MultiTapeExpression}::_to_flat_terms]: loop body 1:
-    Source: 'src/automata/terms_multitape.rs', lines 678:12-680:13
-    Visibility: public -/
-@[rust_loop_body]
-def
-  automata.terms_multitape.MultiTapeExpression._to_flat_terms_loop0_loop0.body
-  (iter : core.slice.iter.Iter automata.terms_multitape.MultiTapeTerm)
-  (flat_terms : alloc.vec.Vec automata.terms_multitape.MultiTapeTerm) :
-  Result (ControlFlow ((core.slice.iter.Iter
-    automata.terms_multitape.MultiTapeTerm) × (alloc.vec.Vec
-    automata.terms_multitape.MultiTapeTerm)) (alloc.vec.Vec
-    automata.terms_multitape.MultiTapeTerm))
-  := do
-  let (o, iter1) ← core.slice.iter.IteratorSliceIter.next iter
-  match o with
-  | none => ok (done flat_terms)
-  | some term =>
-    let mtt ←
-      automata.terms_multitape.MultiTapeTerm.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeProductMultiTapeExpression.copy
-        term
-    let flat_terms1 ← alloc.vec.Vec.push flat_terms mtt
-    ok (cont (iter1, flat_terms1))
-
 /-- [automata_builder::automata::terms_multitape::{automata_builder::automata::terms_multitape::MultiTapeExpression}::_to_flat_terms]: loop 1:
     Source: 'src/automata/terms_multitape.rs', lines 678:12-680:13
     Visibility: public -/
@@ -32084,34 +28977,17 @@ def automata.terms_multitape.MultiTapeExpression._to_flat_terms_loop0_loop0
   (flat_terms : alloc.vec.Vec automata.terms_multitape.MultiTapeTerm) :
   Result (alloc.vec.Vec automata.terms_multitape.MultiTapeTerm)
   := do
-  loop
-    (fun (iter1, flat_terms1) =>
-      automata.terms_multitape.MultiTapeExpression._to_flat_terms_loop0_loop0.body
-      iter1 flat_terms1)
-    (iter, flat_terms)
-
-/-- [automata_builder::automata::terms_multitape::{automata_builder::automata::terms_multitape::MultiTapeExpression}::_to_flat_terms]: loop body 0:
-    Source: 'src/automata/terms_multitape.rs', lines 677:8-681:9
-    Visibility: public -/
-@[rust_loop_body]
-def automata.terms_multitape.MultiTapeExpression._to_flat_terms_loop0.body
-  (iter : core.slice.iter.Iter automata.terms_multitape.MultiTapeProduct)
-  (flat_terms : alloc.vec.Vec automata.terms_multitape.MultiTapeTerm) :
-  Result (ControlFlow ((core.slice.iter.Iter
-    automata.terms_multitape.MultiTapeProduct) × (alloc.vec.Vec
-    automata.terms_multitape.MultiTapeTerm)) (alloc.vec.Vec
-    automata.terms_multitape.MultiTapeTerm))
-  := do
   let (o, iter1) ← core.slice.iter.IteratorSliceIter.next iter
   match o with
-  | none => ok (done flat_terms)
-  | some product =>
-    let s := alloc.vec.Vec.deref product._terms
-    let iter2 ← core.slice.Slice.iter s
-    let flat_terms1 ←
-      automata.terms_multitape.MultiTapeExpression._to_flat_terms_loop0_loop0
-        iter2 flat_terms
-    ok (cont (iter1, flat_terms1))
+  | none => ok flat_terms
+  | some term =>
+    let mtt ←
+      automata.terms_multitape.MultiTapeTerm.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeProductMultiTapeExpression.copy
+        term
+    let flat_terms1 ← alloc.vec.Vec.push flat_terms mtt
+    automata.terms_multitape.MultiTapeExpression._to_flat_terms_loop0_loop0
+      iter1 flat_terms1
+partial_fixpoint
 
 /-- [automata_builder::automata::terms_multitape::{automata_builder::automata::terms_multitape::MultiTapeExpression}::_to_flat_terms]: loop 0:
     Source: 'src/automata/terms_multitape.rs', lines 677:8-681:9
@@ -32122,11 +28998,18 @@ def automata.terms_multitape.MultiTapeExpression._to_flat_terms_loop0
   (flat_terms : alloc.vec.Vec automata.terms_multitape.MultiTapeTerm) :
   Result (alloc.vec.Vec automata.terms_multitape.MultiTapeTerm)
   := do
-  loop
-    (fun (iter1, flat_terms1) =>
-      automata.terms_multitape.MultiTapeExpression._to_flat_terms_loop0.body
-      iter1 flat_terms1)
-    (iter, flat_terms)
+  let (o, iter1) ← core.slice.iter.IteratorSliceIter.next iter
+  match o with
+  | none => ok flat_terms
+  | some product =>
+    let s := alloc.vec.Vec.deref product._terms
+    let iter2 ← core.slice.Slice.iter s
+    let flat_terms1 ←
+      automata.terms_multitape.MultiTapeExpression._to_flat_terms_loop0_loop0
+        iter2 flat_terms
+    automata.terms_multitape.MultiTapeExpression._to_flat_terms_loop0 iter1
+      flat_terms1
+partial_fixpoint
 
 /-- [automata_builder::automata::terms_multitape::{automata_builder::automata::terms_multitape::MultiTapeExpression}::_to_flat_terms]:
     Source: 'src/automata/terms_multitape.rs', lines 675:4-683:5
@@ -32140,27 +29023,6 @@ def automata.terms_multitape.MultiTapeExpression._to_flat_terms
   automata.terms_multitape.MultiTapeExpression._to_flat_terms_loop0 iter
     (alloc.vec.Vec.new automata.terms_multitape.MultiTapeTerm)
 
-/-- [automata_builder::automata::terms_multitape::{automata_builder::automata::terms_multitape::MultiTapeExpression}::pad_products]: loop body 0:
-    Source: 'src/automata/terms_multitape.rs', lines 715:8-717:9
-    Visibility: public -/
-@[rust_loop_body]
-def automata.terms_multitape.MultiTapeExpression.pad_products_loop.body
-  (new_num_products : Std.Usize)
-  (last_product : automata.terms_multitape.MultiTapeProduct)
-  (new_products : alloc.vec.Vec automata.terms_multitape.MultiTapeProduct) :
-  Result (ControlFlow (alloc.vec.Vec automata.terms_multitape.MultiTapeProduct)
-    (alloc.vec.Vec automata.terms_multitape.MultiTapeProduct))
-  := do
-  let i := alloc.vec.Vec.len new_products
-  if i < new_num_products
-  then
-    let mtp ←
-      automata.terms_multitape.MultiTapeProduct.Insts.CoreCloneClone.clone
-        last_product
-    let new_products1 ← alloc.vec.Vec.push new_products mtp
-    ok (cont new_products1)
-  else ok (done new_products)
-
 /-- [automata_builder::automata::terms_multitape::{automata_builder::automata::terms_multitape::MultiTapeExpression}::pad_products]: loop 0:
     Source: 'src/automata/terms_multitape.rs', lines 715:8-717:9
     Visibility: public -/
@@ -32171,11 +29033,17 @@ def automata.terms_multitape.MultiTapeExpression.pad_products_loop
   (last_product : automata.terms_multitape.MultiTapeProduct) :
   Result (alloc.vec.Vec automata.terms_multitape.MultiTapeProduct)
   := do
-  loop
-    (fun new_products1 =>
-      automata.terms_multitape.MultiTapeExpression.pad_products_loop.body
-      new_num_products last_product new_products1)
-    new_products
+  let i := alloc.vec.Vec.len new_products
+  if i < new_num_products
+  then
+    let mtp ←
+      automata.terms_multitape.MultiTapeProduct.Insts.CoreCloneClone.clone
+        last_product
+    let new_products1 ← alloc.vec.Vec.push new_products mtp
+    automata.terms_multitape.MultiTapeExpression.pad_products_loop
+      new_num_products new_products1 last_product
+  else ok new_products
+partial_fixpoint
 
 /-- [automata_builder::automata::terms_multitape::{automata_builder::automata::terms_multitape::MultiTapeExpression}::pad_products]:
     Source: 'src/automata/terms_multitape.rs', lines 711:4-719:5
@@ -32198,33 +29066,6 @@ def automata.terms_multitape.MultiTapeExpression.pad_products
   let mte ← automata.terms_multitape.MultiTapeExpression.new new_products1
   ok (some mte)
 
-/-- [automata_builder::automata::terms_multitape::{automata_builder::automata::terms_multitape::MultiTapeExpression}::reduce]: loop body 0:
-    Source: 'src/automata/terms_multitape.rs', lines 722:8-724:9
-    Visibility: public -/
-@[rust_loop_body]
-def automata.terms_multitape.MultiTapeExpression.reduce_loop.body
-  (iter : core.slice.iter.Iter automata.terms_multitape.MultiTapeProduct)
-  (products_set : indexmap.set.IndexSet
-  automata.terms_multitape.MultiTapeProduct std.hash.random.RandomState) :
-  Result (ControlFlow ((core.slice.iter.Iter
-    automata.terms_multitape.MultiTapeProduct) × (indexmap.set.IndexSet
-    automata.terms_multitape.MultiTapeProduct std.hash.random.RandomState))
-    (indexmap.set.IndexSet automata.terms_multitape.MultiTapeProduct
-    std.hash.random.RandomState))
-  := do
-  let (o, iter1) ← core.slice.iter.IteratorSliceIter.next iter
-  match o with
-  | none => ok (done products_set)
-  | some product =>
-    let mtp ← automata.terms_multitape.MultiTapeProduct.reduce product
-    let (_, products_set1) ←
-      indexmap.set.IndexSet.insert
-        automata.terms_multitape.MultiTapeProduct.Insts.CoreHashHash
-        automata.terms_multitape.MultiTapeProduct.Insts.CoreCmpEq
-        std.hash.random.RandomState.Insts.CoreHashBuildHasherDefaultHasher
-        products_set mtp
-    ok (cont (iter1, products_set1))
-
 /-- [automata_builder::automata::terms_multitape::{automata_builder::automata::terms_multitape::MultiTapeExpression}::reduce]: loop 0:
     Source: 'src/automata/terms_multitape.rs', lines 722:8-724:9
     Visibility: public -/
@@ -32236,11 +29077,20 @@ def automata.terms_multitape.MultiTapeExpression.reduce_loop
   Result (indexmap.set.IndexSet automata.terms_multitape.MultiTapeProduct
     std.hash.random.RandomState)
   := do
-  loop
-    (fun (iter1, products_set1) =>
-      automata.terms_multitape.MultiTapeExpression.reduce_loop.body iter1
-      products_set1)
-    (iter, products_set)
+  let (o, iter1) ← core.slice.iter.IteratorSliceIter.next iter
+  match o with
+  | none => ok products_set
+  | some product =>
+    let mtp ← automata.terms_multitape.MultiTapeProduct.reduce product
+    let (_, products_set1) ←
+      indexmap.set.IndexSet.insert
+        automata.terms_multitape.MultiTapeProduct.Insts.CoreHashHash
+        automata.terms_multitape.MultiTapeProduct.Insts.CoreCmpEq
+        std.hash.random.RandomState.Insts.CoreHashBuildHasherDefaultHasher
+        products_set mtp
+    automata.terms_multitape.MultiTapeExpression.reduce_loop iter1
+      products_set1
+partial_fixpoint
 
 /-- [automata_builder::automata::terms_multitape::{automata_builder::automata::terms_multitape::MultiTapeExpression}::reduce]:
     Source: 'src/automata/terms_multitape.rs', lines 720:4-728:5
@@ -32304,27 +29154,6 @@ impl_def Shared0MultiTapeExpression.Insts.CoreCmpPartialEqMultiTapeExpression :
     Shared0MultiTapeExpression.Insts.CoreCmpPartialEqMultiTapeExpression
 }
 
-/-- [automata_builder::automata::terms_multitape::{impl core::hash::Hash for automata_builder::automata::terms_multitape::MultiTapeExpression}::hash]: loop body 0:
-    Source: 'src/automata/terms_multitape.rs', lines 761:8-763:9
-    Visibility: public -/
-@[rust_loop_body]
-def
-  automata.terms_multitape.MultiTapeExpression.Insts.CoreHashHash.hash_loop.body
-  {H : Type _} (corehashHasherInst : core.hash.Hasher H)
-  (iter : core.slice.iter.Iter automata.terms_multitape.MultiTapeProduct)
-  (state : H) :
-  Result (ControlFlow ((core.slice.iter.Iter
-    automata.terms_multitape.MultiTapeProduct) × H) H)
-  := do
-  let (o, iter1) ← core.slice.iter.IteratorSliceIter.next iter
-  match o with
-  | none => ok (done state)
-  | some product =>
-    let state1 ←
-      automata.terms_multitape.MultiTapeProduct.Insts.CoreHashHash.hash
-        corehashHasherInst product state
-    ok (cont (iter1, state1))
-
 /-- [automata_builder::automata::terms_multitape::{impl core::hash::Hash for automata_builder::automata::terms_multitape::MultiTapeExpression}::hash]: loop 0:
     Source: 'src/automata/terms_multitape.rs', lines 761:8-763:9
     Visibility: public -/
@@ -32335,11 +29164,16 @@ def automata.terms_multitape.MultiTapeExpression.Insts.CoreHashHash.hash_loop
   (state : H) :
   Result H
   := do
-  loop
-    (fun (iter1, state1) =>
-      automata.terms_multitape.MultiTapeExpression.Insts.CoreHashHash.hash_loop.body
-      corehashHasherInst iter1 state1)
-    (iter, state)
+  let (o, iter1) ← core.slice.iter.IteratorSliceIter.next iter
+  match o with
+  | none => ok state
+  | some product =>
+    let state1 ←
+      automata.terms_multitape.MultiTapeProduct.Insts.CoreHashHash.hash
+        corehashHasherInst product state
+    automata.terms_multitape.MultiTapeExpression.Insts.CoreHashHash.hash_loop
+      corehashHasherInst iter1 state1
+partial_fixpoint
 
 /-- [automata_builder::automata::terms_multitape::{impl core::hash::Hash for automata_builder::automata::terms_multitape::MultiTapeExpression}::hash]:
     Source: 'src/automata/terms_multitape.rs', lines 760:4-764:5
@@ -32414,33 +29248,6 @@ def
     automata.terms_multitape.MultiTapeExpression.Insts.CoreOpsArithMulMultiTapeExpressionMultiTapeExpression.mul
 }
 
-/-- [automata_builder::automata::terms_multitape::{impl core::ops::arith::Mul<automata_builder::automata::terms_multitape::MultiTapeTerm, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeExpression}::mul]: loop body 0:
-    Source: 'src/automata/terms_multitape.rs', lines 793:8-796:9
-    Visibility: public -/
-@[rust_loop_body]
-def
-  automata.terms_multitape.MultiTapeExpression.Insts.CoreOpsArithMulMultiTapeTermMultiTapeExpression.mul_loop.body
-  (rhs : automata.terms_multitape.MultiTapeTerm)
-  (iter : core.slice.iter.Iter automata.terms_multitape.MultiTapeProduct)
-  (new_products : alloc.vec.Vec automata.terms_multitape.MultiTapeProduct) :
-  Result (ControlFlow ((core.slice.iter.Iter
-    automata.terms_multitape.MultiTapeProduct) × (alloc.vec.Vec
-    automata.terms_multitape.MultiTapeProduct)) (alloc.vec.Vec
-    automata.terms_multitape.MultiTapeProduct))
-  := do
-  let (o, iter1) ← core.slice.iter.IteratorSliceIter.next iter
-  match o with
-  | none => ok (done new_products)
-  | some product =>
-    let mtt ←
-      automata.terms_multitape.MultiTapeTerm.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeProductMultiTapeExpression.copy
-        rhs
-    let mtp ←
-      Shared0MultiTapeProduct.Insts.CoreOpsArithMulMultiTapeTermMultiTapeProduct.mul
-        product mtt
-    let new_products1 ← alloc.vec.Vec.push new_products mtp
-    ok (cont (iter1, new_products1))
-
 /-- [automata_builder::automata::terms_multitape::{impl core::ops::arith::Mul<automata_builder::automata::terms_multitape::MultiTapeTerm, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeExpression}::mul]: loop 0:
     Source: 'src/automata/terms_multitape.rs', lines 793:8-796:9
     Visibility: public -/
@@ -32452,11 +29259,20 @@ def
   (new_products : alloc.vec.Vec automata.terms_multitape.MultiTapeProduct) :
   Result (alloc.vec.Vec automata.terms_multitape.MultiTapeProduct)
   := do
-  loop
-    (fun (iter1, new_products1) =>
-      automata.terms_multitape.MultiTapeExpression.Insts.CoreOpsArithMulMultiTapeTermMultiTapeExpression.mul_loop.body
-      rhs iter1 new_products1)
-    (iter, new_products)
+  let (o, iter1) ← core.slice.iter.IteratorSliceIter.next iter
+  match o with
+  | none => ok new_products
+  | some product =>
+    let mtt ←
+      automata.terms_multitape.MultiTapeTerm.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeProductMultiTapeExpression.copy
+        rhs
+    let mtp ←
+      Shared0MultiTapeProduct.Insts.CoreOpsArithMulMultiTapeTermMultiTapeProduct.mul
+        product mtt
+    let new_products1 ← alloc.vec.Vec.push new_products mtp
+    automata.terms_multitape.MultiTapeExpression.Insts.CoreOpsArithMulMultiTapeTermMultiTapeExpression.mul_loop
+      iter1 rhs new_products1
+partial_fixpoint
 
 /-- [automata_builder::automata::terms_multitape::{impl core::ops::arith::Mul<automata_builder::automata::terms_multitape::MultiTapeTerm, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeExpression}::mul]:
     Source: 'src/automata/terms_multitape.rs', lines 790:4-798:5
@@ -32486,36 +29302,6 @@ def
     automata.terms_multitape.MultiTapeExpression.Insts.CoreOpsArithMulMultiTapeTermMultiTapeExpression.mul
 }
 
-/-- [automata_builder::automata::terms_multitape::{impl core::ops::arith::Mul<automata_builder::automata::terms_multitape::MultiTapeProduct, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeExpression}::mul]: loop body 0:
-    Source: 'src/automata/terms_multitape.rs', lines 805:8-807:9
-    Visibility: public -/
-@[rust_loop_body]
-def
-  automata.terms_multitape.MultiTapeExpression.Insts.CoreOpsArithMulMultiTapeProductMultiTapeExpression.mul_loop.body
-  (rhs : automata.terms_multitape.MultiTapeProduct)
-  (iter : core.slice.iter.Iter automata.terms_multitape.MultiTapeProduct)
-  (new_products : alloc.vec.Vec automata.terms_multitape.MultiTapeProduct) :
-  Result (ControlFlow ((core.slice.iter.Iter
-    automata.terms_multitape.MultiTapeProduct) × (alloc.vec.Vec
-    automata.terms_multitape.MultiTapeProduct)) (alloc.vec.Vec
-    automata.terms_multitape.MultiTapeProduct))
-  := do
-  let (o, iter1) ← core.slice.iter.IteratorSliceIter.next iter
-  match o with
-  | none => ok (done new_products)
-  | some product =>
-    let mtp ←
-      automata.terms_multitape.MultiTapeProduct.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeProductMultiTapeExpression.copy
-        product
-    let mtp1 ←
-      automata.terms_multitape.MultiTapeProduct.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeProductMultiTapeExpression.copy
-        rhs
-    let mtp2 ←
-      automata.terms_multitape.MultiTapeProduct.Insts.CoreOpsArithMulMultiTapeProductMultiTapeProduct.mul
-        mtp mtp1
-    let new_products1 ← alloc.vec.Vec.push new_products mtp2
-    ok (cont (iter1, new_products1))
-
 /-- [automata_builder::automata::terms_multitape::{impl core::ops::arith::Mul<automata_builder::automata::terms_multitape::MultiTapeProduct, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeExpression}::mul]: loop 0:
     Source: 'src/automata/terms_multitape.rs', lines 805:8-807:9
     Visibility: public -/
@@ -32527,11 +29313,23 @@ def
   (new_products : alloc.vec.Vec automata.terms_multitape.MultiTapeProduct) :
   Result (alloc.vec.Vec automata.terms_multitape.MultiTapeProduct)
   := do
-  loop
-    (fun (iter1, new_products1) =>
-      automata.terms_multitape.MultiTapeExpression.Insts.CoreOpsArithMulMultiTapeProductMultiTapeExpression.mul_loop.body
-      rhs iter1 new_products1)
-    (iter, new_products)
+  let (o, iter1) ← core.slice.iter.IteratorSliceIter.next iter
+  match o with
+  | none => ok new_products
+  | some product =>
+    let mtp ←
+      automata.terms_multitape.MultiTapeProduct.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeProductMultiTapeExpression.copy
+        product
+    let mtp1 ←
+      automata.terms_multitape.MultiTapeProduct.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeProductMultiTapeExpression.copy
+        rhs
+    let mtp2 ←
+      automata.terms_multitape.MultiTapeProduct.Insts.CoreOpsArithMulMultiTapeProductMultiTapeProduct.mul
+        mtp mtp1
+    let new_products1 ← alloc.vec.Vec.push new_products mtp2
+    automata.terms_multitape.MultiTapeExpression.Insts.CoreOpsArithMulMultiTapeProductMultiTapeExpression.mul_loop
+      iter1 rhs new_products1
+partial_fixpoint
 
 /-- [automata_builder::automata::terms_multitape::{impl core::ops::arith::Mul<automata_builder::automata::terms_multitape::MultiTapeProduct, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeExpression}::mul]:
     Source: 'src/automata/terms_multitape.rs', lines 803:4-809:5
@@ -32573,29 +29371,6 @@ def
     automata.terms_multitape.MultiTapeExpression.Insts.CoreOpsBitBitOrMultiTapeExpressionMultiTapeExpression.bitor
 }
 
-/-- [automata_builder::automata::terms_multitape::{impl core::ops::bit::BitOr<automata_builder::automata::terms_multitape::MultiTapeTerm, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeExpression}::bitor]: loop body 0:
-    Source: 'src/automata/terms_multitape.rs', lines 830:8-832:9
-    Visibility: public -/
-@[rust_loop_body]
-def
-  automata.terms_multitape.MultiTapeExpression.Insts.CoreOpsBitBitOrMultiTapeTermMultiTapeExpression.bitor_loop.body
-  (iter : core.slice.iter.Iter automata.terms_multitape.MultiTapeProduct)
-  (new_products : alloc.vec.Vec automata.terms_multitape.MultiTapeProduct) :
-  Result (ControlFlow ((core.slice.iter.Iter
-    automata.terms_multitape.MultiTapeProduct) × (alloc.vec.Vec
-    automata.terms_multitape.MultiTapeProduct)) (alloc.vec.Vec
-    automata.terms_multitape.MultiTapeProduct))
-  := do
-  let (o, iter1) ← core.slice.iter.IteratorSliceIter.next iter
-  match o with
-  | none => ok (done new_products)
-  | some product =>
-    let mtp ←
-      automata.terms_multitape.MultiTapeProduct.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeProductMultiTapeExpression.copy
-        product
-    let new_products1 ← alloc.vec.Vec.push new_products mtp
-    ok (cont (iter1, new_products1))
-
 /-- [automata_builder::automata::terms_multitape::{impl core::ops::bit::BitOr<automata_builder::automata::terms_multitape::MultiTapeTerm, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeExpression}::bitor]: loop 0:
     Source: 'src/automata/terms_multitape.rs', lines 830:8-832:9
     Visibility: public -/
@@ -32606,11 +29381,17 @@ def
   (new_products : alloc.vec.Vec automata.terms_multitape.MultiTapeProduct) :
   Result (alloc.vec.Vec automata.terms_multitape.MultiTapeProduct)
   := do
-  loop
-    (fun (iter1, new_products1) =>
-      automata.terms_multitape.MultiTapeExpression.Insts.CoreOpsBitBitOrMultiTapeTermMultiTapeExpression.bitor_loop.body
-      iter1 new_products1)
-    (iter, new_products)
+  let (o, iter1) ← core.slice.iter.IteratorSliceIter.next iter
+  match o with
+  | none => ok new_products
+  | some product =>
+    let mtp ←
+      automata.terms_multitape.MultiTapeProduct.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeProductMultiTapeExpression.copy
+        product
+    let new_products1 ← alloc.vec.Vec.push new_products mtp
+    automata.terms_multitape.MultiTapeExpression.Insts.CoreOpsBitBitOrMultiTapeTermMultiTapeExpression.bitor_loop
+      iter1 new_products1
+partial_fixpoint
 
 /-- [automata_builder::automata::terms_multitape::{impl core::ops::bit::BitOr<automata_builder::automata::terms_multitape::MultiTapeTerm, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeExpression}::bitor]:
     Source: 'src/automata/terms_multitape.rs', lines 828:4-835:5
@@ -32642,29 +29423,6 @@ def
     automata.terms_multitape.MultiTapeExpression.Insts.CoreOpsBitBitOrMultiTapeTermMultiTapeExpression.bitor
 }
 
-/-- [automata_builder::automata::terms_multitape::{impl core::ops::bit::BitOr<automata_builder::automata::terms_multitape::MultiTapeProduct, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeExpression}::bitor]: loop body 0:
-    Source: 'src/automata/terms_multitape.rs', lines 842:8-844:9
-    Visibility: public -/
-@[rust_loop_body]
-def
-  automata.terms_multitape.MultiTapeExpression.Insts.CoreOpsBitBitOrMultiTapeProductMultiTapeExpression.bitor_loop.body
-  (iter : core.slice.iter.Iter automata.terms_multitape.MultiTapeProduct)
-  (new_products : alloc.vec.Vec automata.terms_multitape.MultiTapeProduct) :
-  Result (ControlFlow ((core.slice.iter.Iter
-    automata.terms_multitape.MultiTapeProduct) × (alloc.vec.Vec
-    automata.terms_multitape.MultiTapeProduct)) (alloc.vec.Vec
-    automata.terms_multitape.MultiTapeProduct))
-  := do
-  let (o, iter1) ← core.slice.iter.IteratorSliceIter.next iter
-  match o with
-  | none => ok (done new_products)
-  | some product =>
-    let mtp ←
-      automata.terms_multitape.MultiTapeProduct.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeProductMultiTapeExpression.copy
-        product
-    let new_products1 ← alloc.vec.Vec.push new_products mtp
-    ok (cont (iter1, new_products1))
-
 /-- [automata_builder::automata::terms_multitape::{impl core::ops::bit::BitOr<automata_builder::automata::terms_multitape::MultiTapeProduct, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeExpression}::bitor]: loop 0:
     Source: 'src/automata/terms_multitape.rs', lines 842:8-844:9
     Visibility: public -/
@@ -32675,11 +29433,17 @@ def
   (new_products : alloc.vec.Vec automata.terms_multitape.MultiTapeProduct) :
   Result (alloc.vec.Vec automata.terms_multitape.MultiTapeProduct)
   := do
-  loop
-    (fun (iter1, new_products1) =>
-      automata.terms_multitape.MultiTapeExpression.Insts.CoreOpsBitBitOrMultiTapeProductMultiTapeExpression.bitor_loop.body
-      iter1 new_products1)
-    (iter, new_products)
+  let (o, iter1) ← core.slice.iter.IteratorSliceIter.next iter
+  match o with
+  | none => ok new_products
+  | some product =>
+    let mtp ←
+      automata.terms_multitape.MultiTapeProduct.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeProductMultiTapeExpression.copy
+        product
+    let new_products1 ← alloc.vec.Vec.push new_products mtp
+    automata.terms_multitape.MultiTapeExpression.Insts.CoreOpsBitBitOrMultiTapeProductMultiTapeExpression.bitor_loop
+      iter1 new_products1
+partial_fixpoint
 
 /-- [automata_builder::automata::terms_multitape::{impl core::ops::bit::BitOr<automata_builder::automata::terms_multitape::MultiTapeProduct, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeExpression}::bitor]:
     Source: 'src/automata/terms_multitape.rs', lines 840:4-847:5
@@ -32891,30 +29655,6 @@ def
   automata.terms_multitape.MultiTapeExpression.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeExpressionMultiTapeExpression.copy
     self
 
-/-- [automata_builder::automata::terms_multitape::{impl automata_builder::automata::terms_multitape::AbstractMultiTapeExpression<automata_builder::automata::terms_multitape::MultiTapeExpression, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeExpression}::_sub]: loop body 0:
-    Source: 'src/automata/terms_multitape.rs', lines 862:8-868:5
-    Visibility: public -/
-@[rust_loop_body]
-def
-  automata.terms_multitape.MultiTapeExpression.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeExpressionMultiTapeExpression._sub_loop.body
-  (substitutions : std.collections.hash.map.HashMap Std.I64 (Std.U16 ×
-  Std.U32) std.hash.random.RandomState alloc.alloc.Global)
-  (default : (Std.U16 × Std.U32))
-  (iter : core.slice.iter.Iter automata.terms_multitape.MultiTapeProduct) :
-  Result (ControlFlow (core.slice.iter.Iter
-    automata.terms_multitape.MultiTapeProduct) Bool)
-  := do
-  let (o, iter1) ← core.slice.iter.IteratorSliceIter.next iter
-  match o with
-  | none => ok (done false)
-  | some product =>
-    let b ←
-      automata.terms_multitape.MultiTapeProduct.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeProductMultiTapeExpression._sub
-        product substitutions default
-    if b
-    then ok (done true)
-    else ok (cont iter1)
-
 /-- [automata_builder::automata::terms_multitape::{impl automata_builder::automata::terms_multitape::AbstractMultiTapeExpression<automata_builder::automata::terms_multitape::MultiTapeExpression, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeExpression}::_sub]: loop 0:
     Source: 'src/automata/terms_multitape.rs', lines 862:8-868:5
     Visibility: public -/
@@ -32927,11 +29667,19 @@ def
   (default : (Std.U16 × Std.U32)) :
   Result Bool
   := do
-  loop
-    (fun iter1 =>
-      automata.terms_multitape.MultiTapeExpression.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeExpressionMultiTapeExpression._sub_loop.body
-      substitutions default iter1)
-    iter
+  let (o, iter1) ← core.slice.iter.IteratorSliceIter.next iter
+  match o with
+  | none => ok false
+  | some product =>
+    let b ←
+      automata.terms_multitape.MultiTapeProduct.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeProductMultiTapeExpression._sub
+        product substitutions default
+    if b
+    then ok true
+    else
+      automata.terms_multitape.MultiTapeExpression.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeExpressionMultiTapeExpression._sub_loop
+        iter1 substitutions default
+partial_fixpoint
 
 /-- [automata_builder::automata::terms_multitape::{impl automata_builder::automata::terms_multitape::AbstractMultiTapeExpression<automata_builder::automata::terms_multitape::MultiTapeExpression, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeExpression}::_sub]:
     Source: 'src/automata/terms_multitape.rs', lines 858:4-868:5
@@ -32983,28 +29731,28 @@ def
     automata.terms_multitape.MultiTapeExpression.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeExpressionMultiTapeExpression._assign_indexes_as_base
 }
 
-/-- [automata_builder::automata::terms_multitape::validate_debug_info_exists]: loop body 1:
+/-- [automata_builder::automata::terms_multitape::validate_debug_info_exists]: loop 1:
     Source: 'src/automata/terms_multitape.rs', lines 934:8-941:9
     Visibility: public -/
-@[rust_loop_body]
-def automata.terms_multitape.validate_debug_info_exists_loop0_loop0.body
-  (product_index : Std.Usize)
+@[rust_loop]
+def automata.terms_multitape.validate_debug_info_exists_loop0_loop0
   (iter : core.iter.adapters.enumerate.Enumerate (core.slice.iter.Iter
-  automata.terms_multitape.MultiTapeTerm)) :
-  Result (ControlFlow (core.iter.adapters.enumerate.Enumerate
-    (core.slice.iter.Iter automata.terms_multitape.MultiTapeTerm)) Unit)
+  automata.terms_multitape.MultiTapeTerm)) (product_index : Std.Usize) :
+  Result Unit
   := do
   let (o, iter1) ←
     core.iter.adapters.enumerate.IteratorEnumerate.next
       (core.iter.traits.iterator.IteratorSliceIter
       automata.terms_multitape.MultiTapeTerm) iter
   match o with
-  | none => ok (done ())
+  | none => ok ()
   | some p =>
     let (term_index, term) := p
     let b := core.option.Option.is_some term._debug_info.position_info
     if b
-    then ok (cont iter1)
+    then
+      automata.terms_multitape.validate_debug_info_exists_loop0_loop0 iter1
+        product_index
     else
       let a ←
         core.fmt.rt.Argument.new_debug (core.fmt.DebugShared
@@ -33027,49 +29775,7 @@ def automata.terms_multitape.validate_debug_info_exists_loop0_loop0.body
             105#u8, 111#u8, 110#u8, 32#u8, 105#u8, 110#u8, 102#u8, 111#u8, 0#u8
             ]) (Array.make 3#usize [ a, a1, a2 ])
       fail panic
-
-/-- [automata_builder::automata::terms_multitape::validate_debug_info_exists]: loop 1:
-    Source: 'src/automata/terms_multitape.rs', lines 934:8-941:9
-    Visibility: public -/
-@[rust_loop]
-def automata.terms_multitape.validate_debug_info_exists_loop0_loop0
-  (iter : core.iter.adapters.enumerate.Enumerate (core.slice.iter.Iter
-  automata.terms_multitape.MultiTapeTerm)) (product_index : Std.Usize) :
-  Result Unit
-  := do
-  loop
-    (fun iter1 =>
-      automata.terms_multitape.validate_debug_info_exists_loop0_loop0.body
-      product_index iter1)
-    iter
-
-/-- [automata_builder::automata::terms_multitape::validate_debug_info_exists]: loop body 0:
-    Source: 'src/automata/terms_multitape.rs', lines 933:4-942:5
-    Visibility: public -/
-@[rust_loop_body]
-def automata.terms_multitape.validate_debug_info_exists_loop0.body
-  (iter : core.iter.adapters.enumerate.Enumerate (core.slice.iter.Iter
-  automata.terms_multitape.MultiTapeProduct)) :
-  Result (ControlFlow (core.iter.adapters.enumerate.Enumerate
-    (core.slice.iter.Iter automata.terms_multitape.MultiTapeProduct)) Unit)
-  := do
-  let (o, iter1) ←
-    core.iter.adapters.enumerate.IteratorEnumerate.next
-      (core.iter.traits.iterator.IteratorSliceIter
-      automata.terms_multitape.MultiTapeProduct) iter
-  match o with
-  | none => ok (done ())
-  | some p =>
-    let (product_index, product) := p
-    let s := alloc.vec.Vec.deref product._terms
-    let i ← core.slice.Slice.iter s
-    let iter2 ←
-      core.iter.traits.iterator.Iterator.enumerate.trait_default
-        (core.iter.traits.iterator.IteratorSliceIter
-        automata.terms_multitape.MultiTapeTerm) i
-    automata.terms_multitape.validate_debug_info_exists_loop0_loop0 iter2
-      product_index
-    ok (cont iter1)
+partial_fixpoint
 
 /-- [automata_builder::automata::terms_multitape::validate_debug_info_exists]: loop 0:
     Source: 'src/automata/terms_multitape.rs', lines 933:4-942:5
@@ -33080,10 +29786,24 @@ def automata.terms_multitape.validate_debug_info_exists_loop0
   automata.terms_multitape.MultiTapeProduct)) :
   Result Unit
   := do
-  loop
-    (fun iter1 =>
-      automata.terms_multitape.validate_debug_info_exists_loop0.body iter1)
-    iter
+  let (o, iter1) ←
+    core.iter.adapters.enumerate.IteratorEnumerate.next
+      (core.iter.traits.iterator.IteratorSliceIter
+      automata.terms_multitape.MultiTapeProduct) iter
+  match o with
+  | none => ok ()
+  | some p =>
+    let (product_index, product) := p
+    let s := alloc.vec.Vec.deref product._terms
+    let i ← core.slice.Slice.iter s
+    let iter2 ←
+      core.iter.traits.iterator.Iterator.enumerate.trait_default
+        (core.iter.traits.iterator.IteratorSliceIter
+        automata.terms_multitape.MultiTapeTerm) i
+    automata.terms_multitape.validate_debug_info_exists_loop0_loop0 iter2
+      product_index
+    automata.terms_multitape.validate_debug_info_exists_loop0 iter1
+partial_fixpoint
 
 /-- [automata_builder::automata::terms_multitape::validate_debug_info_exists]:
     Source: 'src/automata/terms_multitape.rs', lines 932:0-943:1

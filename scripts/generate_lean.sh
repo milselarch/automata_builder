@@ -86,6 +86,7 @@ mkdir -p "$LEAN_OUT_DIR"
 aeneas_log="$BUILD_DIR/aeneas.log"
 set +e
 "$AENEAS_DIR/aeneas" -backend lean -split-files -no-progress-bar -filter-trait-methods \
+    -loops-to-rec \
     -dest "$LEAN_OUT_DIR" "$LLBC_FILE" > "$aeneas_log" 2>&1
 aeneas_status=$?
 set -e
