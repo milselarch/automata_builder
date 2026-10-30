@@ -1,0 +1,72 @@
+name: Aeneas Lean Generation CI
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  generate:
+    name: Check generated Lean definitions are up to date
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # pyo3's build script needs a python interpreter
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Cache Aeneas binaries
+        uses: actions/cache@v4
+        with:
+          path: .aeneas
+          key: aeneas-${{ runner.os }}-${{ hashFiles('scripts/generate_lean.sh') }}
+
+      - name: Generate Lean definitions with Charon + Aeneas
+        run: ./scripts/generate_lean.sh
+
+      - name: Check for git diffs
+        run: |
+          if [ -n "$(git status --porcelain)" ]; then
+            git status
+            git --no-pager diff --stat
+            git --no-pager diff | head -n 500
+            echo "::error::The Lean definitions in lean/ are out of date." \
+              "Run ./scripts/generate_lean.sh and commit the changes."
+            exit 1
+          fi
+
+  build:
+    name: Build generated Lean definitions
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    defaults:
+      run:
+        working-directory: lean
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install elan
+        run: |
+          curl -sSfL https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            | sh -s -- -y --default-toolchain none
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+
+      - name: Fetch Mathlib build cache
+        run: lake exe cache get
+
+      # the translated types and the hand-maintained external models must
+      # type-check
+      - name: Build Lean types and external models
+        run: lake build AutomataBuilder.Types AutomataBuilder.FunsExternal
+
+      # Funs.lean still hits limitations of the Aeneas Lean backend /
+      # standard library, so building it is reported but not enforced
+      - name: Build Lean function definitions (best effort)
+        continue-on-error: true
+        run: lake build
