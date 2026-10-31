@@ -60,6 +60,51 @@ class CounterAutomataBuilder(object):
 
         return _transitions_group
 
+    def build_clear_rightmost_transitions_group(
+        self, transitions_group: PyMultiTapeTransitionsGroup | None = None,
+        carry_tape_state: TapeCellState = VOID_STATE,
+        counter_right_state: TapeCellState = ST_REDUCE_START,
+    ):
+        if transitions_group is not None:
+            _transitions_group = transitions_group
+        else:
+            _transitions_group = PyMultiTapeTransitionsGroup(
+                require_annotation=True
+            )
+
+        # clear rightmost counter cell if no carry
+        for digit in range(self.base):
+            # if cell next to rightmost (signals tape) counter cell
+            # is a data cell
+            _transitions_group.add_transition(
+                input_terms=(
+                    ST_MID(active_counter(digit)),
+                    ST_RIGHT(counter_right_state),
+                    CT_MID(carry_tape_state)
+                ),
+                output_tape_no=SIGNALS_TAPE,
+                output_cell_state=counter_right_state,
+                annotation=(
+                    f'CLEAR_RIGHTMOST_{digit}_OVER_{carry_tape_state}'
+                ),
+            )
+            # if cell next to rightmost (signals tape) counter cell
+            # is reduction start marker
+            _transitions_group.add_transition(
+                input_terms=(
+                    ST_MID(active_counter(digit)),
+                    ST_RIGHT(counter_right_state),
+                    CT_MID(carry_tape_state)
+                ),
+                output_tape_no=SIGNALS_TAPE,
+                output_cell_state=counter_right_state,
+                annotation=(
+                    f'CLEAR_RIGHTMOST_{digit}_ST_OVER_{carry_tape_state}'
+                )
+            )
+
+        return _transitions_group
+
     def build_base_transitions_group(
         self, transitions_group: PyMultiTapeTransitionsGroup | None = None,
         counter_right_state: TapeCellState = ST_REDUCE_START,
@@ -107,6 +152,8 @@ class CounterAutomataBuilder(object):
             annotation=f'COUNTER_ACC_START',
         )
 
+        # apply carry cells to counter-cells
+        # carry cells stay stationary while counter-cells move left
         _transitions_group = self.build_shl_no_carry_transitions_group(
             transitions_group=_transitions_group,
         )
@@ -171,31 +218,11 @@ class CounterAutomataBuilder(object):
             )
 
         # clear rightmost counter cell if no carry
-        for digit in range(self.base):
-            # if cell next to rightmost (signals tape) counter cell
-            # is a data cell
-            _transitions_group.add_transition(
-                input_terms=(
-                    ST_MID(active_counter(digit)),
-                    ST_RIGHT(counter_right_state),
-                    CT_MID(VOID_STATE)
-                ),
-                output_tape_no=SIGNALS_TAPE,
-                output_cell_state=counter_right_state,
-                annotation=f'CLEAR_RIGHTMOST_{digit}',
-            )
-            # if cell next to rightmost (signals tape) counter cell
-            # is reduction start marker
-            _transitions_group.add_transition(
-                input_terms=(
-                    ST_MID(active_counter(digit)),
-                    ST_RIGHT(counter_right_state),
-                    CT_MID(VOID_STATE)
-                ),
-                output_tape_no=SIGNALS_TAPE,
-                output_cell_state=counter_right_state,
-                annotation=f'CLEAR_RIGHTMOST_{digit}_ST',
-            )
+        _transitions_group = self.build_clear_rightmost_transitions_group(
+            transitions_group=_transitions_group,
+            carry_tape_state=VOID_STATE,
+            counter_right_state=counter_right_state
+        )
 
         # paused counter states will transition to unpause
         # this should be the only place where paused counter states occur in
@@ -318,20 +345,28 @@ class CounterAutomataBuilder(object):
                 require_annotation=True
             )
 
+        # apply carry cells to counter-cells
+        # carry cells stay stationary while counter-cells move left
         _transitions_group = self.build_shl_no_carry_transitions_group(
             transitions_group=_transitions_group,
             carry_tape_state=REDUCER_DATA
         )
+        # clear rightmost counter cell if no carry
+        _transitions_group = self.build_clear_rightmost_transitions_group(
+            transitions_group=_transitions_group,
+            carry_tape_state=REDUCER_DATA,
+        )
+
         # spawn data to the left of the
         # left end of initial data of the data tape, on the carry tape
         _transitions_group.add_transition(
             input_terms=(
                 DT_LEFT(VOID_STATE),
                 DT_MID(DT_DATA),
-                ST_MID(VOID_STATE), # <- inserted for compilability
+                ST_MID(VOID_STATE),  # <- inserted for compilability
                 CT_LEFT(VOID_STATE),
                 CT_MID(VOID_STATE),
-                ST_RIGHT(VOID_STATE) # <- inserted for compilability
+                ST_RIGHT(VOID_STATE)  # <- inserted for compilability
             ),
             output_tape_no=CARRY_TAPE,
             output_cell_state=REDUCER_PAUSED_DATA,
@@ -343,7 +378,7 @@ class CounterAutomataBuilder(object):
                 CT_LEFT(REDUCER_DATA),
                 DT_MID(DT_DATA),
                 CT_MID(VOID_STATE),
-                ST_RIGHT(VOID_STATE) # <- inserted for compilability
+                ST_RIGHT(VOID_STATE)  # <- inserted for compilability
             ),
             output_tape_no=CARRY_TAPE,
             output_cell_state=REDUCER_PAUSED_DATA,
@@ -352,7 +387,7 @@ class CounterAutomataBuilder(object):
         # spread the data state leftwards (regardless of input data overlap)
         _transitions_group.add_transition(
             input_terms=(
-                CT_LEFT(VOID_STATE), # <- inserted for compilability rs
+                CT_LEFT(VOID_STATE),  # <- inserted for compilability rs
                 CT_MID(VOID_STATE),
                 CT_RIGHT(REDUCER_DATA),
             ),
@@ -363,9 +398,9 @@ class CounterAutomataBuilder(object):
         # convert the paused half-data tape state to an active state
         _transitions_group.add_transition(
             input_terms=(
-                DT_MID(DT_DATA), # <- inserted for compilability
-                ST_MID(VOID_STATE), # <- inserted for compilability
-                ST_RIGHT(VOID_STATE), # <- inserted for compilability
+                DT_MID(DT_DATA),  # <- inserted for compilability
+                ST_MID(VOID_STATE),  # <- inserted for compilability
+                ST_RIGHT(VOID_STATE),  # <- inserted for compilability
                 CT_MID(REDUCER_PAUSED_DATA),
             ),
             output_tape_no=CARRY_TAPE,
@@ -400,10 +435,10 @@ class CounterAutomataBuilder(object):
             input_terms=(
                 DT_LEFT(VOID_STATE),
                 DT_MID(DT_DATA),
-                ST_MID(VOID_STATE), # <- inserted for compilability
+                ST_MID(VOID_STATE),  # <- inserted for compilability
                 REDUCER_LEFT(VOID_STATE),
                 REDUCER_MID(VOID_STATE),
-                ST_RIGHT(VOID_STATE) # <- inserted for compilability
+                ST_RIGHT(VOID_STATE)  # <- inserted for compilability
             ),
             output_tape_no=REDUCER_TAPE,
             output_cell_state=REDUCER_PAUSED_DATA,
@@ -415,7 +450,7 @@ class CounterAutomataBuilder(object):
                 REDUCER_LEFT(REDUCER_DATA),
                 DT_MID(DT_DATA),
                 REDUCER_MID(VOID_STATE),
-                ST_RIGHT(VOID_STATE) # <- inserted for compilability
+                ST_RIGHT(VOID_STATE)  # <- inserted for compilability
             ),
             output_tape_no=REDUCER_TAPE,
             output_cell_state=REDUCER_PAUSED_DATA,
@@ -424,7 +459,7 @@ class CounterAutomataBuilder(object):
         # spread the data state leftwards (regardless of input data overlap)
         _transitions_group.add_transition(
             input_terms=(
-                REDUCER_LEFT(VOID_STATE), # <- inserted for compilability rs
+                REDUCER_LEFT(VOID_STATE),  # <- inserted for compilability rs
                 REDUCER_MID(VOID_STATE),
                 REDUCER_RIGHT(REDUCER_DATA),
             ),
@@ -435,9 +470,9 @@ class CounterAutomataBuilder(object):
         # convert the paused half-data tape state to an active state
         _transitions_group.add_transition(
             input_terms=(
-                DT_MID(DT_DATA), # <- inserted for compilability
-                ST_MID(VOID_STATE), # <- inserted for compilability
-                ST_RIGHT(VOID_STATE), # <- inserted for compilability
+                DT_MID(DT_DATA),  # <- inserted for compilability
+                ST_MID(VOID_STATE),  # <- inserted for compilability
+                ST_RIGHT(VOID_STATE),  # <- inserted for compilability
                 REDUCER_MID(REDUCER_PAUSED_DATA),
             ),
             output_tape_no=REDUCER_TAPE,
@@ -517,7 +552,9 @@ class CounterAutomataBuilder(object):
         )
         return transitions_group
 
-    def build_ct_reduced_transitions_group(self) -> PyMultiTapeTransitionsGroup:
+    def build_ct_reduced_transitions_group(
+        self
+    ) -> PyMultiTapeTransitionsGroup:
         base_transitions_group = self.build_base_transitions_group()
         transitions_group = self.build_ct_reducer_transitions_group(
             transitions_group=base_transitions_group
