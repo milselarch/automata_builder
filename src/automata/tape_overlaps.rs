@@ -1,7 +1,7 @@
 use std::collections::{BTreeMap, BTreeSet};
 
 use crate::automata::terms::CellState;
-use crate::automata::terms_multitape::{MultiTapeProduct, MultiTapeState, TapeNo};
+pub use crate::automata::terms_multitape::{MultiTapeProduct, MultiTapeState, TapeNo};
 
 /// `offset -> states reachable at that offset`
 pub type OffsetOverlaps = BTreeMap<i64, BTreeSet<MultiTapeState>>;

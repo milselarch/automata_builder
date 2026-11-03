@@ -36,7 +36,7 @@ impl fmt::Display for WriteRecord {
         let (tape_no, position) = self.write_target;
         write!(
             f,
-            "{} | ({}, {}) -> {} ({})",
+            "{} | [tape {}, pos {}] -> {} [{}]",
             self.origin_product._to_string("D"),
             tape_no, position, self.tape_cell_state, self.annotation
         )
@@ -79,6 +79,10 @@ impl MultiTapeAutomata {
             transitions_group,
             state_eq_map
         })
+    }
+
+    pub fn get_transitions_group(&self) -> &MultiTapeTransitionsGroup {
+        &self.transitions_group
     }
 
     pub fn get_prod_priority_map(&self) -> &IndexMap<
@@ -138,6 +142,27 @@ impl MultiTapeAutomata {
     }
 
     pub fn init_tapes(&mut self, tape_nos: &[TapeNo]) -> Result<(), AutomataError> {
+        let transitions = &self.transitions_group.transitions;
+
+        for transition in transitions.iter() {
+            let output_tape: TapeNo = transition.output_state.tape_no;
+
+            if (!tape_nos.contains(&output_tape)) {
+                return Err(AutomataError::InvalidInputOrOutputTape {
+                    tape_no: output_tape, transition: transition.clone()
+                })
+            }
+
+            let input_terms = &transition.input_terms;
+            for term in input_terms.iter() {
+                let input_tape_no = term.get_tape_no();
+                if (!tape_nos.contains(&input_tape_no)) {
+                    return Err(AutomataError::InvalidInputOrOutputTape {
+                        tape_no: input_tape_no, transition: transition.clone()
+                    })
+                }
+            }
+        }
         self.multi_tape.init_tapes(tape_nos, false)?;
         Ok(())
     }

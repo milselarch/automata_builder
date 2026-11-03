@@ -9,6 +9,7 @@ from automata_builder import utils
 from result import Result, Ok, Err
 from collections import defaultdict
 from typing import Sequence
+from abc import ABC, abstractmethod
 
 from automata_builder.multi_tape_product_trie import (
     MultiTapeProductTrie, OffsetGroupedTerms,
@@ -31,7 +32,7 @@ from automata_builder.tape_overlaps import (
 )
 from automata_builder._rust import (
     D, PyMultiTapeProduct, PyMultiTapeExpression,
-    A, PyProduct, PyMultiTapeAutomata, PyMultiTapeTransitionsGroup,
+    A, PyProduct, PyMultiTapeAutomata,
     PyMultiTapeBuilder, PyCompileTapesResult, PyMultiTapeStatePathRemap,
     PyTapeOverlapsFSM
 )
@@ -167,13 +168,13 @@ class MultiTapeStatePathRemap(object):
         compile_tapes implementation to its python equivalent
         """
         def to_path(
-            raw_path: list[tuple[int, int]]
+            _raw_path: list[tuple[int, int]]
         ) -> tuple[MultiTapeState, ...]:
             return tuple(
                 MultiTapeState(
                     tape_no=TapeNo(tape_no),
                     tape_cell_state=TapeCellState(tape_cell_state)
-                ) for tape_no, tape_cell_state in raw_path
+                ) for tape_no, tape_cell_state in _raw_path
             )
 
         state_remap = cls(remap_counter_start=TapeCellState(
@@ -423,6 +424,9 @@ class MultiTapeStatePathRemap(object):
         multi_tape_product = PyMultiTapeProduct(collected_global_terms)
         return Ok(multi_tape_product)
 
+    def get_max_state(self) -> TapeCellState:
+        return max(self.rev_state_path_remap)
+
 
 @dataclasses.dataclass
 class TransitionOptimizations(object):
@@ -436,6 +440,9 @@ class CompileTapesResult(object):
     transitions_group: TapeTransitionsGroup
     state_remap: MultiTapeStatePathRemap
     num_unrepresentable_products: int
+
+    def get_max_state(self) -> TapeCellState:
+        return self.state_remap.get_max_state()
 
     @classmethod
     def from_rust(cls, rust_result: PyCompileTapesResult) -> CompileTapesResult:
@@ -544,7 +551,21 @@ class BuildTransitionsForProductResult(object):
     unrepresentable_products: set[PyMultiTapeProduct]
 
 
-class PythonMultiTapeBuilder(object):
+class BaseMultiTapeBuilder(ABC):
+    @abstractmethod
+    def declare_initial_group_overlaps(
+        self, overlap_states: set[MultiTapeState]
+    ) -> None:
+        raise NotImplementedError
+
+    @abstractmethod
+    def compile_tapes(
+        self, verbose: bool = False
+    ) -> CompileTapesResult:
+        raise NotImplementedError
+
+
+class PythonMultiTapeBuilder(BaseMultiTapeBuilder):
     """
     Pure python reference implementation of the multi-tape to
     single tape compiler. MultiTapeBuilder (the rust backed
@@ -1950,7 +1971,7 @@ class PythonMultiTapeBuilder(object):
         )
 
 
-class MultiTapeBuilder(object):
+class MultiTapeBuilder(BaseMultiTapeBuilder):
     """
     Compiles a multi-tape automata into a single tape automata.
     The compile_tapes pipeline is implemented in rust

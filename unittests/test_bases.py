@@ -16,7 +16,8 @@ from automata_builder.counter_states import from_counter_state
 _cache = CachedCounterAutomataCompiler()
 
 NO_REDUCTION_BASES = list(range(2, 9))
-REDUCTION_BASES = list(range(2, 4))
+REDUCTION_BASES = list(range(2, 5))
+REDUCTION_COLLAPSE_MODES = (False, True)
 
 
 class TestCompiledTapesScriptBases(unittest.TestCase):
@@ -33,6 +34,7 @@ class TestCompiledTapesScriptBases(unittest.TestCase):
     def _make_runner(
         base: int,
         apply_reduction: bool = False,
+        collapse_reduction_tape: bool = False,
         write_start: int = 0,
         write_end: int = 20,
     ) -> CompiledCounterAutomataRunner:
@@ -40,7 +42,13 @@ class TestCompiledTapesScriptBases(unittest.TestCase):
             initial_write_start=write_start,
             initial_write_end=write_end,
             automata_settings=CounterAutomataSettings(
-                base=base, apply_reduction=apply_reduction
+                base=base,
+                apply_reduction=apply_reduction,
+                # Default False covers the scenario
+                # apply_reduction=True, collapse_reduction_tape=False
+                # (reducer tape kept separate from the counter tape).
+                # True exercises build_ct_reduced_transitions_group.
+                collapse_reduction_tape=collapse_reduction_tape,
             ),
             cache=_cache,
         )
@@ -93,8 +101,16 @@ class TestCompiledTapesScriptBases(unittest.TestCase):
 
     def test_runner_compiles_with_reduction_for_all_bases(self):
         for base in tqdm.tqdm(REDUCTION_BASES, desc='compile-reduction'):
-            with self.subTest(base=base):
-                runner = self._make_runner(base=base, apply_reduction=True)
+            for collapse in REDUCTION_COLLAPSE_MODES:
+                with self.subTest(
+                    base=base, apply_reduction=True,
+                    collapse_reduction_tape=collapse
+                ):
+                    runner = self._make_runner(
+                        base=base,
+                        apply_reduction=True,
+                        collapse_reduction_tape=collapse,
+                    )
                 self.assertGreater(runner.count_unique_states(), 0)
                 self.assertGreater(
                     len(runner.transitions_group.transitions), 0
@@ -116,8 +132,13 @@ class TestCompiledTapesScriptBases(unittest.TestCase):
 
     def test_simulation_runs_with_reduction_for_all_bases(self):
         for base in tqdm.tqdm(REDUCTION_BASES, desc='simulate-reduction'):
-            with self.subTest(base=base):
-                runner = self._make_runner(base=base, apply_reduction=True)
+            for collapse in REDUCTION_COLLAPSE_MODES:
+                with self.subTest(base=base, apply_reduction=True, collapse_reduction_tape=collapse):
+                    runner = self._make_runner(
+                        base=base,
+                        apply_reduction=True,
+                        collapse_reduction_tape=collapse,
+                    )
                 runner.run_simulation(
                     num_timesteps=30, render=False, assert_consistency=True
                 )
@@ -144,9 +165,10 @@ class TestCompiledTapesScriptBases(unittest.TestCase):
                     write_end=write_end,
                 )
                 runner.run_simulation(
-                    num_timesteps=steps, render=False, assert_consistency=True
+                    num_timesteps=steps, render=False,
+                    assert_consistency=True
                 )
-                encoded = runner.read_signals_tape_value()
+                encoded = runner.read_signals_tape_value().unwrap()
                 self.assertEqual(
                     encoded,
                     cells_filled,
@@ -169,23 +191,59 @@ class TestCompiledTapesScriptBases(unittest.TestCase):
         for base in tqdm.tqdm(
             REDUCTION_BASES, desc='convergence-reduction'
         ):
-            with self.subTest(base=base, cells_filled=cells_filled):
-                runner = self._make_runner(
-                    base=base,
-                    apply_reduction=True,
-                    write_start=write_start,
-                    write_end=write_end,
-                )
+            for collapse in REDUCTION_COLLAPSE_MODES:
+                with self.subTest(base=base, cells_filled=cells_filled, apply_reduction=True, collapse_reduction_tape=collapse):
+                    runner = self._make_runner(
+                        base=base,
+                        apply_reduction=True,
+                        collapse_reduction_tape=collapse,
+                        write_start=write_start,
+                        write_end=write_end,
+                    )
                 runner.run_simulation(
                     num_timesteps=steps, render=False, assert_consistency=True
                 )
-                encoded = runner.read_signals_tape_value()
+                encoded = runner.read_signals_tape_value().unwrap()
                 self.assertEqual(
                     encoded,
                     expected_value,
                     msg=(
                         f"base={base}: expected {expected_value} "
                         f"after {steps} steps, got {encoded}"
+                    ),
+                )
+
+    def test_collapse_reduction_tape_scenarios(self):
+        """
+        Covers apply_reduction=True with collapse_reduction_tape=True
+        (build_ct_reduced_transitions_group): reducer states are shared
+        with the signals tape.
+        """
+        write_start, write_end = 0, 20
+        cells_filled = write_end - write_start + 1  # 21
+        expected_value = (cells_filled + 1) // 2    # 11
+        steps = cells_filled * 2
+
+        for base in REDUCTION_BASES:
+            with self.subTest(base=base, apply_reduction=True, collapse_reduction_tape=True):
+                runner = self._make_runner(
+                    base=base,
+                    apply_reduction=True,
+                    collapse_reduction_tape=True,
+                    write_start=write_start,
+                    write_end=write_end,
+                )
+                runner.run_simulation(
+                    num_timesteps=steps, render=False, assert_consistency=True
+                )
+                encoded = runner.read_signals_tape_value().unwrap()
+                self.assertEqual(
+                    encoded,
+                    expected_value,
+                    msg=(
+                        f"base={base} (collapsed reducer tape): "
+                        f"expected {expected_value} after {steps} steps, "
+                        f"got {encoded}"
                     ),
                 )
 
@@ -206,8 +264,13 @@ class TestCompiledTapesScriptBases(unittest.TestCase):
         for base in tqdm.tqdm(
             REDUCTION_BASES, desc='step-consistency-reduction'
         ):
-            with self.subTest(base=base):
-                runner = self._make_runner(base=base, apply_reduction=True)
+            for collapse in REDUCTION_COLLAPSE_MODES:
+                with self.subTest(base=base, apply_reduction=True, collapse_reduction_tape=collapse):
+                    runner = self._make_runner(
+                        base=base,
+                        apply_reduction=True,
+                        collapse_reduction_tape=collapse,
+                    )
                 for _ in range(10):
                     runner.step(verbose=False, assert_consistency=True)
 

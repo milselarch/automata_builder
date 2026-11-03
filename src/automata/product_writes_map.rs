@@ -1,4 +1,5 @@
-use std::collections::{BTreeMap, BTreeSet};
+use std::fmt::Write;
+use std::collections::{BTreeMap, BTreeSet, HashMap};
 use std::fmt;
 
 use indexmap::IndexMap;
@@ -6,20 +7,32 @@ use indexmap::IndexSet;
 use crate::automata::rule_generator::VOID_STATE;
 use crate::automata::tape_overlaps::{TapeOverlaps};
 use crate::automata::terms::CellState;
-use crate::automata::terms_multitape::{AbstractMultiTapeExpression, MultiTapeProduct, MultiTapeState, MultiTapeTerm, TapeNo};
+use crate::automata::terms_multitape::{
+    AbstractMultiTapeExpression, MultiTapeProduct,
+    MultiTapeState, MultiTapeTerm, TapeNo
+};
 
 /// Writes performed by a single product: `tape_no -> output tape cell state`.
 /// `BTreeMap` so iteration is deterministic (ascending `TapeNo`).
 pub type TapeWrites = BTreeMap<TapeNo, CellState>;
 
+pub fn tape_writes_to_str(product_writes: &TapeWrites) -> String {
+    product_writes
+        .iter()
+        .map(|(tape_no, state)| format!("T{}:{}", tape_no, state))
+        .collect::<Vec<_>>()
+        .join(" ")
+}
+
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub enum ProductWritesError {
     /// The same product wants to write two different states to the same tape.
     ConflictingOutput {
-        product: String,
+        product: MultiTapeProduct,
         tape_no: TapeNo,
         existing: CellState,
         incoming: CellState,
+        annotations: Vec<String>,
     },
     /// Mutating a frozen map.
     Frozen,
@@ -31,12 +44,17 @@ impl fmt::Display for ProductWritesError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             ProductWritesError::ConflictingOutput {
-                product, tape_no, existing, incoming,
-            } => write!(
-                f,
-                "Conflicting output states for product={} on tape {}: {} vs {}",
-                product, tape_no, existing, incoming
-            ),
+                product, tape_no, existing,
+                incoming, annotations
+            } => {
+                let product_repr = product._to_string("D");
+                write!(
+                    f,
+                    "Conflicting output states for product={} on tape {}: {} vs {} \
+                    - Annotations: {:?}",
+                    product_repr, tape_no, existing, incoming, annotations
+                )
+            },
             ProductWritesError::Frozen => {
                 write!(f, "Cannot modify ProductWritesMap when frozen")
             }
@@ -61,6 +79,76 @@ pub struct MultiTapeStateAttributes {
 
 pub type StateAttributesMap = BTreeMap<MultiTapeState, MultiTapeStateAttributes>;
 
+#[derive(Debug, Clone, Default, PartialEq)]
+pub struct ProductToStateMap {
+    prod_to_state_map: IndexMap<MultiTapeProduct, TapeWrites>,
+    // self-reference for products, so that we can look up
+    // product annotations for pre-existing products
+    products: HashMap<MultiTapeProduct, MultiTapeProduct>,
+}
+
+impl ProductToStateMap {
+    pub fn new() -> Self {
+        Self {
+            prod_to_state_map: IndexMap::new(),
+            products: HashMap::new(),
+        }
+    }
+    pub fn len(&self) -> usize {
+        self.prod_to_state_map.len()
+    }
+    pub fn is_empty(&self) -> bool {
+        self.prod_to_state_map.is_empty()
+    }
+    pub fn iter(&self) -> indexmap::map::Iter<'_, MultiTapeProduct, TapeWrites> {
+        self.prod_to_state_map.iter()
+    }
+    pub fn get(&self, product: &MultiTapeProduct) -> Option<&TapeWrites> {
+        self.prod_to_state_map.get(product)
+    }
+    pub fn contains_key(&self, product: &MultiTapeProduct) -> bool {
+        self.prod_to_state_map.contains_key(product)
+    }
+    pub fn shift_remove(&mut self, product: &MultiTapeProduct) -> Option<TapeWrites> {
+        self.prod_to_state_map.shift_remove(product)
+    }
+    pub fn keys(&self) -> indexmap::map::Keys<'_, MultiTapeProduct, TapeWrites> {
+        self.prod_to_state_map.keys()
+    }
+    pub fn insert(
+        &mut self,
+        product: MultiTapeProduct,
+        write_tape_no: TapeNo,
+        write_tape_cell_state: CellState,
+    ) -> Result<(), ProductWritesError> {
+        // let product_repr = product._to_string("D");
+        let writes_map = self.prod_to_state_map.entry(product.clone()).or_default();
+        let existing = writes_map
+            .get(&write_tape_no)
+            .copied()
+            .unwrap_or(write_tape_cell_state);
+
+        if existing != write_tape_cell_state {
+            let existing_product = &self.products[&product];
+            let annotations = vec![
+                existing_product.get_annotation().clone(),
+                product.get_annotation().clone()
+            ];
+            return Err(ProductWritesError::ConflictingOutput {
+                product,
+                tape_no: write_tape_no,
+                existing,
+                incoming: write_tape_cell_state,
+                annotations
+            });
+        }
+
+        writes_map.insert(write_tape_no, write_tape_cell_state);
+        self.products.insert(product.clone(), product);
+        Ok(())
+    }
+}
+
 
 /// map `product -> tape_no -> output tape cell state`
 ///
@@ -68,7 +156,7 @@ pub type StateAttributesMap = BTreeMap<MultiTapeState, MultiTapeStateAttributes>
 /// Python `dict`-backed implementation.
 #[derive(Debug, Clone, Default)]
 pub struct ProductWritesMap {
-    prod_to_state_map: IndexMap<MultiTapeProduct, TapeWrites>,
+    prod_to_state_map: ProductToStateMap,
     frozen: bool,
 }
 
@@ -84,7 +172,7 @@ impl Eq for ProductWritesMap {}
 
 impl ProductWritesMap {
     pub fn new() -> Self {
-        Self { prod_to_state_map: IndexMap::new(), frozen: false }
+        Self { prod_to_state_map: ProductToStateMap::new(), frozen: false }
     }
 
     pub fn freeze(&mut self) {
@@ -151,25 +239,11 @@ impl ProductWritesMap {
         if self.frozen {
             return Err(ProductWritesError::Frozen);
         }
-
-        let product_repr = product._to_string("D");
-        let writes_map = self.prod_to_state_map.entry(product).or_default();
-        let existing = writes_map
-            .get(&write_tape_no)
-            .copied()
-            .unwrap_or(write_tape_cell_state);
-
-        if existing != write_tape_cell_state {
-            return Err(ProductWritesError::ConflictingOutput {
-                product: product_repr,
-                tape_no: write_tape_no,
-                existing,
-                incoming: write_tape_cell_state,
-            });
-        }
-
-        writes_map.insert(write_tape_no, write_tape_cell_state);
-        Ok(())
+        self.prod_to_state_map.insert(
+            product,
+            write_tape_no,
+            write_tape_cell_state,
+        )
     }
 
     /// Insert a product whose outputs rewrite the input terms with offset 0
@@ -327,18 +401,27 @@ impl ProductWritesMap {
             candidate_terms.sort();
 
             let mut offset_diffs: BTreeSet<i64> = BTreeSet::new();
+            // whether multi-tape states in candidate product are the same
+            // as the multi-tape states in the target_product
+            let mut same_states = true;
+
             for (source_term, candidate_term) in
                 source_terms.iter().zip(candidate_terms.iter())
             {
-                offset_diffs.insert(candidate_term.position - source_term.position);
+                if source_term.state != candidate_term.state {
+                    same_states = false;
+                    break;
+                }
+                offset_diffs.insert(
+                    candidate_term.position - source_term.position
+                );
             }
 
             // a single shared delta across every term == a pure translation
-            if offset_diffs.len() != 1 {
+            if !same_states || offset_diffs.len() != 1 {
                 continue;
             }
             let offset_diff = *offset_diffs.iter().next().unwrap();
-
             if let Some(whitelist) = offset_whitelist {
                 if !whitelist.is_empty() && !whitelist.contains(&offset_diff) {
                     continue;

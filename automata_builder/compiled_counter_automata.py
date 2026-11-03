@@ -4,8 +4,9 @@ import dataclasses
 
 from automata_builder._rust import (
     D, PySingleTapeAutomata, PyMultiTapeProduct, PyProcessStepResult,
-    PySingleTapeProcessStepResult, PyProduct
+    PySingleTapeProcessStepResult, PyProduct, PyMultiTapeAutomata
 )
+from result import Result, Err
 
 from automata_builder.counter_automata import (
     CounterAutomataRunner, DATA_TAPE, DT_DATA, paused_counter, active_counter
@@ -14,7 +15,7 @@ from automata_builder.rule_generator import (
     VOID_STATE, RuleGenerator, AutomataRuleSet, BLANK_INT, TapeCellState
 )
 from automata_builder.rule_generator_multitape import (
-    MultiTapeBuilder, CompileTapesResult
+    MultiTapeBuilder, CompileTapesResult, PythonMultiTapeBuilder, BaseMultiTapeBuilder
 )
 from automata_builder.tape_overlaps import MultiTapeState
 
@@ -25,6 +26,10 @@ INPUT_DATA_STATE = MultiTapeState(tape_no=DATA_TAPE, tape_cell_state=DT_DATA)
 class CounterAutomataSettings(object):
     base: int = 8
     apply_reduction: bool = False
+    collapse_reduction_tape: bool = False
+    # if True, use Python implementation of multi-tape builder,
+    # else we use the ported rust implementation
+    use_python_builder: bool = False
 
 
 class CachedCounterAutomataCompiler(object):
@@ -55,31 +60,34 @@ class CompiledCounterAutomataRunner(object):
         cache: CachedCounterAutomataCompiler | None = None,
         verbose: bool = False
     ):
+        self._cache = cache
         self.base = automata_settings.base
         self.initial_write_start = initial_write_start
         self.initial_write_end = initial_write_end
         self.apply_reduction = automata_settings.apply_reduction
-        self._cache = cache
+        self.collapse_reduction_tape = (
+            automata_settings.collapse_reduction_tape
+        )
 
         self.multi_tape_runner = CounterAutomataRunner(
             base=self.base,
             initial_write_start=self.initial_write_start,
             initial_write_end=self.initial_write_end,
-            apply_reduction=self.apply_reduction
-        )
-        self.multi_tape_builder = MultiTapeBuilder(
-            multi_tape_automata=self.multi_tape_runner.multi_tape_automata
-        )
-        self.multi_tape_builder.declare_initial_group_overlaps(
-            overlap_states={INPUT_DATA_STATE}
+            apply_reduction=self.apply_reduction,
+            collapse_reduction_tape=self.collapse_reduction_tape,
         )
 
+        self.compile_result: CompileTapesResult
+
         if cache is None:
-            self.compile_result: CompileTapesResult = (
-                self.multi_tape_builder.compile_tapes(verbose=verbose)
+            multi_tape_automata = self.multi_tape_runner.multi_tape_automata
+            self.compile_result = self.compile_tapes_for(
+                multi_tape_automata=multi_tape_automata,
+                use_py_implementation=automata_settings.use_python_builder,
+                verbose=verbose
             )
         else:
-            self.compile_result: CompileTapesResult = cache.compile_for(
+            self.compile_result = cache.compile_for(
                 settings=automata_settings, verbose=verbose
             )
 
@@ -103,6 +111,31 @@ class CompiledCounterAutomataRunner(object):
         )
         self.assert_tapes_consistency()
 
+    @classmethod
+    def compile_tapes_for(
+        cls, multi_tape_automata: PyMultiTapeAutomata,
+        use_py_implementation: bool = False,
+        verbose: bool = False,
+    ) -> CompileTapesResult:
+        multi_tape_builder: BaseMultiTapeBuilder
+
+        if use_py_implementation:
+            multi_tape_builder = PythonMultiTapeBuilder(
+                multi_tape_automata=multi_tape_automata
+            )
+        else:
+            multi_tape_builder = MultiTapeBuilder(
+                multi_tape_automata=multi_tape_automata,
+            )
+
+        multi_tape_builder.declare_initial_group_overlaps(
+            overlap_states={INPUT_DATA_STATE}
+        )
+        compile_tapes_res: CompileTapesResult = (
+            multi_tape_builder.compile_tapes(verbose=verbose)
+        )
+        return compile_tapes_res
+
     @property
     def num_unrepresentable_products(self) -> int:
         return self.compile_result.num_unrepresentable_products
@@ -115,7 +148,7 @@ class CompiledCounterAutomataRunner(object):
         return self.compile_result.count_unique_states()
 
     def read_multi_tape_signal_value(self) -> int:
-        return self.multi_tape_runner.read_signals_tape_value()
+        return self.multi_tape_runner.read_signals_tape_value().unwrap()
 
     def remap_prod_to_multi_tape(self, input_product: PyProduct):
         return self.compile_result.remap_prod_to_multi_tape(input_product)
@@ -173,7 +206,7 @@ class CompiledCounterAutomataRunner(object):
                 f"remapped multi-tape {remapped_state} at index {index}"
             )
 
-    def read_signals_tape_value(self) -> int:
+    def read_signals_tape_value(self) -> Result[int, ValueError]:
         return self.multi_tape_runner.read_signals_tape_value()
 
     def resolve_terminal_width(self, terminal_width: int = BLANK_INT) -> int:
@@ -183,18 +216,22 @@ class CompiledCounterAutomataRunner(object):
 
     def render(
         self, render_start: int = -5, terminal_width: int = BLANK_INT,
-        header: str = ''
-    ):
+        cell_width: int = BLANK_INT, header: str = ''
+    ) -> Result[int, ValueError]:
+        max_state = self.compile_result.get_max_state()
+        if cell_width == BLANK_INT:
+            cell_width = len(str(max_state))
+
         terminal_width = self.resolve_terminal_width(
             terminal_width=terminal_width
         )
         single_render_frame = self.single_tape_automata.render_tape(
             start_position=render_start, length=terminal_width,
-            header_tag='-', cell_width=2
+            header_tag='-', cell_width=cell_width
         )
         multi_render_frame = self.multi_tape_runner.render_tapes(
             start_position=render_start, length=terminal_width,
-            cell_width=2
+            cell_width=cell_width
         )
         # print(render_frame.get_dimensions())
         if header:
@@ -203,9 +240,17 @@ class CompiledCounterAutomataRunner(object):
         print(single_render_frame.render())
         print('-' * terminal_width)
         print(multi_render_frame.render())
-        encoded_value = self.read_signals_tape_value()
-        print(f'{encoded_value=}')
+
+        encoded_value_res = self.read_signals_tape_value()
+        if encoded_value_res.is_err():
+            err = encoded_value_res.unwrap_err()
+            return Err(err)
+        else:
+            encoded_value = encoded_value_res.unwrap()
+            print(f'{encoded_value=}')
+
         print('')
+        return encoded_value_res
 
     def run_simulation(
         self, num_timesteps: int = 30, terminal_width: int = BLANK_INT,
@@ -216,11 +261,15 @@ class CompiledCounterAutomataRunner(object):
             terminal_width=terminal_width
         )
         if render:
-            self.render(
+            render_res = self.render(
                 render_start=render_start,
                 terminal_width=terminal_width,
                 header=f'\nTIMESTEP 0 START'
             )
+            if render_res.is_err():
+                err = render_res.unwrap_err()
+                print(f'ERROR AT TIMESTEP 0 START: {err}')
+                return
 
             for digit in range(self.base):
                 print(
@@ -236,11 +285,15 @@ class CompiledCounterAutomataRunner(object):
 
             if render:
                 # print(f'\nTIMESTEP {timestep}:')
-                self.render(
+                render_res = self.render(
                     render_start=render_start,
                     terminal_width=terminal_width,
                     header=f'\nTIMESTEP {timestep} END'
                 )
+                if render_res.is_err():
+                    err = render_res.unwrap_err()
+                    print(f'ERROR AT TIMESTEP {timestep} END: {err}')
+                    return
 
             if assert_consistency:
                 self.assert_tapes_consistency()
