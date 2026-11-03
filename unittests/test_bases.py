@@ -16,7 +16,7 @@ from automata_builder.counter_states import from_counter_state
 _cache = CachedCounterAutomataCompiler()
 
 NO_REDUCTION_BASES = list(range(2, 9))
-REDUCTION_BASES = list(range(2, 4))
+REDUCTION_BASES = list(range(2, 7))
 REDUCTION_COLLAPSE_MODES = (False, True)
 
 
@@ -102,7 +102,10 @@ class TestCompiledTapesScriptBases(unittest.TestCase):
     def test_runner_compiles_with_reduction_for_all_bases(self):
         for base in tqdm.tqdm(REDUCTION_BASES, desc='compile-reduction'):
             for collapse in REDUCTION_COLLAPSE_MODES:
-                with self.subTest(base=base, apply_reduction=True, collapse_reduction_tape=collapse):
+                with self.subTest(
+                    base=base, apply_reduction=True,
+                    collapse_reduction_tape=collapse
+                ):
                     runner = self._make_runner(
                         base=base,
                         apply_reduction=True,
