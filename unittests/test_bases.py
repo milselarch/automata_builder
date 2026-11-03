@@ -16,7 +16,7 @@ from automata_builder.counter_states import from_counter_state
 _cache = CachedCounterAutomataCompiler()
 
 NO_REDUCTION_BASES = list(range(2, 9))
-REDUCTION_BASES = list(range(2, 7))
+REDUCTION_BASES = list(range(2, 5))
 REDUCTION_COLLAPSE_MODES = (False, True)
 
 
