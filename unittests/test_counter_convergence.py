@@ -19,7 +19,7 @@ class TestCounterAutomataConvergence(unittest.TestCase):
             initial_write_end=write_end,
         )
         runner.run_simulation(num_timesteps=steps, render=False)
-        return runner.read_signals_tape_value()
+        return runner.read_signals_tape_value().unwrap()
 
     def test_encoded_value_equals_cells_filled_after_2n_steps(
         self, num_tests: int = 100, seed: int = 42

@@ -26,13 +26,16 @@ class TestHalfCounterAutomataConvergence(unittest.TestCase):
         write_start: int,
         write_end: int,
         steps: int,
+        collapse_reduction_tape: bool = False,
     ) -> int:
         runner = CompiledCounterAutomataRunner(
             initial_write_start=write_start,
             initial_write_end=write_end,
             cache=_cache,
             automata_settings=CounterAutomataSettings(
-                base=base, apply_reduction=True
+                base=base,
+                apply_reduction=True,
+                collapse_reduction_tape=collapse_reduction_tape,
             )
         )
         runner.run_simulation(num_timesteps=steps, render=False)
@@ -57,18 +60,24 @@ class TestHalfCounterAutomataConvergence(unittest.TestCase):
             expected_value = (cells_filled + 1) // 2
             steps = cells_filled * 2
 
+            # Covers the scenario: apply_reduction=True,
+            # collapse_reduction_tape=False (i.e. the reducer tape is
+            # kept separate from the signals/counter tape).
             with self.subTest(
                 base=base,
                 write_start=write_start,
                 write_end=write_end,
                 cells_filled=cells_filled,
                 steps=steps,
+                apply_reduction=True,
+                collapse_reduction_tape=False,
             ):
                 encoded = self._run_steps_and_read(
                     base=base,
                     write_start=write_start,
                     write_end=write_end,
                     steps=steps,
+                    collapse_reduction_tape=False,
                 )
                 self.assertEqual(
                     encoded,
