@@ -1,3 +1,4 @@
+use crate::automata::annotations::AnnotationId;
 use std::collections::{HashMap, HashSet};
 use std::fmt;
 use std::hash::Hash;
@@ -15,14 +16,14 @@ pub type TransitionPriority = u32;
 pub struct MultiTapeTransition {
     pub input_terms: Vec<MultiTapeTerm>,
     pub output_state: MultiTapeState,
-    pub annotation: String,
+    pub annotation: AnnotationId,
     pub priority: TransitionPriority,
 }
 impl MultiTapeTransition {
     pub fn new(
         input_terms: Vec<MultiTapeTerm>,
         output_state: MultiTapeState,
-        annotation: String,
+        annotation: AnnotationId,
         priority: TransitionPriority,
     ) -> Self {
         Self {
@@ -34,7 +35,7 @@ impl MultiTapeTransition {
     }
     pub fn to_product(&self) -> MultiTapeProduct {
         MultiTapeProductFactory::new(self.input_terms.clone())
-            .with_annotation(self.annotation.clone())
+            .with_annotation(self.annotation)
             .to_product()
     }
 }
@@ -46,7 +47,7 @@ impl fmt::Display for MultiTapeTransition {
                 input_terms: {}, output_state: {:?}, \
                 annotation: {:?}, priority: {} }}",
             self.to_product()._to_string("D"),
-            self.output_state, self.annotation, self.priority
+            self.output_state, self.annotation.resolve(), self.priority
         )
     }
 }
@@ -189,7 +190,7 @@ impl MultiTapeTransitionsGroup {
         output_cell_state: CellState,
         validate_void: bool,
         validate_halt: bool,
-        annotation: String,
+        annotation: AnnotationId,
         priority: TransitionPriority,
     ) -> Result<(), AddTransitionError> {
         /*
@@ -317,7 +318,7 @@ impl MultiTapeTransitionsGroup {
         for transition in &self.transitions {
             let input_terms = transition.input_terms.clone();
             let output_state = transition.output_state.clone();
-            let annotation = transition.annotation.clone();
+            let annotation = transition.annotation;
 
             let product = MultiTapeProductFactory::new(input_terms)
                 .with_annotation(annotation)

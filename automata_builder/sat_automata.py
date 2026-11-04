@@ -7,7 +7,8 @@ from dataclasses import dataclass
 from typing import Callable, Final
 
 from automata_builder._rust import (
-    D, PyMultiTapeAutomata, PyProcessStepResult, PyMultiTapeTransitionsGroup
+    D, PyMultiTapeAutomata, PyProcessStepResult, PyMultiTapeTransitionsGroup,
+    PyAnnotationMapping
 )
 
 from automata_builder.rule_generator import BLANK_INT
@@ -276,7 +277,9 @@ class ThreeSATAutomataBuilder(object):
                             literal_sat=literal_sat,
                             is_clause_start=is_clause_start
                         ),
-                        annotation=f'SCAN_START_{cell_tag}'
+                        annotation_id=PyAnnotationMapping.insert(
+                            f'SCAN_START_{cell_tag}'
+                        )
                     )
 
                     for clause_sat in (False, True):
@@ -294,7 +297,7 @@ class ThreeSATAutomataBuilder(object):
                                     literal_sat=literal_sat,
                                     is_clause_start=is_clause_start
                                 ),
-                                annotation=(
+                                annotation_id=PyAnnotationMapping.insert(
                                     f'SCAN_SHL_{cell_tag}_'
                                     f'{int(clause_sat)}{int(formula_sat)}'
                                 )
@@ -310,7 +313,7 @@ class ThreeSATAutomataBuilder(object):
                     )),),
                     output_tape_no=SCAN_TAPE,
                     output_cell_state=ST_SPENT,
-                    annotation=(
+                    annotation_id=PyAnnotationMapping.insert(
                         f'SCAN_SPEND_{int(clause_sat)}{int(formula_sat)}'
                     )
                 )
@@ -349,14 +352,16 @@ class ThreeSATAutomataBuilder(object):
                 ),
                 output_tape_no=VERDICT_TAPE,
                 output_cell_state=VT_SAT if formula_sat else VT_UNSAT,
-                annotation=f'VERDICT_{int(formula_sat)}'
+                annotation_id=PyAnnotationMapping.insert(
+                    f'VERDICT_{int(formula_sat)}'
+                )
             )
 
         _transitions_group.add_transition(
             input_terms=(VT_MID(VT_PENDING), CT_MID(CT_INVALID_INPUT)),
             output_tape_no=VERDICT_TAPE,
             output_cell_state=VT_UNSAT,
-            annotation='VERDICT_INVALID_INPUT'
+            annotation_id=PyAnnotationMapping.insert('VERDICT_INVALID_INPUT')
         )
         return _transitions_group
 

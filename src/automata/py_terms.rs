@@ -1,3 +1,4 @@
+use crate::automata::annotations::AnnotationId;
 use std::cmp::PartialEq;
 use std::collections::{HashMap, HashSet};
 use std::hash::{Hash, Hasher};
@@ -350,15 +351,15 @@ impl PartialEq<Term> for &Term {
 #[pymethods]
 impl PyProduct {
     #[new]
-    #[pyo3(signature=(terms, annotation=""))]
-    pub fn init(terms: Vec<A>, annotation: &str) -> PyResult<PyProduct> {
+    #[pyo3(signature=(terms, annotation_id=0))]
+    pub fn init(terms: Vec<A>, annotation_id: u32) -> PyResult<PyProduct> {
         if terms.len() == 0 {
             return Err(PyValueError::new_err("terms cannot be empty"));
         }
         let rs_terms: Vec<Term> =
             terms.into_iter().map(|term| term.term).collect();
         let product = ProductFactory::new(rs_terms)
-            .with_annotation(annotation.to_string())
+            .with_annotation(AnnotationId(annotation_id))
             .to_product();
         Ok(PyProduct { product })
     }
@@ -370,8 +371,12 @@ impl PyProduct {
             self.product.to_expression()
         ))
     }
-    pub fn get_annotation(&self) -> PyResult<String> {
-        Ok(self.product._annotation.clone())
+    pub fn get_annotation_id(&self) -> u32 {
+        self.product._annotation.0
+    }
+    /// Annotation string resolved from the global annotation mapping
+    pub fn get_annotation(&self) -> String {
+        self.product._annotation.to_string()
     }
     fn __hash__(&self) -> isize {
         let mut hasher = DefaultHasher::new();

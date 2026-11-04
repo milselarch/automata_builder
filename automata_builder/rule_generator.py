@@ -5,7 +5,9 @@ import typing
 import numpy as np
 
 from typing import Final, Self
-from automata_builder._rust import A, PyExpression, PyProduct
+from automata_builder._rust import (
+    A, PyAnnotationMapping, PyExpression, PyProduct
+)
 
 
 class TapeNo(int):
@@ -29,7 +31,12 @@ def is_halt_state(term: A) -> bool:
 class TapeTransition(object):
     input_terms: tuple[A, ...]
     output_state: TapeCellState
-    annotation: str = ''
+    # ID of the annotation in the global PyAnnotationMapping
+    annotation_id: int = PyAnnotationMapping.EMPTY_ID
+
+    @property
+    def annotation(self) -> str:
+        return PyAnnotationMapping.resolve(self.annotation_id)
 
     def __post_init__(self):
         assert isinstance(self.input_terms, tuple)
@@ -85,11 +92,12 @@ class TapeTransitionsGroup(object):
 
     def add_transition(
         self, input_terms: tuple[A, ...], output_state: TapeCellState,
-        ban_halt_state: bool = False, annotation: str = ''
+        ban_halt_state: bool = False,
+        annotation_id: int = PyAnnotationMapping.EMPTY_ID
     ) -> bool:
         transition_entry = TapeTransition(
             input_terms=input_terms, output_state=output_state,
-            annotation=annotation
+            annotation_id=annotation_id
         )
         if input_terms in self.transitions_map:
             if self.transitions_map[input_terms] == output_state:
@@ -102,7 +110,8 @@ class TapeTransitionsGroup(object):
 
             raise ValueError(
                 f'Conflicting transition for input terms {input_terms}: '
-                f'{output_state} [{annotation}] vs {existing_output_state} '
+                f'{output_state} [{transition_entry.annotation}] vs '
+                f'{existing_output_state} '
                 f'[{existing_annotation}]'
             )
 
@@ -134,7 +143,7 @@ class TapeTransitionsGroup(object):
             self.add_transition(
                 input_terms=transition.input_terms,
                 output_state=transition.output_state,
-                annotation=transition.annotation
+                annotation_id=transition.annotation_id
             )
 
         return self
@@ -255,9 +264,11 @@ class RuleGenerator(object):
                 state_eq_terms_map[transition.output_state] = []
 
             if require_annotations:
-                assert transition.annotation
+                assert transition.annotation_id
 
-            product = PyProduct(transition.input_terms, transition.annotation)
+            product = PyProduct(
+                transition.input_terms, transition.annotation_id
+            )
             state_eq_terms_map[transition.output_state].append(product)
 
         if pad_product_length:
@@ -285,7 +296,7 @@ class RuleGenerator(object):
                 for prod_idx in range(len(state_products)):
                     product = state_products[prod_idx]
                     if require_annotations:
-                        assert product.get_annotation()
+                        assert product.get_annotation_id()
 
                     start_product_length = len(product)
                     pad_length = max_product_length - start_product_length
@@ -295,7 +306,7 @@ class RuleGenerator(object):
                     for _ in range(pad_length):
                         new_product = new_product.multiply_by_term(end_term)
                         if require_annotations:
-                            assert new_product.get_annotation()
+                            assert new_product.get_annotation_id()
 
                     assert len(new_product) == max_product_length
                     state_products[prod_idx] = new_product
@@ -308,7 +319,7 @@ class RuleGenerator(object):
         if require_annotations:
             for next_state in state_eq_map:
                 for product in state_eq_map[next_state]:
-                    assert product.get_annotation()
+                    assert product.get_annotation_id()
 
         if pad_expr_length:
             # ensure that all expressions have the same length
@@ -326,7 +337,7 @@ class RuleGenerator(object):
 
                     if require_annotations:
                         for product in state_eq_map[next_state]:
-                            assert product.get_annotation()
+                            assert product.get_annotation_id()
 
         sorted_states = sorted(list(state_eq_map.keys()))
         log(f'{sorted_states=}')
@@ -385,7 +396,7 @@ class RuleGenerator(object):
                 base_terms_per_product = product.get_num_terms()
                 """
                 if require_annotations:
-                    assert product.get_annotation()
+                    assert product.get_annotation_id()
                 """
                 for term in product:
                     assert isinstance(term, A)

@@ -1,3 +1,4 @@
+use crate::automata::annotations::AnnotationId;
 use rayon::iter::ParallelIterator;
 use std::cmp::Ordering;
 use std::collections::{HashMap, HashSet};
@@ -312,14 +313,14 @@ impl AbstractMultiTapeExpression for MultiTapeTerm {
 pub struct MultiTapeProductFactory {
     pub (crate) _terms: Vec<MultiTapeTerm>,
     pub (crate) _optimized: bool,
-    pub (crate) _annotation: String
+    pub (crate) _annotation: AnnotationId
 }
 impl MultiTapeProductFactory {
     pub fn spawn_empty() -> MultiTapeProductFactory {
         MultiTapeProductFactory {
             _terms: vec![],
             _optimized: false,
-            _annotation: String::new()
+            _annotation: AnnotationId::EMPTY
         }
     }
     pub fn new(terms: Vec<MultiTapeTerm>) -> MultiTapeProductFactory {
@@ -340,7 +341,7 @@ impl MultiTapeProductFactory {
         clone
     }
     pub fn with_annotation(
-        &mut self, annotation: String
+        &mut self, annotation: AnnotationId
     ) -> MultiTapeProductFactory {
         let mut clone = self.clone();
         clone._annotation = annotation;
@@ -350,7 +351,7 @@ impl MultiTapeProductFactory {
         MultiTapeProduct {
             _terms: self._terms,
             _optimized: self._optimized,
-            _annotation: self._annotation.clone()
+            _annotation: self._annotation
         }
     }
 }
@@ -359,7 +360,7 @@ impl MultiTapeProductFactory {
 pub struct MultiTapeProduct {
     pub (crate) _terms: Vec<MultiTapeTerm>,
     pub (crate) _optimized: bool,
-    pub (crate) _annotation: String
+    pub (crate) _annotation: AnnotationId
 }
 impl MultiTapeProduct {
     pub fn new(terms: Vec<MultiTapeTerm>) -> Self {
@@ -368,10 +369,10 @@ impl MultiTapeProduct {
     pub fn to_flat_terms(&self) -> Vec<MultiTapeTerm> {
         self._terms.clone()
     }
-    pub fn get_annotation(&self) -> &String {
-        &self._annotation
+    pub fn get_annotation(&self) -> AnnotationId {
+        self._annotation
     }
-    pub fn set_annotation(&mut self, annotation: String) {
+    pub fn set_annotation(&mut self, annotation: AnnotationId) {
         self._annotation = annotation
     }
     pub(crate) fn _get_term(&self, index: usize) -> Option<&MultiTapeTerm> {
@@ -589,7 +590,7 @@ impl AbstractMultiTapeExpression for MultiTapeProduct {
     fn copy(&self) -> Self {
         MultiTapeProductFactory::new(self._terms.clone())
             .with_optimized(self._optimized)
-            .with_annotation(self._annotation.clone())
+            .with_annotation(self._annotation)
             .to_product()
     }
     fn _sub(

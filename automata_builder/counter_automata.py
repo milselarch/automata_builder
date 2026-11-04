@@ -5,7 +5,8 @@ import os
 from typing import Sequence
 from automata_builder._rust import (
     D, PyMultiTapeAutomata, PyProcessStepResult, PyMultiTapeDataRegion,
-    PyRenderFrame, PyMultiTapeTransitionsGroup, PyMultiTapeProduct
+    PyRenderFrame, PyMultiTapeTransitionsGroup, PyMultiTapeProduct,
+    PyAnnotationMapping
 )
 from result import Result, Ok, Err
 
@@ -55,7 +56,7 @@ class CounterAutomataBuilder(object):
                     ),
                     output_tape_no=SIGNALS_TAPE,
                     output_cell_state=paused_counter(right_digit),
-                    annotation=annotation,
+                    annotation_id=PyAnnotationMapping.insert(annotation),
                 )
 
         return _transitions_group
@@ -84,7 +85,7 @@ class CounterAutomataBuilder(object):
                 ),
                 output_tape_no=SIGNALS_TAPE,
                 output_cell_state=counter_right_state,
-                annotation=(
+                annotation_id=PyAnnotationMapping.insert(
                     f'CLEAR_RIGHTMOST_{digit}_OVER_{carry_tape_state}'
                 ),
             )
@@ -98,7 +99,7 @@ class CounterAutomataBuilder(object):
                 ),
                 output_tape_no=SIGNALS_TAPE,
                 output_cell_state=counter_right_state,
-                annotation=(
+                annotation_id=PyAnnotationMapping.insert(
                     f'CLEAR_RIGHTMOST_{digit}_ST_OVER_{carry_tape_state}'
                 )
             )
@@ -137,7 +138,7 @@ class CounterAutomataBuilder(object):
                 # ST_RIGHT(VOID_STATE) # <- inserted for compilability
             ),
             output_tape_no=SIGNALS_TAPE, output_cell_state=ST_REDUCE_START,
-            annotation='EXP_REDUCE_START'
+            annotation_id=PyAnnotationMapping.insert('EXP_REDUCE_START')
         )
 
         # begin the counter-accumulator on the right side
@@ -149,7 +150,7 @@ class CounterAutomataBuilder(object):
             ),
             output_tape_no=SIGNALS_TAPE,
             output_cell_state=paused_counter(1),
-            annotation=f'COUNTER_ACC_START',
+            annotation_id=PyAnnotationMapping.insert(f'COUNTER_ACC_START'),
         )
 
         # apply carry cells to counter-cells
@@ -173,14 +174,18 @@ class CounterAutomataBuilder(object):
                         input_terms=carry_no_overflow_combo,
                         output_tape_no=SIGNALS_TAPE,
                         output_cell_state=paused_counter(right_digit + 1),
-                        annotation=f'SHL_{right_digit}_INC',
+                        annotation_id=PyAnnotationMapping.insert(
+                            f'SHL_{right_digit}_INC'
+                        ),
                     )
                     # overflow right_digit to 0 and move left, cancel carry
                     _transitions_group.add_transition(
                         input_terms=carry_no_overflow_combo,
                         output_tape_no=CARRY_TAPE,
                         output_cell_state=VOID_STATE,
-                        annotation=f'CANCEL_CARRY',
+                        annotation_id=PyAnnotationMapping.insert(
+                            f'CANCEL_CARRY'
+                        ),
                     )
                 else:
                     # overflow to 0 and move left, carry stays for next digit
@@ -193,7 +198,9 @@ class CounterAutomataBuilder(object):
                         ),
                         output_tape_no=SIGNALS_TAPE,
                         output_cell_state=paused_counter(0),
-                        annotation=f'SHL_{mid_digit}_OVERFLOW'
+                        annotation_id=PyAnnotationMapping.insert(
+                            f'SHL_{mid_digit}_OVERFLOW'
+                        )
                     )
 
         for digit in range(self.base):
@@ -208,13 +215,17 @@ class CounterAutomataBuilder(object):
                 input_terms=right_overflow_combo,
                 output_tape_no=SIGNALS_TAPE,
                 output_cell_state=paused_counter(1),
-                annotation=f'RIGHT_OVERFLOW_INC',
+                annotation_id=PyAnnotationMapping.insert(
+                    f'RIGHT_OVERFLOW_INC'
+                ),
             )
             _transitions_group.add_transition(
                 input_terms=right_overflow_combo,
                 output_tape_no=CARRY_TAPE,
                 output_cell_state=VOID_STATE,
-                annotation=f'RIGHT_OVERFLOW_CARRY_CANCEL',
+                annotation_id=PyAnnotationMapping.insert(
+                    f'RIGHT_OVERFLOW_CARRY_CANCEL'
+                ),
             )
 
         # clear rightmost counter cell if no carry
@@ -232,7 +243,9 @@ class CounterAutomataBuilder(object):
                 input_terms=(ST_MID(paused_counter(digit)),),
                 output_tape_no=SIGNALS_TAPE,
                 output_cell_state=active_counter(digit),
-                annotation=f'PAUSE_TO_UNPAUSE_{digit}'
+                annotation_id=PyAnnotationMapping.insert(
+                    f'PAUSE_TO_UNPAUSE_{digit}'
+                )
             )
 
         return _transitions_group
@@ -285,7 +298,9 @@ class CounterAutomataBuilder(object):
                     ),
                     output_tape_no=SIGNALS_TAPE,
                     output_cell_state=paused_counter(0),
-                    annotation=f'LM_OVERFLOW_{max_counter_digit}',
+                    annotation_id=PyAnnotationMapping.insert(
+                        f'LM_OVERFLOW_{max_counter_digit}'
+                    ),
                     priority=1
                 )
                 # spawn a carry cell state to propagate to digits to the right
@@ -298,7 +313,9 @@ class CounterAutomataBuilder(object):
                     ),
                     output_tape_no=CARRY_TAPE,
                     output_cell_state=CT_DATA,
-                    annotation=f'LM_SPAWN_CARRY',
+                    annotation_id=PyAnnotationMapping.insert(
+                        f'LM_SPAWN_CARRY'
+                    ),
                     priority=1
                 )
             else:
@@ -312,7 +329,9 @@ class CounterAutomataBuilder(object):
                     ),
                     output_tape_no=SIGNALS_TAPE,
                     output_cell_state=paused_counter(digit + 1),
-                    annotation=f'LM_LEFT_{digit}_AND_INC',
+                    annotation_id=PyAnnotationMapping.insert(
+                        f'LM_LEFT_{digit}_AND_INC'
+                    ),
                     priority=1
                 )
 
@@ -329,7 +348,9 @@ class CounterAutomataBuilder(object):
                     ),
                     output_tape_no=SIGNALS_TAPE,
                     output_cell_state=paused_counter(digit),
-                    annotation=f'BLEED_{digit}_OVER_{no_increment_state}',
+                    annotation_id=PyAnnotationMapping.insert(
+                        f'BLEED_{digit}_OVER_{no_increment_state}'
+                    ),
                     priority=1
                 )
 
@@ -370,7 +391,7 @@ class CounterAutomataBuilder(object):
             ),
             output_tape_no=CARRY_TAPE,
             output_cell_state=REDUCER_PAUSED_DATA,
-            annotation='REDUCER_SPAWN_LEFT_END',
+            annotation_id=PyAnnotationMapping.insert('REDUCER_SPAWN_LEFT_END'),
         )
         # spread the data state rightwards while overlapping with input data
         _transitions_group.add_transition(
@@ -382,7 +403,9 @@ class CounterAutomataBuilder(object):
             ),
             output_tape_no=CARRY_TAPE,
             output_cell_state=REDUCER_PAUSED_DATA,
-            annotation='REDUCER_DATA_SPREAD_RIGHT',
+            annotation_id=PyAnnotationMapping.insert(
+                'REDUCER_DATA_SPREAD_RIGHT'
+            ),
         )
         # spread the data state leftwards (regardless of input data overlap)
         _transitions_group.add_transition(
@@ -393,7 +416,9 @@ class CounterAutomataBuilder(object):
             ),
             output_tape_no=CARRY_TAPE,
             output_cell_state=REDUCER_PAUSED_DATA,
-            annotation='REDUCER_DATA_SPREAD_LEFT',
+            annotation_id=PyAnnotationMapping.insert(
+                'REDUCER_DATA_SPREAD_LEFT'
+            ),
         )
         # convert the paused half-data tape state to an active state
         _transitions_group.add_transition(
@@ -405,7 +430,9 @@ class CounterAutomataBuilder(object):
             ),
             output_tape_no=CARRY_TAPE,
             output_cell_state=REDUCER_DATA,
-            annotation=f'REDUCER_PAUSE_TO_UNPAUSE',
+            annotation_id=PyAnnotationMapping.insert(
+                f'REDUCER_PAUSE_TO_UNPAUSE'
+            ),
         )
         return _transitions_group
 
@@ -442,7 +469,7 @@ class CounterAutomataBuilder(object):
             ),
             output_tape_no=REDUCER_TAPE,
             output_cell_state=REDUCER_PAUSED_DATA,
-            annotation='REDUCER_SPAWN_LEFT_END',
+            annotation_id=PyAnnotationMapping.insert('REDUCER_SPAWN_LEFT_END'),
         )
         # spread the data state rightwards while overlapping with input data
         _transitions_group.add_transition(
@@ -454,7 +481,9 @@ class CounterAutomataBuilder(object):
             ),
             output_tape_no=REDUCER_TAPE,
             output_cell_state=REDUCER_PAUSED_DATA,
-            annotation='REDUCER_DATA_SPREAD_RIGHT',
+            annotation_id=PyAnnotationMapping.insert(
+                'REDUCER_DATA_SPREAD_RIGHT'
+            ),
         )
         # spread the data state leftwards (regardless of input data overlap)
         _transitions_group.add_transition(
@@ -465,7 +494,9 @@ class CounterAutomataBuilder(object):
             ),
             output_tape_no=REDUCER_TAPE,
             output_cell_state=REDUCER_PAUSED_DATA,
-            annotation='REDUCER_DATA_SPREAD_LEFT',
+            annotation_id=PyAnnotationMapping.insert(
+                'REDUCER_DATA_SPREAD_LEFT'
+            ),
         )
         # convert the paused half-data tape state to an active state
         _transitions_group.add_transition(
@@ -477,7 +508,9 @@ class CounterAutomataBuilder(object):
             ),
             output_tape_no=REDUCER_TAPE,
             output_cell_state=REDUCER_DATA,
-            annotation=f'REDUCER_PAUSE_TO_UNPAUSE',
+            annotation_id=PyAnnotationMapping.insert(
+                f'REDUCER_PAUSE_TO_UNPAUSE'
+            ),
         )
         return _transitions_group
 

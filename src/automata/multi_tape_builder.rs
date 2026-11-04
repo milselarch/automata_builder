@@ -21,6 +21,7 @@
 //! iteration order), every collection here is iterated in a deterministic
 //! (sorted / insertion) order, so compilation results are reproducible.
 
+use crate::automata::annotations::AnnotationId;
 use std::backtrace::Backtrace;
 use std::collections::{BTreeMap, BTreeSet, HashMap, HashSet};
 use std::fmt;
@@ -358,14 +359,14 @@ impl MultiTapeStatePathRemap {
     }
 
     pub fn remap_single_tape_terms(
-        &self, terms: &[Term], annotation: &str,
+        &self, terms: &[Term], annotation: AnnotationId,
     ) -> CompileResult<MultiTapeProduct> {
         let mut sub_products: Vec<MultiTapeProduct> = Vec::with_capacity(terms.len());
         for term in terms.iter() {
             sub_products.push(self.remap_term_to_multi_tape(term)?);
         }
         let mut combined_product = MultiTapeProduct::merge_products(sub_products);
-        combined_product.set_annotation(annotation.to_string());
+        combined_product.set_annotation(annotation);
         Ok(combined_product)
     }
 
@@ -1142,7 +1143,7 @@ impl MultiTapeBuilder {
                         format!("{}_({})", annotation, product_repr(&extended_product));
                     extended_products.insert(
                         MultiTapeProductFactory::new(extended_product._terms)
-                            .with_annotation(new_annotation)
+                            .with_annotation(AnnotationId::intern(&new_annotation))
                             .to_product(),
                     );
                 }
@@ -1459,9 +1460,9 @@ impl MultiTapeBuilder {
                 }
             };
 
-            let mut annotation = multi_tape_prod.get_annotation().clone();
+            let mut annotation = multi_tape_prod.get_annotation();
             if annotation.is_empty() {
-                annotation = product_repr(&multi_tape_prod);
+                annotation = AnnotationId::intern(&product_repr(&multi_tape_prod));
             }
             transitions_group
                 .add_transition(remapped_product_input_terms, remapped_output_state, true, annotation)
