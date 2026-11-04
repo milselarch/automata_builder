@@ -13,6 +13,8 @@ use std::fmt;
 use std::fmt::Debug;
 use std::ops::Index;
 use indexmap::IndexSet;
+use crate::automata::annotation_mapping::resolve_annotation;
+use crate::automata::annotation_mapping::AnnotationID;
 use crate::automata::renderer::RenderError;
 use crate::automata::renderer::TapeRenderFrame;
 use crate::automata::terms_multitape::TapeNo;
@@ -23,7 +25,8 @@ use crate::automata::terms_multitape::TapeNo;
 pub struct AutomataTransition {
     pub input_terms: Vec<Term>,
     pub output_state: CellState,
-    pub annotation: String,
+    /// Annotation id (see `annotation_mapping`); `0` means "no annotation".
+    pub annotation: AnnotationID,
 }
 
 /// Contains a set of transitions for a cellular automaton,
@@ -83,7 +86,7 @@ impl AutomataTransitionsGroup {
         input_terms: Vec<Term>,
         output_state: CellState,
         ban_halt_state: bool,
-        annotation: String,
+        annotation: AnnotationID,
     ) -> Result<bool, String> {
         if let Some(&existing_index) = self.transitions_map.get(&input_terms) {
             let existing_transition = &self.transitions[existing_index];
@@ -93,10 +96,11 @@ impl AutomataTransitionsGroup {
             }
             return Err(format!(
                 "Conflicting transition for input terms {}: \
-                 {output_state} [{annotation}] vs {} [{}]",
+                 {output_state} [{}] vs {} [{}]",
                 Self::terms_to_string(&input_terms),
                 existing_transition.output_state,
-                existing_transition.annotation
+                resolve_annotation(annotation),
+                resolve_annotation(existing_transition.annotation)
             ));
         }
 

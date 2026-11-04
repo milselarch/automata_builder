@@ -3,6 +3,7 @@ use std::fmt;
 
 use indexmap::{IndexMap, IndexSet};
 use num_traits::{abs};
+use crate::automata::annotation_mapping::resolve_annotation;
 use crate::automata::renderer::RenderFrame;
 use crate::automata::rule_generator::{BidirectionalTape, TapeError, VOID_STATE};
 use crate::automata::terms::{AbstractExpression, CellState, Expression, Product, Term};
@@ -599,7 +600,7 @@ impl SingleTapeAutomata {
             if !self.product_satisfies(&matching_product, position) {
                 panic!(
                     "Product does not satisfy condition: {} [{}] at {}",
-                    &matching_product, matching_product._annotation, position
+                    &matching_product, resolve_annotation(matching_product._annotation), position
                 );
             }
             let write_record = WriteRecord {

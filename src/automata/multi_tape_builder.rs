@@ -28,6 +28,9 @@ use std::fmt;
 use indexmap::{IndexMap, IndexSet};
 use rayon::prelude::*;
 
+use crate::automata::annotation_mapping::{
+    global_get_or_insert, resolve_annotation, AnnotationID, NO_ANNOTATION
+};
 use crate::automata::multi_tape_automata::MultiTapeAutomata;
 use crate::automata::multi_tape_product_trie::{
     offset_group_path_to_product, terms_satisfiable_with, MultiTapeProductTrie,
@@ -358,14 +361,14 @@ impl MultiTapeStatePathRemap {
     }
 
     pub fn remap_single_tape_terms(
-        &self, terms: &[Term], annotation: &str,
+        &self, terms: &[Term], annotation: AnnotationID,
     ) -> CompileResult<MultiTapeProduct> {
         let mut sub_products: Vec<MultiTapeProduct> = Vec::with_capacity(terms.len());
         for term in terms.iter() {
             sub_products.push(self.remap_term_to_multi_tape(term)?);
         }
         let mut combined_product = MultiTapeProduct::merge_products(sub_products);
-        combined_product.set_annotation(annotation.to_string());
+        combined_product.set_annotation(annotation);
         Ok(combined_product)
     }
 
@@ -723,7 +726,7 @@ impl MultiTapeBuilder {
         let deleted_products = prod_to_state_map.purge_unsatisfiable_products(&state_attrs_map)?;
         if verbose {
             for product in deleted_products.iter() {
-                println!("DELETED_PRODUCT {} {}", product_repr(product), product.get_annotation());
+                println!("DELETED_PRODUCT {} {}", product_repr(product), resolve_annotation(product.get_annotation()));
             }
         }
 
@@ -747,12 +750,12 @@ impl MultiTapeBuilder {
         for product in overlaps_fsm_state.relevant_input_products().iter() {
             if !is_product_satisfiable(product, prev_overlaps, false) {
                 if verbose {
-                    println!("NO_SAT <<< {} {}", product_repr(product), product.get_annotation());
+                    println!("NO_SAT <<< {} {}", product_repr(product), resolve_annotation(product.get_annotation()));
                 }
                 continue;
             }
             if verbose {
-                println!("IS_SAT >>> {} {}", product_repr(product), product.get_annotation());
+                println!("IS_SAT >>> {} {}", product_repr(product), resolve_annotation(product.get_annotation()));
             }
             let Some(product_writes) = prev_prod_to_state_map.get(product) else {
                 continue;
@@ -1107,8 +1110,8 @@ impl MultiTapeBuilder {
                     return Err(CompileTapesError::ConflictingWrites(format!(
                         "source_product={} [{}] and product={} [{}] are simultaneously \
                          satisfiable but have conflicting writes on tape {}: {} vs {}",
-                        product_repr(source_product), source_product.get_annotation(),
-                        product_repr(product), product.get_annotation(),
+                        product_repr(source_product), resolve_annotation(source_product.get_annotation()),
+                        product_repr(product), resolve_annotation(product.get_annotation()),
                         tape_no, current_write_state, tape_cell_state
                     )));
                 }
@@ -1138,11 +1141,14 @@ impl MultiTapeBuilder {
                 });
                 if !is_overridden {
                     let extended_product = MultiTapeProduct::new(flat_terms);
-                    let new_annotation =
-                        format!("{}_({})", annotation, product_repr(&extended_product));
+                    let new_annotation = format!(
+                        "{}_({})",
+                        resolve_annotation(annotation), product_repr(&extended_product)
+                    );
+                    let new_annotation_id = global_get_or_insert(&new_annotation);
                     extended_products.insert(
                         MultiTapeProductFactory::new(extended_product._terms)
-                            .with_annotation(new_annotation)
+                            .with_annotation(new_annotation_id)
                             .to_product(),
                     );
                 }
@@ -1166,7 +1172,7 @@ impl MultiTapeBuilder {
         if extended_products.is_empty() {
             return Err(CompileTapesError::Invalid(format!(
                 "no extended products could be built for {} [{}]",
-                product_repr(source_product), annotation
+                product_repr(source_product), resolve_annotation(annotation)
             )));
         }
         Ok(extended_products)
@@ -1368,7 +1374,7 @@ impl MultiTapeBuilder {
                             "{} | product: {} [{}]",
                             msg,
                             product_repr(source_multi_tape_product),
-                            source_multi_tape_product.get_annotation()
+                            resolve_annotation(source_multi_tape_product.get_annotation())
                         )),
                         other => other,
                     })?;
@@ -1451,7 +1457,7 @@ impl MultiTapeBuilder {
                                 input_state_path,
                                 current_product_writes,
                                 product_repr(source_multi_tape_product),
-                                source_multi_tape_product.get_annotation(),
+                                resolve_annotation(source_multi_tape_product.get_annotation()),
                                 product_repr(&multi_tape_prod),
                             )),
                             other => other,
@@ -1459,10 +1465,12 @@ impl MultiTapeBuilder {
                 }
             };
 
-            let mut annotation = multi_tape_prod.get_annotation().clone();
-            if annotation.is_empty() {
-                annotation = product_repr(&multi_tape_prod);
-            }
+            let annotation = if multi_tape_prod.get_annotation() == NO_ANNOTATION {
+                let repr = product_repr(&multi_tape_prod);
+                global_get_or_insert(&repr)
+            } else {
+                multi_tape_prod.get_annotation()
+            };
             transitions_group
                 .add_transition(remapped_product_input_terms, remapped_output_state, true, annotation)
                 .map_err(CompileTapesError::Transition)?;
@@ -1511,12 +1519,12 @@ impl MultiTapeBuilder {
             if verbose {
                 println!(
                     "\nBuilding extensions for: {} {} -> {}",
-                    product_repr(product), product.get_annotation(),
+                    product_repr(product), resolve_annotation(product.get_annotation()),
                     preexisting_writes_map.get_stub_writes_str_for(product)
                 );
                 for (k, extended_product) in product_extensions.iter().enumerate() {
                     println!("[{}] -> {}", k, product_repr(extended_product));
-                    println!("{}", extended_product.get_annotation());
+                    println!("{}", resolve_annotation(extended_product.get_annotation()));
                 }
             }
             */

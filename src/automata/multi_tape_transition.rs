@@ -1,9 +1,9 @@
-use std::collections::{HashMap, HashSet};
 use std::fmt;
 use std::hash::Hash;
 use indexmap::{IndexMap, IndexSet};
 use serde::{Deserialize, Serialize};
 
+use crate::automata::annotation_mapping::{AnnotationID, NO_ANNOTATION, resolve_annotation};
 use crate::automata::rule_generator::{HALT_STATE, VOID_STATE};
 use crate::automata::rule_generator_multitape::AutomataError;
 use crate::automata::terms::CellState;
@@ -15,14 +15,15 @@ pub type TransitionPriority = u32;
 pub struct MultiTapeTransition {
     pub input_terms: Vec<MultiTapeTerm>,
     pub output_state: MultiTapeState,
-    pub annotation: String,
+    /// Annotation id (see `annotation_mapping`); `0` means "no annotation".
+    pub annotation: AnnotationID,
     pub priority: TransitionPriority,
 }
 impl MultiTapeTransition {
     pub fn new(
         input_terms: Vec<MultiTapeTerm>,
         output_state: MultiTapeState,
-        annotation: String,
+        annotation: AnnotationID,
         priority: TransitionPriority,
     ) -> Self {
         Self {
@@ -34,7 +35,7 @@ impl MultiTapeTransition {
     }
     pub fn to_product(&self) -> MultiTapeProduct {
         MultiTapeProductFactory::new(self.input_terms.clone())
-            .with_annotation(self.annotation.clone())
+            .with_annotation(self.annotation)
             .to_product()
     }
 }
@@ -44,9 +45,9 @@ impl fmt::Display for MultiTapeTransition {
         write!(
             f, "MultiTapeTransition {{ \
                 input_terms: {}, output_state: {:?}, \
-                annotation: {:?}, priority: {} }}",
+                annotation: {}, priority: {} }}",
             self.to_product()._to_string("D"),
-            self.output_state, self.annotation, self.priority
+            self.output_state, resolve_annotation(self.annotation), self.priority
         )
     }
 }
@@ -189,7 +190,7 @@ impl MultiTapeTransitionsGroup {
         output_cell_state: CellState,
         validate_void: bool,
         validate_halt: bool,
-        annotation: String,
+        annotation: AnnotationID,
         priority: TransitionPriority,
     ) -> Result<(), AddTransitionError> {
         /*
@@ -209,7 +210,7 @@ impl MultiTapeTransitionsGroup {
             combination of input terms - it might be possible to
             reduce / remove it being necessary by analyzing tape overlaps FSM
          */
-        if self.require_annotation && annotation.is_empty() {
+        if self.require_annotation && annotation == NO_ANNOTATION {
             return Err(AddTransitionError::AnnotationExpected)
         }
         if validate_void {
@@ -317,7 +318,7 @@ impl MultiTapeTransitionsGroup {
         for transition in &self.transitions {
             let input_terms = transition.input_terms.clone();
             let output_state = transition.output_state.clone();
-            let annotation = transition.annotation.clone();
+            let annotation = transition.annotation;
 
             let product = MultiTapeProductFactory::new(input_terms)
                 .with_annotation(annotation)
@@ -331,7 +332,7 @@ impl MultiTapeTransitionsGroup {
             if require_annotations {
                 // Assuming MultiTapeProduct has a method `get_annotation()`
                 let product = state_eq_terms_map.get(&output_state).unwrap().last().unwrap();
-                if product.get_annotation().is_empty() {
+                if product.get_annotation() == NO_ANNOTATION {
                     return Err(AutomataError::EmptyAnnotation {
                         product: product.clone()
                     });
@@ -360,7 +361,7 @@ impl MultiTapeTransitionsGroup {
             if require_annotations {
                 for product in flat_products {
                     // Assuming PyMultiTapeProduct has a method `get_annotation()`
-                    if product.get_annotation().is_empty() {
+                    if product.get_annotation() == NO_ANNOTATION {
                         return Err(AutomataError::EmptyAnnotation {
                             product: product.clone()
                         });

@@ -8,6 +8,7 @@ use pyo3::exceptions::{PyIndexError, PyTypeError, PyValueError};
 use pyo3::prelude::*;
 use pyo3_stub_gen::define_stub_info_gatherer;
 use pyo3_stub_gen::derive::{gen_stub_pyclass, gen_stub_pymethods};
+use crate::automata::annotation_mapping::{global_get_or_insert, resolve_annotation};
 use crate::automata::terms::{
     clip_after_space, validate_debug_info_exists,
     AbstractExpression, CellState, ExprDebugInfo, Expression,
@@ -358,7 +359,7 @@ impl PyProduct {
         let rs_terms: Vec<Term> =
             terms.into_iter().map(|term| term.term).collect();
         let product = ProductFactory::new(rs_terms)
-            .with_annotation(annotation.to_string())
+            .with_annotation(global_get_or_insert(annotation))
             .to_product();
         Ok(PyProduct { product })
     }
@@ -371,7 +372,7 @@ impl PyProduct {
         ))
     }
     pub fn get_annotation(&self) -> PyResult<String> {
-        Ok(self.product._annotation.clone())
+        Ok(resolve_annotation(self.product._annotation))
     }
     fn __hash__(&self) -> isize {
         let mut hasher = DefaultHasher::new();

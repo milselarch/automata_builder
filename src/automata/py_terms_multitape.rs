@@ -8,6 +8,7 @@ use pyo3::prelude::*;
 use pyo3::types::{PyDict, PyType};
 use pyo3_stub_gen::define_stub_info_gatherer;
 use pyo3_stub_gen::derive::{gen_stub_pyclass, gen_stub_pymethods};
+use crate::automata::annotation_mapping::{global_get_or_insert, resolve_annotation};
 use crate::automata::py_terms::py_hash;
 use crate::automata::terms::{clip_after_space, CellState, ExprDebugInfo};
 use crate::automata::terms_multitape::{
@@ -384,7 +385,7 @@ impl PyMultiTapeProduct {
         let rs_terms: Vec<MultiTapeTerm> =
             terms.into_iter().map(|term| term.term).collect();
         let product = MultiTapeProductFactory::new(rs_terms)
-            .with_annotation(annotation.parse()?)
+            .with_annotation(global_get_or_insert(annotation))
             .to_product();
         Ok(PyMultiTapeProduct { product })
     }
@@ -392,30 +393,30 @@ impl PyMultiTapeProduct {
         self.product.is_satisfiable_with(&other.product)
     }
     #[classmethod]
-    #[pyo3(signature=(products, annotation=String::new()))]
+    #[pyo3(signature=(products, annotation=""))]
     pub fn merge(
         _cls: &Bound<'_, PyType>, products: Vec<PyRef<PyMultiTapeProduct>>,
-        annotation: String
+        annotation: &str
     ) -> Self {
         let rs_products = products.into_iter().map(|product_ref| {
             return product_ref.product.clone();
         }).collect();
 
         let mut merged_product = MultiTapeProduct::merge_products(rs_products);
-        merged_product.set_annotation(annotation);
+        merged_product.set_annotation(global_get_or_insert(annotation));
         PyMultiTapeProduct::new_from_product(merged_product)
     }
 
     // TODO: expose method to merge multi products
     pub fn get_annotation(&self) -> PyResult<String> {
-        Ok(self.product._annotation.clone())
+        Ok(resolve_annotation(self.product._annotation))
     }
-    pub fn with_annotation(&self, annotation: String) -> PyMultiTapeProduct {
+    pub fn with_annotation(&self, annotation: &str) -> PyMultiTapeProduct {
         let rs_terms = self.product._terms.clone();
         let optimized = self.product._optimized;
         let product = MultiTapeProductFactory::new(rs_terms)
             .with_optimized(optimized)
-            .with_annotation(annotation)
+            .with_annotation(global_get_or_insert(annotation))
             .to_product();
         PyMultiTapeProduct::new_from_product(product)
     }

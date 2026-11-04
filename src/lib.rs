@@ -16,6 +16,7 @@ use crate::automata::py_single_tape_automata::{
     PySingleTapeAutomata, PySingleTapeProcessStepResult,
     PySingleTapeWriteRecord
 };
+use crate::automata::py_annotation_mapping::PyAnnotationMapping;
 use crate::automata::py_terms::{A, PyProduct, PyExpression};
 use crate::automata::py_terms_multitape::{
     PyMultiTapeExpression, PyMultiTapeProduct, D
@@ -39,6 +40,8 @@ fn _rust(module: &Bound<'_, PyModule>) -> PyResult<()> {
     module.add_class::<A>()?;
     module.add_class::<PyProduct>()?;
     module.add_class::<PyExpression>()?;
+
+    module.add_class::<PyAnnotationMapping>()?;
 
     module.add_class::<D>()?;
     module.add_class::<PyMultiTapeProduct>()?;

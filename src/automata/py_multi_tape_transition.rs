@@ -1,11 +1,12 @@
 use std::cmp::PartialEq;
 use std::collections::HashSet;
 use std::hash::{DefaultHasher, Hash, Hasher};
-use indexmap::{IndexMap, IndexSet};
+use indexmap::IndexMap;
 use pyo3::{pyclass, pymethods, PyResult};
 use pyo3::exceptions::PyValueError;
 use pyo3_stub_gen::define_stub_info_gatherer;
 use pyo3_stub_gen::derive::{gen_stub_pyclass, gen_stub_pymethods};
+use crate::automata::annotation_mapping::{global_get_or_insert, resolve_annotation};
 use crate::automata::multi_tape_transition::{
     MultiTapeTransition, MultiTapeTransitionsGroup, TransitionPriority
 };
@@ -87,7 +88,7 @@ impl PyMultiTapeTransition {
             inner: MultiTapeTransition::new(
                 rs_terms,
                 output_state.inner.clone(),
-                annotation.parse().unwrap(),
+                global_get_or_insert(annotation),
                 priority,
             ),
         }
@@ -110,7 +111,7 @@ impl PyMultiTapeTransition {
 
     #[getter]
     pub fn annotation(&self) -> String {
-        self.inner.annotation.clone()
+        resolve_annotation(self.inner.annotation)
     }
 
     #[getter]
@@ -133,7 +134,7 @@ impl PyMultiTapeTransition {
                 self.inner.output_state.tape_no,
                 self.inner.output_state.tape_cell_state
             ),
-            self.inner.annotation,
+            resolve_annotation(self.inner.annotation),
             self.inner.priority
         )
     }
@@ -193,7 +194,7 @@ impl PyMultiTapeTransitionsGroup {
     #[pyo3(signature = (
         input_terms, output_tape_no, output_cell_state,
         validate_void=true, validate_halt=true,
-        annotation=String::new(), priority=0
+        annotation="", priority=0
     ))]
     pub fn add_transition(
         &mut self,
@@ -202,7 +203,7 @@ impl PyMultiTapeTransitionsGroup {
         output_cell_state: CellState,
         validate_void: bool,
         validate_halt: bool,
-        annotation: String,
+        annotation: &str,
         priority: TransitionPriority,
     ) -> PyResult<()> {
         /*
@@ -226,7 +227,7 @@ impl PyMultiTapeTransitionsGroup {
             output_cell_state,
             validate_void,
             validate_halt,
-            annotation,
+            global_get_or_insert(annotation),
             priority,
         );
         insert_res.map_err(|e| {
