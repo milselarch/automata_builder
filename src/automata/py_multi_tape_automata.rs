@@ -1,8 +1,7 @@
 use std::collections::HashMap;
-use indexmap::IndexMap;
 use pyo3::{pyclass, pymethods, Bound, PyAny, PyResult};
 use pyo3::exceptions::PyIndexError;
-use pyo3_stub_gen::{define_stub_info_gatherer, PyStubType, TypeInfo};
+use pyo3_stub_gen::define_stub_info_gatherer;
 use pyo3_stub_gen::derive::{gen_stub_pyclass, gen_stub_pymethods};
 use crate::automata::multi_tape_automata::MultiTapeAutomata;
 use crate::automata::multi_tape_transition::TransitionPriority;
@@ -10,7 +9,7 @@ use crate::automata::py_multi_tape_transition::PyMultiTapeTransitionsGroup;
 use crate::automata::py_rule_generator_multitape::{extract_multi_tape_state, PyBiDirectionalMultiTape, PyBidirectionalTape, PyMultiTapeDataRegion, PyMultiTapeState, PyProcessStepResult, PyRenderFrame, BLANK_INT};
 use crate::automata::py_terms_multitape::{PyMultiTapeExpression, PyMultiTapeProduct};
 use crate::automata::terms::CellState;
-use crate::automata::terms_multitape::{AbstractMultiTapeExpression, MultiTapeProduct, MultiTapeState, TapeNo};
+use crate::automata::terms_multitape::{AbstractMultiTapeExpression, MultiTapeState, TapeNo};
 
 #[gen_stub_pyclass]
 #[pyclass]

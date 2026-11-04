@@ -51,6 +51,66 @@ class D:
     def expand_steps(self, expansion_mapping:typing.Mapping[tuple[builtins.int, builtins.int], PyMultiTapeExpression], steps:builtins.int, debug:builtins.bool=True, fold:builtins.bool=False) -> PyMultiTapeExpression: ...
     def validate_debug_info(self) -> None: ...
 
+class PyAnnotationMapping:
+    def __new__(cls) -> PyAnnotationMapping: ...
+    def insert(self, annotation:builtins.str) -> builtins.int:
+        r"""
+        Register `annotation` as a new annotation string and return the
+        fresh id assigned to it.
+        
+        Raises `ValueError` if the string is already registered (use
+        `lookup` or `get_or_insert` to reuse an existing id).
+        
+        >>> m = PyAnnotationMapping()
+        >>> m.insert('FOO')
+        1
+        """
+    def lookup(self, annotation:builtins.str) -> builtins.int:
+        r"""
+        Return the already-registered id of `annotation`, or
+        `0` (`NO_ANNOTATION`) if it was never registered.
+        
+        >>> m = PyAnnotationMapping()
+        >>> m.insert('FOO')
+        1
+        >>> m.lookup('FOO')
+        1
+        >>> m.lookup('NOPE')
+        0
+        """
+    def get_or_insert(self, annotation:builtins.str) -> builtins.int:
+        r"""
+        Return the already-registered id of `annotation`, or
+        register it (reusing an existing registration if any) and
+        return its id.
+        
+        >>> m = PyAnnotationMapping()
+        >>> m.get_or_insert('BAR')
+        1
+        >>> m.get_or_insert('BAR')
+        1
+        """
+    def get_string(self, annotation_id:builtins.int) -> builtins.str:
+        r"""
+        Resolve an id back to its annotation string.
+        
+        Raises `KeyError` for unknown ids.
+        
+        >>> m = PyAnnotationMapping()
+        >>> id_foo = m.insert('FOO')
+        >>> m.get_string(id_foo)
+        'FOO'
+        """
+    def __len__(self) -> builtins.int:
+        r"""
+        Number of annotation strings registered so far.
+        
+        >>> m = PyAnnotationMapping()
+        >>> len(m)
+        0
+        """
+    def __repr__(self) -> builtins.str: ...
+
 class PyBiDirectionalMultiTape:
     def __new__(cls) -> PyBiDirectionalMultiTape: ...
     def get_tape_nos(self) -> builtins.list[builtins.int]: ...

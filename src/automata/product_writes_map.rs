@@ -1,9 +1,9 @@
-use std::fmt::Write;
 use std::collections::{BTreeMap, BTreeSet, HashMap};
 use std::fmt;
 
 use indexmap::IndexMap;
 use indexmap::IndexSet;
+use crate::automata::annotation_mapping::resolve_annotation;
 use crate::automata::rule_generator::VOID_STATE;
 use crate::automata::tape_overlaps::{TapeOverlaps};
 use crate::automata::terms::CellState;
@@ -131,8 +131,8 @@ impl ProductToStateMap {
         if existing != write_tape_cell_state {
             let existing_product = &self.products[&product];
             let annotations = vec![
-                existing_product.get_annotation().clone(),
-                product.get_annotation().clone()
+                resolve_annotation(existing_product.get_annotation()),
+                resolve_annotation(product.get_annotation())
             ];
             return Err(ProductWritesError::ConflictingOutput {
                 product,

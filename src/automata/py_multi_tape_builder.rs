@@ -4,6 +4,7 @@ use pyo3::prelude::*;
 use pyo3::types::PyAny;
 use pyo3_stub_gen::define_stub_info_gatherer;
 use pyo3_stub_gen::derive::{gen_stub_pyclass, gen_stub_pymethods};
+use crate::automata::annotation_mapping::resolve_annotation;
 use crate::automata::multi_tape_builder::{
     CompileTapesError, CompileTapesResult, MultiTapeBuilder,
     MultiTapeStatePathRemap, StatePath,
@@ -292,7 +293,7 @@ impl PyCompileTapesResult {
             .map(|transition| (
                 transition.input_terms.iter().map(A::from_term).collect(),
                 transition.output_state,
-                transition.annotation.clone(),
+                resolve_annotation(transition.annotation),
             ))
             .collect()
     }

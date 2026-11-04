@@ -1,3 +1,5 @@
+pub mod annotation_mapping;
+pub mod py_annotation_mapping;
 pub mod terms;
 pub mod py_terms;
 pub mod terms_multitape;

@@ -8,6 +8,8 @@ use indexmap::IndexSet;
 use rayon::iter::IntoParallelRefIterator;
 use serde::{Deserialize, Serialize};
 
+use crate::automata::annotation_mapping::{AnnotationID, NO_ANNOTATION, resolve_annotation};
+
 pub type CellState = u32;
 pub fn clip_after_space(s: String) -> String {
     s.split_whitespace().next().unwrap_or(&s).to_string()
@@ -273,14 +275,15 @@ impl AbstractExpression for Term {
 pub struct  ProductFactory {
     pub (crate) _terms: Vec<Term>,
     pub (crate) _optimized: bool,
-    pub (crate) _annotation: String
+    /// Annotation id (see `annotation_mapping`); `0` means "no annotation".
+    pub (crate) _annotation: AnnotationID
 }
 impl ProductFactory {
     pub fn spawn_empty() -> ProductFactory {
         ProductFactory {
             _terms: vec![],
             _optimized: false,
-            _annotation: String::new()
+            _annotation: NO_ANNOTATION
         }
     }
     pub fn new(terms: Vec<Term>) -> ProductFactory {
@@ -301,7 +304,7 @@ impl ProductFactory {
         clone
     }
     pub fn with_annotation(
-        &mut self, annotation: String
+        &mut self, annotation: AnnotationID
     ) -> ProductFactory {
         let mut clone = self.clone();
         clone._annotation = annotation;
@@ -311,7 +314,7 @@ impl ProductFactory {
         Product {
             _terms: self._terms,
             _optimized: self._optimized,
-            _annotation: self._annotation.clone()
+            _annotation: self._annotation
         }
     }
 }
@@ -320,7 +323,8 @@ impl ProductFactory {
 pub struct Product {
     pub (crate) _terms: Vec<Term>,
     pub (crate) _optimized: bool,
-    pub (crate) _annotation: String
+    /// Annotation id (see `annotation_mapping`); `0` means "no annotation".
+    pub (crate) _annotation: AnnotationID
 }
 impl Product {
     pub fn new(terms: Vec<Term>) -> Self {
@@ -390,7 +394,8 @@ impl Product {
     }
     pub(crate) fn _to_string_with_annotation(&self, name: &str) -> String {
         let product_string = self._to_string(name);
-        format!("{}:{}", product_string, self._annotation)
+        let annotation = resolve_annotation(self._annotation);
+        format!("{}:{}", product_string, annotation)
     }
 }
 impl Display for Product {

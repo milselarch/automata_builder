@@ -4,6 +4,7 @@ use pyo3::types::PyDict;
 use pyo3::{pyclass, pymethods, PyResult};
 use pyo3_stub_gen::define_stub_info_gatherer;
 use pyo3_stub_gen::derive::{gen_stub_pyclass, gen_stub_pymethods};
+use crate::automata::annotation_mapping::resolve_annotation;
 use crate::automata::multi_tape_automata::{
     ProcessStepResult, WriteRecord
 };
@@ -502,7 +503,7 @@ impl PyWriteRecord {
     }
     #[getter]
     pub fn annotation(&self) -> String {
-        self.record.annotation.clone()
+        resolve_annotation(self.record.annotation)
     }
     pub fn log(&self) {
         self.record.log()
@@ -554,7 +555,7 @@ impl PyProcessStepResult {
         self.result
             .active_writes
             .iter()
-            .map(|record| record.annotation.clone())
+            .map(|record| resolve_annotation(record.annotation))
             .collect()
     }
     fn __repr__(&self) -> String {

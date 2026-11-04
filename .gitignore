@@ -1,5 +1,8 @@
 .idea/
 .rust/
+selflibs/
+zigcc
+zigccgnu
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
