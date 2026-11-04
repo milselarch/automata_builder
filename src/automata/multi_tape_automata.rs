@@ -1,3 +1,4 @@
+use crate::automata::annotations::AnnotationId;
 use std::collections::{BTreeSet, HashMap};
 use std::fmt;
 use indexmap::IndexMap;
@@ -22,7 +23,7 @@ pub struct WriteRecord {
     pub write_target: (TapeNo, i64),
     pub tape_cell_state: CellState,
     /// for debugging purposes (to trace the originating product)
-    pub annotation: String,
+    pub annotation: AnnotationId,
 }
 
 impl WriteRecord {
@@ -272,7 +273,7 @@ impl MultiTapeAutomata {
 
         // record all (tape_no, position) -> tape_cell_state writes
         let mut writes_map: HashMap<(TapeNo, i64), CellState> = HashMap::new();
-        let mut annotations_map: HashMap<(TapeNo, i64), BTreeSet<String>> =
+        let mut annotations_map: HashMap<(TapeNo, i64), BTreeSet<AnnotationId>> =
             HashMap::new();
         let mut active_writes: Vec<WriteRecord> = Vec::new();
 
@@ -285,7 +286,7 @@ impl MultiTapeAutomata {
                     continue;
                 }
 
-                let annotation = matching_product.get_annotation().to_string();
+                let annotation = matching_product.get_annotation();
 
                 for (tape_no, tape_cell_state) in product_writes.iter() {
                     let tape_no = *tape_no;
@@ -301,7 +302,12 @@ impl MultiTapeAutomata {
                         let prev_annotations = annotations_map
                             .get(&write_target)
                             .map(|annotations| {
-                                annotations.iter().cloned().collect::<Vec<String>>()
+                                let mut prev_annotations: Vec<String> = annotations
+                                    .iter()
+                                    .map(|annotation_id| annotation_id.to_string())
+                                    .collect();
+                                prev_annotations.sort();
+                                prev_annotations
                             })
                             .unwrap_or_default();
 
@@ -309,7 +315,7 @@ impl MultiTapeAutomata {
                             tape_no,
                             position,
                             product: matching_product.clone(),
-                            annotation,
+                            annotation: annotation.to_string(),
                             previous: prev_write,
                             incoming: tape_cell_state,
                             previous_annotations: prev_annotations,
@@ -320,7 +326,7 @@ impl MultiTapeAutomata {
                         origin_product: matching_product.copy(),
                         write_target,
                         tape_cell_state,
-                        annotation: annotation.clone(),
+                        annotation,
                     };
                     if log_active_writes {
                         write_record.log();
@@ -331,7 +337,7 @@ impl MultiTapeAutomata {
                     annotations_map
                         .entry(write_target)
                         .or_default()
-                        .insert(annotation.clone());
+                        .insert(annotation);
 
                     let output_tape = new_multi_tape.get_or_make_tape(tape_no)?;
                     output_tape.write(position, tape_cell_state);

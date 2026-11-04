@@ -1,6 +1,7 @@
 use std::fmt;
 use thiserror::Error;
 
+use automata_builder::automata::annotations::AnnotationId;
 use automata_builder::automata::multi_tape_automata::{MultiTapeAutomata, WriteRecord};
 use automata_builder::automata::multi_tape_transition::{AddTransitionError, MultiTapeTransitionsGroup};
 use automata_builder::automata::renderer::RenderFrame;
@@ -175,14 +176,14 @@ pub fn build_demo_simulation() -> Result<Simulation, BuildSimulationError> {
         vec![term(-1, 0, MARKER_RIGHT), term(0, 0, BLANK)],
         0, MARKER_RIGHT,
         true, true,
-        "move-right".to_string(),
+        AnnotationId::intern("move-right"),
         0,
     )?;
     transitions_group.add_transition(
         vec![term(0, 0, MARKER_LEFT), term(-1, 0, VOID)],
         0, MARKER_RIGHT,
         true, true,
-        "bounce-left-edge".to_string(),
+        AnnotationId::intern("bounce-left-edge"),
         0,
     )?;
 
@@ -191,14 +192,14 @@ pub fn build_demo_simulation() -> Result<Simulation, BuildSimulationError> {
         vec![term(1, 0, MARKER_LEFT), term(0, 0, BLANK)],
         0, MARKER_LEFT,
         true, true,
-        "move-left".to_string(),
+        AnnotationId::intern("move-left"),
         0,
     )?;
     transitions_group.add_transition(
         vec![term(0, 0, MARKER_RIGHT), term(1, 0, VOID)],
         0, MARKER_LEFT,
         true, true,
-        "bounce-right-edge".to_string(),
+        AnnotationId::intern("bounce-right-edge"),
         0,
     )?;
 
@@ -207,14 +208,14 @@ pub fn build_demo_simulation() -> Result<Simulation, BuildSimulationError> {
         vec![term(0, 0, MARKER_RIGHT), term(1, 0, BLANK)],
         0, BLANK,
         true, true,
-        "vacate-right".to_string(),
+        AnnotationId::intern("vacate-right"),
         0,
     )?;
     transitions_group.add_transition(
         vec![term(0, 0, MARKER_LEFT), term(-1, 0, BLANK)],
         0, BLANK,
         true, true,
-        "vacate-left".to_string(),
+        AnnotationId::intern("vacate-left"),
         0,
     )?;
 
@@ -223,14 +224,14 @@ pub fn build_demo_simulation() -> Result<Simulation, BuildSimulationError> {
         vec![term(0, 0, MARKER_RIGHT)],
         1, TRAIL,
         true, true,
-        "trail-right".to_string(),
+        AnnotationId::intern("trail-right"),
         0,
     )?;
     transitions_group.add_transition(
         vec![term(0, 0, MARKER_LEFT)],
         1, TRAIL,
         true, true,
-        "trail-left".to_string(),
+        AnnotationId::intern("trail-left"),
         0,
     )?;
 

@@ -1,3 +1,4 @@
+use crate::automata::annotations::AnnotationId;
 use std::cmp::Ordering;
 use rayon::iter::ParallelIterator;
 use std::collections::{HashMap, HashSet};
@@ -164,7 +165,7 @@ impl Mul<Product> for Term {
         }
         ProductFactory::new(new_terms)
             .with_optimized(self._optimized && rhs_optimized)
-            .with_annotation(rhs._annotation.clone())
+            .with_annotation(rhs._annotation)
             .to_product()
     }
 }
@@ -273,14 +274,14 @@ impl AbstractExpression for Term {
 pub struct  ProductFactory {
     pub (crate) _terms: Vec<Term>,
     pub (crate) _optimized: bool,
-    pub (crate) _annotation: String
+    pub (crate) _annotation: AnnotationId
 }
 impl ProductFactory {
     pub fn spawn_empty() -> ProductFactory {
         ProductFactory {
             _terms: vec![],
             _optimized: false,
-            _annotation: String::new()
+            _annotation: AnnotationId::EMPTY
         }
     }
     pub fn new(terms: Vec<Term>) -> ProductFactory {
@@ -301,7 +302,7 @@ impl ProductFactory {
         clone
     }
     pub fn with_annotation(
-        &mut self, annotation: String
+        &mut self, annotation: AnnotationId
     ) -> ProductFactory {
         let mut clone = self.clone();
         clone._annotation = annotation;
@@ -311,7 +312,7 @@ impl ProductFactory {
         Product {
             _terms: self._terms,
             _optimized: self._optimized,
-            _annotation: self._annotation.clone()
+            _annotation: self._annotation
         }
     }
 }
@@ -320,7 +321,7 @@ impl ProductFactory {
 pub struct Product {
     pub (crate) _terms: Vec<Term>,
     pub (crate) _optimized: bool,
-    pub (crate) _annotation: String
+    pub (crate) _annotation: AnnotationId
 }
 impl Product {
     pub fn new(terms: Vec<Term>) -> Self {
@@ -441,7 +442,7 @@ impl Mul<Term> for &Product {
         new_terms.push(rhs.copy());
         ProductFactory::new(new_terms)
             .with_optimized(self._optimized && rhs._optimized)
-            .with_annotation(self._annotation.clone())
+            .with_annotation(self._annotation)
             .to_product()
     }
 }
@@ -509,7 +510,7 @@ impl Ord for Product {
 impl AbstractExpression for Product {
     fn copy(&self) -> Self {
         ProductFactory::new(self._terms.clone())
-            .with_annotation(self._annotation.clone())
+            .with_annotation(self._annotation)
             .with_optimized(self._optimized)
             .to_product()
     }

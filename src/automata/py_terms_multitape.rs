@@ -1,3 +1,4 @@
+use crate::automata::annotations::AnnotationId;
 use std::cmp::PartialEq;
 use std::collections::{HashMap, HashSet};
 use std::hash::{Hash};
@@ -374,9 +375,9 @@ impl PartialEq<MultiTapeTerm> for &MultiTapeTerm {
 #[pymethods]
 impl PyMultiTapeProduct {
     #[new]
-    #[pyo3(signature = (terms, annotation = ""))]
+    #[pyo3(signature = (terms, annotation_id = 0))]
     pub fn init(
-        terms: Vec<D>, annotation: &str
+        terms: Vec<D>, annotation_id: u32
     ) -> PyResult<PyMultiTapeProduct> {
         if terms.len() == 0 {
             return Err(PyValueError::new_err("terms cannot be empty"));
@@ -384,7 +385,7 @@ impl PyMultiTapeProduct {
         let rs_terms: Vec<MultiTapeTerm> =
             terms.into_iter().map(|term| term.term).collect();
         let product = MultiTapeProductFactory::new(rs_terms)
-            .with_annotation(annotation.parse()?)
+            .with_annotation(AnnotationId(annotation_id))
             .to_product();
         Ok(PyMultiTapeProduct { product })
     }
@@ -392,30 +393,34 @@ impl PyMultiTapeProduct {
         self.product.is_satisfiable_with(&other.product)
     }
     #[classmethod]
-    #[pyo3(signature=(products, annotation=String::new()))]
+    #[pyo3(signature=(products, annotation_id=0))]
     pub fn merge(
         _cls: &Bound<'_, PyType>, products: Vec<PyRef<PyMultiTapeProduct>>,
-        annotation: String
+        annotation_id: u32
     ) -> Self {
         let rs_products = products.into_iter().map(|product_ref| {
             return product_ref.product.clone();
         }).collect();
 
         let mut merged_product = MultiTapeProduct::merge_products(rs_products);
-        merged_product.set_annotation(annotation);
+        merged_product.set_annotation(AnnotationId(annotation_id));
         PyMultiTapeProduct::new_from_product(merged_product)
     }
 
     // TODO: expose method to merge multi products
-    pub fn get_annotation(&self) -> PyResult<String> {
-        Ok(self.product._annotation.clone())
+    pub fn get_annotation_id(&self) -> u32 {
+        self.product._annotation.0
     }
-    pub fn with_annotation(&self, annotation: String) -> PyMultiTapeProduct {
+    /// Annotation string resolved from the global annotation mapping
+    pub fn get_annotation(&self) -> String {
+        self.product._annotation.to_string()
+    }
+    pub fn with_annotation_id(&self, annotation_id: u32) -> PyMultiTapeProduct {
         let rs_terms = self.product._terms.clone();
         let optimized = self.product._optimized;
         let product = MultiTapeProductFactory::new(rs_terms)
             .with_optimized(optimized)
-            .with_annotation(annotation)
+            .with_annotation(AnnotationId(annotation_id))
             .to_product();
         PyMultiTapeProduct::new_from_product(product)
     }
