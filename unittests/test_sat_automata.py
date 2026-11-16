@@ -2,14 +2,23 @@ import unittest
 
 from automata_builder.sat_automata import (
     ASSIGNMENTS_TAPE,
+    AT_FALSE,
+    AT_TRUE,
     CLAUSES_TAPE,
+    CONFLICT_TAPE,
+    CF_CONFLICTING,
     CT_CLAUSE_START,
     LITERALS_TAPE,
     LT_EITHER,
+    VT_CONFLICTING,
     VT_SAT,
     VT_UNSAT,
     ThreeSATAutomataBuilder,
     ThreeSATAutomataRunner,
+)
+from automata_builder.rule_generator_multitape import (
+    MultiTapeState,
+    TapeCellState,
 )
 
 
@@ -126,6 +135,61 @@ class TestThreeSATAutomata(unittest.TestCase):
         # one cell per variable, and x1 occurs with both polarities
         self.assertEqual(len(literals_region), 2)
         self.assertEqual(literals_region[0], LT_EITHER)
+
+    def test_conflicting_assignment_is_conflicting(self):
+        """A conflicting assignment vector (same variable, different values
+        in different clause blocks) should be detected as CONFLICTING.
+        """
+        runner = ThreeSATAutomataRunner(
+            equation='(x1|x2|x3)&(~x1|~x2|x3)',
+            assignment='x1=1,x2=0,x3=0',
+        )
+        # Manually set up a conflict on the CONFLICT tape:
+        # position 0 = AT_TRUE, position 1 = AT_FALSE
+        # This simulates x1 being assigned true in one block and false in another.
+        runner.multi_tape_automata.write_region(
+            position=0, end_position=1,
+            data=[
+                MultiTapeState(
+                    tape_no=CONFLICT_TAPE,
+                    tape_cell_state=TapeCellState(int(AT_TRUE))
+                ),
+                MultiTapeState(
+                    tape_no=CONFLICT_TAPE,
+                    tape_cell_state=TapeCellState(int(AT_FALSE))
+                ),
+            ]
+        )
+        runner.run_simulation(render=False)
+        self.assertEqual(runner.read_verdict_state(), VT_CONFLICTING)
+        self.assertEqual(runner.read_verdict(), 'CONFLICTING')
+        self.assertFalse(runner.is_satisfiable())
+
+    def test_conflicting_assignment_takes_precedence_over_sat(self):
+        """Even if the formula is satisfiable, a conflicting assignment
+        vector should be detected as CONFLICTING.
+        """
+        runner = ThreeSATAutomataRunner(
+            equation='(x1|x2|x3)',
+            assignment='x1=1,x2=0,x3=0',
+        )
+        # Set up a conflict
+        runner.multi_tape_automata.write_region(
+            position=0, end_position=1,
+            data=[
+                MultiTapeState(
+                    tape_no=CONFLICT_TAPE,
+                    tape_cell_state=TapeCellState(int(AT_TRUE))
+                ),
+                MultiTapeState(
+                    tape_no=CONFLICT_TAPE,
+                    tape_cell_state=TapeCellState(int(AT_FALSE))
+                ),
+            ]
+        )
+        runner.run_simulation(render=False)
+        self.assertEqual(runner.read_verdict_state(), VT_CONFLICTING)
+        self.assertEqual(runner.read_verdict(), 'CONFLICTING')
 
 
 if __name__ == '__main__':

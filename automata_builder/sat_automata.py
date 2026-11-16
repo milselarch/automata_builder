@@ -23,10 +23,8 @@ ASSIGNMENTS_TAPE: Final[TapeNo] = TapeNo(1)
 CLAUSES_TAPE: Final[TapeNo] = TapeNo(2)
 SCAN_TAPE: Final[TapeNo] = TapeNo(3)
 VERDICT_TAPE: Final[TapeNo] = TapeNo(4)
+CONFLICT_TAPE: Final[TapeNo] = TapeNo(5)
 
-# TODO: THE AUTOMATA RULES DO NOT IMPLEMENT THE MOST IMPORTANT PART
-#   WHICH IS VERIFYING THAT VAR ASSIGNMENTS LAID OUT IN TAPE
-#   ARE NON-CONFLICTING
 """
 The 3SAT automata evaluates a CNF formula against a variable assignment
 using a single ruleset that is completely independent of the formula and
@@ -48,6 +46,13 @@ and to variable :variable_no:. For each such cell:
 Because a variable is identified by its offset within a clause block,
 all the rules ever need to look at is the cell they are standing on,
 which is what makes them independent of the input.
+
+The CONFLICT tape carries a rearranged copy of the assignment vector
+where each variable's values across all clause blocks are contiguous,
+separated by CF_SEP markers. A conflict (the same variable assigned
+different values in different blocks) becomes two adjacent non-SEP
+cells with different truth values, which is detected by a local rule
+that is universal (input-independent).
 """
 
 LT_POSITIVE: Final[TapeCellState] = TapeCellState(0b10)
@@ -82,12 +87,26 @@ ST_SPENT: Final[TapeCellState] = TapeCellState(0b10)
 VT_PENDING: Final[TapeCellState] = TapeCellState(0b10)
 VT_UNSAT: Final[TapeCellState] = TapeCellState(0b11)
 VT_SAT: Final[TapeCellState] = TapeCellState(0b100)
+VT_CONFLICTING: Final[TapeCellState] = TapeCellState(0b101)
+"""written to the VERDICT tape when the assignment vector is contradictory"""
+
+CF_SEP: Final[TapeCellState] = TapeCellState(0b100)
+"""separator between variable groups on the CONFLICT tape (state 4)"""
+CF_CONFLICTING: Final[TapeCellState] = TapeCellState(0b101)
+"""written to the CONFLICT tape when a conflict is detected (state 5)"""
+
+CONFLICT_STATES: Final[tuple[TapeCellState, ...]] = (
+    VOID_STATE, AT_FALSE, AT_TRUE, CF_SEP, CF_CONFLICTING
+)
+
+
 
 LITERAL_STATES: Final[tuple[TapeCellState, ...]] = (
     VOID_STATE, LT_POSITIVE, LT_NEGATED, LT_EITHER
 )
 ASSIGNMENT_STATES: Final[tuple[TapeCellState, ...]] = (AT_FALSE, AT_TRUE)
 CLAUSE_STATES: Final[tuple[TapeCellState, ...]] = (VOID_STATE, CT_CLAUSE_START)
+
 
 VERDICT_POSITION: Final[int] = -1
 """fixed position from which the verdict of the automata can be read"""
@@ -118,7 +137,11 @@ CT_MID: Final[Callable[[int], D]] = prefill_tape(MID, CLAUSES_TAPE)
 ST_MID: Final[Callable[[int], D]] = prefill_tape(MID, SCAN_TAPE)
 ST_RIGHT: Final[Callable[[int], D]] = prefill_tape(RIGHT, SCAN_TAPE)
 
+CF_MID: Final[Callable[[int], D]] = prefill_tape(MID, CONFLICT_TAPE)
+CF_RIGHT: Final[Callable[[int], D]] = prefill_tape(RIGHT, CONFLICT_TAPE)
+
 VT_MID: Final[Callable[[int], D]] = prefill_tape(MID, VERDICT_TAPE)
+
 
 
 def scan_state(clause_sat: bool, formula_sat: bool) -> int:
@@ -326,6 +349,10 @@ class ThreeSATAutomataBuilder(object):
         scan accumulator has run past the leftmost clause block cell,
         as well as the rule that rejects input that could not be encoded.
 
+        The verdict is CONFLICTING if the assignment vector was found to
+        be contradictory on the CONFLICT tape, regardless of the scan
+        result.
+
         :param transitions_group:
         :return:
         """
@@ -345,7 +372,8 @@ class ThreeSATAutomataBuilder(object):
                     VT_MID(VT_PENDING), AT_MID(VOID_STATE),
                     ST_RIGHT(scan_state(
                         clause_sat=False, formula_sat=formula_sat
-                    ))
+                    )),
+                    CF_MID(0),  # CONFLICT tape at MID must be VOID (no conflict)
                 ),
                 output_tape_no=VERDICT_TAPE,
                 output_cell_state=VT_SAT if formula_sat else VT_UNSAT,
@@ -358,11 +386,105 @@ class ThreeSATAutomataBuilder(object):
             output_cell_state=VT_UNSAT,
             annotation='VERDICT_INVALID_INPUT'
         )
+
+        # If a conflict was detected on the CONFLICT tape, the verdict is
+        # CONFLICTING regardless of the scan result.
+        _transitions_group.add_transition(
+            input_terms=(
+                VT_MID(VT_PENDING), AT_MID(VOID_STATE),
+                ST_RIGHT(scan_state(
+                    clause_sat=False, formula_sat=True
+                )),
+                CF_MID(CF_CONFLICTING),  # CF_CONFLICTING at MID
+            ),
+            output_tape_no=VERDICT_TAPE,
+            output_cell_state=VT_CONFLICTING,
+            annotation='VERDICT_CONFLICTING'
+        )
+        _transitions_group.add_transition(
+            input_terms=(
+                VT_MID(VT_PENDING), AT_MID(VOID_STATE),
+                ST_RIGHT(scan_state(
+                    clause_sat=False, formula_sat=False
+                )),
+                CF_MID(CF_CONFLICTING),  # CF_CONFLICTING at MID
+            ),
+            output_tape_no=VERDICT_TAPE,
+            output_cell_state=VT_CONFLICTING,
+            annotation='VERDICT_CONFLICTING_UNSAT'
+        )
+
+        return _transitions_group
+
+    @classmethod
+    def build_conflict_transitions_group(
+        cls, transitions_group: PyMultiTapeTransitionsGroup | None = None
+    ) -> PyMultiTapeTransitionsGroup:
+        """Detects conflicting assignments on the CONFLICT tape.
+
+        The CONFLICT tape carries a rearranged copy of the assignment
+        vector where each variable's values across all clause blocks are
+        contiguous, separated by CF_SEP markers. A conflict (the same
+        variable assigned different values in different blocks) becomes
+        two adjacent non-SEP cells with different truth values, which is
+        detected by a local rule.
+
+        When a conflict is detected, CF_CONFLICTING (state 4) is written
+        to the CONFLICT tape and propagated leftward to position -1,
+        where the verdict rule reads it.
+
+        :param transitions_group:
+        :return:
+        """
+        if transitions_group is not None:
+            _transitions_group = transitions_group
+        else:
+            _transitions_group = PyMultiTapeTransitionsGroup(
+                require_annotation=True
+            )
+
+        # Conflict detection: two adjacent non-SEP cells with different
+        # truth values. This is a local rule that is universal (it does
+        # not depend on the number of variables or the formula).
+        _transitions_group.add_transition(
+            input_terms=(
+                CF_MID(2),   # AT_FALSE at MID
+                CF_RIGHT(3), # AT_TRUE at RIGHT
+            ),
+            output_tape_no=CONFLICT_TAPE,
+            output_cell_state=CF_CONFLICTING,
+            annotation='CONFLICT_DETECT_FALSE_TRUE'
+        )
+        _transitions_group.add_transition(
+            input_terms=(
+                CF_MID(3),   # AT_TRUE at MID
+                CF_RIGHT(2), # AT_FALSE at RIGHT
+            ),
+            output_tape_no=CONFLICT_TAPE,
+            output_cell_state=CF_CONFLICTING,
+            annotation='CONFLICT_DETECT_TRUE_FALSE'
+        )
+
+        # Propagation: CF_CONFLICTING moves leftward one cell per step,
+        # overwriting any state at the target cell.
+        # CF_CONFLICTING at RIGHT -> CF_CONFLICTING at MID.
+        _transitions_group.add_transition(
+            input_terms=(
+                CF_RIGHT(CF_CONFLICTING),  # CF_CONFLICTING at RIGHT
+            ),
+            output_tape_no=CONFLICT_TAPE,
+            output_cell_state=CF_CONFLICTING,
+            annotation='CONFLICT_PROPAGATE'
+        )
+
         return _transitions_group
 
     def build_transitions_group(self) -> PyMultiTapeTransitionsGroup:
         transitions_group = self.build_scan_transitions_group()
         transitions_group = self.build_verdict_transitions_group(
+            transitions_group=transitions_group
+        )
+        transitions_group = self.build_conflict_transitions_group(
             transitions_group=transitions_group
         )
         return transitions_group
@@ -616,7 +738,7 @@ class ThreeSATAutomataRunner(object):
         self.multi_tape_automata.init_tapes(
             tape_nos=[
                 LITERALS_TAPE, ASSIGNMENTS_TAPE, CLAUSES_TAPE,
-                SCAN_TAPE, VERDICT_TAPE
+                SCAN_TAPE, VERDICT_TAPE, CONFLICT_TAPE
             ]
         )
         self._initialize_tapes()
@@ -656,6 +778,30 @@ class ThreeSATAutomataRunner(object):
             )
             if cell_no % encoding.num_variables == 0:
                 self._write_cell(position, CLAUSES_TAPE, CT_CLAUSE_START)
+
+        # Initialize the CONFLICT tape with the rearranged assignment vector.
+        # For each variable (in sorted order), its values across all clause
+        # blocks are contiguous, separated by CF_SEP markers.
+        # Layout: [var0_block0, var0_block1, ..., var0_blockk, SEP,
+        #          var1_block0, var1_block1, ..., var1_blockk, SEP, ...]
+        # A conflict (same variable, different values in different blocks)
+        # becomes two adjacent non-SEP cells with different truth values.
+        if self.parsed_equation and self.parsed_assignment:
+            pos = 0
+            var_names = self.parsed_equation.variable_names
+            for var_name in var_names:
+                for clause_no in range(len(self.parsed_equation.clauses)):
+                    value = self.parsed_assignment[var_name]
+                    assignment_state = AT_TRUE if value else AT_FALSE
+                    self._write_cell(
+                        pos, CONFLICT_TAPE,
+                        assignment_state
+                    )
+                    pos += 1
+                # Add a separator after each variable (except the last).
+                if var_name != var_names[-1]:
+                    self._write_cell(pos, CONFLICT_TAPE, CF_SEP)
+                    pos += 1
 
     def get_required_timesteps(self) -> int:
         """
@@ -699,6 +845,8 @@ class ThreeSATAutomataRunner(object):
             return 'SAT'
         if verdict_state == VT_UNSAT:
             return 'UNSAT'
+        if verdict_state == VT_CONFLICTING:
+            return 'CONFLICTING'
         return 'PENDING'
 
     def is_satisfiable(self) -> bool:
