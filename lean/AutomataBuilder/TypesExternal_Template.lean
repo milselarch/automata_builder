@@ -105,6 +105,13 @@ axiom core.slice.iter.Windows (T : Type _) : Type
 @[rust_type "core::str::iter::SplitWhitespace"]
 axiom core.str.iter.SplitWhitespace : Type
 
+/-- [std::backtrace::Backtrace]
+    Source: '/rustc/library/std/src/backtrace.rs', lines 108:0-108:20
+    Name pattern: [std::backtrace::Backtrace]
+    Visibility: public -/
+@[rust_type "std::backtrace::Backtrace"]
+axiom std.backtrace.Backtrace : Type
+
 /-- [std::collections::hash::map::HashMap]
     Source: '/rustc/library/std/src/collections/hash/map.rs', lines 245:0-250:1
     Name pattern: [std::collections::hash::map::HashMap]

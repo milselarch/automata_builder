@@ -267,7 +267,7 @@ structure automata.terms.ExprDebugInfo where
   parent_position_info : Option automata.terms.ExprPosition
 
 /-- [automata_builder::automata::terms_multitape::MultiTapeTerm]
-    Source: 'src/automata/terms_multitape.rs', lines 67:0-75:1
+    Source: 'src/automata/terms_multitape.rs', lines 72:0-80:1
     Visibility: public -/
 structure automata.terms_multitape.MultiTapeTerm where
   position : Std.I64
@@ -276,7 +276,7 @@ structure automata.terms_multitape.MultiTapeTerm where
   _debug_info : automata.terms.ExprDebugInfo
 
 /-- [automata_builder::automata::terms_multitape::MultiTapeProduct]
-    Source: 'src/automata/terms_multitape.rs', lines 342:0-346:1
+    Source: 'src/automata/terms_multitape.rs', lines 359:0-363:1
     Visibility: public -/
 structure automata.terms_multitape.MultiTapeProduct where
   _terms : alloc.vec.Vec automata.terms_multitape.MultiTapeTerm
@@ -293,7 +293,7 @@ structure automata.multi_tape_automata.WriteRecord where
   annotation : String
 
 /-- [automata_builder::automata::terms_multitape::{impl automata_builder::automata::terms_multitape::AbstractMultiTapeExpression<automata_builder::automata::terms_multitape::MultiTapeProduct, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeProduct}::_to_string::{closure}]
-    Source: 'src/automata/terms_multitape.rs', lines 639:17-639:50 -/
+    Source: 'src/automata/terms_multitape.rs', lines 658:17-658:50 -/
 @[reducible]
 def automata.terms_multitape.AbstractMultiTapeExpressionMultiTapeProductMultiTapeProductMultiTapeExpression._to_string.closure
   :=
@@ -307,7 +307,7 @@ structure automata.rule_generator.BidirectionalTape where
   rev_data : alloc.vec.Vec Std.U32
 
 /-- [automata_builder::automata::rule_generator_multitape::BiDirectionalMultiTape]
-    Source: 'src/automata/rule_generator_multitape.rs', lines 44:0-49:1
+    Source: 'src/automata/rule_generator_multitape.rs', lines 45:0-50:1
     Visibility: public -/
 structure automata.rule_generator_multitape.BiDirectionalMultiTape where
   tapes : alloc.collections.btree.map.BTreeMap Std.U16
@@ -323,27 +323,37 @@ structure automata.multi_tape_automata.ProcessStepResult where
   active_writes : alloc.vec.Vec automata.multi_tape_automata.WriteRecord
 
 /-- [automata_builder::automata::terms_multitape::MultiTapeExpression]
-    Source: 'src/automata/terms_multitape.rs', lines 653:0-656:1
+    Source: 'src/automata/terms_multitape.rs', lines 672:0-675:1
     Visibility: public -/
 structure automata.terms_multitape.MultiTapeExpression where
   products : alloc.vec.Vec automata.terms_multitape.MultiTapeProduct
   _optimized : Bool
 
 /-- [automata_builder::automata::terms_multitape::MultiTapeState]
-    Source: 'src/automata/terms_multitape.rs', lines 21:0-24:1
+    Source: 'src/automata/terms_multitape.rs', lines 23:0-26:1
     Visibility: public -/
 structure automata.terms_multitape.MultiTapeState where
   tape_no : Std.U16
   tape_cell_state : Std.U32
 
-/-- [automata_builder::automata::product_writes_map::ProductWritesMap]
-    Source: 'src/automata/product_writes_map.rs', lines 70:0-73:1
+/-- [automata_builder::automata::product_writes_map::ProductToStateMap]
+    Source: 'src/automata/product_writes_map.rs', lines 83:0-88:1
     Visibility: public -/
-structure automata.product_writes_map.ProductWritesMap where
+structure automata.product_writes_map.ProductToStateMap where
   prod_to_state_map : indexmap.map.IndexMap
     automata.terms_multitape.MultiTapeProduct
     (alloc.collections.btree.map.BTreeMap Std.U16 Std.U32 alloc.alloc.Global)
     std.hash.random.RandomState
+  products : std.collections.hash.map.HashMap
+    automata.terms_multitape.MultiTapeProduct
+    automata.terms_multitape.MultiTapeProduct std.hash.random.RandomState
+    alloc.alloc.Global
+
+/-- [automata_builder::automata::product_writes_map::ProductWritesMap]
+    Source: 'src/automata/product_writes_map.rs', lines 158:0-161:1
+    Visibility: public -/
+structure automata.product_writes_map.ProductWritesMap where
+  prod_to_state_map : automata.product_writes_map.ProductToStateMap
   frozen : Bool
 
 /-- [automata_builder::automata::multi_tape_transition::MultiTapeTransition]
@@ -404,21 +414,22 @@ inductive automata.rule_generator.TapeError where
 | Render : automata.renderer.RenderError → automata.rule_generator.TapeError
 
 /-- [automata_builder::automata::product_writes_map::ProductWritesError]
-    Source: 'src/automata/product_writes_map.rs', lines 16:0-28:1
+    Source: 'src/automata/product_writes_map.rs', lines 28:0-41:1
     Visibility: public -/
 @[discriminant isize]
 inductive automata.product_writes_map.ProductWritesError where
 | ConflictingOutput :
-  String →
+  automata.terms_multitape.MultiTapeProduct →
   Std.U16 →
   Std.U32 →
   Std.U32 →
+  alloc.vec.Vec String →
   automata.product_writes_map.ProductWritesError
 | Frozen : automata.product_writes_map.ProductWritesError
 | MissingProduct : String → automata.product_writes_map.ProductWritesError
 
 /-- [automata_builder::automata::rule_generator_multitape::AutomataError]
-    Source: 'src/automata/rule_generator_multitape.rs', lines 266:0-287:1
+    Source: 'src/automata/rule_generator_multitape.rs', lines 267:0-292:1
     Visibility: public -/
 @[discriminant isize]
 inductive automata.rule_generator_multitape.AutomataError where
@@ -447,9 +458,13 @@ inductive automata.rule_generator_multitape.AutomataError where
 | NoProductsForState :
   automata.terms_multitape.MultiTapeState →
   automata.rule_generator_multitape.AutomataError
+| InvalidInputOrOutputTape :
+  Std.U16 →
+  automata.multi_tape_transition.MultiTapeTransition →
+  automata.rule_generator_multitape.AutomataError
 
 /-- [automata_builder::automata::terms_multitape::MultiTapeProductFactory]
-    Source: 'src/automata/terms_multitape.rs', lines 295:0-299:1
+    Source: 'src/automata/terms_multitape.rs', lines 312:0-316:1
     Visibility: public -/
 structure automata.terms_multitape.MultiTapeProductFactory where
   _terms : alloc.vec.Vec automata.terms_multitape.MultiTapeTerm
@@ -457,14 +472,14 @@ structure automata.terms_multitape.MultiTapeProductFactory where
   _annotation : String
 
 /-- [automata_builder::automata::multi_tape_automata::{automata_builder::automata::multi_tape_automata::MultiTapeAutomata}::reverse_state_eq_map::{closure}]
-    Source: 'src/automata/multi_tape_automata.rs', lines 192:25-192:58 -/
+    Source: 'src/automata/multi_tape_automata.rs', lines 217:25-217:58 -/
 @[reducible]
 def automata.multi_tape_automata.MultiTapeAutomata.reverse_state_eq_map.closure
   :=
 Unit
 
 /-- [automata_builder::automata::rule_generator_multitape::{automata_builder::automata::rule_generator_multitape::BiDirectionalMultiTape}::render_tapes::{closure#3}]
-    Source: 'src/automata/rule_generator_multitape.rs', lines 199:39-199:63 -/
+    Source: 'src/automata/rule_generator_multitape.rs', lines 200:39-200:63 -/
 @[reducible]
 def automata.rule_generator_multitape.BiDirectionalMultiTape.render_tapes.closure_3
   :=
@@ -485,28 +500,28 @@ structure automata.renderer.TapeRenderFrame where
   cell_width : Std.Usize
 
 /-- [automata_builder::automata::rule_generator_multitape::{automata_builder::automata::rule_generator_multitape::BiDirectionalMultiTape}::render_tapes::{closure#2}]
-    Source: 'src/automata/rule_generator_multitape.rs', lines 180:17-180:51 -/
+    Source: 'src/automata/rule_generator_multitape.rs', lines 181:17-181:51 -/
 @[reducible]
 def automata.rule_generator_multitape.BiDirectionalMultiTape.render_tapes.closure_2
   :=
 Unit
 
 /-- [automata_builder::automata::rule_generator_multitape::{automata_builder::automata::rule_generator_multitape::BiDirectionalMultiTape}::render_tapes::{closure#1}]
-    Source: 'src/automata/rule_generator_multitape.rs', lines 176:52-176:75 -/
+    Source: 'src/automata/rule_generator_multitape.rs', lines 177:52-177:75 -/
 @[reducible]
 def automata.rule_generator_multitape.BiDirectionalMultiTape.render_tapes.closure_1
   :=
 Unit
 
 /-- [automata_builder::automata::rule_generator_multitape::{automata_builder::automata::rule_generator_multitape::BiDirectionalMultiTape}::render_tapes::{closure}]
-    Source: 'src/automata/rule_generator_multitape.rs', lines 159:17-159:56 -/
+    Source: 'src/automata/rule_generator_multitape.rs', lines 160:17-160:56 -/
 @[reducible]
 def automata.rule_generator_multitape.BiDirectionalMultiTape.render_tapes.closure
   :=
 Unit
 
 /-- [automata_builder::automata::rule_generator_multitape::{automata_builder::automata::rule_generator_multitape::BiDirectionalMultiTape}::max_state::{closure}]
-    Source: 'src/automata/rule_generator_multitape.rs', lines 120:17-120:40 -/
+    Source: 'src/automata/rule_generator_multitape.rs', lines 121:17-121:40 -/
 @[reducible]
 def automata.rule_generator_multitape.BiDirectionalMultiTape.max_state.closure
   :=
@@ -528,19 +543,19 @@ def automata.renderer.RenderFrame.from_padded_lines.closure_1 := Std.Usize
 def automata.renderer.RenderFrame.from_padded_lines.closure := Unit
 
 /-- [automata_builder::automata::multi_tape_automata::{automata_builder::automata::multi_tape_automata::MultiTapeAutomata}::product_satisfies::{closure}]
-    Source: 'src/automata/multi_tape_automata.rs', lines 228:21-228:52 -/
+    Source: 'src/automata/multi_tape_automata.rs', lines 253:21-253:52 -/
 @[reducible]
 def automata.multi_tape_automata.MultiTapeAutomata.product_satisfies.closure :=
   Std.I64
 
 /-- [automata_builder::automata::multi_tape_automata::{automata_builder::automata::multi_tape_automata::MultiTapeAutomata}::process_step::{closure#1}]
-    Source: 'src/automata/multi_tape_automata.rs', lines 328:25-328:51 -/
+    Source: 'src/automata/multi_tape_automata.rs', lines 353:25-353:51 -/
 @[reducible]
 def automata.multi_tape_automata.MultiTapeAutomata.process_step.closure_1 :=
   Std.I64
 
 /-- [automata_builder::automata::multi_tape_automata::{automata_builder::automata::multi_tape_automata::MultiTapeAutomata}::process_step::{closure}]
-    Source: 'src/automata/multi_tape_automata.rs', lines 278:33-280:29 -/
+    Source: 'src/automata/multi_tape_automata.rs', lines 303:33-305:29 -/
 @[reducible]
 def automata.multi_tape_automata.MultiTapeAutomata.process_step.closure := Unit
 
@@ -554,7 +569,7 @@ structure automata.terms.Term where
   _debug_info : automata.terms.ExprDebugInfo
 
 /-- [automata_builder::automata::multi_tape_builder::terms_repr::{closure}]
-    Source: 'src/automata/multi_tape_builder.rs', lines 61:13-61:66 -/
+    Source: 'src/automata/multi_tape_builder.rs', lines 63:13-63:66 -/
 @[reducible]
 def automata.multi_tape_builder.terms_repr.closure := Unit
 
@@ -579,11 +594,17 @@ inductive automata.multi_tape_product_trie.TrieError where
   automata.multi_tape_product_trie.TrieError
 
 /-- [automata_builder::automata::multi_tape_builder::CompileTapesError]
-    Source: 'src/automata/multi_tape_builder.rs', lines 68:0-84:1
+    Source: 'src/automata/multi_tape_builder.rs', lines 70:0-95:1
     Visibility: public -/
 @[discriminant isize]
 inductive automata.multi_tape_builder.CompileTapesError where
 | ProductWrites :
+  automata.product_writes_map.ProductWritesError →
+  automata.multi_tape_builder.CompileTapesError
+| ExtendedProductOutputConflict :
+  indexmap.map.IndexMap automata.multi_tape_transition.MultiTapeTransition
+    (alloc.collections.btree.map.BTreeMap Std.U16 Std.U32 alloc.alloc.Global)
+    std.hash.random.RandomState →
   automata.product_writes_map.ProductWritesError →
   automata.multi_tape_builder.CompileTapesError
 | Trie :
@@ -599,8 +620,88 @@ inductive automata.multi_tape_builder.CompileTapesError where
 | MissingPriority : String → automata.multi_tape_builder.CompileTapesError
 | Invalid : String → automata.multi_tape_builder.CompileTapesError
 
+/-- [automata_builder::automata::terms_multitape::{impl automata_builder::automata::terms_multitape::AbstractMultiTapeExpression<automata_builder::automata::terms_multitape::MultiTapeExpression, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeExpression}::_expand::{closure#2}]
+    Source: 'src/automata/terms_multitape.rs', lines 913:12-913:28 -/
+@[reducible]
+def automata.terms_multitape.AbstractMultiTapeExpressionMultiTapeExpressionMultiTapeExpressionMultiTapeExpression._expand.closure_2
+  :=
+Unit
+
+/-- [automata_builder::automata::terms_multitape::{impl automata_builder::automata::terms_multitape::AbstractMultiTapeExpression<automata_builder::automata::terms_multitape::MultiTapeExpression, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeExpression}::_expand::{closure#1}]
+    Source: 'src/automata/terms_multitape.rs', lines 912:12-912:47 -/
+@[reducible]
+def automata.terms_multitape.AbstractMultiTapeExpressionMultiTapeExpressionMultiTapeExpressionMultiTapeExpression._expand.closure_1
+  :=
+Unit
+
+/-- [automata_builder::automata::terms_multitape::{impl automata_builder::automata::terms_multitape::AbstractMultiTapeExpression<automata_builder::automata::terms_multitape::MultiTapeExpression, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeExpression}::_expand::{closure}]
+    Source: 'src/automata/terms_multitape.rs', lines 908:17-909:76 -/
+def automata.terms_multitape.AbstractMultiTapeExpressionMultiTapeExpressionMultiTapeExpressionMultiTapeExpression._expand.closure
+  :=
+  std.collections.hash.map.HashMap (Std.U16 × Std.U32)
+  automata.terms_multitape.MultiTapeExpression std.hash.random.RandomState
+  alloc.alloc.Global × Bool × Bool
+
+/-- [automata_builder::automata::terms_multitape::{impl core::cmp::Ord for automata_builder::automata::terms_multitape::MultiTapeProduct}::cmp::{closure}]
+    Source: 'src/automata/terms_multitape.rs', lines 585:23-585:56 -/
+def automata.terms_multitape.OrdMultiTapeProduct.cmp.closure :=
+  automata.terms_multitape.MultiTapeProduct ×
+  automata.terms_multitape.MultiTapeProduct
+
+/-- [automata_builder::automata::terms_multitape::{impl core::cmp::Ord for automata_builder::automata::terms_multitape::MultiTapeTerm}::cmp::{closure}]
+    Source: 'src/automata/terms_multitape.rs', lines 95:23-95:54 -/
+def automata.terms_multitape.OrdMultiTapeTerm.cmp.closure :=
+  automata.terms_multitape.MultiTapeTerm ×
+  automata.terms_multitape.MultiTapeTerm
+
+/-- [automata_builder::automata::terms_multitape::{automata_builder::automata::terms_multitape::MultiTapeExpression}::_assign_base_expansion_indexes::{closure}]
+    Source: 'src/automata/terms_multitape.rs', lines 719:47-722:13 -/
+@[reducible]
+def automata.terms_multitape.MultiTapeExpression._assign_base_expansion_indexes.closure
+  :=
+  Std.Usize
+
+/-- [automata_builder::automata::terms_multitape::{automata_builder::automata::terms_multitape::MultiTapeExpression}::_assign_parent_debug_info::{closure}]
+    Source: 'src/automata/terms_multitape.rs', lines 707:47-710:13 -/
+@[reducible]
+def automata.terms_multitape.MultiTapeExpression._assign_parent_debug_info.closure
+  :=
+  automata.terms.ExprDebugInfo
+
+/-- Trait declaration: [automata_builder::automata::terms_multitape::AbstractMultiTapeExpression]
+    Source: 'src/automata/terms_multitape.rs', lines 50:0-69:1
+    Visibility: public -/
+structure automata.terms_multitape.AbstractMultiTapeExpression (Self : Type _)
+  (Self_Clause0_Output : Type _) (Self_Clause1_Output : Type _) where
+  coreopsarithMulInst : core.ops.arith.Mul Self Self Self_Clause0_Output
+  coreopsbitBitOrInst : core.ops.bit.BitOr Self Self Self_Clause1_Output
+  corecmpEqInst : core.cmp.Eq Self
+  copy : Self → Result Self
+  _sub : Self → std.collections.hash.map.HashMap Std.I64 (Std.U16 × Std.U32)
+    std.hash.random.RandomState alloc.alloc.Global → (Std.U16 × Std.U32) →
+    Result Bool
+  offset : Self → Std.I64 → Result Self
+  _expand : Self → std.collections.hash.map.HashMap (Std.U16 × Std.U32)
+    automata.terms_multitape.MultiTapeExpression std.hash.random.RandomState
+    alloc.alloc.Global → Bool → Bool → Result
+    automata.terms_multitape.MultiTapeExpression
+  _expand_steps : Self → std.collections.hash.map.HashMap (Std.U16 ×
+    Std.U32) automata.terms_multitape.MultiTapeExpression
+    std.hash.random.RandomState alloc.alloc.Global → Std.U64 → Bool →
+    Bool → Result automata.terms_multitape.MultiTapeExpression
+  to_expression : Self → Result automata.terms_multitape.MultiTapeExpression
+  _to_string : Self → Str → Result String
+  _to_short_string : Self → Result String
+  _get_num_terms : Self → Result Std.Usize
+  _assign_indexes_as_base : Self → Result Self
+
+/-- [automata_builder::automata::multi_tape_builder::{impl core::fmt::Display for automata_builder::automata::multi_tape_builder::CompileTapesError}::fmt::{closure}]
+    Source: 'src/automata/multi_tape_builder.rs', lines 129:29-135:25 -/
+@[reducible]
+def automata.multi_tape_builder.DisplayCompileTapesError.fmt.closure := Unit
+
 /-- [automata_builder::automata::multi_tape_builder::MultiTapeStatePathRemap]
-    Source: 'src/automata/multi_tape_builder.rs', lines 131:0-137:1
+    Source: 'src/automata/multi_tape_builder.rs', lines 190:0-196:1
     Visibility: public -/
 structure automata.multi_tape_builder.MultiTapeStatePathRemap where
   remap_counter_start : Std.U32
@@ -616,57 +717,55 @@ structure automata.multi_tape_builder.MultiTapeStatePathRemap where
     std.hash.random.RandomState alloc.alloc.Global
 
 /-- [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeStatePathRemap}::is_void_path::{closure}]
-    Source: 'src/automata/multi_tape_builder.rs', lines 190:24-190:67 -/
+    Source: 'src/automata/multi_tape_builder.rs', lines 249:24-249:67 -/
 @[reducible]
 def automata.multi_tape_builder.MultiTapeStatePathRemap.is_void_path.closure :=
 Unit
 
 /-- [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeStatePathRemap}::is_halt_path::{closure}]
-    Source: 'src/automata/multi_tape_builder.rs', lines 196:24-196:67 -/
+    Source: 'src/automata/multi_tape_builder.rs', lines 255:24-255:67 -/
 @[reducible]
 def automata.multi_tape_builder.MultiTapeStatePathRemap.is_halt_path.closure :=
 Unit
 
-/-- [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeStatePathRemap}::remap::{closure}::{closure}]
-    Source: 'src/automata/multi_tape_builder.rs', lines 234:25-234:50 -/
+/-- [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeStatePathRemap}::remap::{closure#1}]
+    Source: 'src/automata/multi_tape_builder.rs', lines 296:24-299:14 -/
 @[reducible]
-def automata.multi_tape_builder.MultiTapeStatePathRemap.remap.closure.closure
-  :=
-Unit
+def automata.multi_tape_builder.MultiTapeStatePathRemap.remap.closure_1 :=
+  String
 
 /-- [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeStatePathRemap}::remap::{closure}]
-    Source: 'src/automata/multi_tape_builder.rs', lines 230:24-237:14 -/
+    Source: 'src/automata/multi_tape_builder.rs', lines 289:17-289:42 -/
 @[reducible]
-def automata.multi_tape_builder.MultiTapeStatePathRemap.remap.closure :=
-  Slice automata.terms_multitape.MultiTapeState
+def automata.multi_tape_builder.MultiTapeStatePathRemap.remap.closure := Unit
 
 /-- [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeStatePathRemap}::rev_lookup::{closure}]
-    Source: 'src/automata/multi_tape_builder.rs', lines 257:24-259:14 -/
+    Source: 'src/automata/multi_tape_builder.rs', lines 319:24-321:14 -/
 @[reducible]
 def automata.multi_tape_builder.MultiTapeStatePathRemap.rev_lookup.closure :=
   Std.U32
 
 /-- [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeStatePathRemap}::remap_term_to_multi_tape::{closure}]
-    Source: 'src/automata/multi_tape_builder.rs', lines 293:17-293:94 -/
+    Source: 'src/automata/multi_tape_builder.rs', lines 355:17-355:94 -/
 @[reducible]
 def automata.multi_tape_builder.MultiTapeStatePathRemap.remap_term_to_multi_tape.closure
   :=
   Std.I64
 
 /-- [automata_builder::automata::terms_multitape::{automata_builder::automata::terms_multitape::MultiTapeProduct}::merge_products::{closure}]
-    Source: 'src/automata/terms_multitape.rs', lines 373:48-373:64 -/
+    Source: 'src/automata/terms_multitape.rs', lines 390:48-390:64 -/
 @[reducible]
 def automata.terms_multitape.MultiTapeProduct.merge_products.closure := Unit
 
 /-- [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeStatePathRemap}::remap_from_product_to_term::{closure#1}]
-    Source: 'src/automata/multi_tape_builder.rs', lines 324:17-324:71 -/
+    Source: 'src/automata/multi_tape_builder.rs', lines 386:17-386:71 -/
 @[reducible]
 def automata.multi_tape_builder.MultiTapeStatePathRemap.remap_from_product_to_term.closure_1
   :=
 Unit
 
 /-- [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeStatePathRemap}::remap_from_product_to_term::{closure}]
-    Source: 'src/automata/multi_tape_builder.rs', lines 313:65-313:85 -/
+    Source: 'src/automata/multi_tape_builder.rs', lines 375:65-375:85 -/
 @[reducible]
 def automata.multi_tape_builder.MultiTapeStatePathRemap.remap_from_product_to_term.closure
   :=
@@ -691,7 +790,7 @@ structure automata.rule_generator.AutomataTransitionsGroup where
   transitions : alloc.vec.Vec automata.rule_generator.AutomataTransition
 
 /-- [automata_builder::automata::multi_tape_builder::CompileTapesResult]
-    Source: 'src/automata/multi_tape_builder.rs', lines 332:0-336:1
+    Source: 'src/automata/multi_tape_builder.rs', lines 394:0-398:1
     Visibility: public -/
 structure automata.multi_tape_builder.CompileTapesResult where
   transitions_group : automata.rule_generator.AutomataTransitionsGroup
@@ -710,7 +809,7 @@ structure automata.tape_overlaps.TapeOverlaps where
     alloc.alloc.Global) alloc.alloc.Global
 
 /-- [automata_builder::automata::multi_tape_builder::TransitionOptimizations]
-    Source: 'src/automata/multi_tape_builder.rs', lines 348:0-352:1
+    Source: 'src/automata/multi_tape_builder.rs', lines 410:0-414:1
     Visibility: public -/
 structure automata.multi_tape_builder.TransitionOptimizations where
   disappeared_states : alloc.collections.btree.set.BTreeSet
@@ -810,14 +909,14 @@ theorem
     next_groups := by rfl
 
 /-- [automata_builder::automata::multi_tape_builder::RepresentabilityIndex]
-    Source: 'src/automata/multi_tape_builder.rs', lines 370:0-372:1 -/
+    Source: 'src/automata/multi_tape_builder.rs', lines 432:0-434:1 -/
 structure automata.multi_tape_builder.RepresentabilityIndex where
   entries : alloc.vec.Vec ((Slice automata.terms_multitape.MultiTapeTerm) ×
     (alloc.vec.Vec (alloc.collections.btree.set.BTreeSet
     automata.terms_multitape.MultiTapeState alloc.alloc.Global)))
 
 /-- [automata_builder::automata::multi_tape_builder::TransitionsContext]
-    Source: 'src/automata/multi_tape_builder.rs', lines 358:0-366:1 -/
+    Source: 'src/automata/multi_tape_builder.rs', lines 420:0-428:1 -/
 structure automata.multi_tape_builder.TransitionsContext where
   all_tape_nos : alloc.vec.Vec Std.U16
   product_writes_map : automata.product_writes_map.ProductWritesMap
@@ -851,13 +950,13 @@ structure automata.tape_overlaps_fsm.TapeOverlapsFSM where
     std.hash.random.RandomState
 
 /-- [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::RepresentabilityIndex<'a>}::new::{closure}::{closure}]
-    Source: 'src/automata/multi_tape_builder.rs', lines 382:25-382:94 -/
+    Source: 'src/automata/multi_tape_builder.rs', lines 444:25-444:94 -/
 @[reducible]
 def automata.multi_tape_builder.RepresentabilityIndex.new.closure.closure :=
   automata.tape_overlaps_fsm.TapeOverlapsFSM
 
 /-- [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::RepresentabilityIndex<'a>}::new::{closure}]
-    Source: 'src/automata/multi_tape_builder.rs', lines 379:17-385:13 -/
+    Source: 'src/automata/multi_tape_builder.rs', lines 441:17-447:13 -/
 @[reducible]
 def automata.multi_tape_builder.RepresentabilityIndex.new.closure :=
   automata.tape_overlaps_fsm.TapeOverlapsFSM
@@ -868,20 +967,21 @@ def automata.multi_tape_product_trie.terms_satisfiable_with.closure :=
   automata.terms_multitape.MultiTapeTerm × Std.U16
 
 /-- [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::RepresentabilityIndex<'a>}::is_representable::{closure}]
-    Source: 'src/automata/multi_tape_builder.rs', lines 397:17-397:71 -/
+    Source: 'src/automata/multi_tape_builder.rs', lines 459:17-459:71 -/
 @[reducible]
 def automata.multi_tape_builder.RepresentabilityIndex.is_representable.closure
   :=
 Unit
 
 /-- [automata_builder::automata::multi_tape_builder::MultiTapeBuilder]
-    Source: 'src/automata/multi_tape_builder.rs', lines 434:0-442:1
+    Source: 'src/automata/multi_tape_builder.rs', lines 496:0-505:1
     Visibility: public -/
 structure automata.multi_tape_builder.MultiTapeBuilder where
   prod_to_state_map : automata.product_writes_map.ProductWritesMap
   prod_priority_map : indexmap.map.IndexMap
     automata.terms_multitape.MultiTapeProduct Std.U32
     std.hash.random.RandomState
+  transitions_group : automata.multi_tape_transition.MultiTapeTransitionsGroup
   tape_nos : alloc.vec.Vec Std.U16
   leftmost_extent : Std.I64
   rightmost_extent : Std.I64
@@ -901,59 +1001,47 @@ def automata.tape_overlaps.TapeOverlaps.validate_mutual_overlaps_for.closure :=
   automata.terms_multitape.MultiTapeState
 
 /-- [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::from_parts::{closure}]
-    Source: 'src/automata/multi_tape_builder.rs', lines 474:17-474:68 -/
+    Source: 'src/automata/multi_tape_builder.rs', lines 540:17-540:68 -/
 @[reducible]
 def automata.multi_tape_builder.MultiTapeBuilder.from_parts.closure := Unit
 
-/-- [automata_builder::automata::terms_multitape::{impl core::cmp::Ord for automata_builder::automata::terms_multitape::MultiTapeProduct}::cmp::{closure}]
-    Source: 'src/automata/terms_multitape.rs', lines 566:23-566:56 -/
-def automata.terms_multitape.OrdMultiTapeProduct.cmp.closure :=
-  automata.terms_multitape.MultiTapeProduct ×
-  automata.terms_multitape.MultiTapeProduct
-
-/-- [automata_builder::automata::terms_multitape::{impl core::cmp::Ord for automata_builder::automata::terms_multitape::MultiTapeTerm}::cmp::{closure}]
-    Source: 'src/automata/terms_multitape.rs', lines 90:23-90:54 -/
-def automata.terms_multitape.OrdMultiTapeTerm.cmp.closure :=
-  automata.terms_multitape.MultiTapeTerm ×
-  automata.terms_multitape.MultiTapeTerm
-
 /-- [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::build_whitelist_overlaps::{closure#2}]
-    Source: 'src/automata/multi_tape_builder.rs', lines 603:36-605:26 -/
+    Source: 'src/automata/multi_tape_builder.rs', lines 669:36-671:26 -/
 @[reducible]
 def automata.multi_tape_builder.MultiTapeBuilder.build_whitelist_overlaps.closure_2
   :=
   automata.terms_multitape.MultiTapeProduct
 
 /-- [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::build_whitelist_overlaps::{closure#1}]
-    Source: 'src/automata/multi_tape_builder.rs', lines 602:34-602:77 -/
+    Source: 'src/automata/multi_tape_builder.rs', lines 668:34-668:77 -/
 @[reducible]
 def automata.multi_tape_builder.MultiTapeBuilder.build_whitelist_overlaps.closure_1
   :=
   Std.U16
 
 /-- [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::build_whitelist_overlaps::{closure}]
-    Source: 'src/automata/multi_tape_builder.rs', lines 572:29-572:81 -/
+    Source: 'src/automata/multi_tape_builder.rs', lines 638:29-638:81 -/
 @[reducible]
 def automata.multi_tape_builder.MultiTapeBuilder.build_whitelist_overlaps.closure
   :=
   Std.U16
 
 /-- [automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::get_same_tape_states_transitioned_to::{closure#1}]
-    Source: 'src/automata/product_writes_map.rs', lines 687:43-687:62 -/
+    Source: 'src/automata/product_writes_map.rs', lines 770:43-770:62 -/
 @[reducible]
 def automata.product_writes_map.ProductWritesMap.get_same_tape_states_transitioned_to.closure_1
   :=
 Unit
 
 /-- [automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::get_same_tape_states_transitioned_to::{closure}]
-    Source: 'src/automata/product_writes_map.rs', lines 655:64-658:13 -/
+    Source: 'src/automata/product_writes_map.rs', lines 738:64-741:13 -/
 @[reducible]
 def automata.product_writes_map.ProductWritesMap.get_same_tape_states_transitioned_to.closure
   :=
   automata.tape_overlaps.TapeOverlaps
 
 /-- [automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::get_state_attributes::{closure}]
-    Source: 'src/automata/product_writes_map.rs', lines 525:74-528:17 -/
+    Source: 'src/automata/product_writes_map.rs', lines 608:74-611:17 -/
 @[reducible]
 def automata.product_writes_map.ProductWritesMap.get_state_attributes.closure
   :=
@@ -961,7 +1049,7 @@ def automata.product_writes_map.ProductWritesMap.get_state_attributes.closure
   alloc.alloc.Global
 
 /-- [automata_builder::automata::product_writes_map::MultiTapeStateAttributes]
-    Source: 'src/automata/product_writes_map.rs', lines 56:0-60:1
+    Source: 'src/automata/product_writes_map.rs', lines 74:0-78:1
     Visibility: public -/
 structure automata.product_writes_map.MultiTapeStateAttributes where
   writable : Bool
@@ -969,14 +1057,14 @@ structure automata.product_writes_map.MultiTapeStateAttributes where
   instant_delete : Bool
 
 /-- [automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::does_product_become_unsatisfiable::{closure}]
-    Source: 'src/automata/product_writes_map.rs', lines 428:58-430:9 -/
+    Source: 'src/automata/product_writes_map.rs', lines 511:58-513:9 -/
 @[reducible]
 def automata.product_writes_map.ProductWritesMap.does_product_become_unsatisfiable.closure
   :=
   automata.terms_multitape.MultiTapeProduct
 
 /-- [automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::purge_unsatisfiable_products::{closure}]
-    Source: 'src/automata/product_writes_map.rs', lines 390:32-390:56 -/
+    Source: 'src/automata/product_writes_map.rs', lines 473:32-473:56 -/
 @[reducible]
 def automata.product_writes_map.ProductWritesMap.purge_unsatisfiable_products.closure
   :=
@@ -1003,7 +1091,7 @@ def automata.tape_overlaps.TapeOverlaps.list_for_offset.closure := Unit
 def automata.tape_overlaps.TapeOverlaps.apply_whitelist.closure := Unit
 
 /-- [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::transition_overlaps::{closure}]
-    Source: 'src/automata/multi_tape_builder.rs', lines 766:60-766:77 -/
+    Source: 'src/automata/multi_tape_builder.rs', lines 832:60-832:77 -/
 @[reducible]
 def automata.multi_tape_builder.MultiTapeBuilder.transition_overlaps.closure :=
 Unit
@@ -1039,14 +1127,14 @@ def automata.tape_overlaps_fsm.TapeOverlapsFSM.find_state.closure :=
   automata.tape_overlaps_fsm.TapeOverlapsFSMState
 
 /-- [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::build_tape_state_combos::{closure}]
-    Source: 'src/automata/multi_tape_builder.rs', lines 823:17-823:54 -/
+    Source: 'src/automata/multi_tape_builder.rs', lines 889:17-889:54 -/
 @[reducible]
 def automata.multi_tape_builder.MultiTapeBuilder.build_tape_state_combos.closure
   :=
 Unit
 
 /-- [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::combo_to_group::{closure}]
-    Source: 'src/automata/multi_tape_builder.rs', lines 831:17-831:92 -/
+    Source: 'src/automata/multi_tape_builder.rs', lines 897:17-897:92 -/
 @[reducible]
 def automata.multi_tape_builder.MultiTapeBuilder.combo_to_group.closure :=
   Std.I64
@@ -1079,7 +1167,7 @@ def automata.multi_tape_product_trie.offset_group_path_to_product.closure :=
 Unit
 
 /-- [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::build_product_same_writes_map::{closure}]
-    Source: 'src/automata/multi_tape_builder.rs', lines 900:21-909:17 -/
+    Source: 'src/automata/multi_tape_builder.rs', lines 966:21-975:17 -/
 def automata.multi_tape_builder.MultiTapeBuilder.build_product_same_writes_map.closure
   :=
   automata.multi_tape_product_trie.MultiTapeProductTrie × alloc.vec.Vec
@@ -1116,14 +1204,14 @@ def automata.tape_overlaps.MultiTapeStatesMap.get_multi_tape_states_for.closure
   Std.U16
 
 /-- [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::build_offset_group_choices::{closure}::{closure}]
-    Source: 'src/automata/multi_tape_builder.rs', lines 962:25-962:69 -/
+    Source: 'src/automata/multi_tape_builder.rs', lines 1028:25-1028:69 -/
 @[reducible]
 def automata.multi_tape_builder.MultiTapeBuilder.build_offset_group_choices.closure.closure
   :=
   Std.I64
 
 /-- [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::build_offset_group_choices::{closure}]
-    Source: 'src/automata/multi_tape_builder.rs', lines 947:17-964:13 -/
+    Source: 'src/automata/multi_tape_builder.rs', lines 1013:17-1030:13 -/
 def automata.multi_tape_builder.MultiTapeBuilder.build_offset_group_choices.closure
   :=
   alloc.collections.btree.map.BTreeMap Std.I64
@@ -1132,28 +1220,28 @@ def automata.multi_tape_builder.MultiTapeBuilder.build_offset_group_choices.clos
   automata.tape_overlaps.TapeOverlaps
 
 /-- [automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::get_state_writes_for::{closure#1}]
-    Source: 'src/automata/product_writes_map.rs', lines 208:17-208:83 -/
+    Source: 'src/automata/product_writes_map.rs', lines 282:17-282:83 -/
 @[reducible]
 def automata.product_writes_map.ProductWritesMap.get_state_writes_for.closure_1
   :=
 Unit
 
 /-- [automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::get_state_writes_for::{closure}]
-    Source: 'src/automata/product_writes_map.rs', lines 202:54-204:9 -/
+    Source: 'src/automata/product_writes_map.rs', lines 276:54-278:9 -/
 @[reducible]
 def automata.product_writes_map.ProductWritesMap.get_state_writes_for.closure
   :=
   automata.terms_multitape.MultiTapeProduct
 
 /-- [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::build_extended_products_for::{closure#3}]
-    Source: 'src/automata/multi_tape_builder.rs', lines 1070:72-1072:17 -/
+    Source: 'src/automata/multi_tape_builder.rs', lines 1136:72-1138:17 -/
 @[reducible]
 def automata.multi_tape_builder.MultiTapeBuilder.build_extended_products_for.closure_3
   :=
   alloc.vec.Vec automata.terms_multitape.MultiTapeTerm
 
 /-- [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::build_extended_products_for::{closure#2}]
-    Source: 'src/automata/multi_tape_builder.rs', lines 1067:30-1067:89 -/
+    Source: 'src/automata/multi_tape_builder.rs', lines 1133:30-1133:89 -/
 @[reducible]
 def automata.multi_tape_builder.MultiTapeBuilder.build_extended_products_for.closure_2
   :=
@@ -1161,21 +1249,21 @@ def automata.multi_tape_builder.MultiTapeBuilder.build_extended_products_for.clo
   automata.multi_tape_product_trie.OffsetGroupedTerms)
 
 /-- [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::build_extended_products_for::{closure#1}]
-    Source: 'src/automata/multi_tape_builder.rs', lines 1059:36-1059:65 -/
+    Source: 'src/automata/multi_tape_builder.rs', lines 1125:36-1125:65 -/
 @[reducible]
 def automata.multi_tape_builder.MultiTapeBuilder.build_extended_products_for.closure_1
   :=
 Unit
 
 /-- [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::build_extended_products_for::{closure}::{closure}]
-    Source: 'src/automata/multi_tape_builder.rs', lines 994:28-994:88 -/
+    Source: 'src/automata/multi_tape_builder.rs', lines 1060:28-1060:88 -/
 @[reducible]
 def automata.multi_tape_builder.MultiTapeBuilder.build_extended_products_for.closure.closure
   :=
   automata.terms_multitape.MultiTapeProduct
 
 /-- [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::build_extended_products_for::{closure}]
-    Source: 'src/automata/multi_tape_builder.rs', lines 990:27-995:9 -/
+    Source: 'src/automata/multi_tape_builder.rs', lines 1056:27-1061:9 -/
 @[reducible]
 def automata.multi_tape_builder.MultiTapeBuilder.build_extended_products_for.closure
   :=
@@ -1183,7 +1271,7 @@ def automata.multi_tape_builder.MultiTapeBuilder.build_extended_products_for.clo
   std.hash.random.RandomState
 
 /-- [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::reassign_state_path::{closure}]
-    Source: 'src/automata/multi_tape_builder.rs', lines 1221:17-1224:13 -/
+    Source: 'src/automata/multi_tape_builder.rs', lines 1287:17-1290:13 -/
 @[reducible]
 def automata.multi_tape_builder.MultiTapeBuilder.reassign_state_path.closure :=
   alloc.collections.btree.map.BTreeMap Std.U16 Std.U32 alloc.alloc.Global
@@ -1194,15 +1282,31 @@ def automata.multi_tape_builder.MultiTapeBuilder.reassign_state_path.closure :=
 def automata.rule_generator.AutomataTransitionsGroup.terms_to_string.closure :=
 Unit
 
-/-- [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::build_transitions_for_product::{closure#1}]
-    Source: 'src/automata/multi_tape_builder.rs', lines 1349:24-1349:49 -/
+/-- [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::build_transitions_for_product::{closure#3}]
+    Source: 'src/automata/multi_tape_builder.rs', lines 1446:33-1458:25 -/
+def automata.multi_tape_builder.MultiTapeBuilder.build_transitions_for_product.closure_3
+  :=
+  alloc.vec.Vec automata.terms_multitape.MultiTapeState ×
+  alloc.collections.btree.map.BTreeMap Std.U16 Std.U32 alloc.alloc.Global ×
+  automata.terms_multitape.MultiTapeProduct ×
+  automata.terms_multitape.MultiTapeProduct
+
+/-- [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::build_transitions_for_product::{closure#2}]
+    Source: 'src/automata/multi_tape_builder.rs', lines 1425:24-1425:49 -/
 @[reducible]
-def automata.multi_tape_builder.MultiTapeBuilder.build_transitions_for_product.closure_1
+def automata.multi_tape_builder.MultiTapeBuilder.build_transitions_for_product.closure_2
   :=
 Unit
 
+/-- [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::build_transitions_for_product::{closure#1}]
+    Source: 'src/automata/multi_tape_builder.rs', lines 1366:29-1374:21 -/
+@[reducible]
+def automata.multi_tape_builder.MultiTapeBuilder.build_transitions_for_product.closure_1
+  :=
+  automata.terms_multitape.MultiTapeProduct
+
 /-- [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::build_transitions_for_product::{closure}]
-    Source: 'src/automata/multi_tape_builder.rs', lines 1243:24-1245:13 -/
+    Source: 'src/automata/multi_tape_builder.rs', lines 1309:24-1311:13 -/
 @[reducible]
 def automata.multi_tape_builder.MultiTapeBuilder.build_transitions_for_product.closure
   :=
@@ -1213,42 +1317,28 @@ def automata.multi_tape_builder.MultiTapeBuilder.build_transitions_for_product.c
 @[reducible]
 def automata.tape_overlaps_fsm.TapeOverlapsFSM.merge.closure := Unit
 
-/-- [automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::get_stub_writes_str_for::{closure}::{closure}]
-    Source: 'src/automata/product_writes_map.rs', lines 232:25-232:87 -/
-@[reducible]
-def automata.product_writes_map.ProductWritesMap.get_stub_writes_str_for.closure.closure
-  :=
-Unit
-
-/-- [automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::get_stub_writes_str_for::{closure}]
-    Source: 'src/automata/product_writes_map.rs', lines 229:17-234:13 -/
-@[reducible]
-def automata.product_writes_map.ProductWritesMap.get_stub_writes_str_for.closure
-  :=
-Unit
-
 /-- [automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::get_multi_tape_writes_for::{closure}::{closure}]
-    Source: 'src/automata/product_writes_map.rs', lines 220:25-220:91 -/
+    Source: 'src/automata/product_writes_map.rs', lines 294:25-294:91 -/
 @[reducible]
 def automata.product_writes_map.ProductWritesMap.get_multi_tape_writes_for.closure.closure
   :=
 Unit
 
 /-- [automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::get_multi_tape_writes_for::{closure}]
-    Source: 'src/automata/product_writes_map.rs', lines 217:17-222:13 -/
+    Source: 'src/automata/product_writes_map.rs', lines 291:17-296:13 -/
 @[reducible]
 def automata.product_writes_map.ProductWritesMap.get_multi_tape_writes_for.closure
   :=
 Unit
 
 /-- [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::compile_tapes::{closure#1}]
-    Source: 'src/automata/multi_tape_builder.rs', lines 1477:21-1477:81 -/
+    Source: 'src/automata/multi_tape_builder.rs', lines 1613:21-1613:81 -/
 @[reducible]
 def automata.multi_tape_builder.MultiTapeBuilder.compile_tapes.closure_1 :=
   automata.multi_tape_builder.TransitionsContext
 
 /-- [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::compile_tapes::{closure}]
-    Source: 'src/automata/multi_tape_builder.rs', lines 1402:21-1410:17 -/
+    Source: 'src/automata/multi_tape_builder.rs', lines 1493:21-1501:17 -/
 def automata.multi_tape_builder.MultiTapeBuilder.compile_tapes.closure :=
   automata.tape_overlaps.TapeOverlaps ×
   automata.multi_tape_product_trie.MultiTapeProductTrie ×
@@ -1303,34 +1393,53 @@ inductive automata.multi_tape_transition.CombineTransitionsError where
   automata.multi_tape_transition.CombineTransitionsError
 
 /-- [automata_builder::automata::multi_tape_transition::{automata_builder::automata::multi_tape_transition::MultiTapeTransitionsGroup}::add_transition::{closure}]
-    Source: 'src/automata/multi_tape_transition.rs', lines 206:53-209:13 -/
+    Source: 'src/automata/multi_tape_transition.rs', lines 216:53-219:13 -/
 @[reducible]
 def automata.multi_tape_transition.MultiTapeTransitionsGroup.add_transition.closure
   :=
 Unit
 
+/-- [automata_builder::automata::product_writes_map::tape_writes_to_str::{closure}]
+    Source: 'src/automata/product_writes_map.rs', lines 22:13-22:65 -/
+@[reducible]
+def automata.product_writes_map.tape_writes_to_str.closure := Unit
+
+/-- [automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::get_stub_writes_str_for::{closure}::{closure}]
+    Source: 'src/automata/product_writes_map.rs', lines 306:25-306:87 -/
+@[reducible]
+def automata.product_writes_map.ProductWritesMap.get_stub_writes_str_for.closure.closure
+  :=
+Unit
+
+/-- [automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::get_stub_writes_str_for::{closure}]
+    Source: 'src/automata/product_writes_map.rs', lines 303:17-308:13 -/
+@[reducible]
+def automata.product_writes_map.ProductWritesMap.get_stub_writes_str_for.closure
+  :=
+Unit
+
 /-- [automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::extinct_input_state::{closure#1}]
-    Source: 'src/automata/product_writes_map.rs', lines 370:17-370:41 -/
+    Source: 'src/automata/product_writes_map.rs', lines 453:17-453:41 -/
 @[reducible]
 def automata.product_writes_map.ProductWritesMap.extinct_input_state.closure_1
   :=
 Unit
 
 /-- [automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::extinct_input_state::{closure}::{closure}]
-    Source: 'src/automata/product_writes_map.rs', lines 365:51-368:17 -/
+    Source: 'src/automata/product_writes_map.rs', lines 448:51-451:17 -/
 @[reducible]
 def automata.product_writes_map.ProductWritesMap.extinct_input_state.closure.closure
   :=
   automata.terms_multitape.MultiTapeState
 
 /-- [automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::extinct_input_state::{closure}]
-    Source: 'src/automata/product_writes_map.rs', lines 364:20-369:13 -/
+    Source: 'src/automata/product_writes_map.rs', lines 447:20-452:13 -/
 @[reducible]
 def automata.product_writes_map.ProductWritesMap.extinct_input_state.closure :=
   automata.terms_multitape.MultiTapeState
 
 /-- [automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::build_input_products::{closure}]
-    Source: 'src/automata/product_writes_map.rs', lines 487:28-487:52 -/
+    Source: 'src/automata/product_writes_map.rs', lines 570:28-570:52 -/
 @[reducible]
 def automata.product_writes_map.ProductWritesMap.build_input_products.closure
   :=
@@ -1377,7 +1486,7 @@ structure automata.rule_generator.PruneResult where
   reverse_popped : Std.Usize
 
 /-- [automata_builder::automata::rule_generator_multitape::MultiTapeDataRegion]
-    Source: 'src/automata/rule_generator_multitape.rs', lines 12:0-16:1
+    Source: 'src/automata/rule_generator_multitape.rs', lines 13:0-17:1
     Visibility: public -/
 structure automata.rule_generator_multitape.MultiTapeDataRegion where
   start_position : Std.I64
@@ -1386,14 +1495,14 @@ structure automata.rule_generator_multitape.MultiTapeDataRegion where
     Std.U32) alloc.alloc.Global
 
 /-- [automata_builder::automata::rule_generator_multitape::{automata_builder::automata::rule_generator_multitape::BiDirectionalMultiTape}::get_minimal_data_range::{closure#1}]
-    Source: 'src/automata/rule_generator_multitape.rs', lines 234:56-234:75 -/
+    Source: 'src/automata/rule_generator_multitape.rs', lines 235:56-235:75 -/
 @[reducible]
 def automata.rule_generator_multitape.BiDirectionalMultiTape.get_minimal_data_range.closure_1
   :=
   Std.I64
 
 /-- [automata_builder::automata::rule_generator_multitape::{automata_builder::automata::rule_generator_multitape::BiDirectionalMultiTape}::get_minimal_data_range::{closure}]
-    Source: 'src/automata/rule_generator_multitape.rs', lines 233:62-233:83 -/
+    Source: 'src/automata/rule_generator_multitape.rs', lines 234:62-234:83 -/
 @[reducible]
 def automata.rule_generator_multitape.BiDirectionalMultiTape.get_minimal_data_range.closure
   :=
@@ -1669,77 +1778,15 @@ def automata.terms.AbstractExpressionExpressionExpressionExpression._to_string.c
   :=
   Str
 
-/-- Trait declaration: [automata_builder::automata::terms_multitape::AbstractMultiTapeExpression]
-    Source: 'src/automata/terms_multitape.rs', lines 48:0-64:1
-    Visibility: public -/
-structure automata.terms_multitape.AbstractMultiTapeExpression (Self : Type _)
-  (Self_Clause0_Output : Type _) (Self_Clause1_Output : Type _) where
-  coreopsarithMulInst : core.ops.arith.Mul Self Self Self_Clause0_Output
-  coreopsbitBitOrInst : core.ops.bit.BitOr Self Self Self_Clause1_Output
-  corecmpEqInst : core.cmp.Eq Self
-  copy : Self → Result Self
-  _sub : Self → std.collections.hash.map.HashMap Std.I64 (Std.U16 × Std.U32)
-    std.hash.random.RandomState alloc.alloc.Global → (Std.U16 × Std.U32) →
-    Result Bool
-  offset : Self → Std.I64 → Result Self
-  _expand : Self → std.collections.hash.map.HashMap (Std.U16 × Std.U32)
-    automata.terms_multitape.MultiTapeExpression std.hash.random.RandomState
-    alloc.alloc.Global → Bool → Bool → Result
-    automata.terms_multitape.MultiTapeExpression
-  _expand_steps : Self → std.collections.hash.map.HashMap (Std.U16 ×
-    Std.U32) automata.terms_multitape.MultiTapeExpression
-    std.hash.random.RandomState alloc.alloc.Global → Std.U64 → Bool →
-    Bool → Result automata.terms_multitape.MultiTapeExpression
-  to_expression : Self → Result automata.terms_multitape.MultiTapeExpression
-  _to_string : Self → Str → Result String
-  _get_num_terms : Self → Result Std.Usize
-  _assign_indexes_as_base : Self → Result Self
-
-/-- [automata_builder::automata::terms_multitape::{impl automata_builder::automata::terms_multitape::AbstractMultiTapeExpression<automata_builder::automata::terms_multitape::MultiTapeExpression, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeExpression}::_expand::{closure#2}]
-    Source: 'src/automata/terms_multitape.rs', lines 894:12-894:28 -/
-@[reducible]
-def automata.terms_multitape.AbstractMultiTapeExpressionMultiTapeExpressionMultiTapeExpressionMultiTapeExpression._expand.closure_2
-  :=
-Unit
-
-/-- [automata_builder::automata::terms_multitape::{impl automata_builder::automata::terms_multitape::AbstractMultiTapeExpression<automata_builder::automata::terms_multitape::MultiTapeExpression, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeExpression}::_expand::{closure#1}]
-    Source: 'src/automata/terms_multitape.rs', lines 893:12-893:47 -/
-@[reducible]
-def automata.terms_multitape.AbstractMultiTapeExpressionMultiTapeExpressionMultiTapeExpressionMultiTapeExpression._expand.closure_1
-  :=
-Unit
-
-/-- [automata_builder::automata::terms_multitape::{impl automata_builder::automata::terms_multitape::AbstractMultiTapeExpression<automata_builder::automata::terms_multitape::MultiTapeExpression, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeExpression}::_expand::{closure}]
-    Source: 'src/automata/terms_multitape.rs', lines 889:17-890:76 -/
-def automata.terms_multitape.AbstractMultiTapeExpressionMultiTapeExpressionMultiTapeExpressionMultiTapeExpression._expand.closure
-  :=
-  std.collections.hash.map.HashMap (Std.U16 × Std.U32)
-  automata.terms_multitape.MultiTapeExpression std.hash.random.RandomState
-  alloc.alloc.Global × Bool × Bool
-
-/-- [automata_builder::automata::terms_multitape::{automata_builder::automata::terms_multitape::MultiTapeExpression}::_assign_base_expansion_indexes::{closure}]
-    Source: 'src/automata/terms_multitape.rs', lines 700:47-703:13 -/
-@[reducible]
-def automata.terms_multitape.MultiTapeExpression._assign_base_expansion_indexes.closure
-  :=
-  Std.Usize
-
-/-- [automata_builder::automata::terms_multitape::{automata_builder::automata::terms_multitape::MultiTapeExpression}::_assign_parent_debug_info::{closure}]
-    Source: 'src/automata/terms_multitape.rs', lines 688:47-691:13 -/
-@[reducible]
-def automata.terms_multitape.MultiTapeExpression._assign_parent_debug_info.closure
-  :=
-  automata.terms.ExprDebugInfo
-
 /-- [automata_builder::automata::terms_multitape::{impl automata_builder::automata::terms_multitape::AbstractMultiTapeExpression<automata_builder::automata::terms_multitape::MultiTapeExpression, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeExpression}::_get_num_terms::{closure}]
-    Source: 'src/automata/terms_multitape.rs', lines 924:33-924:67 -/
+    Source: 'src/automata/terms_multitape.rs', lines 943:33-943:67 -/
 @[reducible]
 def automata.terms_multitape.AbstractMultiTapeExpressionMultiTapeExpressionMultiTapeExpressionMultiTapeExpression._get_num_terms.closure
   :=
 Unit
 
 /-- [automata_builder::automata::terms_multitape::{impl automata_builder::automata::terms_multitape::AbstractMultiTapeExpression<automata_builder::automata::terms_multitape::MultiTapeExpression, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeExpression}::_to_string::{closure}]
-    Source: 'src/automata/terms_multitape.rs', lines 919:17-919:51 -/
+    Source: 'src/automata/terms_multitape.rs', lines 938:17-938:51 -/
 @[reducible]
 def automata.terms_multitape.AbstractMultiTapeExpressionMultiTapeExpressionMultiTapeExpressionMultiTapeExpression._to_string.closure
   :=
