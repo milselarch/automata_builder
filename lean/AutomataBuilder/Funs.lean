@@ -564,6 +564,15 @@ impl_def Pair.Insts.CoreCmpEq {U : Type _} {T : Type _} (cmpEqInst :
     (Pair.Insts.CoreCmpEq cmpEqInst cmpEqInst1)
 }
 
+/-- Trait implementation: [std::backtrace::{impl core::fmt::Display for std::backtrace::Backtrace}]
+    Source: '/rustc/library/std/src/backtrace.rs', lines 382:0-382:31
+    Name pattern: [core::fmt::Display<std::backtrace::Backtrace>] -/
+@[reducible, rust_trait_impl "core::fmt::Display<std::backtrace::Backtrace>"]
+def std.backtrace.Backtrace.Insts.CoreFmtDisplay : core.fmt.Display
+  std.backtrace.Backtrace := {
+  fmt := std.backtrace.Backtrace.Insts.CoreFmtDisplay.fmt
+}
+
 /-- Trait implementation: [std::collections::hash::map::{impl core::fmt::Debug for std::collections::hash::map::HashMap<K, V, S, A>}]
     Source: '/rustc/library/std/src/collections/hash/map.rs', lines 1475:0-1479:17
     Name pattern: [core::fmt::Debug<std::collections::hash::map::HashMap<@K, @V, @S, @A>>] -/
@@ -1097,6 +1106,28 @@ def indexmap.map.IndexMap.Insts.CoreFmtDebug {K : Type _} {V : Type _} (S :
     corefmtDebugInst1
 }
 
+/-- Trait implementation: [indexmap::map::{impl core::cmp::PartialEq<indexmap::map::IndexMap<K, V2, S2>> for indexmap::map::IndexMap<K, V1, S1>}]
+    Source: '/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/indexmap-2.11.4/src/map.rs', lines 1835:0-1840:20
+    Name pattern: [core::cmp::PartialEq<indexmap::map::IndexMap<@K, @V1, @S1>, indexmap::map::IndexMap<@K, @V2, @S2>>] -/
+@[reducible, rust_trait_impl
+  "core::cmp::PartialEq<indexmap::map::IndexMap<@K, @V1, @S1>, indexmap::map::IndexMap<@K, @V2, @S2>>"]
+impl_def indexmap.map.IndexMap.Insts.CoreCmpPartialEqIndexMap {K : Type _} {V1
+  : Type _} {S1 : Type _} {V2 : Type _} {S2 : Type _} {Clause3_Hasher : Type _}
+  {Clause4_Hasher : Type _} (corehashHashInst : core.hash.Hash K)
+  (corecmpEqInst : core.cmp.Eq K) (corecmpPartialEqInst : core.cmp.PartialEq V1
+  V2) (corehashBuildHasherInst : core.hash.BuildHasher S1 Clause3_Hasher)
+  (corehashBuildHasherInst1 : core.hash.BuildHasher S2 Clause4_Hasher) :
+  core.cmp.PartialEq (indexmap.map.IndexMap K V1 S1) (indexmap.map.IndexMap K
+  V2 S2) := {
+  eq := indexmap.map.IndexMap.Insts.CoreCmpPartialEqIndexMap.eq
+    corehashHashInst corecmpEqInst corecmpPartialEqInst corehashBuildHasherInst
+    corehashBuildHasherInst1
+  ne := core.cmp.PartialEq.ne.trait_default
+    (indexmap.map.IndexMap.Insts.CoreCmpPartialEqIndexMap corehashHashInst
+    corecmpEqInst corecmpPartialEqInst corehashBuildHasherInst
+    corehashBuildHasherInst1)
+}
+
 /-- Trait implementation: [indexmap::set::iter::{impl core::iter::traits::iterator::Iterator<T> for indexmap::set::iter::IntoIter<T>}]
     Source: '/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/indexmap-2.11.4/src/set/iter.rs', lines 111:0-111:32
     Name pattern: [core::iter::traits::iterator::Iterator<indexmap::set::iter::IntoIter<@T>, @T>] -/
@@ -1164,6 +1195,18 @@ def indexmap.set.IndexSet.Insts.CoreIterTraitsCollectFromIterator {T : Type _}
     indexmap.set.IndexSet.Insts.CoreIterTraitsCollectFromIterator.from_iter
     corehashHashInst corecmpEqInst corehashBuildHasherInst
     coredefaultDefaultInst coreitertraitscollectIntoIteratorInst
+}
+
+/-- Trait implementation: [indexmap::set::{impl core::default::Default for indexmap::set::IndexSet<T, S>}]
+    Source: '/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/indexmap-2.11.4/src/set.rs', lines 1325:0-1327:15
+    Name pattern: [core::default::Default<indexmap::set::IndexSet<@T, @S>>] -/
+@[reducible, rust_trait_impl
+  "core::default::Default<indexmap::set::IndexSet<@T, @S>>"]
+def indexmap.set.IndexSet.Insts.CoreDefaultDefault (T : Type _) {S : Type _}
+  (coredefaultDefaultInst : core.default.Default S) : core.default.Default
+  (indexmap.set.IndexSet T S) := {
+  default := indexmap.set.IndexSet.Insts.CoreDefaultDefault.default T
+    coredefaultDefaultInst
 }
 
 /-- Trait implementation: [indexmap::set::{impl core::cmp::PartialEq<indexmap::set::IndexSet<T, S2>> for indexmap::set::IndexSet<T, S1>}]
@@ -1304,7 +1347,7 @@ def automata.terms.ExprDebugInfo.Insts.CoreFmtDebug : core.fmt.Debug
 }
 
 /-- [automata_builder::automata::terms_multitape::{impl core::fmt::Debug for automata_builder::automata::terms_multitape::MultiTapeTerm}::fmt]:
-    Source: 'src/automata/terms_multitape.rs', lines 66:16-66:21
+    Source: 'src/automata/terms_multitape.rs', lines 71:16-71:21
     Visibility: public -/
 def automata.terms_multitape.MultiTapeTerm.Insts.CoreFmtDebug.fmt
   (self : automata.terms_multitape.MultiTapeTerm) (f : core.fmt.Formatter) :
@@ -1323,7 +1366,7 @@ def automata.terms_multitape.MultiTapeTerm.Insts.CoreFmtDebug.fmt
     (toStr "_debug_info") dyn3
 
 /-- Trait implementation: [automata_builder::automata::terms_multitape::{impl core::fmt::Debug for automata_builder::automata::terms_multitape::MultiTapeTerm}]
-    Source: 'src/automata/terms_multitape.rs', lines 66:16-66:21 -/
+    Source: 'src/automata/terms_multitape.rs', lines 71:16-71:21 -/
 @[reducible]
 def automata.terms_multitape.MultiTapeTerm.Insts.CoreFmtDebug : core.fmt.Debug
   automata.terms_multitape.MultiTapeTerm := {
@@ -1331,7 +1374,7 @@ def automata.terms_multitape.MultiTapeTerm.Insts.CoreFmtDebug : core.fmt.Debug
 }
 
 /-- [automata_builder::automata::terms_multitape::{impl core::fmt::Debug for automata_builder::automata::terms_multitape::MultiTapeProduct}::fmt]:
-    Source: 'src/automata/terms_multitape.rs', lines 341:16-341:21
+    Source: 'src/automata/terms_multitape.rs', lines 358:16-358:21
     Visibility: public -/
 def automata.terms_multitape.MultiTapeProduct.Insts.CoreFmtDebug.fmt
   (self : automata.terms_multitape.MultiTapeProduct) (f : core.fmt.Formatter) :
@@ -1348,7 +1391,7 @@ def automata.terms_multitape.MultiTapeProduct.Insts.CoreFmtDebug.fmt
     (toStr "_terms") dyn (toStr "_optimized") dyn1 (toStr "_annotation") dyn2
 
 /-- Trait implementation: [automata_builder::automata::terms_multitape::{impl core::fmt::Debug for automata_builder::automata::terms_multitape::MultiTapeProduct}]
-    Source: 'src/automata/terms_multitape.rs', lines 341:16-341:21 -/
+    Source: 'src/automata/terms_multitape.rs', lines 358:16-358:21 -/
 @[reducible]
 def automata.terms_multitape.MultiTapeProduct.Insts.CoreFmtDebug :
   core.fmt.Debug automata.terms_multitape.MultiTapeProduct := {
@@ -1421,7 +1464,7 @@ def automata.terms.ExprDebugInfo.Insts.CoreCloneClone.clone
   ok { expansion_index := i, position_info := o, parent_position_info := o1 }
 
 /-- [automata_builder::automata::terms_multitape::{impl core::clone::Clone for automata_builder::automata::terms_multitape::MultiTapeTerm}::clone]:
-    Source: 'src/automata/terms_multitape.rs', lines 66:9-66:14
+    Source: 'src/automata/terms_multitape.rs', lines 71:9-71:14
     Visibility: public -/
 def automata.terms_multitape.MultiTapeTerm.Insts.CoreCloneClone.clone
   (self : automata.terms_multitape.MultiTapeTerm) :
@@ -1435,7 +1478,7 @@ def automata.terms_multitape.MultiTapeTerm.Insts.CoreCloneClone.clone
   ok { position := i, state := p, _optimized := b, _debug_info := edi }
 
 /-- Trait implementation: [automata_builder::automata::terms_multitape::{impl core::clone::Clone for automata_builder::automata::terms_multitape::MultiTapeTerm}]
-    Source: 'src/automata/terms_multitape.rs', lines 66:9-66:14 -/
+    Source: 'src/automata/terms_multitape.rs', lines 71:9-71:14 -/
 @[reducible]
 def automata.terms_multitape.MultiTapeTerm.Insts.CoreCloneClone :
   core.clone.Clone automata.terms_multitape.MultiTapeTerm := {
@@ -1443,7 +1486,7 @@ def automata.terms_multitape.MultiTapeTerm.Insts.CoreCloneClone :
 }
 
 /-- [automata_builder::automata::terms_multitape::{impl core::clone::Clone for automata_builder::automata::terms_multitape::MultiTapeProduct}::clone]:
-    Source: 'src/automata/terms_multitape.rs', lines 341:9-341:14
+    Source: 'src/automata/terms_multitape.rs', lines 358:9-358:14
     Visibility: public -/
 def automata.terms_multitape.MultiTapeProduct.Insts.CoreCloneClone.clone
   (self : automata.terms_multitape.MultiTapeProduct) :
@@ -1486,7 +1529,7 @@ def automata.multi_tape_automata.WriteRecord.Insts.CoreCloneClone :
 }
 
 /-- [automata_builder::automata::terms_multitape::{impl core::cmp::PartialEq<automata_builder::automata::terms_multitape::MultiTapeTerm> for automata_builder::automata::terms_multitape::MultiTapeTerm}::eq]:
-    Source: 'src/automata/terms_multitape.rs', lines 78:4-80:5
+    Source: 'src/automata/terms_multitape.rs', lines 83:4-85:5
     Visibility: public -/
 def
   automata.terms_multitape.MultiTapeTerm.Insts.CoreCmpPartialEqMultiTapeTerm.eq
@@ -1501,7 +1544,7 @@ def
   else ok false
 
 /-- Trait implementation: [automata_builder::automata::terms_multitape::{impl core::cmp::PartialEq<automata_builder::automata::terms_multitape::MultiTapeTerm> for automata_builder::automata::terms_multitape::MultiTapeTerm}]
-    Source: 'src/automata/terms_multitape.rs', lines 77:0-81:1 -/
+    Source: 'src/automata/terms_multitape.rs', lines 82:0-86:1 -/
 @[reducible]
 impl_def
   automata.terms_multitape.MultiTapeTerm.Insts.CoreCmpPartialEqMultiTapeTerm :
@@ -1514,7 +1557,7 @@ impl_def
 }
 
 /-- [automata_builder::automata::terms_multitape::{impl core::cmp::PartialEq<automata_builder::automata::terms_multitape::MultiTapeProduct> for automata_builder::automata::terms_multitape::MultiTapeProduct}::eq]:
-    Source: 'src/automata/terms_multitape.rs', lines 462:4-464:5
+    Source: 'src/automata/terms_multitape.rs', lines 481:4-483:5
     Visibility: public -/
 def
   automata.terms_multitape.MultiTapeProduct.Insts.CoreCmpPartialEqMultiTapeProduct.eq
@@ -1595,7 +1638,7 @@ def
 }
 
 /-- [automata_builder::automata::terms_multitape::{impl automata_builder::automata::terms_multitape::AbstractMultiTapeExpression<automata_builder::automata::terms_multitape::MultiTapeProduct, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeTerm}::_to_string]:
-    Source: 'src/automata/terms_multitape.rs', lines 279:4-282:5
+    Source: 'src/automata/terms_multitape.rs', lines 296:4-299:5
     Visibility: public -/
 def
   automata.terms_multitape.MultiTapeTerm.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeProductMultiTapeExpression._to_string
@@ -1621,7 +1664,7 @@ def
   core.hint.must_use s
 
 /-- [automata_builder::automata::terms_multitape::{impl automata_builder::automata::terms_multitape::AbstractMultiTapeExpression<automata_builder::automata::terms_multitape::MultiTapeProduct, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeProduct}::_to_string::{impl core::ops::function::FnMut<(&'_0 automata_builder::automata::terms_multitape::MultiTapeTerm,), alloc::string::String> for automata_builder::automata::terms_multitape::{impl automata_builder::automata::terms_multitape::AbstractMultiTapeExpression<automata_builder::automata::terms_multitape::MultiTapeProduct, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeProduct}::_to_string::{closure}<'_0, '_1>}::call_mut]:
-    Source: 'src/automata/terms_multitape.rs', lines 639:17-639:50 -/
+    Source: 'src/automata/terms_multitape.rs', lines 658:17-658:50 -/
 def
   automata.terms_multitape.AbstractMultiTapeExpressionMultiTapeProductMultiTapeProductMultiTapeExpression._to_string.closure.Insts.CoreOpsFunctionFnMutTupleShared0MultiTapeTermString.call_mut
   (c :
@@ -1636,7 +1679,7 @@ def
   ok (s, c)
 
 /-- [automata_builder::automata::terms_multitape::{impl automata_builder::automata::terms_multitape::AbstractMultiTapeExpression<automata_builder::automata::terms_multitape::MultiTapeProduct, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeProduct}::_to_string::{impl core::ops::function::FnOnce<(&'_0 automata_builder::automata::terms_multitape::MultiTapeTerm,), alloc::string::String> for automata_builder::automata::terms_multitape::{impl automata_builder::automata::terms_multitape::AbstractMultiTapeExpression<automata_builder::automata::terms_multitape::MultiTapeProduct, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeProduct}::_to_string::{closure}<'_0, '_1>}::call_once]:
-    Source: 'src/automata/terms_multitape.rs', lines 639:17-639:50 -/
+    Source: 'src/automata/terms_multitape.rs', lines 658:17-658:50 -/
 def
   automata.terms_multitape.AbstractMultiTapeExpressionMultiTapeProductMultiTapeProductMultiTapeExpression._to_string.closure.Insts.CoreOpsFunctionFnOnceTupleShared0MultiTapeTermString.call_once
   (c :
@@ -1650,7 +1693,7 @@ def
   ok s
 
 /-- Trait implementation: [automata_builder::automata::terms_multitape::{impl automata_builder::automata::terms_multitape::AbstractMultiTapeExpression<automata_builder::automata::terms_multitape::MultiTapeProduct, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeProduct}::_to_string::{impl core::ops::function::FnOnce<(&'_0 automata_builder::automata::terms_multitape::MultiTapeTerm,), alloc::string::String> for automata_builder::automata::terms_multitape::{impl automata_builder::automata::terms_multitape::AbstractMultiTapeExpression<automata_builder::automata::terms_multitape::MultiTapeProduct, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeProduct}::_to_string::{closure}<'_0, '_1>}]
-    Source: 'src/automata/terms_multitape.rs', lines 639:17-639:50 -/
+    Source: 'src/automata/terms_multitape.rs', lines 658:17-658:50 -/
 @[reducible]
 def
   automata.terms_multitape.AbstractMultiTapeExpressionMultiTapeProductMultiTapeProductMultiTapeExpression._to_string.closure.Insts.CoreOpsFunctionFnOnceTupleShared0MultiTapeTermString
@@ -1662,7 +1705,7 @@ def
 }
 
 /-- Trait implementation: [automata_builder::automata::terms_multitape::{impl automata_builder::automata::terms_multitape::AbstractMultiTapeExpression<automata_builder::automata::terms_multitape::MultiTapeProduct, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeProduct}::_to_string::{impl core::ops::function::FnMut<(&'_0 automata_builder::automata::terms_multitape::MultiTapeTerm,), alloc::string::String> for automata_builder::automata::terms_multitape::{impl automata_builder::automata::terms_multitape::AbstractMultiTapeExpression<automata_builder::automata::terms_multitape::MultiTapeProduct, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeProduct}::_to_string::{closure}<'_0, '_1>}]
-    Source: 'src/automata/terms_multitape.rs', lines 639:17-639:50 -/
+    Source: 'src/automata/terms_multitape.rs', lines 658:17-658:50 -/
 @[reducible]
 def
   automata.terms_multitape.AbstractMultiTapeExpressionMultiTapeProductMultiTapeProductMultiTapeExpression._to_string.closure.Insts.CoreOpsFunctionFnMutTupleShared0MultiTapeTermString
@@ -1676,7 +1719,7 @@ def
 }
 
 /-- [automata_builder::automata::terms_multitape::{impl automata_builder::automata::terms_multitape::AbstractMultiTapeExpression<automata_builder::automata::terms_multitape::MultiTapeProduct, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeProduct}::_to_string]:
-    Source: 'src/automata/terms_multitape.rs', lines 636:4-642:5
+    Source: 'src/automata/terms_multitape.rs', lines 655:4-661:5
     Visibility: public -/
 def
   automata.terms_multitape.MultiTapeProduct.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeProductMultiTapeExpression._to_string
@@ -1725,10 +1768,11 @@ def automata.multi_tape_automata.WriteRecord.Insts.CoreFmtDisplay.fmt
       self.annotation
   let a5 ←
     core.fmt.Arguments.new
-      (Array.make 25#usize [
-        192#u8, 4#u8, 32#u8, 124#u8, 32#u8, 40#u8, 192#u8, 2#u8, 44#u8, 32#u8,
-        192#u8, 5#u8, 41#u8, 32#u8, 45#u8, 62#u8, 32#u8, 192#u8, 2#u8, 32#u8,
-        40#u8, 192#u8, 1#u8, 41#u8, 0#u8
+      (Array.make 34#usize [
+        192#u8, 9#u8, 32#u8, 124#u8, 32#u8, 91#u8, 116#u8, 97#u8, 112#u8,
+        101#u8, 32#u8, 192#u8, 6#u8, 44#u8, 32#u8, 112#u8, 111#u8, 115#u8,
+        32#u8, 192#u8, 5#u8, 93#u8, 32#u8, 45#u8, 62#u8, 32#u8, 192#u8, 2#u8,
+        32#u8, 91#u8, 192#u8, 1#u8, 93#u8, 0#u8
         ]) (Array.make 5#usize [ a, a1, a2, a3, a4 ])
   core.fmt.Formatter.write_fmt f a5
 
@@ -1776,7 +1820,7 @@ def automata.rule_generator.BidirectionalTape.Insts.CoreFmtDebug :
 }
 
 /-- [automata_builder::automata::rule_generator_multitape::{impl core::fmt::Debug for automata_builder::automata::rule_generator_multitape::BiDirectionalMultiTape}::fmt]:
-    Source: 'src/automata/rule_generator_multitape.rs', lines 43:9-43:14
+    Source: 'src/automata/rule_generator_multitape.rs', lines 44:9-44:14
     Visibility: public -/
 def
   automata.rule_generator_multitape.BiDirectionalMultiTape.Insts.CoreFmtDebug.fmt
@@ -1795,7 +1839,7 @@ def
     "BiDirectionalMultiTape") (toStr "tapes") dyn (toStr "freeze_tapes") dyn1
 
 /-- Trait implementation: [automata_builder::automata::rule_generator_multitape::{impl core::fmt::Debug for automata_builder::automata::rule_generator_multitape::BiDirectionalMultiTape}]
-    Source: 'src/automata/rule_generator_multitape.rs', lines 43:9-43:14 -/
+    Source: 'src/automata/rule_generator_multitape.rs', lines 44:9-44:14 -/
 @[reducible]
 def automata.rule_generator_multitape.BiDirectionalMultiTape.Insts.CoreFmtDebug
   : core.fmt.Debug automata.rule_generator_multitape.BiDirectionalMultiTape
@@ -1856,7 +1900,7 @@ def automata.rule_generator.BidirectionalTape.Insts.CoreCloneClone :
 }
 
 /-- [automata_builder::automata::rule_generator_multitape::{impl core::clone::Clone for automata_builder::automata::rule_generator_multitape::BiDirectionalMultiTape}::clone]:
-    Source: 'src/automata/rule_generator_multitape.rs', lines 43:16-43:21
+    Source: 'src/automata/rule_generator_multitape.rs', lines 44:16-44:21
     Visibility: public -/
 def
   automata.rule_generator_multitape.BiDirectionalMultiTape.Insts.CoreCloneClone.clone
@@ -1900,7 +1944,7 @@ def automata.multi_tape_automata.ProcessStepResult.Insts.CoreCloneClone :
 }
 
 /-- [automata_builder::automata::rule_generator_multitape::{impl core::default::Default for automata_builder::automata::rule_generator_multitape::BiDirectionalMultiTape}::default]:
-    Source: 'src/automata/rule_generator_multitape.rs', lines 43:23-43:30
+    Source: 'src/automata/rule_generator_multitape.rs', lines 44:23-44:30
     Visibility: public -/
 def
   automata.rule_generator_multitape.BiDirectionalMultiTape.Insts.CoreDefaultDefault.default
@@ -1912,7 +1956,7 @@ def
   ok { tapes := bm, freeze_tapes := b }
 
 /-- [automata_builder::automata::terms_multitape::{automata_builder::automata::terms_multitape::MultiTapeExpression}::_get_products]:
-    Source: 'src/automata/terms_multitape.rs', lines 666:4-666:76
+    Source: 'src/automata/terms_multitape.rs', lines 685:4-685:76
     Visibility: public -/
 def automata.terms_multitape.MultiTapeExpression._get_products
   (self : automata.terms_multitape.MultiTapeExpression) :
@@ -1921,7 +1965,7 @@ def automata.terms_multitape.MultiTapeExpression._get_products
   ok self.products
 
 /-- [automata_builder::automata::terms_multitape::{automata_builder::automata::terms_multitape::MultiTapeExpression}::new]:
-    Source: 'src/automata/terms_multitape.rs', lines 658:4-662:5
+    Source: 'src/automata/terms_multitape.rs', lines 677:4-681:5
     Visibility: public -/
 def automata.terms_multitape.MultiTapeExpression.new
   (products : alloc.vec.Vec automata.terms_multitape.MultiTapeProduct) :
@@ -1930,14 +1974,14 @@ def automata.terms_multitape.MultiTapeExpression.new
   ok { products, _optimized := false }
 
 /-- [automata_builder::automata::terms_multitape::{automata_builder::automata::terms_multitape::MultiTapeProduct}::get_annotation]:
-    Source: 'src/automata/terms_multitape.rs', lines 354:4-356:5
+    Source: 'src/automata/terms_multitape.rs', lines 371:4-373:5
     Visibility: public -/
 def automata.terms_multitape.MultiTapeProduct.get_annotation
   (self : automata.terms_multitape.MultiTapeProduct) : Result String := do
   ok self._annotation
 
 /-- Trait implementation: [automata_builder::automata::terms_multitape::{impl core::clone::Clone for automata_builder::automata::terms_multitape::MultiTapeProduct}]
-    Source: 'src/automata/terms_multitape.rs', lines 341:9-341:14 -/
+    Source: 'src/automata/terms_multitape.rs', lines 358:9-358:14 -/
 @[reducible]
 def automata.terms_multitape.MultiTapeProduct.Insts.CoreCloneClone :
   core.clone.Clone automata.terms_multitape.MultiTapeProduct := {
@@ -1945,7 +1989,7 @@ def automata.terms_multitape.MultiTapeProduct.Insts.CoreCloneClone :
 }
 
 /-- [automata_builder::automata::terms_multitape::{automata_builder::automata::terms_multitape::MultiTapeProductFactory}::to_product]:
-    Source: 'src/automata/terms_multitape.rs', lines 332:4-338:5
+    Source: 'src/automata/terms_multitape.rs', lines 349:4-355:5
     Visibility: public -/
 def automata.terms_multitape.MultiTapeProductFactory.to_product
   (self : automata.terms_multitape.MultiTapeProductFactory) :
@@ -1955,7 +1999,7 @@ def automata.terms_multitape.MultiTapeProductFactory.to_product
   ok { _terms := self._terms, _optimized := self._optimized, _annotation := s }
 
 /-- [automata_builder::automata::terms_multitape::{impl core::clone::Clone for automata_builder::automata::terms_multitape::MultiTapeProductFactory}::clone]:
-    Source: 'src/automata/terms_multitape.rs', lines 294:9-294:14
+    Source: 'src/automata/terms_multitape.rs', lines 311:9-311:14
     Visibility: public -/
 def automata.terms_multitape.MultiTapeProductFactory.Insts.CoreCloneClone.clone
   (self : automata.terms_multitape.MultiTapeProductFactory) :
@@ -1969,7 +2013,7 @@ def automata.terms_multitape.MultiTapeProductFactory.Insts.CoreCloneClone.clone
   ok { _terms := v, _optimized := b, _annotation := s }
 
 /-- [automata_builder::automata::terms_multitape::{automata_builder::automata::terms_multitape::MultiTapeProductFactory}::with_annotation]:
-    Source: 'src/automata/terms_multitape.rs', lines 325:4-331:5
+    Source: 'src/automata/terms_multitape.rs', lines 342:4-348:5
     Visibility: public -/
 def automata.terms_multitape.MultiTapeProductFactory.with_annotation
   (self : automata.terms_multitape.MultiTapeProductFactory)
@@ -1983,7 +2027,7 @@ def automata.terms_multitape.MultiTapeProductFactory.with_annotation
   ok ({ clone with _annotation := annotation }, self)
 
 /-- [automata_builder::automata::terms_multitape::{automata_builder::automata::terms_multitape::MultiTapeProductFactory}::with_terms]:
-    Source: 'src/automata/terms_multitape.rs', lines 311:4-317:5
+    Source: 'src/automata/terms_multitape.rs', lines 328:4-334:5
     Visibility: public -/
 def automata.terms_multitape.MultiTapeProductFactory.with_terms
   (self : automata.terms_multitape.MultiTapeProductFactory)
@@ -1996,7 +2040,7 @@ def automata.terms_multitape.MultiTapeProductFactory.with_terms
   ok { clone with _terms := terms }
 
 /-- [automata_builder::automata::terms_multitape::{automata_builder::automata::terms_multitape::MultiTapeProductFactory}::spawn_empty]:
-    Source: 'src/automata/terms_multitape.rs', lines 301:4-307:5
+    Source: 'src/automata/terms_multitape.rs', lines 318:4-324:5
     Visibility: public -/
 def automata.terms_multitape.MultiTapeProductFactory.spawn_empty
   : Result automata.terms_multitape.MultiTapeProductFactory := do
@@ -2009,7 +2053,7 @@ def automata.terms_multitape.MultiTapeProductFactory.spawn_empty
     }
 
 /-- [automata_builder::automata::terms_multitape::{automata_builder::automata::terms_multitape::MultiTapeProductFactory}::new]:
-    Source: 'src/automata/terms_multitape.rs', lines 308:4-310:5
+    Source: 'src/automata/terms_multitape.rs', lines 325:4-327:5
     Visibility: public -/
 def automata.terms_multitape.MultiTapeProductFactory.new
   (terms : alloc.vec.Vec automata.terms_multitape.MultiTapeTerm) :
@@ -2019,7 +2063,7 @@ def automata.terms_multitape.MultiTapeProductFactory.new
   automata.terms_multitape.MultiTapeProductFactory.with_terms mtpf terms
 
 /-- [automata_builder::automata::terms_multitape::{impl core::hash::Hash for automata_builder::automata::terms_multitape::MultiTapeState}::hash]:
-    Source: 'src/automata/terms_multitape.rs', lines 19:4-19:8
+    Source: 'src/automata/terms_multitape.rs', lines 21:4-21:8
     Visibility: public -/
 def automata.terms_multitape.MultiTapeState.Insts.CoreHashHash.hash
   {__H : Type _} (corehashHasherInst : core.hash.Hasher __H)
@@ -2031,7 +2075,7 @@ def automata.terms_multitape.MultiTapeState.Insts.CoreHashHash.hash
   U32.Insts.CoreHashHash.hash corehashHasherInst self.tape_cell_state state1
 
 /-- Trait implementation: [automata_builder::automata::terms_multitape::{impl core::hash::Hash for automata_builder::automata::terms_multitape::MultiTapeState}]
-    Source: 'src/automata/terms_multitape.rs', lines 19:4-19:8 -/
+    Source: 'src/automata/terms_multitape.rs', lines 21:4-21:8 -/
 @[reducible]
 def automata.terms_multitape.MultiTapeState.Insts.CoreHashHash : core.hash.Hash
   automata.terms_multitape.MultiTapeState := {
@@ -2041,7 +2085,7 @@ def automata.terms_multitape.MultiTapeState.Insts.CoreHashHash : core.hash.Hash
 }
 
 /-- [automata_builder::automata::terms_multitape::{impl core::cmp::PartialEq<automata_builder::automata::terms_multitape::MultiTapeState> for automata_builder::automata::terms_multitape::MultiTapeState}::eq]:
-    Source: 'src/automata/terms_multitape.rs', lines 18:28-18:37
+    Source: 'src/automata/terms_multitape.rs', lines 20:28-20:37
     Visibility: public -/
 def
   automata.terms_multitape.MultiTapeState.Insts.CoreCmpPartialEqMultiTapeState.eq
@@ -2054,7 +2098,7 @@ def
   else ok false
 
 /-- Trait implementation: [automata_builder::automata::terms_multitape::{impl core::cmp::PartialEq<automata_builder::automata::terms_multitape::MultiTapeState> for automata_builder::automata::terms_multitape::MultiTapeState}]
-    Source: 'src/automata/terms_multitape.rs', lines 18:28-18:37 -/
+    Source: 'src/automata/terms_multitape.rs', lines 20:28-20:37 -/
 @[reducible]
 impl_def
   automata.terms_multitape.MultiTapeState.Insts.CoreCmpPartialEqMultiTapeState
@@ -2067,7 +2111,7 @@ impl_def
 }
 
 /-- [automata_builder::automata::terms_multitape::{impl core::cmp::Eq for automata_builder::automata::terms_multitape::MultiTapeState}::assert_fields_are_eq]:
-    Source: 'src/automata/terms_multitape.rs', lines 18:24-18:26
+    Source: 'src/automata/terms_multitape.rs', lines 20:24-20:26
     Visibility: public -/
 def
   automata.terms_multitape.MultiTapeState.Insts.CoreCmpEq.assert_fields_are_eq
@@ -2075,7 +2119,7 @@ def
   ok ()
 
 /-- Trait implementation: [automata_builder::automata::terms_multitape::{impl core::cmp::Eq for automata_builder::automata::terms_multitape::MultiTapeState}]
-    Source: 'src/automata/terms_multitape.rs', lines 18:24-18:26 -/
+    Source: 'src/automata/terms_multitape.rs', lines 20:24-20:26 -/
 @[reducible]
 def automata.terms_multitape.MultiTapeState.Insts.CoreCmpEq : core.cmp.Eq
   automata.terms_multitape.MultiTapeState := {
@@ -2086,7 +2130,7 @@ def automata.terms_multitape.MultiTapeState.Insts.CoreCmpEq : core.cmp.Eq
 }
 
 /-- [automata_builder::automata::terms_multitape::{impl core::clone::Clone for automata_builder::automata::terms_multitape::MultiTapeState}::clone]:
-    Source: 'src/automata/terms_multitape.rs', lines 18:11-18:16
+    Source: 'src/automata/terms_multitape.rs', lines 20:11-20:16
     Visibility: public -/
 def automata.terms_multitape.MultiTapeState.Insts.CoreCloneClone.clone
   (self : automata.terms_multitape.MultiTapeState) :
@@ -2095,7 +2139,7 @@ def automata.terms_multitape.MultiTapeState.Insts.CoreCloneClone.clone
   ok self
 
 /-- [automata_builder::automata::terms_multitape::{automata_builder::automata::terms_multitape::MultiTapeProductFactory}::with_optimized]:
-    Source: 'src/automata/terms_multitape.rs', lines 318:4-324:5
+    Source: 'src/automata/terms_multitape.rs', lines 335:4-341:5
     Visibility: public -/
 def automata.terms_multitape.MultiTapeProductFactory.with_optimized
   (self : automata.terms_multitape.MultiTapeProductFactory) (optimized : Bool)
@@ -2109,7 +2153,7 @@ def automata.terms_multitape.MultiTapeProductFactory.with_optimized
   ok ({ clone with _optimized := optimized }, self)
 
 /-- [automata_builder::automata::terms_multitape::{impl automata_builder::automata::terms_multitape::AbstractMultiTapeExpression<automata_builder::automata::terms_multitape::MultiTapeProduct, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeProduct}::copy]:
-    Source: 'src/automata/terms_multitape.rs', lines 570:4-575:5
+    Source: 'src/automata/terms_multitape.rs', lines 589:4-594:5
     Visibility: public -/
 def
   automata.terms_multitape.MultiTapeProduct.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeProductMultiTapeExpression.copy
@@ -2129,7 +2173,7 @@ def
   automata.terms_multitape.MultiTapeProductFactory.to_product mtpf2
 
 /-- [automata_builder::automata::terms_multitape::{automata_builder::automata::terms_multitape::MultiTapeProduct}::to_flat_terms]:
-    Source: 'src/automata/terms_multitape.rs', lines 351:4-353:5
+    Source: 'src/automata/terms_multitape.rs', lines 368:4-370:5
     Visibility: public -/
 def automata.terms_multitape.MultiTapeProduct.to_flat_terms
   (self : automata.terms_multitape.MultiTapeProduct) :
@@ -2139,7 +2183,7 @@ def automata.terms_multitape.MultiTapeProduct.to_flat_terms
     automata.terms_multitape.MultiTapeTerm.Insts.CoreCloneClone self._terms
 
 /-- [automata_builder::automata::rule_generator_multitape::{impl core::convert::From<automata_builder::automata::product_writes_map::ProductWritesError> for automata_builder::automata::rule_generator_multitape::AutomataError}::from]:
-    Source: 'src/automata/rule_generator_multitape.rs', lines 295:4-297:5
+    Source: 'src/automata/rule_generator_multitape.rs', lines 300:4-302:5
     Visibility: public -/
 def
   automata.rule_generator_multitape.AutomataError.Insts.CoreConvertFromProductWritesError.from
@@ -2149,7 +2193,7 @@ def
   ok (automata.rule_generator_multitape.AutomataError.Writes err)
 
 /-- Trait implementation: [automata_builder::automata::rule_generator_multitape::{impl core::convert::From<automata_builder::automata::product_writes_map::ProductWritesError> for automata_builder::automata::rule_generator_multitape::AutomataError}]
-    Source: 'src/automata/rule_generator_multitape.rs', lines 294:0-298:1 -/
+    Source: 'src/automata/rule_generator_multitape.rs', lines 299:0-303:1 -/
 @[reducible]
 def
   automata.rule_generator_multitape.AutomataError.Insts.CoreConvertFromProductWritesError
@@ -2160,7 +2204,7 @@ def
 }
 
 /-- Trait implementation: [automata_builder::automata::terms_multitape::{impl core::cmp::PartialEq<automata_builder::automata::terms_multitape::MultiTapeProduct> for automata_builder::automata::terms_multitape::MultiTapeProduct}]
-    Source: 'src/automata/terms_multitape.rs', lines 461:0-465:1 -/
+    Source: 'src/automata/terms_multitape.rs', lines 480:0-484:1 -/
 @[reducible]
 impl_def
   automata.terms_multitape.MultiTapeProduct.Insts.CoreCmpPartialEqMultiTapeProduct
@@ -2173,7 +2217,7 @@ impl_def
 }
 
 /-- Trait implementation: [automata_builder::automata::terms_multitape::{impl core::cmp::Eq for automata_builder::automata::terms_multitape::MultiTapeProduct}]
-    Source: 'src/automata/terms_multitape.rs', lines 473:0-473:31 -/
+    Source: 'src/automata/terms_multitape.rs', lines 492:0-492:31 -/
 @[reducible]
 impl_def automata.terms_multitape.MultiTapeProduct.Insts.CoreCmpEq :
   core.cmp.Eq automata.terms_multitape.MultiTapeProduct := {
@@ -2184,7 +2228,7 @@ impl_def automata.terms_multitape.MultiTapeProduct.Insts.CoreCmpEq :
 }
 
 /-- [automata_builder::automata::terms_multitape::{impl core::hash::Hash for automata_builder::automata::terms_multitape::MultiTapeTerm}::hash]:
-    Source: 'src/automata/terms_multitape.rs', lines 95:4-98:5
+    Source: 'src/automata/terms_multitape.rs', lines 100:4-103:5
     Visibility: public -/
 def automata.terms_multitape.MultiTapeTerm.Insts.CoreHashHash.hash
   {H : Type _} (corehashHasherInst : core.hash.Hasher H)
@@ -2197,7 +2241,7 @@ def automata.terms_multitape.MultiTapeTerm.Insts.CoreHashHash.hash
     corehashHasherInst self.state state1
 
 /-- [automata_builder::automata::terms_multitape::{impl core::hash::Hash for automata_builder::automata::terms_multitape::MultiTapeProduct}::hash]: loop 0:
-    Source: 'src/automata/terms_multitape.rs', lines 468:8-470:9
+    Source: 'src/automata/terms_multitape.rs', lines 487:8-489:9
     Visibility: public -/
 @[rust_loop]
 def automata.terms_multitape.MultiTapeProduct.Insts.CoreHashHash.hash_loop
@@ -2218,7 +2262,7 @@ def automata.terms_multitape.MultiTapeProduct.Insts.CoreHashHash.hash_loop
 partial_fixpoint
 
 /-- [automata_builder::automata::terms_multitape::{impl core::hash::Hash for automata_builder::automata::terms_multitape::MultiTapeProduct}::hash]:
-    Source: 'src/automata/terms_multitape.rs', lines 467:4-471:5
+    Source: 'src/automata/terms_multitape.rs', lines 486:4-490:5
     Visibility: public -/
 def automata.terms_multitape.MultiTapeProduct.Insts.CoreHashHash.hash
   {H : Type _} (corehashHasherInst : core.hash.Hasher H)
@@ -2232,7 +2276,7 @@ def automata.terms_multitape.MultiTapeProduct.Insts.CoreHashHash.hash
     corehashHasherInst iter state
 
 /-- Trait implementation: [automata_builder::automata::terms_multitape::{impl core::hash::Hash for automata_builder::automata::terms_multitape::MultiTapeProduct}]
-    Source: 'src/automata/terms_multitape.rs', lines 466:0-472:1 -/
+    Source: 'src/automata/terms_multitape.rs', lines 485:0-491:1 -/
 @[reducible]
 def automata.terms_multitape.MultiTapeProduct.Insts.CoreHashHash :
   core.hash.Hash automata.terms_multitape.MultiTapeProduct := {
@@ -2241,8 +2285,80 @@ def automata.terms_multitape.MultiTapeProduct.Insts.CoreHashHash :
     corehashHasherInst
 }
 
+/-- [automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductToStateMap}::insert]:
+    Source: 'src/automata/product_writes_map.rs', lines 118:4-149:5
+    Visibility: public -/
+def automata.product_writes_map.ProductToStateMap.insert
+  (self : automata.product_writes_map.ProductToStateMap)
+  (product : automata.terms_multitape.MultiTapeProduct)
+  (write_tape_no : Std.U16) (write_tape_cell_state : Std.U32) :
+  Result ((core.result.Result Unit
+    automata.product_writes_map.ProductWritesError) ×
+    automata.product_writes_map.ProductToStateMap)
+  := do
+  let mtp ←
+    automata.terms_multitape.MultiTapeProduct.Insts.CoreCloneClone.clone
+      product
+  let (e, entry_back) ←
+    indexmap.map.IndexMap.entry
+      automata.terms_multitape.MultiTapeProduct.Insts.CoreHashHash
+      automata.terms_multitape.MultiTapeProduct.Insts.CoreCmpEq
+      std.hash.random.RandomState.Insts.CoreHashBuildHasherDefaultHasher
+      self.prod_to_state_map mtp
+  let (writes_map, or_default_back) ←
+    indexmap.map.core.entry.Entry.or_default
+      (alloc.collections.btree.map.BTreeMapKVGlobal.Insts.CoreDefaultDefault
+      Std.U16 Std.U32) e
+  let o ←
+    alloc.collections.btree.map.BTreeMap.get
+      alloc.alloc.Global.Insts.CoreAllocAllocatorClone
+      (core.borrow.Borrow.Blanket Std.U16) core.cmp.OrdU16 core.cmp.OrdU16
+      writes_map write_tape_no
+  let o1 ← core.option.OptionShared0T.copied core.marker.CopyU32 o
+  let existing ← lift (core.option.Option.unwrap_or o1 write_tape_cell_state)
+  if existing != write_tape_cell_state
+  then
+    let existing_product ←
+      std.collections.hash.map.HashMap.Insts.CoreOpsIndexIndexShared0QV.index
+        automata.terms_multitape.MultiTapeProduct.Insts.CoreCmpEq
+        automata.terms_multitape.MultiTapeProduct.Insts.CoreHashHash
+        (core.borrow.Borrow.Blanket automata.terms_multitape.MultiTapeProduct)
+        automata.terms_multitape.MultiTapeProduct.Insts.CoreCmpEq
+        automata.terms_multitape.MultiTapeProduct.Insts.CoreHashHash
+        std.hash.random.RandomState.Insts.CoreHashBuildHasherDefaultHasher
+        self.products product
+    let s ←
+      automata.terms_multitape.MultiTapeProduct.get_annotation existing_product
+    let s1 ← alloc.string.String.Insts.CoreCloneClone.clone s
+    let s2 ← automata.terms_multitape.MultiTapeProduct.get_annotation product
+    let s3 ← alloc.string.String.Insts.CoreCloneClone.clone s2
+    let y ←
+      lift (Std.Array.to_slice (Array.make 2#usize [ s1, s3 ] : Array String
+        2#usize))
+    let ret := alloc.slice.Slice.into_vec y
+    let e1 := or_default_back writes_map
+    let im := entry_back e1
+    ok (core.result.Result.Err
+      (automata.product_writes_map.ProductWritesError.ConflictingOutput product
+      write_tape_no existing write_tape_cell_state ret),
+      { self with prod_to_state_map := im })
+  else
+    let (_, writes_map1) ←
+      alloc.collections.btree.map.BTreeMap.insert
+        alloc.alloc.Global.Insts.CoreAllocAllocatorClone core.cmp.OrdU16
+        writes_map write_tape_no write_tape_cell_state
+    let (_, hm) ←
+      std.collections.hash.map.HashMap.insert
+        automata.terms_multitape.MultiTapeProduct.Insts.CoreCmpEq
+        automata.terms_multitape.MultiTapeProduct.Insts.CoreHashHash
+        std.hash.random.RandomState.Insts.CoreHashBuildHasherDefaultHasher
+        self.products mtp product
+    let e1 := or_default_back writes_map1
+    let im := entry_back e1
+    ok (core.result.Result.Ok (), { prod_to_state_map := im, products := hm })
+
 /-- [automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::_insert]:
-    Source: 'src/automata/product_writes_map.rs', lines 145:4-173:5 -/
+    Source: 'src/automata/product_writes_map.rs', lines 233:4-247:5 -/
 def automata.product_writes_map.ProductWritesMap._insert
   (self : automata.product_writes_map.ProductWritesMap)
   (product : automata.terms_multitape.MultiTapeProduct)
@@ -2256,46 +2372,13 @@ def automata.product_writes_map.ProductWritesMap._insert
     ok (core.result.Result.Err
       automata.product_writes_map.ProductWritesError.Frozen, self)
   else
-    let product_repr ←
-      automata.terms_multitape.MultiTapeProduct.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeProductMultiTapeExpression._to_string
-        product (toStr "D")
-    let (e, entry_back) ←
-      indexmap.map.IndexMap.entry
-        automata.terms_multitape.MultiTapeProduct.Insts.CoreHashHash
-        automata.terms_multitape.MultiTapeProduct.Insts.CoreCmpEq
-        std.hash.random.RandomState.Insts.CoreHashBuildHasherDefaultHasher
-        self.prod_to_state_map product
-    let (writes_map, or_default_back) ←
-      indexmap.map.core.entry.Entry.or_default
-        (alloc.collections.btree.map.BTreeMapKVGlobal.Insts.CoreDefaultDefault
-        Std.U16 Std.U32) e
-    let o ←
-      alloc.collections.btree.map.BTreeMap.get
-        alloc.alloc.Global.Insts.CoreAllocAllocatorClone
-        (core.borrow.Borrow.Blanket Std.U16) core.cmp.OrdU16 core.cmp.OrdU16
-        writes_map write_tape_no
-    let o1 ← core.option.OptionShared0T.copied core.marker.CopyU32 o
-    let existing ←
-      lift (core.option.Option.unwrap_or o1 write_tape_cell_state)
-    if existing != write_tape_cell_state
-    then
-      let e1 := or_default_back writes_map
-      let im := entry_back e1
-      ok (core.result.Result.Err
-        (automata.product_writes_map.ProductWritesError.ConflictingOutput
-        product_repr write_tape_no existing write_tape_cell_state),
-        { self with prod_to_state_map := im })
-    else
-      let (_, writes_map1) ←
-        alloc.collections.btree.map.BTreeMap.insert
-          alloc.alloc.Global.Insts.CoreAllocAllocatorClone core.cmp.OrdU16
-          writes_map write_tape_no write_tape_cell_state
-      let e1 := or_default_back writes_map1
-      let im := entry_back e1
-      ok (core.result.Result.Ok (), { self with prod_to_state_map := im })
+    let (r, ptsm) ←
+      automata.product_writes_map.ProductToStateMap.insert
+        self.prod_to_state_map product write_tape_no write_tape_cell_state
+    ok (r, { self with prod_to_state_map := ptsm })
 
 /-- [automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::insert]:
-    Source: 'src/automata/product_writes_map.rs', lines 139:4-143:5
+    Source: 'src/automata/product_writes_map.rs', lines 227:4-231:5
     Visibility: public -/
 def automata.product_writes_map.ProductWritesMap.insert
   (self : automata.product_writes_map.ProductWritesMap)
@@ -2308,16 +2391,28 @@ def automata.product_writes_map.ProductWritesMap.insert
   automata.product_writes_map.ProductWritesMap._insert self product
     tape_output.tape_no tape_output.tape_cell_state
 
-/-- [automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::new]:
-    Source: 'src/automata/product_writes_map.rs', lines 86:4-88:5
+/-- [automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductToStateMap}::new]:
+    Source: 'src/automata/product_writes_map.rs', lines 91:4-96:5
     Visibility: public -/
-def automata.product_writes_map.ProductWritesMap.new
-  : Result automata.product_writes_map.ProductWritesMap := do
+def automata.product_writes_map.ProductToStateMap.new
+  : Result automata.product_writes_map.ProductToStateMap := do
   let im ←
     indexmap.map.IndexMapKVRandomState.new
       automata.terms_multitape.MultiTapeProduct
       (alloc.collections.btree.map.BTreeMap Std.U16 Std.U32 alloc.alloc.Global)
-  ok { prod_to_state_map := im, frozen := false }
+  let hm ←
+    std.collections.hash.map.HashMapKVRandomStateGlobal.new
+      automata.terms_multitape.MultiTapeProduct
+      automata.terms_multitape.MultiTapeProduct
+  ok { prod_to_state_map := im, products := hm }
+
+/-- [automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::new]:
+    Source: 'src/automata/product_writes_map.rs', lines 174:4-176:5
+    Visibility: public -/
+def automata.product_writes_map.ProductWritesMap.new
+  : Result automata.product_writes_map.ProductWritesMap := do
+  let ptsm ← automata.product_writes_map.ProductToStateMap.new
+  ok { prod_to_state_map := ptsm, frozen := false }
 
 /-- [automata_builder::automata::rule_generator::VOID_STATE]
     Source: 'src/automata/rule_generator.rs', lines 4:0-4:36
@@ -2326,7 +2421,7 @@ def automata.product_writes_map.ProductWritesMap.new
 def automata.rule_generator.VOID_STATE : Std.U32 := 0#u32
 
 /-- [automata_builder::automata::multi_tape_automata::{automata_builder::automata::multi_tape_automata::MultiTapeAutomata}::reverse_state_eq_map::{impl core::ops::function::FnMut<(&'_0 automata_builder::automata::terms_multitape::MultiTapeTerm,), bool> for automata_builder::automata::multi_tape_automata::{automata_builder::automata::multi_tape_automata::MultiTapeAutomata}::reverse_state_eq_map::{closure}<'_0>}::call_mut]:
-    Source: 'src/automata/multi_tape_automata.rs', lines 192:25-192:58 -/
+    Source: 'src/automata/multi_tape_automata.rs', lines 217:25-217:58 -/
 def
   automata.multi_tape_automata.MultiTapeAutomata.reverse_state_eq_map.closure.Insts.CoreOpsFunctionFnMutTupleShared0MultiTapeTermBool.call_mut
   (c :
@@ -2339,7 +2434,7 @@ def
   ok (i = automata.rule_generator.VOID_STATE, ())
 
 /-- [automata_builder::automata::multi_tape_automata::{automata_builder::automata::multi_tape_automata::MultiTapeAutomata}::reverse_state_eq_map::{impl core::ops::function::FnOnce<(&'_0 automata_builder::automata::terms_multitape::MultiTapeTerm,), bool> for automata_builder::automata::multi_tape_automata::{automata_builder::automata::multi_tape_automata::MultiTapeAutomata}::reverse_state_eq_map::{closure}<'_0>}::call_once]:
-    Source: 'src/automata/multi_tape_automata.rs', lines 192:25-192:58 -/
+    Source: 'src/automata/multi_tape_automata.rs', lines 217:25-217:58 -/
 def
   automata.multi_tape_automata.MultiTapeAutomata.reverse_state_eq_map.closure.Insts.CoreOpsFunctionFnOnceTupleShared0MultiTapeTermBool.call_once
   (c :
@@ -2353,7 +2448,7 @@ def
   ok b
 
 /-- Trait implementation: [automata_builder::automata::multi_tape_automata::{automata_builder::automata::multi_tape_automata::MultiTapeAutomata}::reverse_state_eq_map::{impl core::ops::function::FnOnce<(&'_0 automata_builder::automata::terms_multitape::MultiTapeTerm,), bool> for automata_builder::automata::multi_tape_automata::{automata_builder::automata::multi_tape_automata::MultiTapeAutomata}::reverse_state_eq_map::{closure}<'_0>}]
-    Source: 'src/automata/multi_tape_automata.rs', lines 192:25-192:58 -/
+    Source: 'src/automata/multi_tape_automata.rs', lines 217:25-217:58 -/
 @[reducible]
 def
   automata.multi_tape_automata.MultiTapeAutomata.reverse_state_eq_map.closure.Insts.CoreOpsFunctionFnOnceTupleShared0MultiTapeTermBool
@@ -2365,7 +2460,7 @@ def
 }
 
 /-- Trait implementation: [automata_builder::automata::multi_tape_automata::{automata_builder::automata::multi_tape_automata::MultiTapeAutomata}::reverse_state_eq_map::{impl core::ops::function::FnMut<(&'_0 automata_builder::automata::terms_multitape::MultiTapeTerm,), bool> for automata_builder::automata::multi_tape_automata::{automata_builder::automata::multi_tape_automata::MultiTapeAutomata}::reverse_state_eq_map::{closure}<'_0>}]
-    Source: 'src/automata/multi_tape_automata.rs', lines 192:25-192:58 -/
+    Source: 'src/automata/multi_tape_automata.rs', lines 217:25-217:58 -/
 @[reducible]
 def
   automata.multi_tape_automata.MultiTapeAutomata.reverse_state_eq_map.closure.Insts.CoreOpsFunctionFnMutTupleShared0MultiTapeTermBool
@@ -2378,18 +2473,28 @@ def
     automata.multi_tape_automata.MultiTapeAutomata.reverse_state_eq_map.closure.Insts.CoreOpsFunctionFnMutTupleShared0MultiTapeTermBool.call_mut
 }
 
+/-- [automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductToStateMap}::keys]:
+    Source: 'src/automata/product_writes_map.rs', lines 115:4-117:5
+    Visibility: public -/
+def automata.product_writes_map.ProductToStateMap.keys
+  (self : automata.product_writes_map.ProductToStateMap) :
+  Result (indexmap.map.iter.Keys automata.terms_multitape.MultiTapeProduct
+    (alloc.collections.btree.map.BTreeMap Std.U16 Std.U32 alloc.alloc.Global))
+  := do
+  indexmap.map.IndexMap.keys self.prod_to_state_map
+
 /-- [automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::products]:
-    Source: 'src/automata/product_writes_map.rs', lines 120:4-122:5
+    Source: 'src/automata/product_writes_map.rs', lines 208:4-210:5
     Visibility: public -/
 def automata.product_writes_map.ProductWritesMap.products
   (self : automata.product_writes_map.ProductWritesMap) :
   Result (indexmap.map.iter.Keys automata.terms_multitape.MultiTapeProduct
     (alloc.collections.btree.map.BTreeMap Std.U16 Std.U32 alloc.alloc.Global))
   := do
-  indexmap.map.IndexMap.keys self.prod_to_state_map
+  automata.product_writes_map.ProductToStateMap.keys self.prod_to_state_map
 
 /-- [automata_builder::automata::multi_tape_automata::{automata_builder::automata::multi_tape_automata::MultiTapeAutomata}::compute_rule_range]: loop 1:
-    Source: 'src/automata/multi_tape_automata.rs', lines 128:12-132:13 -/
+    Source: 'src/automata/multi_tape_automata.rs', lines 132:12-136:13 -/
 @[rust_loop]
 def
   automata.multi_tape_automata.MultiTapeAutomata.compute_rule_range_loop0_loop0
@@ -2410,7 +2515,7 @@ def
 partial_fixpoint
 
 /-- [automata_builder::automata::multi_tape_automata::{automata_builder::automata::multi_tape_automata::MultiTapeAutomata}::compute_rule_range]: loop 0:
-    Source: 'src/automata/multi_tape_automata.rs', lines 127:8-133:9 -/
+    Source: 'src/automata/multi_tape_automata.rs', lines 131:8-137:9 -/
 @[rust_loop]
 def automata.multi_tape_automata.MultiTapeAutomata.compute_rule_range_loop0
   (iter : indexmap.map.iter.Keys automata.terms_multitape.MultiTapeProduct
@@ -2434,7 +2539,7 @@ def automata.multi_tape_automata.MultiTapeAutomata.compute_rule_range_loop0
 partial_fixpoint
 
 /-- [automata_builder::automata::multi_tape_automata::{automata_builder::automata::multi_tape_automata::MultiTapeAutomata}::compute_rule_range]:
-    Source: 'src/automata/multi_tape_automata.rs', lines 123:4-138:5 -/
+    Source: 'src/automata/multi_tape_automata.rs', lines 127:4-142:5 -/
 def automata.multi_tape_automata.MultiTapeAutomata.compute_rule_range
   (prod_to_state_map : automata.product_writes_map.ProductWritesMap) :
   Result (Std.I64 × Std.I64)
@@ -2492,8 +2597,17 @@ def automata.multi_tape_automata.MultiTapeAutomata.new
       automata.multi_tape_automata.MultiTapeAutomata (core.convert.FromSame
       automata.rule_generator_multitape.AutomataError) residual
 
+/-- [automata_builder::automata::multi_tape_automata::{automata_builder::automata::multi_tape_automata::MultiTapeAutomata}::get_transitions_group]:
+    Source: 'src/automata/multi_tape_automata.rs', lines 84:4-86:5
+    Visibility: public -/
+def automata.multi_tape_automata.MultiTapeAutomata.get_transitions_group
+  (self : automata.multi_tape_automata.MultiTapeAutomata) :
+  Result automata.multi_tape_transition.MultiTapeTransitionsGroup
+  := do
+  ok self.transitions_group
+
 /-- [automata_builder::automata::multi_tape_automata::{automata_builder::automata::multi_tape_automata::MultiTapeAutomata}::get_prod_priority_map]:
-    Source: 'src/automata/multi_tape_automata.rs', lines 84:4-88:5
+    Source: 'src/automata/multi_tape_automata.rs', lines 88:4-92:5
     Visibility: public -/
 def automata.multi_tape_automata.MultiTapeAutomata.get_prod_priority_map
   (self : automata.multi_tape_automata.MultiTapeAutomata) :
@@ -2503,7 +2617,7 @@ def automata.multi_tape_automata.MultiTapeAutomata.get_prod_priority_map
   ok self.transitions_group.prod_priority_map
 
 /-- [automata_builder::automata::rule_generator_multitape::{automata_builder::automata::rule_generator_multitape::BiDirectionalMultiTape}::get_tape]:
-    Source: 'src/automata/rule_generator_multitape.rs', lines 66:4-68:5
+    Source: 'src/automata/rule_generator_multitape.rs', lines 67:4-69:5
     Visibility: public -/
 def automata.rule_generator_multitape.BiDirectionalMultiTape.get_tape
   (self : automata.rule_generator_multitape.BiDirectionalMultiTape)
@@ -2516,7 +2630,7 @@ def automata.rule_generator_multitape.BiDirectionalMultiTape.get_tape
     self.tapes tape_no
 
 /-- [automata_builder::automata::multi_tape_automata::{automata_builder::automata::multi_tape_automata::MultiTapeAutomata}::get_tape]:
-    Source: 'src/automata/multi_tape_automata.rs', lines 91:4-93:5
+    Source: 'src/automata/multi_tape_automata.rs', lines 95:4-97:5
     Visibility: public -/
 def automata.multi_tape_automata.MultiTapeAutomata.get_tape
   (self : automata.multi_tape_automata.MultiTapeAutomata) (tape_no : Std.U16) :
@@ -2526,7 +2640,7 @@ def automata.multi_tape_automata.MultiTapeAutomata.get_tape
     self.multi_tape tape_no
 
 /-- [automata_builder::automata::multi_tape_automata::{automata_builder::automata::multi_tape_automata::MultiTapeAutomata}::get_tape_nos]:
-    Source: 'src/automata/multi_tape_automata.rs', lines 95:4-97:5
+    Source: 'src/automata/multi_tape_automata.rs', lines 99:4-101:5
     Visibility: public -/
 def automata.multi_tape_automata.MultiTapeAutomata.get_tape_nos
   (self : automata.multi_tape_automata.MultiTapeAutomata) :
@@ -2535,12 +2649,12 @@ def automata.multi_tape_automata.MultiTapeAutomata.get_tape_nos
   automata.rule_generator_multitape.BiDirectionalMultiTape.get_tape_nos
     self.multi_tape
 
-/-- [automata_builder::automata::product_writes_map::{impl core::clone::Clone for automata_builder::automata::product_writes_map::ProductWritesMap}::clone]:
-    Source: 'src/automata/product_writes_map.rs', lines 69:16-69:21
+/-- [automata_builder::automata::product_writes_map::{impl core::clone::Clone for automata_builder::automata::product_writes_map::ProductToStateMap}::clone]:
+    Source: 'src/automata/product_writes_map.rs', lines 82:16-82:21
     Visibility: public -/
-def automata.product_writes_map.ProductWritesMap.Insts.CoreCloneClone.clone
-  (self : automata.product_writes_map.ProductWritesMap) :
-  Result automata.product_writes_map.ProductWritesMap
+def automata.product_writes_map.ProductToStateMap.Insts.CoreCloneClone.clone
+  (self : automata.product_writes_map.ProductToStateMap) :
+  Result automata.product_writes_map.ProductToStateMap
   := do
   let im ←
     indexmap.map.IndexMap.Insts.CoreCloneClone.clone
@@ -2549,11 +2663,29 @@ def automata.product_writes_map.ProductWritesMap.Insts.CoreCloneClone.clone
       core.clone.CloneU16 core.clone.CloneU32
       alloc.alloc.Global.Insts.CoreAllocAllocatorClone)
       std.hash.random.RandomState.Insts.CoreCloneClone self.prod_to_state_map
+  let hm ←
+    std.collections.hash.map.HashMap.Insts.CoreCloneClone.clone
+      automata.terms_multitape.MultiTapeProduct.Insts.CoreCloneClone
+      automata.terms_multitape.MultiTapeProduct.Insts.CoreCloneClone
+      std.hash.random.RandomState.Insts.CoreCloneClone core.clone.CloneGlobal
+      self.products
+  ok { prod_to_state_map := im, products := hm }
+
+/-- [automata_builder::automata::product_writes_map::{impl core::clone::Clone for automata_builder::automata::product_writes_map::ProductWritesMap}::clone]:
+    Source: 'src/automata/product_writes_map.rs', lines 157:16-157:21
+    Visibility: public -/
+def automata.product_writes_map.ProductWritesMap.Insts.CoreCloneClone.clone
+  (self : automata.product_writes_map.ProductWritesMap) :
+  Result automata.product_writes_map.ProductWritesMap
+  := do
+  let ptsm ←
+    automata.product_writes_map.ProductToStateMap.Insts.CoreCloneClone.clone
+      self.prod_to_state_map
   let b ← lift (core.clone.impls.CloneBool.clone self.frozen)
-  ok { prod_to_state_map := im, frozen := b }
+  ok { prod_to_state_map := ptsm, frozen := b }
 
 /-- [automata_builder::automata::multi_tape_automata::{automata_builder::automata::multi_tape_automata::MultiTapeAutomata}::get_prod_to_state_map]:
-    Source: 'src/automata/multi_tape_automata.rs', lines 99:4-101:5
+    Source: 'src/automata/multi_tape_automata.rs', lines 103:4-105:5
     Visibility: public -/
 def automata.multi_tape_automata.MultiTapeAutomata.get_prod_to_state_map
   (self : automata.multi_tape_automata.MultiTapeAutomata) :
@@ -2563,7 +2695,7 @@ def automata.multi_tape_automata.MultiTapeAutomata.get_prod_to_state_map
     self.prod_to_state_map
 
 /-- [automata_builder::automata::terms_multitape::{impl core::clone::Clone for automata_builder::automata::terms_multitape::MultiTapeExpression}::clone]:
-    Source: 'src/automata/terms_multitape.rs', lines 652:9-652:14
+    Source: 'src/automata/terms_multitape.rs', lines 671:9-671:14
     Visibility: public -/
 def automata.terms_multitape.MultiTapeExpression.Insts.CoreCloneClone.clone
   (self : automata.terms_multitape.MultiTapeExpression) :
@@ -2577,7 +2709,7 @@ def automata.terms_multitape.MultiTapeExpression.Insts.CoreCloneClone.clone
   ok { products := v, _optimized := b }
 
 /-- Trait implementation: [automata_builder::automata::terms_multitape::{impl core::clone::Clone for automata_builder::automata::terms_multitape::MultiTapeExpression}]
-    Source: 'src/automata/terms_multitape.rs', lines 652:9-652:14 -/
+    Source: 'src/automata/terms_multitape.rs', lines 671:9-671:14 -/
 @[reducible]
 def automata.terms_multitape.MultiTapeExpression.Insts.CoreCloneClone :
   core.clone.Clone automata.terms_multitape.MultiTapeExpression := {
@@ -2586,7 +2718,7 @@ def automata.terms_multitape.MultiTapeExpression.Insts.CoreCloneClone :
 }
 
 /-- Trait implementation: [automata_builder::automata::terms_multitape::{impl core::clone::Clone for automata_builder::automata::terms_multitape::MultiTapeState}]
-    Source: 'src/automata/terms_multitape.rs', lines 18:11-18:16 -/
+    Source: 'src/automata/terms_multitape.rs', lines 20:11-20:16 -/
 @[reducible]
 def automata.terms_multitape.MultiTapeState.Insts.CoreCloneClone :
   core.clone.Clone automata.terms_multitape.MultiTapeState := {
@@ -2594,7 +2726,7 @@ def automata.terms_multitape.MultiTapeState.Insts.CoreCloneClone :
 }
 
 /-- [automata_builder::automata::multi_tape_automata::{automata_builder::automata::multi_tape_automata::MultiTapeAutomata}::get_state_eq_map]:
-    Source: 'src/automata/multi_tape_automata.rs', lines 103:4-105:5
+    Source: 'src/automata/multi_tape_automata.rs', lines 107:4-109:5
     Visibility: public -/
 def automata.multi_tape_automata.MultiTapeAutomata.get_state_eq_map
   (self : automata.multi_tape_automata.MultiTapeAutomata) :
@@ -2607,7 +2739,7 @@ def automata.multi_tape_automata.MultiTapeAutomata.get_state_eq_map
     std.hash.random.RandomState.Insts.CoreCloneClone self.state_eq_map
 
 /-- [automata_builder::automata::multi_tape_automata::{automata_builder::automata::multi_tape_automata::MultiTapeAutomata}::get_multi_tape]:
-    Source: 'src/automata/multi_tape_automata.rs', lines 107:4-109:5
+    Source: 'src/automata/multi_tape_automata.rs', lines 111:4-113:5
     Visibility: public -/
 def automata.multi_tape_automata.MultiTapeAutomata.get_multi_tape
   (self : automata.multi_tape_automata.MultiTapeAutomata) :
@@ -2616,7 +2748,7 @@ def automata.multi_tape_automata.MultiTapeAutomata.get_multi_tape
   ok self.multi_tape
 
 /-- [automata_builder::automata::multi_tape_automata::{automata_builder::automata::multi_tape_automata::MultiTapeAutomata}::leftmost_extent]:
-    Source: 'src/automata/multi_tape_automata.rs', lines 111:4-113:5
+    Source: 'src/automata/multi_tape_automata.rs', lines 115:4-117:5
     Visibility: public -/
 def automata.multi_tape_automata.MultiTapeAutomata.impl.leftmost_extent
   (self : automata.multi_tape_automata.MultiTapeAutomata) :
@@ -2625,7 +2757,7 @@ def automata.multi_tape_automata.MultiTapeAutomata.impl.leftmost_extent
   ok self.leftmost_extent
 
 /-- [automata_builder::automata::multi_tape_automata::{automata_builder::automata::multi_tape_automata::MultiTapeAutomata}::rightmost_extent]:
-    Source: 'src/automata/multi_tape_automata.rs', lines 115:4-117:5
+    Source: 'src/automata/multi_tape_automata.rs', lines 119:4-121:5
     Visibility: public -/
 def automata.multi_tape_automata.MultiTapeAutomata.impl.rightmost_extent
   (self : automata.multi_tape_automata.MultiTapeAutomata) :
@@ -2634,7 +2766,7 @@ def automata.multi_tape_automata.MultiTapeAutomata.impl.rightmost_extent
   ok self.rightmost_extent
 
 /-- [automata_builder::automata::multi_tape_automata::{automata_builder::automata::multi_tape_automata::MultiTapeAutomata}::get_rule_range]:
-    Source: 'src/automata/multi_tape_automata.rs', lines 119:4-121:5
+    Source: 'src/automata/multi_tape_automata.rs', lines 123:4-125:5
     Visibility: public -/
 def automata.multi_tape_automata.MultiTapeAutomata.get_rule_range
   (self : automata.multi_tape_automata.MultiTapeAutomata) :
@@ -2642,8 +2774,16 @@ def automata.multi_tape_automata.MultiTapeAutomata.get_rule_range
   := do
   ok (self.leftmost_extent, self.rightmost_extent)
 
+/-- [automata_builder::automata::terms_multitape::{automata_builder::automata::terms_multitape::MultiTapeTerm}::get_tape_no]:
+    Source: 'src/automata/terms_multitape.rs', lines 116:4-119:5
+    Visibility: public -/
+def automata.terms_multitape.MultiTapeTerm.get_tape_no
+  (self : automata.terms_multitape.MultiTapeTerm) : Result Std.U16 := do
+  let (tape_no, _) := self.state
+  ok tape_no
+
 /-- [automata_builder::automata::rule_generator_multitape::{impl core::convert::From<automata_builder::automata::rule_generator::TapeError> for automata_builder::automata::rule_generator_multitape::AutomataError}::from]:
-    Source: 'src/automata/rule_generator_multitape.rs', lines 290:4-292:5
+    Source: 'src/automata/rule_generator_multitape.rs', lines 295:4-297:5
     Visibility: public -/
 def
   automata.rule_generator_multitape.AutomataError.Insts.CoreConvertFromTapeError.from
@@ -2653,7 +2793,7 @@ def
   ok (automata.rule_generator_multitape.AutomataError.Tape err)
 
 /-- Trait implementation: [automata_builder::automata::rule_generator_multitape::{impl core::convert::From<automata_builder::automata::rule_generator::TapeError> for automata_builder::automata::rule_generator_multitape::AutomataError}]
-    Source: 'src/automata/rule_generator_multitape.rs', lines 289:0-293:1 -/
+    Source: 'src/automata/rule_generator_multitape.rs', lines 294:0-298:1 -/
 @[reducible]
 def
   automata.rule_generator_multitape.AutomataError.Insts.CoreConvertFromTapeError
@@ -2681,7 +2821,7 @@ def automata.rule_generator.BidirectionalTape.Insts.CoreDefaultDefault :
 }
 
 /-- [automata_builder::automata::rule_generator_multitape::{automata_builder::automata::rule_generator_multitape::BiDirectionalMultiTape}::get_or_make_tape]:
-    Source: 'src/automata/rule_generator_multitape.rs', lines 55:4-63:5
+    Source: 'src/automata/rule_generator_multitape.rs', lines 56:4-64:5
     Visibility: public -/
 def automata.rule_generator_multitape.BiDirectionalMultiTape.get_or_make_tape
   (self : automata.rule_generator_multitape.BiDirectionalMultiTape)
@@ -2741,7 +2881,7 @@ def automata.rule_generator_multitape.BiDirectionalMultiTape.get_or_make_tape
       ok (core.result.Result.Ok bt, back)
 
 /-- [automata_builder::automata::rule_generator_multitape::{automata_builder::automata::rule_generator_multitape::BiDirectionalMultiTape}::init_tapes]: loop 0:
-    Source: 'src/automata/rule_generator_multitape.rs', lines 71:8-78:5
+    Source: 'src/automata/rule_generator_multitape.rs', lines 72:8-79:5
     Visibility: public -/
 @[rust_loop]
 def automata.rule_generator_multitape.BiDirectionalMultiTape.init_tapes_loop
@@ -2779,7 +2919,7 @@ def automata.rule_generator_multitape.BiDirectionalMultiTape.init_tapes_loop
 partial_fixpoint
 
 /-- [automata_builder::automata::rule_generator_multitape::{automata_builder::automata::rule_generator_multitape::BiDirectionalMultiTape}::init_tapes]:
-    Source: 'src/automata/rule_generator_multitape.rs', lines 70:4-78:5
+    Source: 'src/automata/rule_generator_multitape.rs', lines 71:4-79:5
     Visibility: public -/
 def automata.rule_generator_multitape.BiDirectionalMultiTape.init_tapes
   (self : automata.rule_generator_multitape.BiDirectionalMultiTape)
@@ -2793,30 +2933,24 @@ def automata.rule_generator_multitape.BiDirectionalMultiTape.init_tapes
   automata.rule_generator_multitape.BiDirectionalMultiTape.init_tapes_loop iter
     self freeze
 
-/-- [automata_builder::automata::multi_tape_automata::{automata_builder::automata::multi_tape_automata::MultiTapeAutomata}::init_tapes]:
-    Source: 'src/automata/multi_tape_automata.rs', lines 140:4-143:5
+/-- [automata_builder::automata::multi_tape_transition::{impl core::clone::Clone for automata_builder::automata::multi_tape_transition::MultiTapeTransition}::clone]:
+    Source: 'src/automata/multi_tape_transition.rs', lines 14:16-14:21
     Visibility: public -/
-def automata.multi_tape_automata.MultiTapeAutomata.init_tapes
-  (self : automata.multi_tape_automata.MultiTapeAutomata)
-  (tape_nos : Slice Std.U16) :
-  Result ((core.result.Result Unit
-    automata.rule_generator_multitape.AutomataError) ×
-    automata.multi_tape_automata.MultiTapeAutomata)
+def
+  automata.multi_tape_transition.MultiTapeTransition.Insts.CoreCloneClone.clone
+  (self : automata.multi_tape_transition.MultiTapeTransition) :
+  Result automata.multi_tape_transition.MultiTapeTransition
   := do
-  let (r, bdmt) ←
-    automata.rule_generator_multitape.BiDirectionalMultiTape.init_tapes
-      self.multi_tape tape_nos false
-  let cf ← core.result.Result.Insts.CoreOpsTry.branch r
-  match cf with
-  | core.ops.control_flow.ControlFlow.Continue _ =>
-    ok (core.result.Result.Ok (), { self with multi_tape := bdmt })
-  | core.ops.control_flow.ControlFlow.Break residual =>
-    let r1 ←
-      core.result.Result.Insts.CoreOpsTry_traitFromResidualResult.from_residual
-        Unit
-        automata.rule_generator_multitape.AutomataError.Insts.CoreConvertFromTapeError
-        residual
-    ok (r1, { self with multi_tape := bdmt })
+  let v ←
+    alloc.vec.CloneVec.clone
+      automata.terms_multitape.MultiTapeTerm.Insts.CoreCloneClone
+      self.input_terms
+  let mts ←
+    automata.terms_multitape.MultiTapeState.Insts.CoreCloneClone.clone
+      self.output_state
+  let s ← alloc.string.String.Insts.CoreCloneClone.clone self.annotation
+  let i ← lift (core.clone.impls.CloneU32.clone self.priority)
+  ok { input_terms := v, output_state := mts, annotation := s, priority := i }
 
 /-- [automata_builder::automata::rule_generator::{automata_builder::automata::rule_generator::BidirectionalTape}::write]:
     Source: 'src/automata/rule_generator.rs', lines 408:4-422:5
@@ -2863,7 +2997,7 @@ def automata.rule_generator.BidirectionalTape.write
     ok { self with rev_data := v1 }
 
 /-- [automata_builder::automata::rule_generator_multitape::{automata_builder::automata::rule_generator_multitape::BiDirectionalMultiTape}::write]:
-    Source: 'src/automata/rule_generator_multitape.rs', lines 103:4-107:5
+    Source: 'src/automata/rule_generator_multitape.rs', lines 104:4-108:5
     Visibility: public -/
 def automata.rule_generator_multitape.BiDirectionalMultiTape.write
   (self : automata.rule_generator_multitape.BiDirectionalMultiTape)
@@ -2892,7 +3026,7 @@ def automata.rule_generator_multitape.BiDirectionalMultiTape.write
     ok (r1, self1)
 
 /-- [automata_builder::automata::rule_generator_multitape::{automata_builder::automata::rule_generator_multitape::BiDirectionalMultiTape}::write_region]: loop 0:
-    Source: 'src/automata/rule_generator_multitape.rs', lines 95:8-101:5
+    Source: 'src/automata/rule_generator_multitape.rs', lines 96:8-102:5
     Visibility: public -/
 @[rust_loop]
 def automata.rule_generator_multitape.BiDirectionalMultiTape.write_region_loop
@@ -2930,7 +3064,7 @@ def automata.rule_generator_multitape.BiDirectionalMultiTape.write_region_loop
 partial_fixpoint
 
 /-- [automata_builder::automata::rule_generator_multitape::{automata_builder::automata::rule_generator_multitape::BiDirectionalMultiTape}::write_region]:
-    Source: 'src/automata/rule_generator_multitape.rs', lines 86:4-101:5
+    Source: 'src/automata/rule_generator_multitape.rs', lines 87:4-102:5
     Visibility: public -/
 def automata.rule_generator_multitape.BiDirectionalMultiTape.write_region
   (self : automata.rule_generator_multitape.BiDirectionalMultiTape)
@@ -2950,7 +3084,7 @@ def automata.rule_generator_multitape.BiDirectionalMultiTape.write_region
       iter self position data
 
 /-- [automata_builder::automata::multi_tape_automata::{automata_builder::automata::multi_tape_automata::MultiTapeAutomata}::write_region]:
-    Source: 'src/automata/multi_tape_automata.rs', lines 147:4-155:5
+    Source: 'src/automata/multi_tape_automata.rs', lines 172:4-180:5
     Visibility: public -/
 def automata.multi_tape_automata.MultiTapeAutomata.write_region
   (self : automata.multi_tape_automata.MultiTapeAutomata) (position : Std.I64)
@@ -2997,7 +3131,7 @@ def automata.renderer.RenderFrame.Insts.CoreCloneClone.clone
   ok { lines := v }
 
 /-- [automata_builder::automata::rule_generator_multitape::{automata_builder::automata::rule_generator_multitape::BiDirectionalMultiTape}::render_tapes::{impl core::ops::function::FnMut<(&'_0 automata_builder::automata::renderer::TapeRenderFrame,), automata_builder::automata::renderer::RenderFrame> for automata_builder::automata::rule_generator_multitape::{automata_builder::automata::rule_generator_multitape::BiDirectionalMultiTape}::render_tapes::{closure#3}<'_0>}::call_mut]:
-    Source: 'src/automata/rule_generator_multitape.rs', lines 199:39-199:63 -/
+    Source: 'src/automata/rule_generator_multitape.rs', lines 200:39-200:63 -/
 def
   automata.rule_generator_multitape.BiDirectionalMultiTape.render_tapes.closure_3.Insts.CoreOpsFunctionFnMutTupleShared0TapeRenderFrameRenderFrame.call_mut
   (c :
@@ -3013,7 +3147,7 @@ def
   ok (rf1, ())
 
 /-- [automata_builder::automata::rule_generator_multitape::{automata_builder::automata::rule_generator_multitape::BiDirectionalMultiTape}::render_tapes::{impl core::ops::function::FnOnce<(&'_0 automata_builder::automata::renderer::TapeRenderFrame,), automata_builder::automata::renderer::RenderFrame> for automata_builder::automata::rule_generator_multitape::{automata_builder::automata::rule_generator_multitape::BiDirectionalMultiTape}::render_tapes::{closure#3}<'_0>}::call_once]:
-    Source: 'src/automata/rule_generator_multitape.rs', lines 199:39-199:63 -/
+    Source: 'src/automata/rule_generator_multitape.rs', lines 200:39-200:63 -/
 def
   automata.rule_generator_multitape.BiDirectionalMultiTape.render_tapes.closure_3.Insts.CoreOpsFunctionFnOnceTupleShared0TapeRenderFrameRenderFrame.call_once
   (c :
@@ -3027,7 +3161,7 @@ def
   ok rf
 
 /-- Trait implementation: [automata_builder::automata::rule_generator_multitape::{automata_builder::automata::rule_generator_multitape::BiDirectionalMultiTape}::render_tapes::{impl core::ops::function::FnOnce<(&'_0 automata_builder::automata::renderer::TapeRenderFrame,), automata_builder::automata::renderer::RenderFrame> for automata_builder::automata::rule_generator_multitape::{automata_builder::automata::rule_generator_multitape::BiDirectionalMultiTape}::render_tapes::{closure#3}<'_0>}]
-    Source: 'src/automata/rule_generator_multitape.rs', lines 199:39-199:63 -/
+    Source: 'src/automata/rule_generator_multitape.rs', lines 200:39-200:63 -/
 @[reducible]
 def
   automata.rule_generator_multitape.BiDirectionalMultiTape.render_tapes.closure_3.Insts.CoreOpsFunctionFnOnceTupleShared0TapeRenderFrameRenderFrame
@@ -3039,7 +3173,7 @@ def
 }
 
 /-- Trait implementation: [automata_builder::automata::rule_generator_multitape::{automata_builder::automata::rule_generator_multitape::BiDirectionalMultiTape}::render_tapes::{impl core::ops::function::FnMut<(&'_0 automata_builder::automata::renderer::TapeRenderFrame,), automata_builder::automata::renderer::RenderFrame> for automata_builder::automata::rule_generator_multitape::{automata_builder::automata::rule_generator_multitape::BiDirectionalMultiTape}::render_tapes::{closure#3}<'_0>}]
-    Source: 'src/automata/rule_generator_multitape.rs', lines 199:39-199:63 -/
+    Source: 'src/automata/rule_generator_multitape.rs', lines 200:39-200:63 -/
 @[reducible]
 def
   automata.rule_generator_multitape.BiDirectionalMultiTape.render_tapes.closure_3.Insts.CoreOpsFunctionFnMutTupleShared0TapeRenderFrameRenderFrame
@@ -3061,7 +3195,7 @@ def automata.renderer.TapeRenderFrame.get_space_consumed
   self.num_cells * i
 
 /-- [automata_builder::automata::rule_generator_multitape::{automata_builder::automata::rule_generator_multitape::BiDirectionalMultiTape}::render_tapes::{impl core::ops::function::FnOnce<(&'_0 automata_builder::automata::renderer::TapeRenderFrame,), usize> for automata_builder::automata::rule_generator_multitape::{automata_builder::automata::rule_generator_multitape::BiDirectionalMultiTape}::render_tapes::{closure#2}<'_0>}::call_once]:
-    Source: 'src/automata/rule_generator_multitape.rs', lines 180:17-180:51 -/
+    Source: 'src/automata/rule_generator_multitape.rs', lines 181:17-181:51 -/
 def
   automata.rule_generator_multitape.BiDirectionalMultiTape.render_tapes.closure_2.Insts.CoreOpsFunctionFnOnceTupleShared0TapeRenderFrameUsize.call_once
   (c :
@@ -3072,7 +3206,7 @@ def
   automata.renderer.TapeRenderFrame.get_space_consumed tupled_args
 
 /-- Trait implementation: [automata_builder::automata::rule_generator_multitape::{automata_builder::automata::rule_generator_multitape::BiDirectionalMultiTape}::render_tapes::{impl core::ops::function::FnOnce<(&'_0 automata_builder::automata::renderer::TapeRenderFrame,), usize> for automata_builder::automata::rule_generator_multitape::{automata_builder::automata::rule_generator_multitape::BiDirectionalMultiTape}::render_tapes::{closure#2}<'_0>}]
-    Source: 'src/automata/rule_generator_multitape.rs', lines 180:17-180:51 -/
+    Source: 'src/automata/rule_generator_multitape.rs', lines 181:17-181:51 -/
 @[reducible]
 def
   automata.rule_generator_multitape.BiDirectionalMultiTape.render_tapes.closure_2.Insts.CoreOpsFunctionFnOnceTupleShared0TapeRenderFrameUsize
@@ -3084,7 +3218,7 @@ def
 }
 
 /-- [automata_builder::automata::rule_generator_multitape::{automata_builder::automata::rule_generator_multitape::BiDirectionalMultiTape}::render_tapes::{impl core::ops::function::FnOnce<(&'_0 automata_builder::automata::renderer::TapeRenderFrame,), usize> for automata_builder::automata::rule_generator_multitape::{automata_builder::automata::rule_generator_multitape::BiDirectionalMultiTape}::render_tapes::{closure#1}<'_0>}::call_once]:
-    Source: 'src/automata/rule_generator_multitape.rs', lines 176:52-176:75 -/
+    Source: 'src/automata/rule_generator_multitape.rs', lines 177:52-177:75 -/
 def
   automata.rule_generator_multitape.BiDirectionalMultiTape.render_tapes.closure_1.Insts.CoreOpsFunctionFnOnceTupleShared0TapeRenderFrameUsize.call_once
   (c :
@@ -3095,7 +3229,7 @@ def
   ok tupled_args.num_cells
 
 /-- Trait implementation: [automata_builder::automata::rule_generator_multitape::{automata_builder::automata::rule_generator_multitape::BiDirectionalMultiTape}::render_tapes::{impl core::ops::function::FnOnce<(&'_0 automata_builder::automata::renderer::TapeRenderFrame,), usize> for automata_builder::automata::rule_generator_multitape::{automata_builder::automata::rule_generator_multitape::BiDirectionalMultiTape}::render_tapes::{closure#1}<'_0>}]
-    Source: 'src/automata/rule_generator_multitape.rs', lines 176:52-176:75 -/
+    Source: 'src/automata/rule_generator_multitape.rs', lines 177:52-177:75 -/
 @[reducible]
 def
   automata.rule_generator_multitape.BiDirectionalMultiTape.render_tapes.closure_1.Insts.CoreOpsFunctionFnOnceTupleShared0TapeRenderFrameUsize
@@ -3107,7 +3241,7 @@ def
 }
 
 /-- [automata_builder::automata::rule_generator_multitape::{automata_builder::automata::rule_generator_multitape::BiDirectionalMultiTape}::render_tapes::{impl core::ops::function::FnMut<(&'_0 u16,), alloc::string::String> for automata_builder::automata::rule_generator_multitape::{automata_builder::automata::rule_generator_multitape::BiDirectionalMultiTape}::render_tapes::{closure}<'_0>}::call_mut]:
-    Source: 'src/automata/rule_generator_multitape.rs', lines 159:17-159:56 -/
+    Source: 'src/automata/rule_generator_multitape.rs', lines 160:17-160:56 -/
 def
   automata.rule_generator_multitape.BiDirectionalMultiTape.render_tapes.closure.Insts.CoreOpsFunctionFnMutTupleShared0U16String.call_mut
   (c :
@@ -3130,7 +3264,7 @@ def
   ok (s1, ())
 
 /-- [automata_builder::automata::rule_generator_multitape::{automata_builder::automata::rule_generator_multitape::BiDirectionalMultiTape}::render_tapes::{impl core::ops::function::FnOnce<(&'_0 u16,), alloc::string::String> for automata_builder::automata::rule_generator_multitape::{automata_builder::automata::rule_generator_multitape::BiDirectionalMultiTape}::render_tapes::{closure}<'_0>}::call_once]:
-    Source: 'src/automata/rule_generator_multitape.rs', lines 159:17-159:56 -/
+    Source: 'src/automata/rule_generator_multitape.rs', lines 160:17-160:56 -/
 def
   automata.rule_generator_multitape.BiDirectionalMultiTape.render_tapes.closure.Insts.CoreOpsFunctionFnOnceTupleShared0U16String.call_once
   (c :
@@ -3144,7 +3278,7 @@ def
   ok s
 
 /-- Trait implementation: [automata_builder::automata::rule_generator_multitape::{automata_builder::automata::rule_generator_multitape::BiDirectionalMultiTape}::render_tapes::{impl core::ops::function::FnOnce<(&'_0 u16,), alloc::string::String> for automata_builder::automata::rule_generator_multitape::{automata_builder::automata::rule_generator_multitape::BiDirectionalMultiTape}::render_tapes::{closure}<'_0>}]
-    Source: 'src/automata/rule_generator_multitape.rs', lines 159:17-159:56 -/
+    Source: 'src/automata/rule_generator_multitape.rs', lines 160:17-160:56 -/
 @[reducible]
 def
   automata.rule_generator_multitape.BiDirectionalMultiTape.render_tapes.closure.Insts.CoreOpsFunctionFnOnceTupleShared0U16String
@@ -3156,7 +3290,7 @@ def
 }
 
 /-- Trait implementation: [automata_builder::automata::rule_generator_multitape::{automata_builder::automata::rule_generator_multitape::BiDirectionalMultiTape}::render_tapes::{impl core::ops::function::FnMut<(&'_0 u16,), alloc::string::String> for automata_builder::automata::rule_generator_multitape::{automata_builder::automata::rule_generator_multitape::BiDirectionalMultiTape}::render_tapes::{closure}<'_0>}]
-    Source: 'src/automata/rule_generator_multitape.rs', lines 159:17-159:56 -/
+    Source: 'src/automata/rule_generator_multitape.rs', lines 160:17-160:56 -/
 @[reducible]
 def
   automata.rule_generator_multitape.BiDirectionalMultiTape.render_tapes.closure.Insts.CoreOpsFunctionFnMutTupleShared0U16String
@@ -3170,7 +3304,7 @@ def
 }
 
 /-- [automata_builder::automata::rule_generator_multitape::{automata_builder::automata::rule_generator_multitape::BiDirectionalMultiTape}::max_state::{impl core::ops::function::FnMut<(&'_0 automata_builder::automata::rule_generator::BidirectionalTape,), u32> for automata_builder::automata::rule_generator_multitape::{automata_builder::automata::rule_generator_multitape::BiDirectionalMultiTape}::max_state::{closure}<'_0>}::call_mut]:
-    Source: 'src/automata/rule_generator_multitape.rs', lines 120:17-120:40 -/
+    Source: 'src/automata/rule_generator_multitape.rs', lines 121:17-121:40 -/
 def
   automata.rule_generator_multitape.BiDirectionalMultiTape.max_state.closure.Insts.CoreOpsFunctionFnMutTupleShared0BidirectionalTapeU32.call_mut
   (c :
@@ -3183,7 +3317,7 @@ def
   ok (i, ())
 
 /-- [automata_builder::automata::rule_generator_multitape::{automata_builder::automata::rule_generator_multitape::BiDirectionalMultiTape}::max_state::{impl core::ops::function::FnOnce<(&'_0 automata_builder::automata::rule_generator::BidirectionalTape,), u32> for automata_builder::automata::rule_generator_multitape::{automata_builder::automata::rule_generator_multitape::BiDirectionalMultiTape}::max_state::{closure}<'_0>}::call_once]:
-    Source: 'src/automata/rule_generator_multitape.rs', lines 120:17-120:40 -/
+    Source: 'src/automata/rule_generator_multitape.rs', lines 121:17-121:40 -/
 def
   automata.rule_generator_multitape.BiDirectionalMultiTape.max_state.closure.Insts.CoreOpsFunctionFnOnceTupleShared0BidirectionalTapeU32.call_once
   (c :
@@ -3197,7 +3331,7 @@ def
   ok i
 
 /-- Trait implementation: [automata_builder::automata::rule_generator_multitape::{automata_builder::automata::rule_generator_multitape::BiDirectionalMultiTape}::max_state::{impl core::ops::function::FnOnce<(&'_0 automata_builder::automata::rule_generator::BidirectionalTape,), u32> for automata_builder::automata::rule_generator_multitape::{automata_builder::automata::rule_generator_multitape::BiDirectionalMultiTape}::max_state::{closure}<'_0>}]
-    Source: 'src/automata/rule_generator_multitape.rs', lines 120:17-120:40 -/
+    Source: 'src/automata/rule_generator_multitape.rs', lines 121:17-121:40 -/
 @[reducible]
 def
   automata.rule_generator_multitape.BiDirectionalMultiTape.max_state.closure.Insts.CoreOpsFunctionFnOnceTupleShared0BidirectionalTapeU32
@@ -3209,7 +3343,7 @@ def
 }
 
 /-- Trait implementation: [automata_builder::automata::rule_generator_multitape::{automata_builder::automata::rule_generator_multitape::BiDirectionalMultiTape}::max_state::{impl core::ops::function::FnMut<(&'_0 automata_builder::automata::rule_generator::BidirectionalTape,), u32> for automata_builder::automata::rule_generator_multitape::{automata_builder::automata::rule_generator_multitape::BiDirectionalMultiTape}::max_state::{closure}<'_0>}]
-    Source: 'src/automata/rule_generator_multitape.rs', lines 120:17-120:40 -/
+    Source: 'src/automata/rule_generator_multitape.rs', lines 121:17-121:40 -/
 @[reducible]
 def
   automata.rule_generator_multitape.BiDirectionalMultiTape.max_state.closure.Insts.CoreOpsFunctionFnMutTupleShared0BidirectionalTapeU32
@@ -3223,7 +3357,7 @@ def
 }
 
 /-- [automata_builder::automata::rule_generator_multitape::{automata_builder::automata::rule_generator_multitape::BiDirectionalMultiTape}::max_state]:
-    Source: 'src/automata/rule_generator_multitape.rs', lines 117:4-123:5
+    Source: 'src/automata/rule_generator_multitape.rs', lines 118:4-124:5
     Visibility: public -/
 def automata.rule_generator_multitape.BiDirectionalMultiTape.max_state
   (self : automata.rule_generator_multitape.BiDirectionalMultiTape) :
@@ -3798,7 +3932,7 @@ def automata.renderer.RenderFrame.from_padded_lines
   ok { lines := padded }
 
 /-- [automata_builder::automata::rule_generator_multitape::{automata_builder::automata::rule_generator_multitape::BiDirectionalMultiTape}::render_tapes]:
-    Source: 'src/automata/rule_generator_multitape.rs', lines 133:4-207:5
+    Source: 'src/automata/rule_generator_multitape.rs', lines 134:4-208:5
     Visibility: public -/
 def automata.rule_generator_multitape.BiDirectionalMultiTape.render_tapes
   (self : automata.rule_generator_multitape.BiDirectionalMultiTape)
@@ -3810,7 +3944,7 @@ def automata.rule_generator_multitape.BiDirectionalMultiTape.render_tapes
   sorry
 
 /-- [automata_builder::automata::multi_tape_automata::{automata_builder::automata::multi_tape_automata::MultiTapeAutomata}::render_tapes]:
-    Source: 'src/automata/multi_tape_automata.rs', lines 158:4-165:5
+    Source: 'src/automata/multi_tape_automata.rs', lines 183:4-190:5
     Visibility: public -/
 def automata.multi_tape_automata.MultiTapeAutomata.render_tapes
   (self : automata.multi_tape_automata.MultiTapeAutomata)
@@ -3833,7 +3967,7 @@ def automata.multi_tape_automata.MultiTapeAutomata.render_tapes
       residual
 
 /-- [automata_builder::automata::multi_tape_automata::{automata_builder::automata::multi_tape_automata::MultiTapeAutomata}::product_satisfies::{impl core::ops::function::FnOnce<(&'_0 automata_builder::automata::rule_generator::BidirectionalTape,), u32> for automata_builder::automata::multi_tape_automata::{automata_builder::automata::multi_tape_automata::MultiTapeAutomata}::product_satisfies::{closure}<'_0, '_1>}::call_once]:
-    Source: 'src/automata/multi_tape_automata.rs', lines 228:21-228:52 -/
+    Source: 'src/automata/multi_tape_automata.rs', lines 253:21-253:52 -/
 def
   automata.multi_tape_automata.MultiTapeAutomata.product_satisfies.closure.Insts.CoreOpsFunctionFnOnceTupleShared0BidirectionalTapeU32.call_once
   (c :
@@ -3844,7 +3978,7 @@ def
   automata.rule_generator.BidirectionalTape.read tupled_args c
 
 /-- Trait implementation: [automata_builder::automata::multi_tape_automata::{automata_builder::automata::multi_tape_automata::MultiTapeAutomata}::product_satisfies::{impl core::ops::function::FnOnce<(&'_0 automata_builder::automata::rule_generator::BidirectionalTape,), u32> for automata_builder::automata::multi_tape_automata::{automata_builder::automata::multi_tape_automata::MultiTapeAutomata}::product_satisfies::{closure}<'_0, '_1>}]
-    Source: 'src/automata/multi_tape_automata.rs', lines 228:21-228:52 -/
+    Source: 'src/automata/multi_tape_automata.rs', lines 253:21-253:52 -/
 @[reducible]
 def
   automata.multi_tape_automata.MultiTapeAutomata.product_satisfies.closure.Insts.CoreOpsFunctionFnOnceTupleShared0BidirectionalTapeU32
@@ -3856,7 +3990,7 @@ def
 }
 
 /-- [automata_builder::automata::multi_tape_automata::{automata_builder::automata::multi_tape_automata::MultiTapeAutomata}::product_satisfies]: loop 0:
-    Source: 'src/automata/multi_tape_automata.rs', lines 218:8-236:5
+    Source: 'src/automata/multi_tape_automata.rs', lines 243:8-261:5
     Visibility: public -/
 @[rust_loop]
 def automata.multi_tape_automata.MultiTapeAutomata.product_satisfies_loop
@@ -3888,7 +4022,7 @@ def automata.multi_tape_automata.MultiTapeAutomata.product_satisfies_loop
 partial_fixpoint
 
 /-- [automata_builder::automata::multi_tape_automata::{automata_builder::automata::multi_tape_automata::MultiTapeAutomata}::product_satisfies]:
-    Source: 'src/automata/multi_tape_automata.rs', lines 217:4-236:5
+    Source: 'src/automata/multi_tape_automata.rs', lines 242:4-261:5
     Visibility: public -/
 def automata.multi_tape_automata.MultiTapeAutomata.product_satisfies
   (self : automata.multi_tape_automata.MultiTapeAutomata)
@@ -3916,7 +4050,7 @@ def automata.rule_generator.BidirectionalTape.get_range
   ok (min_pos, max_pos)
 
 /-- [automata_builder::automata::rule_generator_multitape::{automata_builder::automata::rule_generator_multitape::BiDirectionalMultiTape}::get_range]: loop 0:
-    Source: 'src/automata/rule_generator_multitape.rs', lines 215:8-219:9
+    Source: 'src/automata/rule_generator_multitape.rs', lines 216:8-220:9
     Visibility: public -/
 @[rust_loop]
 def automata.rule_generator_multitape.BiDirectionalMultiTape.get_range_loop
@@ -3940,7 +4074,7 @@ def automata.rule_generator_multitape.BiDirectionalMultiTape.get_range_loop
 partial_fixpoint
 
 /-- [automata_builder::automata::rule_generator_multitape::{automata_builder::automata::rule_generator_multitape::BiDirectionalMultiTape}::get_range]:
-    Source: 'src/automata/rule_generator_multitape.rs', lines 211:4-221:5
+    Source: 'src/automata/rule_generator_multitape.rs', lines 212:4-222:5
     Visibility: public -/
 def automata.rule_generator_multitape.BiDirectionalMultiTape.get_range
   (self : automata.rule_generator_multitape.BiDirectionalMultiTape) :
@@ -3952,18 +4086,28 @@ def automata.rule_generator_multitape.BiDirectionalMultiTape.get_range
   automata.rule_generator_multitape.BiDirectionalMultiTape.get_range_loop iter
     0#i64 0#i64
 
+/-- [automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductToStateMap}::iter]:
+    Source: 'src/automata/product_writes_map.rs', lines 103:4-105:5
+    Visibility: public -/
+def automata.product_writes_map.ProductToStateMap.iter
+  (self : automata.product_writes_map.ProductToStateMap) :
+  Result (indexmap.map.iter.Iter automata.terms_multitape.MultiTapeProduct
+    (alloc.collections.btree.map.BTreeMap Std.U16 Std.U32 alloc.alloc.Global))
+  := do
+  indexmap.map.IndexMap.iter self.prod_to_state_map
+
 /-- [automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::iter]:
-    Source: 'src/automata/product_writes_map.rs', lines 125:4-127:5
+    Source: 'src/automata/product_writes_map.rs', lines 213:4-215:5
     Visibility: public -/
 def automata.product_writes_map.ProductWritesMap.iter
   (self : automata.product_writes_map.ProductWritesMap) :
   Result (indexmap.map.iter.Iter automata.terms_multitape.MultiTapeProduct
     (alloc.collections.btree.map.BTreeMap Std.U16 Std.U32 alloc.alloc.Global))
   := do
-  indexmap.map.IndexMap.iter self.prod_to_state_map
+  automata.product_writes_map.ProductToStateMap.iter self.prod_to_state_map
 
 /-- [automata_builder::automata::multi_tape_automata::{automata_builder::automata::multi_tape_automata::MultiTapeAutomata}::process_step::{impl core::ops::function::FnOnce<(&'_0 automata_builder::automata::rule_generator::BidirectionalTape,), u32> for automata_builder::automata::multi_tape_automata::{automata_builder::automata::multi_tape_automata::MultiTapeAutomata}::process_step::{closure#1}<'_0, '_1>}::call_once]:
-    Source: 'src/automata/multi_tape_automata.rs', lines 328:25-328:51 -/
+    Source: 'src/automata/multi_tape_automata.rs', lines 353:25-353:51 -/
 def
   automata.multi_tape_automata.MultiTapeAutomata.process_step.closure_1.Insts.CoreOpsFunctionFnOnceTupleShared0BidirectionalTapeU32.call_once
   (c : automata.multi_tape_automata.MultiTapeAutomata.process_step.closure_1)
@@ -3973,7 +4117,7 @@ def
   automata.rule_generator.BidirectionalTape.read tupled_args c
 
 /-- Trait implementation: [automata_builder::automata::multi_tape_automata::{automata_builder::automata::multi_tape_automata::MultiTapeAutomata}::process_step::{impl core::ops::function::FnOnce<(&'_0 automata_builder::automata::rule_generator::BidirectionalTape,), u32> for automata_builder::automata::multi_tape_automata::{automata_builder::automata::multi_tape_automata::MultiTapeAutomata}::process_step::{closure#1}<'_0, '_1>}]
-    Source: 'src/automata/multi_tape_automata.rs', lines 328:25-328:51 -/
+    Source: 'src/automata/multi_tape_automata.rs', lines 353:25-353:51 -/
 @[reducible]
 def
   automata.multi_tape_automata.MultiTapeAutomata.process_step.closure_1.Insts.CoreOpsFunctionFnOnceTupleShared0BidirectionalTapeU32
@@ -3985,7 +4129,7 @@ def
 }
 
 /-- Trait implementation: [automata_builder::automata::multi_tape_automata::{automata_builder::automata::multi_tape_automata::MultiTapeAutomata}::process_step::{impl core::ops::function::FnOnce<(&'_0 alloc::collections::btree::set::BTreeSet<alloc::string::String, alloc::alloc::Global>,), alloc::vec::Vec<alloc::string::String>> for automata_builder::automata::multi_tape_automata::{automata_builder::automata::multi_tape_automata::MultiTapeAutomata}::process_step::{closure}<'_0>}]
-    Source: 'src/automata/multi_tape_automata.rs', lines 278:33-280:29 -/
+    Source: 'src/automata/multi_tape_automata.rs', lines 303:33-305:29 -/
 @[reducible]
 def
   automata.multi_tape_automata.MultiTapeAutomata.process_step.closure.Insts.CoreOpsFunctionFnOnceTupleShared0BTreeSetStringGlobalVecString
@@ -3998,7 +4142,7 @@ def
 }
 
 /-- [automata_builder::automata::multi_tape_automata::{automata_builder::automata::multi_tape_automata::MultiTapeAutomata}::step]:
-    Source: 'src/automata/multi_tape_automata.rs', lines 345:4-349:5
+    Source: 'src/automata/multi_tape_automata.rs', lines 370:4-374:5
     Visibility: public -/
 def automata.multi_tape_automata.MultiTapeAutomata.step
   (self : automata.multi_tape_automata.MultiTapeAutomata) (verbose : Bool) :
@@ -4023,20 +4167,20 @@ def automata.multi_tape_automata.MultiTapeAutomata.step
     ok (r1, self)
 
 /-- [automata_builder::automata::multi_tape_builder::REMAP_COUNTER_START]
-    Source: 'src/automata/multi_tape_builder.rs', lines 50:0-50:45
+    Source: 'src/automata/multi_tape_builder.rs', lines 52:0-52:45
     Visibility: public -/
 @[global_simps, irreducible]
 def automata.multi_tape_builder.REMAP_COUNTER_START : Std.U32 := 2#u32
 
 /-- [automata_builder::automata::multi_tape_builder::product_repr]:
-    Source: 'src/automata/multi_tape_builder.rs', lines 54:0-56:1 -/
+    Source: 'src/automata/multi_tape_builder.rs', lines 56:0-58:1 -/
 def automata.multi_tape_builder.product_repr
   (product : automata.terms_multitape.MultiTapeProduct) : Result String := do
   automata.terms_multitape.MultiTapeProduct.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeProductMultiTapeExpression._to_string
     product (toStr "D")
 
 /-- [automata_builder::automata::multi_tape_builder::terms_repr::{impl core::ops::function::FnMut<(&'_0 automata_builder::automata::terms::Term,), alloc::string::String> for automata_builder::automata::multi_tape_builder::terms_repr::{closure}<'_0>}::call_mut]:
-    Source: 'src/automata/multi_tape_builder.rs', lines 61:13-61:66 -/
+    Source: 'src/automata/multi_tape_builder.rs', lines 63:13-63:66 -/
 def
   automata.multi_tape_builder.terms_repr.closure.Insts.CoreOpsFunctionFnMutTupleShared0TermString.call_mut
   (c : automata.multi_tape_builder.terms_repr.closure)
@@ -4058,7 +4202,7 @@ def
   ok (s1, ())
 
 /-- [automata_builder::automata::multi_tape_builder::terms_repr::{impl core::ops::function::FnOnce<(&'_0 automata_builder::automata::terms::Term,), alloc::string::String> for automata_builder::automata::multi_tape_builder::terms_repr::{closure}<'_0>}::call_once]:
-    Source: 'src/automata/multi_tape_builder.rs', lines 61:13-61:66 -/
+    Source: 'src/automata/multi_tape_builder.rs', lines 63:13-63:66 -/
 def
   automata.multi_tape_builder.terms_repr.closure.Insts.CoreOpsFunctionFnOnceTupleShared0TermString.call_once
   (c : automata.multi_tape_builder.terms_repr.closure)
@@ -4071,7 +4215,7 @@ def
   ok s
 
 /-- Trait implementation: [automata_builder::automata::multi_tape_builder::terms_repr::{impl core::ops::function::FnOnce<(&'_0 automata_builder::automata::terms::Term,), alloc::string::String> for automata_builder::automata::multi_tape_builder::terms_repr::{closure}<'_0>}]
-    Source: 'src/automata/multi_tape_builder.rs', lines 61:13-61:66 -/
+    Source: 'src/automata/multi_tape_builder.rs', lines 63:13-63:66 -/
 @[reducible]
 def
   automata.multi_tape_builder.terms_repr.closure.Insts.CoreOpsFunctionFnOnceTupleShared0TermString
@@ -4082,7 +4226,7 @@ def
 }
 
 /-- Trait implementation: [automata_builder::automata::multi_tape_builder::terms_repr::{impl core::ops::function::FnMut<(&'_0 automata_builder::automata::terms::Term,), alloc::string::String> for automata_builder::automata::multi_tape_builder::terms_repr::{closure}<'_0>}]
-    Source: 'src/automata/multi_tape_builder.rs', lines 61:13-61:66 -/
+    Source: 'src/automata/multi_tape_builder.rs', lines 63:13-63:66 -/
 @[reducible]
 def
   automata.multi_tape_builder.terms_repr.closure.Insts.CoreOpsFunctionFnMutTupleShared0TermString
@@ -4095,7 +4239,7 @@ def
 }
 
 /-- [automata_builder::automata::multi_tape_builder::terms_repr]:
-    Source: 'src/automata/multi_tape_builder.rs', lines 58:0-65:1 -/
+    Source: 'src/automata/multi_tape_builder.rs', lines 60:0-67:1 -/
 def automata.multi_tape_builder.terms_repr
   (terms : Slice automata.terms.Term) : Result String := do
   let i ← core.slice.Slice.iter terms
@@ -4154,7 +4298,7 @@ def automata.tape_overlaps_fsm.TapeOverlapsFSMError.Insts.CoreFmtDebug :
 }
 
 /-- [automata_builder::automata::product_writes_map::{impl core::fmt::Debug for automata_builder::automata::product_writes_map::ProductWritesError}::fmt]:
-    Source: 'src/automata/product_writes_map.rs', lines 15:9-15:14
+    Source: 'src/automata/product_writes_map.rs', lines 27:9-27:14
     Visibility: public -/
 def automata.product_writes_map.ProductWritesError.Insts.CoreFmtDebug.fmt
   (self : automata.product_writes_map.ProductWritesError)
@@ -4163,14 +4307,20 @@ def automata.product_writes_map.ProductWritesError.Insts.CoreFmtDebug.fmt
   := do
   match self with
   | automata.product_writes_map.ProductWritesError.ConflictingOutput __self_0
-    __self_1 __self_2 __self_3 =>
-    let __self_01 := Dyn.mk _ alloc.string.String.Insts.CoreFmtDebug __self_0
+    __self_1 __self_2 __self_3 __self_4 =>
+    let __self_01 :=
+      Dyn.mk _ automata.terms_multitape.MultiTapeProduct.Insts.CoreFmtDebug
+        __self_0
     let __self_11 := Dyn.mk _ core.fmt.DebugU16 __self_1
     let __self_21 := Dyn.mk _ core.fmt.DebugU32 __self_2
-    let __self_31 := Dyn.mk _ (core.fmt.DebugShared core.fmt.DebugU32) __self_3
-    core.fmt.Formatter.debug_struct_field4_finish f (toStr "ConflictingOutput")
+    let __self_31 := Dyn.mk _ core.fmt.DebugU32 __self_3
+    let __self_41 :=
+      Dyn.mk _ (core.fmt.DebugShared (core.fmt.DebugVec
+        alloc.string.String.Insts.CoreFmtDebug)) __self_4
+    core.fmt.Formatter.debug_struct_field5_finish f (toStr "ConflictingOutput")
       (toStr "product") __self_01 (toStr "tape_no") __self_11 (toStr
-      "existing") __self_21 (toStr "incoming") __self_31
+      "existing") __self_21 (toStr "incoming") __self_31 (toStr "annotations")
+      __self_41
   | automata.product_writes_map.ProductWritesError.Frozen =>
     core.fmt.Formatter.write_str f (toStr "Frozen")
   | automata.product_writes_map.ProductWritesError.MissingProduct __self_0 =>
@@ -4181,11 +4331,62 @@ def automata.product_writes_map.ProductWritesError.Insts.CoreFmtDebug.fmt
       (toStr "product") __self_01
 
 /-- Trait implementation: [automata_builder::automata::product_writes_map::{impl core::fmt::Debug for automata_builder::automata::product_writes_map::ProductWritesError}]
-    Source: 'src/automata/product_writes_map.rs', lines 15:9-15:14 -/
+    Source: 'src/automata/product_writes_map.rs', lines 27:9-27:14 -/
 @[reducible]
 def automata.product_writes_map.ProductWritesError.Insts.CoreFmtDebug :
   core.fmt.Debug automata.product_writes_map.ProductWritesError := {
   fmt := automata.product_writes_map.ProductWritesError.Insts.CoreFmtDebug.fmt
+}
+
+/-- [automata_builder::automata::terms_multitape::{impl core::fmt::Debug for automata_builder::automata::terms_multitape::MultiTapeState}::fmt]:
+    Source: 'src/automata/terms_multitape.rs', lines 20:4-20:9
+    Visibility: public -/
+def automata.terms_multitape.MultiTapeState.Insts.CoreFmtDebug.fmt
+  (self : automata.terms_multitape.MultiTapeState) (f : core.fmt.Formatter) :
+  Result ((core.result.Result Unit core.fmt.Error) × core.fmt.Formatter)
+  := do
+  let dyn := Dyn.mk _ core.fmt.DebugU16 self.tape_no
+  let dyn1 :=
+    Dyn.mk _ (core.fmt.DebugShared core.fmt.DebugU32) self.tape_cell_state
+  core.fmt.Formatter.debug_struct_field2_finish f (toStr "MultiTapeState")
+    (toStr "tape_no") dyn (toStr "tape_cell_state") dyn1
+
+/-- Trait implementation: [automata_builder::automata::terms_multitape::{impl core::fmt::Debug for automata_builder::automata::terms_multitape::MultiTapeState}]
+    Source: 'src/automata/terms_multitape.rs', lines 20:4-20:9 -/
+@[reducible]
+def automata.terms_multitape.MultiTapeState.Insts.CoreFmtDebug : core.fmt.Debug
+  automata.terms_multitape.MultiTapeState := {
+  fmt := automata.terms_multitape.MultiTapeState.Insts.CoreFmtDebug.fmt
+}
+
+/-- [automata_builder::automata::multi_tape_transition::{impl core::fmt::Debug for automata_builder::automata::multi_tape_transition::MultiTapeTransition}::fmt]:
+    Source: 'src/automata/multi_tape_transition.rs', lines 14:9-14:14
+    Visibility: public -/
+def automata.multi_tape_transition.MultiTapeTransition.Insts.CoreFmtDebug.fmt
+  (self : automata.multi_tape_transition.MultiTapeTransition)
+  (f : core.fmt.Formatter) :
+  Result ((core.result.Result Unit core.fmt.Error) × core.fmt.Formatter)
+  := do
+  let dyn :=
+    Dyn.mk _ (core.fmt.DebugVec
+      automata.terms_multitape.MultiTapeTerm.Insts.CoreFmtDebug)
+      self.input_terms
+  let dyn1 :=
+    Dyn.mk _ automata.terms_multitape.MultiTapeState.Insts.CoreFmtDebug
+      self.output_state
+  let dyn2 := Dyn.mk _ alloc.string.String.Insts.CoreFmtDebug self.annotation
+  let dyn3 := Dyn.mk _ (core.fmt.DebugShared core.fmt.DebugU32) self.priority
+  core.fmt.Formatter.debug_struct_field4_finish f (toStr "MultiTapeTransition")
+    (toStr "input_terms") dyn (toStr "output_state") dyn1 (toStr "annotation")
+    dyn2 (toStr "priority") dyn3
+
+/-- Trait implementation: [automata_builder::automata::multi_tape_transition::{impl core::fmt::Debug for automata_builder::automata::multi_tape_transition::MultiTapeTransition}]
+    Source: 'src/automata/multi_tape_transition.rs', lines 14:9-14:14 -/
+@[reducible]
+def automata.multi_tape_transition.MultiTapeTransition.Insts.CoreFmtDebug :
+  core.fmt.Debug automata.multi_tape_transition.MultiTapeTransition := {
+  fmt :=
+    automata.multi_tape_transition.MultiTapeTransition.Insts.CoreFmtDebug.fmt
 }
 
 /-- [automata_builder::automata::multi_tape_product_trie::{impl core::fmt::Debug for automata_builder::automata::multi_tape_product_trie::TrieError}::fmt]:
@@ -4211,7 +4412,7 @@ def automata.multi_tape_product_trie.TrieError.Insts.CoreFmtDebug :
 }
 
 /-- [automata_builder::automata::multi_tape_builder::{impl core::fmt::Debug for automata_builder::automata::multi_tape_builder::CompileTapesError}::fmt]:
-    Source: 'src/automata/multi_tape_builder.rs', lines 67:9-67:14
+    Source: 'src/automata/multi_tape_builder.rs', lines 69:9-69:14
     Visibility: public -/
 def automata.multi_tape_builder.CompileTapesError.Insts.CoreFmtDebug.fmt
   (self : automata.multi_tape_builder.CompileTapesError)
@@ -4226,6 +4427,22 @@ def automata.multi_tape_builder.CompileTapesError.Insts.CoreFmtDebug.fmt
         __self_0
     core.fmt.Formatter.debug_tuple_field1_finish f (toStr "ProductWrites")
       __self_01
+  | automata.multi_tape_builder.CompileTapesError.ExtendedProductOutputConflict
+    __self_0 __self_1 =>
+    let __self_01 :=
+      Dyn.mk _ (indexmap.map.IndexMap.Insts.CoreFmtDebug
+        std.hash.random.RandomState
+        automata.multi_tape_transition.MultiTapeTransition.Insts.CoreFmtDebug
+        (alloc.collections.btree.map.BTreeMap.Insts.CoreFmtDebug
+        core.fmt.DebugU16 core.fmt.DebugU32
+        alloc.alloc.Global.Insts.CoreAllocAllocatorClone)) __self_0
+    let __self_11 :=
+      Dyn.mk _ (core.fmt.DebugShared
+        automata.product_writes_map.ProductWritesError.Insts.CoreFmtDebug)
+        __self_1
+    core.fmt.Formatter.debug_struct_field2_finish f (toStr
+      "ExtendedProductOutputConflict") (toStr "writing_transitions") __self_01
+      (toStr "product_writes_error") __self_11
   | automata.multi_tape_builder.CompileTapesError.Trie __self_0 =>
     let __self_01 :=
       Dyn.mk _ (core.fmt.DebugShared
@@ -4273,7 +4490,7 @@ def automata.multi_tape_builder.CompileTapesError.Insts.CoreFmtDebug.fmt
     core.fmt.Formatter.debug_tuple_field1_finish f (toStr "Invalid") __self_01
 
 /-- Trait implementation: [automata_builder::automata::multi_tape_builder::{impl core::fmt::Debug for automata_builder::automata::multi_tape_builder::CompileTapesError}]
-    Source: 'src/automata/multi_tape_builder.rs', lines 67:9-67:14 -/
+    Source: 'src/automata/multi_tape_builder.rs', lines 69:9-69:14 -/
 @[reducible]
 def automata.multi_tape_builder.CompileTapesError.Insts.CoreFmtDebug :
   core.fmt.Debug automata.multi_tape_builder.CompileTapesError := {
@@ -4297,7 +4514,7 @@ def automata.tape_overlaps_fsm.TapeOverlapsFSMError.Insts.CoreCloneClone.clone
     ok (automata.tape_overlaps_fsm.TapeOverlapsFSMError.ConflictingNextState i)
 
 /-- [automata_builder::automata::product_writes_map::{impl core::clone::Clone for automata_builder::automata::product_writes_map::ProductWritesError}::clone]:
-    Source: 'src/automata/product_writes_map.rs', lines 15:16-15:21
+    Source: 'src/automata/product_writes_map.rs', lines 27:16-27:21
     Visibility: public -/
 def automata.product_writes_map.ProductWritesError.Insts.CoreCloneClone.clone
   (self : automata.product_writes_map.ProductWritesError) :
@@ -4305,18 +4522,32 @@ def automata.product_writes_map.ProductWritesError.Insts.CoreCloneClone.clone
   := do
   match self with
   | automata.product_writes_map.ProductWritesError.ConflictingOutput __self_0
-    __self_1 __self_2 __self_3 =>
-    let s ← alloc.string.String.Insts.CoreCloneClone.clone __self_0
+    __self_1 __self_2 __self_3 __self_4 =>
+    let mtp ←
+      automata.terms_multitape.MultiTapeProduct.Insts.CoreCloneClone.clone
+        __self_0
     let i ← lift (core.clone.impls.CloneU16.clone __self_1)
     let i1 ← lift (core.clone.impls.CloneU32.clone __self_2)
     let i2 ← lift (core.clone.impls.CloneU32.clone __self_3)
-    ok (automata.product_writes_map.ProductWritesError.ConflictingOutput s i i1
-      i2)
+    let v ←
+      alloc.vec.CloneVec.clone alloc.string.String.Insts.CoreCloneClone
+        __self_4
+    ok (automata.product_writes_map.ProductWritesError.ConflictingOutput mtp i
+      i1 i2 v)
   | automata.product_writes_map.ProductWritesError.Frozen =>
     ok automata.product_writes_map.ProductWritesError.Frozen
   | automata.product_writes_map.ProductWritesError.MissingProduct __self_0 =>
     let s ← alloc.string.String.Insts.CoreCloneClone.clone __self_0
     ok (automata.product_writes_map.ProductWritesError.MissingProduct s)
+
+/-- Trait implementation: [automata_builder::automata::multi_tape_transition::{impl core::clone::Clone for automata_builder::automata::multi_tape_transition::MultiTapeTransition}]
+    Source: 'src/automata/multi_tape_transition.rs', lines 14:16-14:21 -/
+@[reducible]
+def automata.multi_tape_transition.MultiTapeTransition.Insts.CoreCloneClone :
+  core.clone.Clone automata.multi_tape_transition.MultiTapeTransition := {
+  clone :=
+    automata.multi_tape_transition.MultiTapeTransition.Insts.CoreCloneClone.clone
+}
 
 /-- [automata_builder::automata::multi_tape_product_trie::{impl core::clone::Clone for automata_builder::automata::multi_tape_product_trie::TrieError}::clone]:
     Source: 'src/automata/multi_tape_product_trie.rs', lines 10:16-10:21
@@ -4331,7 +4562,7 @@ def automata.multi_tape_product_trie.TrieError.Insts.CoreCloneClone.clone
   ok (automata.multi_tape_product_trie.TrieError.OffsetMismatch i i1)
 
 /-- [automata_builder::automata::multi_tape_builder::{impl core::clone::Clone for automata_builder::automata::multi_tape_builder::CompileTapesError}::clone]:
-    Source: 'src/automata/multi_tape_builder.rs', lines 67:16-67:21
+    Source: 'src/automata/multi_tape_builder.rs', lines 69:16-69:21
     Visibility: public -/
 def automata.multi_tape_builder.CompileTapesError.Insts.CoreCloneClone.clone
   (self : automata.multi_tape_builder.CompileTapesError) :
@@ -4343,6 +4574,21 @@ def automata.multi_tape_builder.CompileTapesError.Insts.CoreCloneClone.clone
       automata.product_writes_map.ProductWritesError.Insts.CoreCloneClone.clone
         __self_0
     ok (automata.multi_tape_builder.CompileTapesError.ProductWrites pwe)
+  | automata.multi_tape_builder.CompileTapesError.ExtendedProductOutputConflict
+    __self_0 __self_1 =>
+    let im ←
+      indexmap.map.IndexMap.Insts.CoreCloneClone.clone
+        automata.multi_tape_transition.MultiTapeTransition.Insts.CoreCloneClone
+        (alloc.collections.btree.map.BTreeMap.Insts.CoreCloneClone
+        core.clone.CloneU16 core.clone.CloneU32
+        alloc.alloc.Global.Insts.CoreAllocAllocatorClone)
+        std.hash.random.RandomState.Insts.CoreCloneClone __self_0
+    let pwe ←
+      automata.product_writes_map.ProductWritesError.Insts.CoreCloneClone.clone
+        __self_1
+    ok
+      (automata.multi_tape_builder.CompileTapesError.ExtendedProductOutputConflict
+      im pwe)
   | automata.multi_tape_builder.CompileTapesError.Trie __self_0 =>
     let te ←
       automata.multi_tape_product_trie.TrieError.Insts.CoreCloneClone.clone
@@ -4373,7 +4619,7 @@ def automata.multi_tape_builder.CompileTapesError.Insts.CoreCloneClone.clone
     ok (automata.multi_tape_builder.CompileTapesError.Invalid s)
 
 /-- Trait implementation: [automata_builder::automata::multi_tape_builder::{impl core::clone::Clone for automata_builder::automata::multi_tape_builder::CompileTapesError}]
-    Source: 'src/automata/multi_tape_builder.rs', lines 67:16-67:21 -/
+    Source: 'src/automata/multi_tape_builder.rs', lines 69:16-69:21 -/
 @[reducible]
 def automata.multi_tape_builder.CompileTapesError.Insts.CoreCloneClone :
   core.clone.Clone automata.multi_tape_builder.CompileTapesError := {
@@ -4427,7 +4673,7 @@ impl_def
 }
 
 /-- [automata_builder::automata::product_writes_map::{impl core::cmp::PartialEq<automata_builder::automata::product_writes_map::ProductWritesError> for automata_builder::automata::product_writes_map::ProductWritesError}::eq]:
-    Source: 'src/automata/product_writes_map.rs', lines 15:27-15:36
+    Source: 'src/automata/product_writes_map.rs', lines 27:27-27:36
     Visibility: public -/
 def
   automata.product_writes_map.ProductWritesError.Insts.CoreCmpPartialEqProductWritesError.eq
@@ -4441,12 +4687,13 @@ def
   then
     match self with
     | automata.product_writes_map.ProductWritesError.ConflictingOutput __self_0
-      __self_1 __self_2 __self_3 =>
+      __self_1 __self_2 __self_3 __self_4 =>
       match other with
       | automata.product_writes_map.ProductWritesError.ConflictingOutput
-        __arg1_0 __arg1_1 __arg1_2 __arg1_3 =>
+        __arg1_0 __arg1_1 __arg1_2 __arg1_3 __arg1_4 =>
         let b ←
-          alloc.string.String.Insts.CoreCmpPartialEqString.eq __self_0 __arg1_0
+          automata.terms_multitape.MultiTapeProduct.Insts.CoreCmpPartialEqMultiTapeProduct.eq
+            __self_0 __arg1_0
         if b
         then
           let b1 ← lift (core.cmp.impls.PartialEqU16.eq __self_1 __arg1_1)
@@ -4454,7 +4701,15 @@ def
           then
             let b2 ← lift (core.cmp.impls.PartialEqU32.eq __self_2 __arg1_2)
             if b2
-            then lift (core.cmp.impls.PartialEqU32.eq __self_3 __arg1_3)
+            then
+              let b3 ←
+                lift (core.cmp.impls.PartialEqU32.eq __self_3 __arg1_3)
+              if b3
+              then
+                alloc.vec.partial_eq.PartialEqVec.eq
+                  alloc.string.String.Insts.CoreCmpPartialEqString __self_4
+                  __arg1_4
+              else ok false
             else ok false
           else ok false
         else ok false
@@ -4465,7 +4720,7 @@ def
     | automata.product_writes_map.ProductWritesError.MissingProduct __self_0 =>
       match other with
       | automata.product_writes_map.ProductWritesError.ConflictingOutput _ _ _
-        _ =>
+        _ _ =>
         ok true
       | automata.product_writes_map.ProductWritesError.Frozen => ok true
       | automata.product_writes_map.ProductWritesError.MissingProduct __arg1_0
@@ -4474,7 +4729,7 @@ def
   else ok false
 
 /-- Trait implementation: [automata_builder::automata::product_writes_map::{impl core::cmp::PartialEq<automata_builder::automata::product_writes_map::ProductWritesError> for automata_builder::automata::product_writes_map::ProductWritesError}]
-    Source: 'src/automata/product_writes_map.rs', lines 15:27-15:36 -/
+    Source: 'src/automata/product_writes_map.rs', lines 27:27-27:36 -/
 @[reducible]
 impl_def
   automata.product_writes_map.ProductWritesError.Insts.CoreCmpPartialEqProductWritesError
@@ -4484,6 +4739,109 @@ impl_def
     automata.product_writes_map.ProductWritesError.Insts.CoreCmpPartialEqProductWritesError.eq
   ne := core.cmp.PartialEq.ne.trait_default
     automata.product_writes_map.ProductWritesError.Insts.CoreCmpPartialEqProductWritesError
+}
+
+/-- Trait implementation: [automata_builder::automata::terms_multitape::{impl core::hash::Hash for automata_builder::automata::terms_multitape::MultiTapeTerm}]
+    Source: 'src/automata/terms_multitape.rs', lines 99:0-104:1 -/
+@[reducible]
+def automata.terms_multitape.MultiTapeTerm.Insts.CoreHashHash : core.hash.Hash
+  automata.terms_multitape.MultiTapeTerm := {
+  hash := fun {H : Type} (corehashHasherInst : core.hash.Hasher H) =>
+    automata.terms_multitape.MultiTapeTerm.Insts.CoreHashHash.hash
+    corehashHasherInst
+}
+
+/-- [automata_builder::automata::multi_tape_transition::{impl core::hash::Hash for automata_builder::automata::multi_tape_transition::MultiTapeTransition}::hash]:
+    Source: 'src/automata/multi_tape_transition.rs', lines 14:38-14:42
+    Visibility: public -/
+def automata.multi_tape_transition.MultiTapeTransition.Insts.CoreHashHash.hash
+  {__H : Type _} (corehashHasherInst : core.hash.Hasher __H)
+  (self : automata.multi_tape_transition.MultiTapeTransition) (state : __H) :
+  Result __H
+  := do
+  let state1 ←
+    alloc.vec.Vec.Insts.CoreHashHash.hash alloc.alloc.Global
+      automata.terms_multitape.MultiTapeTerm.Insts.CoreHashHash
+      corehashHasherInst self.input_terms state
+  let state2 ←
+    automata.terms_multitape.MultiTapeState.Insts.CoreHashHash.hash
+      corehashHasherInst self.output_state state1
+  let state3 ←
+    alloc.string.String.Insts.CoreHashHash.hash corehashHasherInst
+      self.annotation state2
+  U32.Insts.CoreHashHash.hash corehashHasherInst self.priority state3
+
+/-- Trait implementation: [automata_builder::automata::multi_tape_transition::{impl core::hash::Hash for automata_builder::automata::multi_tape_transition::MultiTapeTransition}]
+    Source: 'src/automata/multi_tape_transition.rs', lines 14:38-14:42 -/
+@[reducible]
+def automata.multi_tape_transition.MultiTapeTransition.Insts.CoreHashHash :
+  core.hash.Hash automata.multi_tape_transition.MultiTapeTransition := {
+  hash := fun {H : Type} (corehashHasherInst : core.hash.Hasher H) =>
+    automata.multi_tape_transition.MultiTapeTransition.Insts.CoreHashHash.hash
+    corehashHasherInst
+}
+
+/-- [automata_builder::automata::multi_tape_transition::{impl core::cmp::Eq for automata_builder::automata::multi_tape_transition::MultiTapeTransition}::assert_fields_are_eq]:
+    Source: 'src/automata/multi_tape_transition.rs', lines 14:34-14:36
+    Visibility: public -/
+def
+  automata.multi_tape_transition.MultiTapeTransition.Insts.CoreCmpEq.assert_fields_are_eq
+  (self : automata.multi_tape_transition.MultiTapeTransition) :
+  Result Unit
+  := do
+  ok ()
+
+/-- [automata_builder::automata::multi_tape_transition::{impl core::cmp::PartialEq<automata_builder::automata::multi_tape_transition::MultiTapeTransition> for automata_builder::automata::multi_tape_transition::MultiTapeTransition}::eq]:
+    Source: 'src/automata/multi_tape_transition.rs', lines 14:23-14:32
+    Visibility: public -/
+def
+  automata.multi_tape_transition.MultiTapeTransition.Insts.CoreCmpPartialEqMultiTapeTransition.eq
+  (self : automata.multi_tape_transition.MultiTapeTransition)
+  (other : automata.multi_tape_transition.MultiTapeTransition) :
+  Result Bool
+  := do
+  let b ←
+    alloc.vec.partial_eq.PartialEqVec.eq
+      automata.terms_multitape.MultiTapeTerm.Insts.CoreCmpPartialEqMultiTapeTerm
+      self.input_terms other.input_terms
+  if b
+  then
+    let b1 ←
+      automata.terms_multitape.MultiTapeState.Insts.CoreCmpPartialEqMultiTapeState.eq
+        self.output_state other.output_state
+    if b1
+    then
+      let b2 ←
+        alloc.string.String.Insts.CoreCmpPartialEqString.eq self.annotation
+          other.annotation
+      if b2
+      then ok (self.priority = other.priority)
+      else ok false
+    else ok false
+  else ok false
+
+/-- Trait implementation: [automata_builder::automata::multi_tape_transition::{impl core::cmp::PartialEq<automata_builder::automata::multi_tape_transition::MultiTapeTransition> for automata_builder::automata::multi_tape_transition::MultiTapeTransition}]
+    Source: 'src/automata/multi_tape_transition.rs', lines 14:23-14:32 -/
+@[reducible]
+impl_def
+  automata.multi_tape_transition.MultiTapeTransition.Insts.CoreCmpPartialEqMultiTapeTransition
+  : core.cmp.PartialEq automata.multi_tape_transition.MultiTapeTransition
+  automata.multi_tape_transition.MultiTapeTransition := {
+  eq :=
+    automata.multi_tape_transition.MultiTapeTransition.Insts.CoreCmpPartialEqMultiTapeTransition.eq
+  ne := core.cmp.PartialEq.ne.trait_default
+    automata.multi_tape_transition.MultiTapeTransition.Insts.CoreCmpPartialEqMultiTapeTransition
+}
+
+/-- Trait implementation: [automata_builder::automata::multi_tape_transition::{impl core::cmp::Eq for automata_builder::automata::multi_tape_transition::MultiTapeTransition}]
+    Source: 'src/automata/multi_tape_transition.rs', lines 14:34-14:36 -/
+@[reducible]
+def automata.multi_tape_transition.MultiTapeTransition.Insts.CoreCmpEq :
+  core.cmp.Eq automata.multi_tape_transition.MultiTapeTransition := {
+  partialEqInst :=
+    automata.multi_tape_transition.MultiTapeTransition.Insts.CoreCmpPartialEqMultiTapeTransition
+  assert_fields_are_eq :=
+    automata.multi_tape_transition.MultiTapeTransition.Insts.CoreCmpEq.assert_fields_are_eq
 }
 
 /-- [automata_builder::automata::multi_tape_product_trie::{impl core::cmp::PartialEq<automata_builder::automata::multi_tape_product_trie::TrieError> for automata_builder::automata::multi_tape_product_trie::TrieError}::eq]:
@@ -4516,7 +4874,7 @@ impl_def
 }
 
 /-- [automata_builder::automata::multi_tape_builder::{impl core::cmp::PartialEq<automata_builder::automata::multi_tape_builder::CompileTapesError> for automata_builder::automata::multi_tape_builder::CompileTapesError}::eq]:
-    Source: 'src/automata/multi_tape_builder.rs', lines 67:27-67:36
+    Source: 'src/automata/multi_tape_builder.rs', lines 69:27-69:36
     Visibility: public -/
 def
   automata.multi_tape_builder.CompileTapesError.Insts.CoreCmpPartialEqCompileTapesError.eq
@@ -4534,6 +4892,47 @@ def
       | automata.multi_tape_builder.CompileTapesError.ProductWrites __arg1_0 =>
         automata.product_writes_map.ProductWritesError.Insts.CoreCmpPartialEqProductWritesError.eq
           __self_0 __arg1_0
+      |
+        automata.multi_tape_builder.CompileTapesError.ExtendedProductOutputConflict
+        _ _ =>
+        fail panic
+      | automata.multi_tape_builder.CompileTapesError.Trie _ => fail panic
+      | automata.multi_tape_builder.CompileTapesError.OverlapsFSM _ =>
+        fail panic
+      | automata.multi_tape_builder.CompileTapesError.MissingRemap _ =>
+        fail panic
+      | automata.multi_tape_builder.CompileTapesError.HaltState _ => fail panic
+      | automata.multi_tape_builder.CompileTapesError.ConflictingWrites _ =>
+        fail panic
+      | automata.multi_tape_builder.CompileTapesError.Transition _ =>
+        fail panic
+      | automata.multi_tape_builder.CompileTapesError.MissingPriority _ =>
+        fail panic
+      | automata.multi_tape_builder.CompileTapesError.Invalid _ => fail panic
+    |
+      automata.multi_tape_builder.CompileTapesError.ExtendedProductOutputConflict
+      __self_0 __self_1 =>
+      match other with
+      | automata.multi_tape_builder.CompileTapesError.ProductWrites _ =>
+        fail panic
+      |
+        automata.multi_tape_builder.CompileTapesError.ExtendedProductOutputConflict
+        __arg1_0 __arg1_1 =>
+        let b ←
+          indexmap.map.IndexMap.Insts.CoreCmpPartialEqIndexMap.eq
+            automata.multi_tape_transition.MultiTapeTransition.Insts.CoreHashHash
+            automata.multi_tape_transition.MultiTapeTransition.Insts.CoreCmpEq
+            (alloc.collections.btree.map.BTreeMap.Insts.CoreCmpPartialEqBTreeMap
+            core.cmp.PartialEqU16 core.cmp.PartialEqU32
+            alloc.alloc.Global.Insts.CoreAllocAllocatorClone)
+            std.hash.random.RandomState.Insts.CoreHashBuildHasherDefaultHasher
+            std.hash.random.RandomState.Insts.CoreHashBuildHasherDefaultHasher
+            __self_0 __arg1_0
+        if b
+        then
+          automata.product_writes_map.ProductWritesError.Insts.CoreCmpPartialEqProductWritesError.eq
+            __self_1 __arg1_1
+        else ok false
       | automata.multi_tape_builder.CompileTapesError.Trie _ => fail panic
       | automata.multi_tape_builder.CompileTapesError.OverlapsFSM _ =>
         fail panic
@@ -4550,6 +4949,10 @@ def
     | automata.multi_tape_builder.CompileTapesError.Trie __self_0 =>
       match other with
       | automata.multi_tape_builder.CompileTapesError.ProductWrites _ =>
+        fail panic
+      |
+        automata.multi_tape_builder.CompileTapesError.ExtendedProductOutputConflict
+        _ _ =>
         fail panic
       | automata.multi_tape_builder.CompileTapesError.Trie __arg1_0 =>
         automata.multi_tape_product_trie.TrieError.Insts.CoreCmpPartialEqTrieError.eq
@@ -4570,6 +4973,10 @@ def
       match other with
       | automata.multi_tape_builder.CompileTapesError.ProductWrites _ =>
         fail panic
+      |
+        automata.multi_tape_builder.CompileTapesError.ExtendedProductOutputConflict
+        _ _ =>
+        fail panic
       | automata.multi_tape_builder.CompileTapesError.Trie _ => fail panic
       | automata.multi_tape_builder.CompileTapesError.OverlapsFSM __arg1_0 =>
         automata.tape_overlaps_fsm.TapeOverlapsFSMError.Insts.CoreCmpPartialEqTapeOverlapsFSMError.eq
@@ -4588,6 +4995,10 @@ def
       match other with
       | automata.multi_tape_builder.CompileTapesError.ProductWrites _ =>
         fail panic
+      |
+        automata.multi_tape_builder.CompileTapesError.ExtendedProductOutputConflict
+        _ _ =>
+        fail panic
       | automata.multi_tape_builder.CompileTapesError.Trie _ => fail panic
       | automata.multi_tape_builder.CompileTapesError.OverlapsFSM _ =>
         fail panic
@@ -4604,6 +5015,10 @@ def
     | automata.multi_tape_builder.CompileTapesError.HaltState __self_0 =>
       match other with
       | automata.multi_tape_builder.CompileTapesError.ProductWrites _ =>
+        fail panic
+      |
+        automata.multi_tape_builder.CompileTapesError.ExtendedProductOutputConflict
+        _ _ =>
         fail panic
       | automata.multi_tape_builder.CompileTapesError.Trie _ => fail panic
       | automata.multi_tape_builder.CompileTapesError.OverlapsFSM _ =>
@@ -4624,6 +5039,10 @@ def
       match other with
       | automata.multi_tape_builder.CompileTapesError.ProductWrites _ =>
         fail panic
+      |
+        automata.multi_tape_builder.CompileTapesError.ExtendedProductOutputConflict
+        _ _ =>
+        fail panic
       | automata.multi_tape_builder.CompileTapesError.Trie _ => fail panic
       | automata.multi_tape_builder.CompileTapesError.OverlapsFSM _ =>
         fail panic
@@ -4642,6 +5061,10 @@ def
       match other with
       | automata.multi_tape_builder.CompileTapesError.ProductWrites _ =>
         fail panic
+      |
+        automata.multi_tape_builder.CompileTapesError.ExtendedProductOutputConflict
+        _ _ =>
+        fail panic
       | automata.multi_tape_builder.CompileTapesError.Trie _ => fail panic
       | automata.multi_tape_builder.CompileTapesError.OverlapsFSM _ =>
         fail panic
@@ -4658,6 +5081,10 @@ def
     | automata.multi_tape_builder.CompileTapesError.MissingPriority __self_0 =>
       match other with
       | automata.multi_tape_builder.CompileTapesError.ProductWrites _ =>
+        fail panic
+      |
+        automata.multi_tape_builder.CompileTapesError.ExtendedProductOutputConflict
+        _ _ =>
         fail panic
       | automata.multi_tape_builder.CompileTapesError.Trie _ => fail panic
       | automata.multi_tape_builder.CompileTapesError.OverlapsFSM _ =>
@@ -4677,6 +5104,10 @@ def
       match other with
       | automata.multi_tape_builder.CompileTapesError.ProductWrites _ =>
         fail panic
+      |
+        automata.multi_tape_builder.CompileTapesError.ExtendedProductOutputConflict
+        _ _ =>
+        fail panic
       | automata.multi_tape_builder.CompileTapesError.Trie _ => fail panic
       | automata.multi_tape_builder.CompileTapesError.OverlapsFSM _ =>
         fail panic
@@ -4694,7 +5125,7 @@ def
   else ok false
 
 /-- Trait implementation: [automata_builder::automata::multi_tape_builder::{impl core::cmp::PartialEq<automata_builder::automata::multi_tape_builder::CompileTapesError> for automata_builder::automata::multi_tape_builder::CompileTapesError}]
-    Source: 'src/automata/multi_tape_builder.rs', lines 67:27-67:36 -/
+    Source: 'src/automata/multi_tape_builder.rs', lines 69:27-69:36 -/
 @[reducible]
 impl_def
   automata.multi_tape_builder.CompileTapesError.Insts.CoreCmpPartialEqCompileTapesError
@@ -4707,7 +5138,7 @@ impl_def
 }
 
 /-- [automata_builder::automata::multi_tape_builder::{impl core::cmp::Eq for automata_builder::automata::multi_tape_builder::CompileTapesError}::assert_fields_are_eq]:
-    Source: 'src/automata/multi_tape_builder.rs', lines 67:23-67:25
+    Source: 'src/automata/multi_tape_builder.rs', lines 69:23-69:25
     Visibility: public -/
 def
   automata.multi_tape_builder.CompileTapesError.Insts.CoreCmpEq.assert_fields_are_eq
@@ -4715,7 +5146,7 @@ def
   ok ()
 
 /-- Trait implementation: [automata_builder::automata::multi_tape_builder::{impl core::cmp::Eq for automata_builder::automata::multi_tape_builder::CompileTapesError}]
-    Source: 'src/automata/multi_tape_builder.rs', lines 67:23-67:25 -/
+    Source: 'src/automata/multi_tape_builder.rs', lines 69:23-69:25 -/
 @[reducible]
 def automata.multi_tape_builder.CompileTapesError.Insts.CoreCmpEq : core.cmp.Eq
   automata.multi_tape_builder.CompileTapesError := {
@@ -4726,7 +5157,7 @@ def automata.multi_tape_builder.CompileTapesError.Insts.CoreCmpEq : core.cmp.Eq
 }
 
 /-- Trait implementation: [automata_builder::automata::multi_tape_builder::{impl core::marker::StructuralPartialEq for automata_builder::automata::multi_tape_builder::CompileTapesError}]
-    Source: 'src/automata/multi_tape_builder.rs', lines 67:27-67:36 -/
+    Source: 'src/automata/multi_tape_builder.rs', lines 69:27-69:36 -/
 @[reducible]
 def
   automata.multi_tape_builder.CompileTapesError.Insts.CoreMarkerStructuralPartialEq
@@ -4735,13 +5166,13 @@ def
 }
 
 /-- [automata_builder::automata::multi_tape_builder::CompileTapesError::Transition]:
-    Source: 'src/automata/multi_tape_builder.rs', lines 79:4-79:22 -/
+    Source: 'src/automata/multi_tape_builder.rs', lines 90:4-90:22 -/
 def automata.multi_tape_builder.CompileTapesError.Transition.constructor
   (s : String) : Result automata.multi_tape_builder.CompileTapesError := do
   ok (automata.multi_tape_builder.CompileTapesError.Transition s)
 
 /-- [automata_builder::automata::multi_tape_builder::CompileTapesError::{impl core::ops::function::FnOnce<(alloc::string::String,), automata_builder::automata::multi_tape_builder::CompileTapesError> for automata_builder::automata::multi_tape_builder::CompileTapesError::Transition}::call_once]:
-    Source: 'src/automata/multi_tape_builder.rs', lines 79:4-79:22 -/
+    Source: 'src/automata/multi_tape_builder.rs', lines 90:4-90:22 -/
 def P.Insts.CoreOpsFunctionFnOnceTupleStringCompileTapesError.call_once
   (state : String → Result automata.multi_tape_builder.CompileTapesError)
   (args : String) :
@@ -4750,7 +5181,7 @@ def P.Insts.CoreOpsFunctionFnOnceTupleStringCompileTapesError.call_once
   automata.multi_tape_builder.CompileTapesError.Transition.constructor args
 
 /-- Trait implementation: [automata_builder::automata::multi_tape_builder::CompileTapesError::{impl core::ops::function::FnOnce<(alloc::string::String,), automata_builder::automata::multi_tape_builder::CompileTapesError> for automata_builder::automata::multi_tape_builder::CompileTapesError::Transition}]
-    Source: 'src/automata/multi_tape_builder.rs', lines 79:4-79:22 -/
+    Source: 'src/automata/multi_tape_builder.rs', lines 90:4-90:22 -/
 @[reducible]
 def P.Insts.CoreOpsFunctionFnOnceTupleStringCompileTapesError :
   core.ops.function.FnOnce (String → Result
@@ -4810,7 +5241,7 @@ def automata.tape_overlaps_fsm.TapeOverlapsFSMError.Insts.CoreFmtDisplay :
 }
 
 /-- [automata_builder::automata::product_writes_map::{impl core::fmt::Display for automata_builder::automata::product_writes_map::ProductWritesError}::fmt]:
-    Source: 'src/automata/product_writes_map.rs', lines 31:4-47:5
+    Source: 'src/automata/product_writes_map.rs', lines 44:4-65:5
     Visibility: public -/
 def automata.product_writes_map.ProductWritesError.Insts.CoreFmtDisplay.fmt
   (self : automata.product_writes_map.ProductWritesError)
@@ -4819,10 +5250,13 @@ def automata.product_writes_map.ProductWritesError.Insts.CoreFmtDisplay.fmt
   := do
   match self with
   | automata.product_writes_map.ProductWritesError.ConflictingOutput product
-    tape_no existing incoming =>
+    tape_no existing incoming annotations =>
+    let product_repr ←
+      automata.terms_multitape.MultiTapeProduct.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeProductMultiTapeExpression._to_string
+        product (toStr "D")
     let a ←
-      core.fmt.rt.Argument.new_display (Shared0T.Insts.CoreFmtDisplay
-        alloc.string.String.Insts.CoreFmtDisplay) product
+      core.fmt.rt.Argument.new_display alloc.string.String.Insts.CoreFmtDisplay
+        product_repr
     let a1 ←
       core.fmt.rt.Argument.new_display (Shared0T.Insts.CoreFmtDisplay
         U16.Insts.CoreFmtDisplay) tape_no
@@ -4833,17 +5267,22 @@ def automata.product_writes_map.ProductWritesError.Insts.CoreFmtDisplay.fmt
       core.fmt.rt.Argument.new_display (Shared0T.Insts.CoreFmtDisplay
         U32.Insts.CoreFmtDisplay) incoming
     let a4 ←
+      core.fmt.rt.Argument.new_debug (core.fmt.DebugShared (core.fmt.DebugVec
+        alloc.string.String.Insts.CoreFmtDebug)) annotations
+    let a5 ←
       core.fmt.Arguments.new
-        (Array.make 62#usize [
+        (Array.make 80#usize [
           38#u8, 67#u8, 111#u8, 110#u8, 102#u8, 108#u8, 105#u8, 99#u8, 116#u8,
           105#u8, 110#u8, 103#u8, 32#u8, 111#u8, 117#u8, 116#u8, 112#u8,
           117#u8, 116#u8, 32#u8, 115#u8, 116#u8, 97#u8, 116#u8, 101#u8, 115#u8,
           32#u8, 102#u8, 111#u8, 114#u8, 32#u8, 112#u8, 114#u8, 111#u8, 100#u8,
           117#u8, 99#u8, 116#u8, 61#u8, 192#u8, 9#u8, 32#u8, 111#u8, 110#u8,
           32#u8, 116#u8, 97#u8, 112#u8, 101#u8, 32#u8, 192#u8, 2#u8, 58#u8,
-          32#u8, 192#u8, 4#u8, 32#u8, 118#u8, 115#u8, 32#u8, 192#u8, 0#u8
-          ]) (Array.make 4#usize [ a, a1, a2, a3 ])
-    core.fmt.Formatter.write_fmt f a4
+          32#u8, 192#u8, 4#u8, 32#u8, 118#u8, 115#u8, 32#u8, 192#u8, 16#u8,
+          32#u8, 45#u8, 32#u8, 65#u8, 110#u8, 110#u8, 111#u8, 116#u8, 97#u8,
+          116#u8, 105#u8, 111#u8, 110#u8, 115#u8, 58#u8, 32#u8, 192#u8, 0#u8
+          ]) (Array.make 5#usize [ a, a1, a2, a3, a4 ])
+    core.fmt.Formatter.write_fmt f a5
   | automata.product_writes_map.ProductWritesError.Frozen =>
     let a ←
       core.fmt.Arguments.from_str (toStr
@@ -4865,13 +5304,30 @@ def automata.product_writes_map.ProductWritesError.Insts.CoreFmtDisplay.fmt
     core.fmt.Formatter.write_fmt f a1
 
 /-- Trait implementation: [automata_builder::automata::product_writes_map::{impl core::fmt::Display for automata_builder::automata::product_writes_map::ProductWritesError}]
-    Source: 'src/automata/product_writes_map.rs', lines 30:0-48:1 -/
+    Source: 'src/automata/product_writes_map.rs', lines 43:0-66:1 -/
 @[reducible]
 def automata.product_writes_map.ProductWritesError.Insts.CoreFmtDisplay :
   core.fmt.Display automata.product_writes_map.ProductWritesError := {
   fmt :=
     automata.product_writes_map.ProductWritesError.Insts.CoreFmtDisplay.fmt
 }
+
+/-- [automata_builder::automata::multi_tape_transition::{automata_builder::automata::multi_tape_transition::MultiTapeTransition}::to_product]:
+    Source: 'src/automata/multi_tape_transition.rs', lines 35:4-39:5
+    Visibility: public -/
+def automata.multi_tape_transition.MultiTapeTransition.to_product
+  (self : automata.multi_tape_transition.MultiTapeTransition) :
+  Result automata.terms_multitape.MultiTapeProduct
+  := do
+  let v ←
+    alloc.vec.CloneVec.clone
+      automata.terms_multitape.MultiTapeTerm.Insts.CoreCloneClone
+      self.input_terms
+  let mtpf ← automata.terms_multitape.MultiTapeProductFactory.new v
+  let s ← alloc.string.String.Insts.CoreCloneClone.clone self.annotation
+  let (mtpf1, _) ←
+    automata.terms_multitape.MultiTapeProductFactory.with_annotation mtpf s
+  automata.terms_multitape.MultiTapeProductFactory.to_product mtpf1
 
 /-- [automata_builder::automata::multi_tape_product_trie::{impl core::fmt::Display for automata_builder::automata::multi_tape_product_trie::TrieError}::fmt]:
     Source: 'src/automata/multi_tape_product_trie.rs', lines 17:4-23:5
@@ -4905,8 +5361,1955 @@ def automata.multi_tape_product_trie.TrieError.Insts.CoreFmtDisplay :
   fmt := automata.multi_tape_product_trie.TrieError.Insts.CoreFmtDisplay.fmt
 }
 
+/-- [automata_builder::automata::terms_multitape::{automata_builder::automata::terms_multitape::MultiTapeTerm}::insert_expr_position]:
+    Source: 'src/automata/terms_multitape.rs', lines 154:4-166:5
+    Visibility: public -/
+def automata.terms_multitape.MultiTapeTerm.insert_expr_position
+  (self : automata.terms_multitape.MultiTapeTerm)
+  (position : automata.terms.ExprPosition) (require_empty : Bool) :
+  Result automata.terms_multitape.MultiTapeTerm
+  := do
+  if require_empty
+  then
+    let b := core.option.Option.is_none self._debug_info.position_info
+    if b
+    then
+      ok
+        {
+          self
+            with
+            _debug_info :=
+              { self._debug_info with position_info := (some position) }
+        }
+    else
+      let a ←
+        core.fmt.rt.Argument.new_debug (core.option.Option.Insts.CoreFmtDebug
+          automata.terms.ExprPosition.Insts.CoreFmtDebug)
+          self._debug_info.position_info
+      let _ ←
+        core.fmt.Arguments.new
+          (Array.make 35#usize [
+            32#u8, 84#u8, 101#u8, 114#u8, 109#u8, 32#u8, 97#u8, 108#u8, 114#u8,
+            101#u8, 97#u8, 100#u8, 121#u8, 32#u8, 104#u8, 97#u8, 115#u8, 32#u8,
+            112#u8, 111#u8, 115#u8, 105#u8, 116#u8, 105#u8, 111#u8, 110#u8,
+            32#u8, 105#u8, 110#u8, 102#u8, 111#u8, 58#u8, 32#u8, 192#u8, 0#u8
+            ]) (Array.make 1#usize [ a ])
+      fail panic
+  else
+    ok
+      {
+        self
+          with
+          _debug_info :=
+            { self._debug_info with position_info := (some position) }
+      }
+
+/-- [automata_builder::automata::terms_multitape::{automata_builder::automata::terms_multitape::MultiTapeProduct}::_assign_base_indexes]: loop 0:
+    Source: 'src/automata/terms_multitape.rs', lines 407:8-410:9 -/
+@[rust_loop]
+def automata.terms_multitape.MultiTapeProduct._assign_base_indexes_loop
+  (iter : core.iter.adapters.enumerate.Enumerate (core.slice.iter.IterMut
+  automata.terms_multitape.MultiTapeTerm))
+  (back : core.iter.adapters.enumerate.Enumerate (core.slice.iter.IterMut
+  automata.terms_multitape.MultiTapeTerm) →
+  core.iter.adapters.enumerate.Enumerate (core.slice.iter.IterMut
+  automata.terms_multitape.MultiTapeTerm)) (product_idx : Std.U64) :
+  Result (core.iter.adapters.enumerate.Enumerate (core.slice.iter.IterMut
+    automata.terms_multitape.MultiTapeTerm))
+  := do
+  let (o, iter1, next_back) ←
+    core.iter.adapters.enumerate.IteratorEnumerate.next
+      (core.slice.iter.IterMut.Insts.CoreIterTraitsIteratorIteratorMutAT
+      automata.terms_multitape.MultiTapeTerm) iter
+  match o with
+  | none => ok (let e := next_back iter1 none
+                back e)
+  | some p =>
+    let (index, term) := p
+    let i ← lift (UScalar.cast .U64 index)
+    let term1 ←
+      automata.terms_multitape.MultiTapeTerm.insert_expr_position term
+        { product_idx, term_idx := i } false
+    automata.terms_multitape.MultiTapeProduct._assign_base_indexes_loop iter1
+      (fun e => let e1 := next_back e (some (index, term1))
+                back e1) product_idx
+partial_fixpoint
+
+/-- [automata_builder::automata::terms_multitape::{automata_builder::automata::terms_multitape::MultiTapeProduct}::_assign_base_indexes]:
+    Source: 'src/automata/terms_multitape.rs', lines 406:4-411:5 -/
+def automata.terms_multitape.MultiTapeProduct._assign_base_indexes
+  (self : automata.terms_multitape.MultiTapeProduct) (product_idx : Std.U64) :
+  Result automata.terms_multitape.MultiTapeProduct
+  := do
+  let (s, deref_mut_back) ← lift (alloc.vec.Vec.deref_mut self._terms)
+  let (im, iter_mut_back) ← core.slice.Slice.iter_mut s
+  let (iter, trait_default_back) ←
+    core.iter.traits.iterator.Iterator.enumerate.trait_default
+      (core.slice.iter.IterMut.Insts.CoreIterTraitsIteratorIteratorMutAT
+      automata.terms_multitape.MultiTapeTerm) im
+  let back ←
+    automata.terms_multitape.MultiTapeProduct._assign_base_indexes_loop iter
+      (fun e => e) product_idx
+  let im1 := trait_default_back back
+  let s1 := iter_mut_back im1
+  let v := deref_mut_back s1
+  ok { self with _terms := v }
+
+/-- [automata_builder::automata::terms_multitape::{impl automata_builder::automata::terms_multitape::AbstractMultiTapeExpression<automata_builder::automata::terms_multitape::MultiTapeProduct, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeProduct}::_assign_indexes_as_base]:
+    Source: 'src/automata/terms_multitape.rs', lines 666:4-668:5
+    Visibility: public -/
+def
+  automata.terms_multitape.MultiTapeProduct.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeProductMultiTapeExpression._assign_indexes_as_base
+  (self : automata.terms_multitape.MultiTapeProduct) :
+  Result automata.terms_multitape.MultiTapeProduct
+  := do
+  automata.terms_multitape.MultiTapeProduct._assign_base_indexes self 0#u64
+
+/-- [automata_builder::automata::terms_multitape::{impl automata_builder::automata::terms_multitape::AbstractMultiTapeExpression<automata_builder::automata::terms_multitape::MultiTapeProduct, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeProduct}::_get_num_terms]:
+    Source: 'src/automata/terms_multitape.rs', lines 662:4-664:5
+    Visibility: public -/
+def
+  automata.terms_multitape.MultiTapeProduct.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeProductMultiTapeExpression._get_num_terms
+  (self : automata.terms_multitape.MultiTapeProduct) : Result Std.Usize := do
+  ok (alloc.vec.Vec.len self._terms)
+
+/-- [automata_builder::automata::terms_multitape::{impl automata_builder::automata::terms_multitape::AbstractMultiTapeExpression<automata_builder::automata::terms_multitape::MultiTapeProduct, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeProduct}::to_expression]:
+    Source: 'src/automata/terms_multitape.rs', lines 652:4-654:5
+    Visibility: public -/
+def
+  automata.terms_multitape.MultiTapeProduct.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeProductMultiTapeExpression.to_expression
+  (self : automata.terms_multitape.MultiTapeProduct) :
+  Result automata.terms_multitape.MultiTapeExpression
+  := do
+  let mtp ←
+    automata.terms_multitape.MultiTapeProduct.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeProductMultiTapeExpression.copy
+      self
+  let y ←
+    lift (Std.Array.to_slice (Array.make 1#usize [ mtp ] : Array
+      automata.terms_multitape.MultiTapeProduct 1#usize))
+  let ret := alloc.slice.Slice.into_vec y
+  automata.terms_multitape.MultiTapeExpression.new ret
+
+/-- [automata_builder::automata::terms_multitape::{impl core::ops::bit::BitOr<automata_builder::automata::terms_multitape::MultiTapeExpression, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeExpression}::bitor]: loop 0:
+    Source: 'src/automata/terms_multitape.rs', lines 835:8-837:9
+    Visibility: public -/
+@[rust_loop]
+def
+  automata.terms_multitape.MultiTapeExpression.Insts.CoreOpsBitBitOrMultiTapeExpressionMultiTapeExpression.bitor_loop0
+  (iter : core.slice.iter.Iter automata.terms_multitape.MultiTapeProduct)
+  (new_products : alloc.vec.Vec automata.terms_multitape.MultiTapeProduct) :
+  Result (alloc.vec.Vec automata.terms_multitape.MultiTapeProduct)
+  := do
+  let (o, iter1) ← core.slice.iter.IteratorSliceIter.next iter
+  match o with
+  | none => ok new_products
+  | some product =>
+    let mtp ←
+      automata.terms_multitape.MultiTapeProduct.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeProductMultiTapeExpression.copy
+        product
+    let new_products1 ← alloc.vec.Vec.push new_products mtp
+    automata.terms_multitape.MultiTapeExpression.Insts.CoreOpsBitBitOrMultiTapeExpressionMultiTapeExpression.bitor_loop0
+      iter1 new_products1
+partial_fixpoint
+
+/-- [automata_builder::automata::terms_multitape::{impl core::ops::bit::BitOr<automata_builder::automata::terms_multitape::MultiTapeExpression, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeExpression}::bitor]: loop 1:
+    Source: 'src/automata/terms_multitape.rs', lines 838:8-840:9
+    Visibility: public -/
+@[rust_loop]
+def
+  automata.terms_multitape.MultiTapeExpression.Insts.CoreOpsBitBitOrMultiTapeExpressionMultiTapeExpression.bitor_loop1
+  (iter : core.slice.iter.Iter automata.terms_multitape.MultiTapeProduct)
+  (new_products : alloc.vec.Vec automata.terms_multitape.MultiTapeProduct) :
+  Result (alloc.vec.Vec automata.terms_multitape.MultiTapeProduct)
+  := do
+  let (o, iter1) ← core.slice.iter.IteratorSliceIter.next iter
+  match o with
+  | none => ok new_products
+  | some product =>
+    let mtp ←
+      automata.terms_multitape.MultiTapeProduct.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeProductMultiTapeExpression.copy
+        product
+    let new_products1 ← alloc.vec.Vec.push new_products mtp
+    automata.terms_multitape.MultiTapeExpression.Insts.CoreOpsBitBitOrMultiTapeExpressionMultiTapeExpression.bitor_loop1
+      iter1 new_products1
+partial_fixpoint
+
+/-- [automata_builder::automata::terms_multitape::{impl core::ops::bit::BitOr<automata_builder::automata::terms_multitape::MultiTapeExpression, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeExpression}::bitor]:
+    Source: 'src/automata/terms_multitape.rs', lines 833:4-842:5
+    Visibility: public -/
+def
+  automata.terms_multitape.MultiTapeExpression.Insts.CoreOpsBitBitOrMultiTapeExpressionMultiTapeExpression.bitor
+  (self : automata.terms_multitape.MultiTapeExpression)
+  (rhs : automata.terms_multitape.MultiTapeExpression) :
+  Result automata.terms_multitape.MultiTapeExpression
+  := do
+  let s := alloc.vec.Vec.deref self.products
+  let iter ← core.slice.Slice.iter s
+  let new_products ←
+    automata.terms_multitape.MultiTapeExpression.Insts.CoreOpsBitBitOrMultiTapeExpressionMultiTapeExpression.bitor_loop0
+      iter (alloc.vec.Vec.new automata.terms_multitape.MultiTapeProduct)
+  let s1 := alloc.vec.Vec.deref rhs.products
+  let iter1 ← core.slice.Slice.iter s1
+  let new_products1 ←
+    automata.terms_multitape.MultiTapeExpression.Insts.CoreOpsBitBitOrMultiTapeExpressionMultiTapeExpression.bitor_loop1
+      iter1 new_products
+  automata.terms_multitape.MultiTapeExpression.new new_products1
+
+/-- [automata_builder::automata::terms_multitape::{impl automata_builder::automata::terms_multitape::AbstractMultiTapeExpression<automata_builder::automata::terms_multitape::MultiTapeExpression, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeExpression}::_expand::{impl core::ops::function::Fn<(automata_builder::automata::terms_multitape::MultiTapeExpression, automata_builder::automata::terms_multitape::MultiTapeExpression), automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::{impl automata_builder::automata::terms_multitape::AbstractMultiTapeExpression<automata_builder::automata::terms_multitape::MultiTapeExpression, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeExpression}::_expand::{closure#2}}::call]:
+    Source: 'src/automata/terms_multitape.rs', lines 913:12-913:28 -/
+def
+  automata.terms_multitape.AbstractMultiTapeExpressionMultiTapeExpressionMultiTapeExpressionMultiTapeExpression._expand.closure_2.Insts.CoreOpsFunctionFnPairMultiTapeExpressionMultiTapeExpressionMultiTapeExpression.call
+  (c :
+  automata.terms_multitape.AbstractMultiTapeExpressionMultiTapeExpressionMultiTapeExpressionMultiTapeExpression._expand.closure_2)
+  (tupled_args : (automata.terms_multitape.MultiTapeExpression ×
+  automata.terms_multitape.MultiTapeExpression)) :
+  Result automata.terms_multitape.MultiTapeExpression
+  := do
+  let (a, b) := tupled_args
+  automata.terms_multitape.MultiTapeExpression.Insts.CoreOpsBitBitOrMultiTapeExpressionMultiTapeExpression.bitor
+    a b
+
+/-- [automata_builder::automata::terms_multitape::{impl automata_builder::automata::terms_multitape::AbstractMultiTapeExpression<automata_builder::automata::terms_multitape::MultiTapeExpression, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeExpression}::_expand::{impl core::ops::function::FnMut<(automata_builder::automata::terms_multitape::MultiTapeExpression, automata_builder::automata::terms_multitape::MultiTapeExpression), automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::{impl automata_builder::automata::terms_multitape::AbstractMultiTapeExpression<automata_builder::automata::terms_multitape::MultiTapeExpression, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeExpression}::_expand::{closure#2}}::call_mut]:
+    Source: 'src/automata/terms_multitape.rs', lines 913:12-913:28 -/
+def
+  automata.terms_multitape.AbstractMultiTapeExpressionMultiTapeExpressionMultiTapeExpressionMultiTapeExpression._expand.closure_2.Insts.CoreOpsFunctionFnMutPairMultiTapeExpressionMultiTapeExpressionMultiTapeExpression.call_mut
+  (state :
+  automata.terms_multitape.AbstractMultiTapeExpressionMultiTapeExpressionMultiTapeExpressionMultiTapeExpression._expand.closure_2)
+  (args : (automata.terms_multitape.MultiTapeExpression ×
+  automata.terms_multitape.MultiTapeExpression)) :
+  Result (automata.terms_multitape.MultiTapeExpression ×
+    automata.terms_multitape.AbstractMultiTapeExpressionMultiTapeExpressionMultiTapeExpressionMultiTapeExpression._expand.closure_2)
+  := do
+  let mte ←
+    automata.terms_multitape.AbstractMultiTapeExpressionMultiTapeExpressionMultiTapeExpressionMultiTapeExpression._expand.closure_2.Insts.CoreOpsFunctionFnPairMultiTapeExpressionMultiTapeExpressionMultiTapeExpression.call
+      state args
+  ok (mte, state)
+
+/-- [automata_builder::automata::terms_multitape::{impl automata_builder::automata::terms_multitape::AbstractMultiTapeExpression<automata_builder::automata::terms_multitape::MultiTapeExpression, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeExpression}::_expand::{impl core::ops::function::FnOnce<(automata_builder::automata::terms_multitape::MultiTapeExpression, automata_builder::automata::terms_multitape::MultiTapeExpression), automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::{impl automata_builder::automata::terms_multitape::AbstractMultiTapeExpression<automata_builder::automata::terms_multitape::MultiTapeExpression, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeExpression}::_expand::{closure#2}}::call_once]:
+    Source: 'src/automata/terms_multitape.rs', lines 913:12-913:28 -/
+def
+  automata.terms_multitape.AbstractMultiTapeExpressionMultiTapeExpressionMultiTapeExpressionMultiTapeExpression._expand.closure_2.Insts.CoreOpsFunctionFnOncePairMultiTapeExpressionMultiTapeExpressionMultiTapeExpression.call_once
+  (c :
+  automata.terms_multitape.AbstractMultiTapeExpressionMultiTapeExpressionMultiTapeExpressionMultiTapeExpression._expand.closure_2)
+  (p : (automata.terms_multitape.MultiTapeExpression ×
+  automata.terms_multitape.MultiTapeExpression)) :
+  Result automata.terms_multitape.MultiTapeExpression
+  := do
+  let (mte, _) ←
+    automata.terms_multitape.AbstractMultiTapeExpressionMultiTapeExpressionMultiTapeExpressionMultiTapeExpression._expand.closure_2.Insts.CoreOpsFunctionFnMutPairMultiTapeExpressionMultiTapeExpressionMultiTapeExpression.call_mut
+      c p
+  ok mte
+
+/-- Trait implementation: [automata_builder::automata::terms_multitape::{impl automata_builder::automata::terms_multitape::AbstractMultiTapeExpression<automata_builder::automata::terms_multitape::MultiTapeExpression, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeExpression}::_expand::{impl core::ops::function::FnOnce<(automata_builder::automata::terms_multitape::MultiTapeExpression, automata_builder::automata::terms_multitape::MultiTapeExpression), automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::{impl automata_builder::automata::terms_multitape::AbstractMultiTapeExpression<automata_builder::automata::terms_multitape::MultiTapeExpression, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeExpression}::_expand::{closure#2}}]
+    Source: 'src/automata/terms_multitape.rs', lines 913:12-913:28 -/
+@[reducible]
+def
+  automata.terms_multitape.AbstractMultiTapeExpressionMultiTapeExpressionMultiTapeExpressionMultiTapeExpression._expand.closure_2.Insts.CoreOpsFunctionFnOncePairMultiTapeExpressionMultiTapeExpressionMultiTapeExpression
+  : core.ops.function.FnOnce
+  automata.terms_multitape.AbstractMultiTapeExpressionMultiTapeExpressionMultiTapeExpressionMultiTapeExpression._expand.closure_2
+  (automata.terms_multitape.MultiTapeExpression ×
+  automata.terms_multitape.MultiTapeExpression)
+  automata.terms_multitape.MultiTapeExpression := {
+  call_once :=
+    automata.terms_multitape.AbstractMultiTapeExpressionMultiTapeExpressionMultiTapeExpressionMultiTapeExpression._expand.closure_2.Insts.CoreOpsFunctionFnOncePairMultiTapeExpressionMultiTapeExpressionMultiTapeExpression.call_once
+}
+
+/-- Trait implementation: [automata_builder::automata::terms_multitape::{impl automata_builder::automata::terms_multitape::AbstractMultiTapeExpression<automata_builder::automata::terms_multitape::MultiTapeExpression, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeExpression}::_expand::{impl core::ops::function::FnMut<(automata_builder::automata::terms_multitape::MultiTapeExpression, automata_builder::automata::terms_multitape::MultiTapeExpression), automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::{impl automata_builder::automata::terms_multitape::AbstractMultiTapeExpression<automata_builder::automata::terms_multitape::MultiTapeExpression, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeExpression}::_expand::{closure#2}}]
+    Source: 'src/automata/terms_multitape.rs', lines 913:12-913:28 -/
+@[reducible]
+def
+  automata.terms_multitape.AbstractMultiTapeExpressionMultiTapeExpressionMultiTapeExpressionMultiTapeExpression._expand.closure_2.Insts.CoreOpsFunctionFnMutPairMultiTapeExpressionMultiTapeExpressionMultiTapeExpression
+  : core.ops.function.FnMut
+  automata.terms_multitape.AbstractMultiTapeExpressionMultiTapeExpressionMultiTapeExpressionMultiTapeExpression._expand.closure_2
+  (automata.terms_multitape.MultiTapeExpression ×
+  automata.terms_multitape.MultiTapeExpression)
+  automata.terms_multitape.MultiTapeExpression := {
+  FnOnceInst :=
+    automata.terms_multitape.AbstractMultiTapeExpressionMultiTapeExpressionMultiTapeExpressionMultiTapeExpression._expand.closure_2.Insts.CoreOpsFunctionFnOncePairMultiTapeExpressionMultiTapeExpressionMultiTapeExpression
+  call_mut :=
+    automata.terms_multitape.AbstractMultiTapeExpressionMultiTapeExpressionMultiTapeExpressionMultiTapeExpression._expand.closure_2.Insts.CoreOpsFunctionFnMutPairMultiTapeExpressionMultiTapeExpressionMultiTapeExpression.call_mut
+}
+
+/-- Trait implementation: [automata_builder::automata::terms_multitape::{impl automata_builder::automata::terms_multitape::AbstractMultiTapeExpression<automata_builder::automata::terms_multitape::MultiTapeExpression, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeExpression}::_expand::{impl core::ops::function::Fn<(automata_builder::automata::terms_multitape::MultiTapeExpression, automata_builder::automata::terms_multitape::MultiTapeExpression), automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::{impl automata_builder::automata::terms_multitape::AbstractMultiTapeExpression<automata_builder::automata::terms_multitape::MultiTapeExpression, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeExpression}::_expand::{closure#2}}]
+    Source: 'src/automata/terms_multitape.rs', lines 913:12-913:28 -/
+@[reducible]
+def
+  automata.terms_multitape.AbstractMultiTapeExpressionMultiTapeExpressionMultiTapeExpressionMultiTapeExpression._expand.closure_2.Insts.CoreOpsFunctionFnPairMultiTapeExpressionMultiTapeExpressionMultiTapeExpression
+  : core.ops.function.Fn
+  automata.terms_multitape.AbstractMultiTapeExpressionMultiTapeExpressionMultiTapeExpressionMultiTapeExpression._expand.closure_2
+  (automata.terms_multitape.MultiTapeExpression ×
+  automata.terms_multitape.MultiTapeExpression)
+  automata.terms_multitape.MultiTapeExpression := {
+  FnMutInst :=
+    automata.terms_multitape.AbstractMultiTapeExpressionMultiTapeExpressionMultiTapeExpressionMultiTapeExpression._expand.closure_2.Insts.CoreOpsFunctionFnMutPairMultiTapeExpressionMultiTapeExpressionMultiTapeExpression
+  call :=
+    automata.terms_multitape.AbstractMultiTapeExpressionMultiTapeExpressionMultiTapeExpressionMultiTapeExpression._expand.closure_2.Insts.CoreOpsFunctionFnPairMultiTapeExpressionMultiTapeExpressionMultiTapeExpression.call
+}
+
+/-- [automata_builder::automata::terms_multitape::{impl automata_builder::automata::terms_multitape::AbstractMultiTapeExpression<automata_builder::automata::terms_multitape::MultiTapeExpression, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeExpression}::_expand::{impl core::ops::function::Fn<(), automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::{impl automata_builder::automata::terms_multitape::AbstractMultiTapeExpression<automata_builder::automata::terms_multitape::MultiTapeExpression, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeExpression}::_expand::{closure#1}}::call]:
+    Source: 'src/automata/terms_multitape.rs', lines 912:12-912:47 -/
+def
+  automata.terms_multitape.AbstractMultiTapeExpressionMultiTapeExpressionMultiTapeExpressionMultiTapeExpression._expand.closure_1.Insts.CoreOpsFunctionFnTupleMultiTapeExpression.call
+  (c :
+  automata.terms_multitape.AbstractMultiTapeExpressionMultiTapeExpressionMultiTapeExpressionMultiTapeExpression._expand.closure_1)
+  (_ : Unit) :
+  Result automata.terms_multitape.MultiTapeExpression
+  := do
+  automata.terms_multitape.MultiTapeExpression.new (alloc.vec.Vec.new
+    automata.terms_multitape.MultiTapeProduct)
+
+/-- [automata_builder::automata::terms_multitape::{impl automata_builder::automata::terms_multitape::AbstractMultiTapeExpression<automata_builder::automata::terms_multitape::MultiTapeExpression, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeExpression}::_expand::{impl core::ops::function::FnMut<(), automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::{impl automata_builder::automata::terms_multitape::AbstractMultiTapeExpression<automata_builder::automata::terms_multitape::MultiTapeExpression, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeExpression}::_expand::{closure#1}}::call_mut]:
+    Source: 'src/automata/terms_multitape.rs', lines 912:12-912:47 -/
+def
+  automata.terms_multitape.AbstractMultiTapeExpressionMultiTapeExpressionMultiTapeExpressionMultiTapeExpression._expand.closure_1.Insts.CoreOpsFunctionFnMutTupleMultiTapeExpression.call_mut
+  (state :
+  automata.terms_multitape.AbstractMultiTapeExpressionMultiTapeExpressionMultiTapeExpressionMultiTapeExpression._expand.closure_1)
+  (_ : Unit) :
+  Result (automata.terms_multitape.MultiTapeExpression ×
+    automata.terms_multitape.AbstractMultiTapeExpressionMultiTapeExpressionMultiTapeExpressionMultiTapeExpression._expand.closure_1)
+  := do
+  let mte ←
+    automata.terms_multitape.AbstractMultiTapeExpressionMultiTapeExpressionMultiTapeExpressionMultiTapeExpression._expand.closure_1.Insts.CoreOpsFunctionFnTupleMultiTapeExpression.call
+      state ()
+  ok (mte, state)
+
+/-- [automata_builder::automata::terms_multitape::{impl automata_builder::automata::terms_multitape::AbstractMultiTapeExpression<automata_builder::automata::terms_multitape::MultiTapeExpression, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeExpression}::_expand::{impl core::ops::function::FnOnce<(), automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::{impl automata_builder::automata::terms_multitape::AbstractMultiTapeExpression<automata_builder::automata::terms_multitape::MultiTapeExpression, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeExpression}::_expand::{closure#1}}::call_once]:
+    Source: 'src/automata/terms_multitape.rs', lines 912:12-912:47 -/
+def
+  automata.terms_multitape.AbstractMultiTapeExpressionMultiTapeExpressionMultiTapeExpressionMultiTapeExpression._expand.closure_1.Insts.CoreOpsFunctionFnOnceTupleMultiTapeExpression.call_once
+  (c :
+  automata.terms_multitape.AbstractMultiTapeExpressionMultiTapeExpressionMultiTapeExpressionMultiTapeExpression._expand.closure_1)
+  (_ : Unit) :
+  Result automata.terms_multitape.MultiTapeExpression
+  := do
+  let (mte, _) ←
+    automata.terms_multitape.AbstractMultiTapeExpressionMultiTapeExpressionMultiTapeExpressionMultiTapeExpression._expand.closure_1.Insts.CoreOpsFunctionFnMutTupleMultiTapeExpression.call_mut
+      c ()
+  ok mte
+
+/-- Trait implementation: [automata_builder::automata::terms_multitape::{impl automata_builder::automata::terms_multitape::AbstractMultiTapeExpression<automata_builder::automata::terms_multitape::MultiTapeExpression, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeExpression}::_expand::{impl core::ops::function::FnOnce<(), automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::{impl automata_builder::automata::terms_multitape::AbstractMultiTapeExpression<automata_builder::automata::terms_multitape::MultiTapeExpression, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeExpression}::_expand::{closure#1}}]
+    Source: 'src/automata/terms_multitape.rs', lines 912:12-912:47 -/
+@[reducible]
+def
+  automata.terms_multitape.AbstractMultiTapeExpressionMultiTapeExpressionMultiTapeExpressionMultiTapeExpression._expand.closure_1.Insts.CoreOpsFunctionFnOnceTupleMultiTapeExpression
+  : core.ops.function.FnOnce
+  automata.terms_multitape.AbstractMultiTapeExpressionMultiTapeExpressionMultiTapeExpressionMultiTapeExpression._expand.closure_1
+  Unit automata.terms_multitape.MultiTapeExpression := {
+  call_once :=
+    automata.terms_multitape.AbstractMultiTapeExpressionMultiTapeExpressionMultiTapeExpressionMultiTapeExpression._expand.closure_1.Insts.CoreOpsFunctionFnOnceTupleMultiTapeExpression.call_once
+}
+
+/-- Trait implementation: [automata_builder::automata::terms_multitape::{impl automata_builder::automata::terms_multitape::AbstractMultiTapeExpression<automata_builder::automata::terms_multitape::MultiTapeExpression, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeExpression}::_expand::{impl core::ops::function::FnMut<(), automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::{impl automata_builder::automata::terms_multitape::AbstractMultiTapeExpression<automata_builder::automata::terms_multitape::MultiTapeExpression, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeExpression}::_expand::{closure#1}}]
+    Source: 'src/automata/terms_multitape.rs', lines 912:12-912:47 -/
+@[reducible]
+def
+  automata.terms_multitape.AbstractMultiTapeExpressionMultiTapeExpressionMultiTapeExpressionMultiTapeExpression._expand.closure_1.Insts.CoreOpsFunctionFnMutTupleMultiTapeExpression
+  : core.ops.function.FnMut
+  automata.terms_multitape.AbstractMultiTapeExpressionMultiTapeExpressionMultiTapeExpressionMultiTapeExpression._expand.closure_1
+  Unit automata.terms_multitape.MultiTapeExpression := {
+  FnOnceInst :=
+    automata.terms_multitape.AbstractMultiTapeExpressionMultiTapeExpressionMultiTapeExpressionMultiTapeExpression._expand.closure_1.Insts.CoreOpsFunctionFnOnceTupleMultiTapeExpression
+  call_mut :=
+    automata.terms_multitape.AbstractMultiTapeExpressionMultiTapeExpressionMultiTapeExpressionMultiTapeExpression._expand.closure_1.Insts.CoreOpsFunctionFnMutTupleMultiTapeExpression.call_mut
+}
+
+/-- Trait implementation: [automata_builder::automata::terms_multitape::{impl automata_builder::automata::terms_multitape::AbstractMultiTapeExpression<automata_builder::automata::terms_multitape::MultiTapeExpression, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeExpression}::_expand::{impl core::ops::function::Fn<(), automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::{impl automata_builder::automata::terms_multitape::AbstractMultiTapeExpression<automata_builder::automata::terms_multitape::MultiTapeExpression, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeExpression}::_expand::{closure#1}}]
+    Source: 'src/automata/terms_multitape.rs', lines 912:12-912:47 -/
+@[reducible]
+def
+  automata.terms_multitape.AbstractMultiTapeExpressionMultiTapeExpressionMultiTapeExpressionMultiTapeExpression._expand.closure_1.Insts.CoreOpsFunctionFnTupleMultiTapeExpression
+  : core.ops.function.Fn
+  automata.terms_multitape.AbstractMultiTapeExpressionMultiTapeExpressionMultiTapeExpressionMultiTapeExpression._expand.closure_1
+  Unit automata.terms_multitape.MultiTapeExpression := {
+  FnMutInst :=
+    automata.terms_multitape.AbstractMultiTapeExpressionMultiTapeExpressionMultiTapeExpressionMultiTapeExpression._expand.closure_1.Insts.CoreOpsFunctionFnMutTupleMultiTapeExpression
+  call :=
+    automata.terms_multitape.AbstractMultiTapeExpressionMultiTapeExpressionMultiTapeExpressionMultiTapeExpression._expand.closure_1.Insts.CoreOpsFunctionFnTupleMultiTapeExpression.call
+}
+
+/-- [automata_builder::automata::terms_multitape::{impl core::ops::arith::Mul<automata_builder::automata::terms_multitape::MultiTapeProduct, automata_builder::automata::terms_multitape::MultiTapeProduct> for automata_builder::automata::terms_multitape::MultiTapeProduct}::mul]: loop 0:
+    Source: 'src/automata/terms_multitape.rs', lines 504:8-506:9
+    Visibility: public -/
+@[rust_loop]
+def
+  automata.terms_multitape.MultiTapeProduct.Insts.CoreOpsArithMulMultiTapeProductMultiTapeProduct.mul_loop0
+  (iter : core.slice.iter.Iter automata.terms_multitape.MultiTapeTerm)
+  (new_terms : alloc.vec.Vec automata.terms_multitape.MultiTapeTerm) :
+  Result (alloc.vec.Vec automata.terms_multitape.MultiTapeTerm)
+  := do
+  let (o, iter1) ← core.slice.iter.IteratorSliceIter.next iter
+  match o with
+  | none => ok new_terms
+  | some term =>
+    let mtt ←
+      automata.terms_multitape.MultiTapeTerm.Insts.CoreCloneClone.clone term
+    let new_terms1 ← alloc.vec.Vec.push new_terms mtt
+    automata.terms_multitape.MultiTapeProduct.Insts.CoreOpsArithMulMultiTapeProductMultiTapeProduct.mul_loop0
+      iter1 new_terms1
+partial_fixpoint
+
+/-- [automata_builder::automata::terms_multitape::{impl core::ops::arith::Mul<automata_builder::automata::terms_multitape::MultiTapeProduct, automata_builder::automata::terms_multitape::MultiTapeProduct> for automata_builder::automata::terms_multitape::MultiTapeProduct}::mul]: loop 1:
+    Source: 'src/automata/terms_multitape.rs', lines 507:8-509:9
+    Visibility: public -/
+@[rust_loop]
+def
+  automata.terms_multitape.MultiTapeProduct.Insts.CoreOpsArithMulMultiTapeProductMultiTapeProduct.mul_loop1
+  (iter : core.slice.iter.Iter automata.terms_multitape.MultiTapeTerm)
+  (new_terms : alloc.vec.Vec automata.terms_multitape.MultiTapeTerm) :
+  Result (alloc.vec.Vec automata.terms_multitape.MultiTapeTerm)
+  := do
+  let (o, iter1) ← core.slice.iter.IteratorSliceIter.next iter
+  match o with
+  | none => ok new_terms
+  | some term =>
+    let mtt ←
+      automata.terms_multitape.MultiTapeTerm.Insts.CoreCloneClone.clone term
+    let new_terms1 ← alloc.vec.Vec.push new_terms mtt
+    automata.terms_multitape.MultiTapeProduct.Insts.CoreOpsArithMulMultiTapeProductMultiTapeProduct.mul_loop1
+      iter1 new_terms1
+partial_fixpoint
+
+/-- [automata_builder::automata::terms_multitape::{impl core::ops::arith::Mul<automata_builder::automata::terms_multitape::MultiTapeProduct, automata_builder::automata::terms_multitape::MultiTapeProduct> for automata_builder::automata::terms_multitape::MultiTapeProduct}::mul]:
+    Source: 'src/automata/terms_multitape.rs', lines 502:4-514:5
+    Visibility: public -/
+def
+  automata.terms_multitape.MultiTapeProduct.Insts.CoreOpsArithMulMultiTapeProductMultiTapeProduct.mul
+  (self : automata.terms_multitape.MultiTapeProduct)
+  (rhs : automata.terms_multitape.MultiTapeProduct) :
+  Result automata.terms_multitape.MultiTapeProduct
+  := do
+  let s := alloc.vec.Vec.deref self._terms
+  let iter ← core.slice.Slice.iter s
+  let new_terms ←
+    automata.terms_multitape.MultiTapeProduct.Insts.CoreOpsArithMulMultiTapeProductMultiTapeProduct.mul_loop0
+      iter (alloc.vec.Vec.new automata.terms_multitape.MultiTapeTerm)
+  let s1 := alloc.vec.Vec.deref rhs._terms
+  let iter1 ← core.slice.Slice.iter s1
+  let new_terms1 ←
+    automata.terms_multitape.MultiTapeProduct.Insts.CoreOpsArithMulMultiTapeProductMultiTapeProduct.mul_loop1
+      iter1 new_terms
+  let mtpf ← automata.terms_multitape.MultiTapeProductFactory.new new_terms1
+  if self._optimized
+  then
+    let (mtpf1, _) ←
+      automata.terms_multitape.MultiTapeProductFactory.with_optimized mtpf
+        rhs._optimized
+    automata.terms_multitape.MultiTapeProductFactory.to_product mtpf1
+  else
+    let (mtpf1, _) ←
+      automata.terms_multitape.MultiTapeProductFactory.with_optimized mtpf
+        false
+    automata.terms_multitape.MultiTapeProductFactory.to_product mtpf1
+
+/-- [automata_builder::automata::terms_multitape::{impl core::ops::arith::Mul<automata_builder::automata::terms_multitape::MultiTapeExpression, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeExpression}::mul]: loop 1:
+    Source: 'src/automata/terms_multitape.rs', lines 798:12-801:13
+    Visibility: public -/
+@[rust_loop]
+def
+  automata.terms_multitape.MultiTapeExpression.Insts.CoreOpsArithMulMultiTapeExpressionMultiTapeExpression.mul_loop0_loop0
+  (iter : core.slice.iter.Iter automata.terms_multitape.MultiTapeProduct)
+  (multiplied_products : alloc.vec.Vec
+  automata.terms_multitape.MultiTapeProduct)
+  (product : automata.terms_multitape.MultiTapeProduct) :
+  Result (alloc.vec.Vec automata.terms_multitape.MultiTapeProduct)
+  := do
+  let (o, iter1) ← core.slice.iter.IteratorSliceIter.next iter
+  match o with
+  | none => ok multiplied_products
+  | some rhs_product =>
+    let mtp ←
+      automata.terms_multitape.MultiTapeProduct.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeProductMultiTapeExpression.copy
+        product
+    let mtp1 ←
+      automata.terms_multitape.MultiTapeProduct.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeProductMultiTapeExpression.copy
+        rhs_product
+    let new_product ←
+      automata.terms_multitape.MultiTapeProduct.Insts.CoreOpsArithMulMultiTapeProductMultiTapeProduct.mul
+        mtp mtp1
+    let multiplied_products1 ←
+      alloc.vec.Vec.push multiplied_products new_product
+    automata.terms_multitape.MultiTapeExpression.Insts.CoreOpsArithMulMultiTapeExpressionMultiTapeExpression.mul_loop0_loop0
+      iter1 multiplied_products1 product
+partial_fixpoint
+
+/-- [automata_builder::automata::terms_multitape::{impl core::ops::arith::Mul<automata_builder::automata::terms_multitape::MultiTapeExpression, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeExpression}::mul]: loop 0:
+    Source: 'src/automata/terms_multitape.rs', lines 797:8-802:9
+    Visibility: public -/
+@[rust_loop]
+def
+  automata.terms_multitape.MultiTapeExpression.Insts.CoreOpsArithMulMultiTapeExpressionMultiTapeExpression.mul_loop0
+  (iter : core.slice.iter.Iter automata.terms_multitape.MultiTapeProduct)
+  (rhs : automata.terms_multitape.MultiTapeExpression)
+  (multiplied_products : alloc.vec.Vec
+  automata.terms_multitape.MultiTapeProduct) :
+  Result (alloc.vec.Vec automata.terms_multitape.MultiTapeProduct)
+  := do
+  let (o, iter1) ← core.slice.iter.IteratorSliceIter.next iter
+  match o with
+  | none => ok multiplied_products
+  | some product =>
+    let s := alloc.vec.Vec.deref rhs.products
+    let iter2 ← core.slice.Slice.iter s
+    let multiplied_products1 ←
+      automata.terms_multitape.MultiTapeExpression.Insts.CoreOpsArithMulMultiTapeExpressionMultiTapeExpression.mul_loop0_loop0
+        iter2 multiplied_products product
+    automata.terms_multitape.MultiTapeExpression.Insts.CoreOpsArithMulMultiTapeExpressionMultiTapeExpression.mul_loop0
+      iter1 rhs multiplied_products1
+partial_fixpoint
+
+/-- [automata_builder::automata::terms_multitape::{impl core::ops::arith::Mul<automata_builder::automata::terms_multitape::MultiTapeExpression, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeExpression}::mul]:
+    Source: 'src/automata/terms_multitape.rs', lines 795:4-804:5
+    Visibility: public -/
+def
+  automata.terms_multitape.MultiTapeExpression.Insts.CoreOpsArithMulMultiTapeExpressionMultiTapeExpression.mul
+  (self : automata.terms_multitape.MultiTapeExpression)
+  (rhs : automata.terms_multitape.MultiTapeExpression) :
+  Result automata.terms_multitape.MultiTapeExpression
+  := do
+  let s := alloc.vec.Vec.deref self.products
+  let iter ← core.slice.Slice.iter s
+  let multiplied_products ←
+    automata.terms_multitape.MultiTapeExpression.Insts.CoreOpsArithMulMultiTapeExpressionMultiTapeExpression.mul_loop0
+      iter rhs (alloc.vec.Vec.new automata.terms_multitape.MultiTapeProduct)
+  automata.terms_multitape.MultiTapeExpression.new multiplied_products
+
+/-- [automata_builder::automata::terms_multitape::{automata_builder::automata::terms_multitape::MultiTapeExpression}::_assign_expr_positions]: loop 0:
+    Source: 'src/automata/terms_multitape.rs', lines 726:8-728:9
+    Visibility: public -/
+@[rust_loop]
+def automata.terms_multitape.MultiTapeExpression._assign_expr_positions_loop
+  (iter : core.iter.adapters.enumerate.Enumerate (core.slice.iter.IterMut
+  automata.terms_multitape.MultiTapeProduct))
+  (back : core.iter.adapters.enumerate.Enumerate (core.slice.iter.IterMut
+  automata.terms_multitape.MultiTapeProduct) →
+  core.iter.adapters.enumerate.Enumerate (core.slice.iter.IterMut
+  automata.terms_multitape.MultiTapeProduct)) :
+  Result (core.iter.adapters.enumerate.Enumerate (core.slice.iter.IterMut
+    automata.terms_multitape.MultiTapeProduct))
+  := do
+  let (o, iter1, next_back) ←
+    core.iter.adapters.enumerate.IteratorEnumerate.next
+      (core.slice.iter.IterMut.Insts.CoreIterTraitsIteratorIteratorMutAT
+      automata.terms_multitape.MultiTapeProduct) iter
+  match o with
+  | none => ok (let e := next_back iter1 none
+                back e)
+  | some p =>
+    let (product_index, product) := p
+    let i ← lift (UScalar.cast .U64 product_index)
+    let product1 ←
+      automata.terms_multitape.MultiTapeProduct._assign_base_indexes product i
+    automata.terms_multitape.MultiTapeExpression._assign_expr_positions_loop
+      iter1
+      (fun e => let e1 := next_back e (some (product_index, product1))
+                back e1)
+partial_fixpoint
+
+/-- [automata_builder::automata::terms_multitape::{automata_builder::automata::terms_multitape::MultiTapeExpression}::_assign_expr_positions]:
+    Source: 'src/automata/terms_multitape.rs', lines 725:4-729:5
+    Visibility: public -/
+def automata.terms_multitape.MultiTapeExpression._assign_expr_positions
+  (self : automata.terms_multitape.MultiTapeExpression) :
+  Result automata.terms_multitape.MultiTapeExpression
+  := do
+  let (s, deref_mut_back) ← lift (alloc.vec.Vec.deref_mut self.products)
+  let (im, iter_mut_back) ← core.slice.Slice.iter_mut s
+  let (iter, trait_default_back) ←
+    core.iter.traits.iterator.Iterator.enumerate.trait_default
+      (core.slice.iter.IterMut.Insts.CoreIterTraitsIteratorIteratorMutAT
+      automata.terms_multitape.MultiTapeProduct) im
+  let back ←
+    automata.terms_multitape.MultiTapeExpression._assign_expr_positions_loop
+      iter (fun e => e)
+  let im1 := trait_default_back back
+  let s1 := iter_mut_back im1
+  let v := deref_mut_back s1
+  ok { self with products := v }
+
+/-- [automata_builder::automata::terms_multitape::{automata_builder::automata::terms_multitape::MultiTapeProduct}::new]:
+    Source: 'src/automata/terms_multitape.rs', lines 365:4-367:5
+    Visibility: public -/
+def automata.terms_multitape.MultiTapeProduct.new
+  (terms : alloc.vec.Vec automata.terms_multitape.MultiTapeTerm) :
+  Result automata.terms_multitape.MultiTapeProduct
+  := do
+  let mtpf ← automata.terms_multitape.MultiTapeProductFactory.new terms
+  automata.terms_multitape.MultiTapeProductFactory.to_product mtpf
+
+/-- [automata_builder::automata::terms::{automata_builder::automata::terms::ExprDebugInfo}::spawn_empty]:
+    Source: 'src/automata/terms.rs', lines 47:4-53:5
+    Visibility: public -/
+def automata.terms.ExprDebugInfo.spawn_empty
+  : Result automata.terms.ExprDebugInfo := do
+  ok
+    {
+      expansion_index := 0#u16,
+      position_info := none,
+      parent_position_info := none
+    }
+
+/-- [automata_builder::automata::terms_multitape::{automata_builder::automata::terms_multitape::MultiTapeTerm}::new]:
+    Source: 'src/automata/terms_multitape.rs', lines 106:4-111:5
+    Visibility: public -/
+def automata.terms_multitape.MultiTapeTerm.new
+  (position : Std.I64) (state : (Std.U16 × Std.U32)) (optimized : Bool) :
+  Result automata.terms_multitape.MultiTapeTerm
+  := do
+  let edi ← automata.terms.ExprDebugInfo.spawn_empty
+  ok { position, state, _optimized := optimized, _debug_info := edi }
+
+/-- [automata_builder::automata::terms_multitape::{impl automata_builder::automata::terms_multitape::AbstractMultiTapeExpression<automata_builder::automata::terms_multitape::MultiTapeProduct, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeTerm}::offset]:
+    Source: 'src/automata/terms_multitape.rs', lines 260:4-262:5
+    Visibility: public -/
+def
+  automata.terms_multitape.MultiTapeTerm.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeProductMultiTapeExpression.offset
+  (self : automata.terms_multitape.MultiTapeTerm) (offset : Std.I64) :
+  Result automata.terms_multitape.MultiTapeTerm
+  := do
+  let i ← self.position + offset
+  automata.terms_multitape.MultiTapeTerm.new i self.state self._optimized
+
+/-- [automata_builder::automata::terms_multitape::{impl automata_builder::automata::terms_multitape::AbstractMultiTapeExpression<automata_builder::automata::terms_multitape::MultiTapeProduct, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeProduct}::offset]: loop 0:
+    Source: 'src/automata/terms_multitape.rs', lines 608:8-610:9
+    Visibility: public -/
+@[rust_loop]
+def
+  automata.terms_multitape.MultiTapeProduct.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeProductMultiTapeExpression.offset_loop
+  (iter : core.slice.iter.Iter automata.terms_multitape.MultiTapeTerm)
+  (offset : Std.I64)
+  (new_terms : alloc.vec.Vec automata.terms_multitape.MultiTapeTerm) :
+  Result (alloc.vec.Vec automata.terms_multitape.MultiTapeTerm)
+  := do
+  let (o, iter1) ← core.slice.iter.IteratorSliceIter.next iter
+  match o with
+  | none => ok new_terms
+  | some term =>
+    let mtt ←
+      automata.terms_multitape.MultiTapeTerm.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeProductMultiTapeExpression.offset
+        term offset
+    let new_terms1 ← alloc.vec.Vec.push new_terms mtt
+    automata.terms_multitape.MultiTapeProduct.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeProductMultiTapeExpression.offset_loop
+      iter1 offset new_terms1
+partial_fixpoint
+
+/-- [automata_builder::automata::terms_multitape::{impl automata_builder::automata::terms_multitape::AbstractMultiTapeExpression<automata_builder::automata::terms_multitape::MultiTapeProduct, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeProduct}::offset]:
+    Source: 'src/automata/terms_multitape.rs', lines 606:4-612:5
+    Visibility: public -/
+def
+  automata.terms_multitape.MultiTapeProduct.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeProductMultiTapeExpression.offset
+  (self : automata.terms_multitape.MultiTapeProduct) (offset : Std.I64) :
+  Result automata.terms_multitape.MultiTapeProduct
+  := do
+  let s := alloc.vec.Vec.deref self._terms
+  let iter ← core.slice.Slice.iter s
+  let new_terms ←
+    automata.terms_multitape.MultiTapeProduct.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeProductMultiTapeExpression.offset_loop
+      iter offset (alloc.vec.Vec.new automata.terms_multitape.MultiTapeTerm)
+  automata.terms_multitape.MultiTapeProduct.new new_terms
+
+/-- [automata_builder::automata::terms_multitape::{impl automata_builder::automata::terms_multitape::AbstractMultiTapeExpression<automata_builder::automata::terms_multitape::MultiTapeExpression, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeExpression}::offset]: loop 0:
+    Source: 'src/automata/terms_multitape.rs', lines 890:8-892:9
+    Visibility: public -/
+@[rust_loop]
+def
+  automata.terms_multitape.MultiTapeExpression.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeExpressionMultiTapeExpression.offset_loop
+  (iter : core.slice.iter.Iter automata.terms_multitape.MultiTapeProduct)
+  (offset : Std.I64)
+  (products : alloc.vec.Vec automata.terms_multitape.MultiTapeProduct) :
+  Result (alloc.vec.Vec automata.terms_multitape.MultiTapeProduct)
+  := do
+  let (o, iter1) ← core.slice.iter.IteratorSliceIter.next iter
+  match o with
+  | none => ok products
+  | some product =>
+    let mtp ←
+      automata.terms_multitape.MultiTapeProduct.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeProductMultiTapeExpression.offset
+        product offset
+    let products1 ← alloc.vec.Vec.push products mtp
+    automata.terms_multitape.MultiTapeExpression.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeExpressionMultiTapeExpression.offset_loop
+      iter1 offset products1
+partial_fixpoint
+
+/-- [automata_builder::automata::terms_multitape::{impl automata_builder::automata::terms_multitape::AbstractMultiTapeExpression<automata_builder::automata::terms_multitape::MultiTapeExpression, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeExpression}::offset]:
+    Source: 'src/automata/terms_multitape.rs', lines 888:4-894:5
+    Visibility: public -/
+def
+  automata.terms_multitape.MultiTapeExpression.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeExpressionMultiTapeExpression.offset
+  (self : automata.terms_multitape.MultiTapeExpression) (offset : Std.I64) :
+  Result automata.terms_multitape.MultiTapeExpression
+  := do
+  let s := alloc.vec.Vec.deref self.products
+  let iter ← core.slice.Slice.iter s
+  let products ←
+    automata.terms_multitape.MultiTapeExpression.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeExpressionMultiTapeExpression.offset_loop
+      iter offset (alloc.vec.Vec.new automata.terms_multitape.MultiTapeProduct)
+  automata.terms_multitape.MultiTapeExpression.new products
+
+/-- [automata_builder::automata::terms_multitape::{impl core::cmp::Ord for automata_builder::automata::terms_multitape::MultiTapeTerm}::cmp::{impl core::ops::function::FnOnce<(), core::cmp::Ordering> for automata_builder::automata::terms_multitape::{impl core::cmp::Ord for automata_builder::automata::terms_multitape::MultiTapeTerm}::cmp::{closure}<'_0, '_1>}::call_once]:
+    Source: 'src/automata/terms_multitape.rs', lines 95:23-95:54 -/
+def
+  automata.terms_multitape.OrdMultiTapeTerm.cmp.closure.Insts.CoreOpsFunctionFnOnceTupleOrdering.call_once
+  (c : automata.terms_multitape.OrdMultiTapeTerm.cmp.closure) (_ : Unit) :
+  Result Ordering
+  := do
+  let (mtt, mtt1) := c
+  Pair.Insts.CoreCmpOrd.cmp core.cmp.OrdU16 core.cmp.OrdU32 mtt.state
+    mtt1.state
+
+/-- Trait implementation: [automata_builder::automata::terms_multitape::{impl core::cmp::Ord for automata_builder::automata::terms_multitape::MultiTapeTerm}::cmp::{impl core::ops::function::FnOnce<(), core::cmp::Ordering> for automata_builder::automata::terms_multitape::{impl core::cmp::Ord for automata_builder::automata::terms_multitape::MultiTapeTerm}::cmp::{closure}<'_0, '_1>}]
+    Source: 'src/automata/terms_multitape.rs', lines 95:23-95:54 -/
+@[reducible]
+def
+  automata.terms_multitape.OrdMultiTapeTerm.cmp.closure.Insts.CoreOpsFunctionFnOnceTupleOrdering
+  : core.ops.function.FnOnce
+  automata.terms_multitape.OrdMultiTapeTerm.cmp.closure Unit Ordering := {
+  call_once :=
+    automata.terms_multitape.OrdMultiTapeTerm.cmp.closure.Insts.CoreOpsFunctionFnOnceTupleOrdering.call_once
+}
+
+/-- [automata_builder::automata::terms_multitape::{impl core::cmp::Ord for automata_builder::automata::terms_multitape::MultiTapeTerm}::cmp]:
+    Source: 'src/automata/terms_multitape.rs', lines 93:4-96:5
+    Visibility: public -/
+def automata.terms_multitape.MultiTapeTerm.Insts.CoreCmpOrd.cmp
+  (self : automata.terms_multitape.MultiTapeTerm)
+  (other : automata.terms_multitape.MultiTapeTerm) :
+  Result Ordering
+  := do
+  let o ← lift (core.cmp.impls.OrdI64.cmp self.position other.position)
+  core.cmp.Ordering.then_with
+    automata.terms_multitape.OrdMultiTapeTerm.cmp.closure.Insts.CoreOpsFunctionFnOnceTupleOrdering
+    o (self, other)
+
+/-- [automata_builder::automata::terms_multitape::{impl core::cmp::PartialOrd<automata_builder::automata::terms_multitape::MultiTapeTerm> for automata_builder::automata::terms_multitape::MultiTapeTerm}::partial_cmp]:
+    Source: 'src/automata/terms_multitape.rs', lines 88:4-90:5
+    Visibility: public -/
+def
+  automata.terms_multitape.MultiTapeTerm.Insts.CoreCmpPartialOrdMultiTapeTerm.partial_cmp
+  (self : automata.terms_multitape.MultiTapeTerm)
+  (other : automata.terms_multitape.MultiTapeTerm) :
+  Result (Option Ordering)
+  := do
+  let o ←
+    automata.terms_multitape.MultiTapeTerm.Insts.CoreCmpOrd.cmp self other
+  ok (some o)
+
+/-- Trait implementation: [automata_builder::automata::terms_multitape::{impl core::cmp::PartialOrd<automata_builder::automata::terms_multitape::MultiTapeTerm> for automata_builder::automata::terms_multitape::MultiTapeTerm}]
+    Source: 'src/automata/terms_multitape.rs', lines 87:0-91:1 -/
+@[reducible]
+impl_def
+  automata.terms_multitape.MultiTapeTerm.Insts.CoreCmpPartialOrdMultiTapeTerm :
+  core.cmp.PartialOrd automata.terms_multitape.MultiTapeTerm
+  automata.terms_multitape.MultiTapeTerm := {
+  partialEqInst :=
+    automata.terms_multitape.MultiTapeTerm.Insts.CoreCmpPartialEqMultiTapeTerm
+  partial_cmp :=
+    automata.terms_multitape.MultiTapeTerm.Insts.CoreCmpPartialOrdMultiTapeTerm.partial_cmp
+  le := core.cmp.PartialOrd.le.trait_default
+    automata.terms_multitape.MultiTapeTerm.Insts.CoreCmpPartialOrdMultiTapeTerm
+}
+
+/-- [automata_builder::automata::terms_multitape::{impl core::cmp::Eq for automata_builder::automata::terms_multitape::MultiTapeTerm}::assert_fields_are_eq]:
+    Source: 'src/automata/terms_multitape.rs', lines 71:23-71:25
+    Visibility: public -/
+def automata.terms_multitape.MultiTapeTerm.Insts.CoreCmpEq.assert_fields_are_eq
+  (self : automata.terms_multitape.MultiTapeTerm) : Result Unit := do
+  ok ()
+
+/-- Trait implementation: [automata_builder::automata::terms_multitape::{impl core::cmp::Eq for automata_builder::automata::terms_multitape::MultiTapeTerm}]
+    Source: 'src/automata/terms_multitape.rs', lines 71:23-71:25 -/
+@[reducible]
+def automata.terms_multitape.MultiTapeTerm.Insts.CoreCmpEq : core.cmp.Eq
+  automata.terms_multitape.MultiTapeTerm := {
+  partialEqInst :=
+    automata.terms_multitape.MultiTapeTerm.Insts.CoreCmpPartialEqMultiTapeTerm
+  assert_fields_are_eq :=
+    automata.terms_multitape.MultiTapeTerm.Insts.CoreCmpEq.assert_fields_are_eq
+}
+
+/-- Trait implementation: [automata_builder::automata::terms_multitape::{impl core::cmp::Ord for automata_builder::automata::terms_multitape::MultiTapeTerm}]
+    Source: 'src/automata/terms_multitape.rs', lines 92:0-97:1 -/
+@[reducible]
+impl_def automata.terms_multitape.MultiTapeTerm.Insts.CoreCmpOrd : core.cmp.Ord
+  automata.terms_multitape.MultiTapeTerm := {
+  eqInst := automata.terms_multitape.MultiTapeTerm.Insts.CoreCmpEq
+  partialOrdInst :=
+    automata.terms_multitape.MultiTapeTerm.Insts.CoreCmpPartialOrdMultiTapeTerm
+  cmp := automata.terms_multitape.MultiTapeTerm.Insts.CoreCmpOrd.cmp
+  max := core.cmp.Ord.max.trait_default
+    automata.terms_multitape.MultiTapeTerm.Insts.CoreCmpOrd
+  min := core.cmp.Ord.min.trait_default
+    automata.terms_multitape.MultiTapeTerm.Insts.CoreCmpOrd
+}
+
+/-- [automata_builder::automata::terms_multitape::{impl core::cmp::Ord for automata_builder::automata::terms_multitape::MultiTapeProduct}::cmp::{impl core::ops::function::FnOnce<(), core::cmp::Ordering> for automata_builder::automata::terms_multitape::{impl core::cmp::Ord for automata_builder::automata::terms_multitape::MultiTapeProduct}::cmp::{closure}<'_0, '_1>}::call_once]:
+    Source: 'src/automata/terms_multitape.rs', lines 585:23-585:56 -/
+def
+  automata.terms_multitape.OrdMultiTapeProduct.cmp.closure.Insts.CoreOpsFunctionFnOnceTupleOrdering.call_once
+  (c : automata.terms_multitape.OrdMultiTapeProduct.cmp.closure) (_ : Unit) :
+  Result Ordering
+  := do
+  let (mtp, mtp1) := c
+  alloc.vec.Vec.Insts.CoreCmpOrd.cmp alloc.alloc.Global
+    automata.terms_multitape.MultiTapeTerm.Insts.CoreCmpOrd mtp._terms
+    mtp1._terms
+
+/-- Trait implementation: [automata_builder::automata::terms_multitape::{impl core::cmp::Ord for automata_builder::automata::terms_multitape::MultiTapeProduct}::cmp::{impl core::ops::function::FnOnce<(), core::cmp::Ordering> for automata_builder::automata::terms_multitape::{impl core::cmp::Ord for automata_builder::automata::terms_multitape::MultiTapeProduct}::cmp::{closure}<'_0, '_1>}]
+    Source: 'src/automata/terms_multitape.rs', lines 585:23-585:56 -/
+@[reducible]
+def
+  automata.terms_multitape.OrdMultiTapeProduct.cmp.closure.Insts.CoreOpsFunctionFnOnceTupleOrdering
+  : core.ops.function.FnOnce
+  automata.terms_multitape.OrdMultiTapeProduct.cmp.closure Unit Ordering := {
+  call_once :=
+    automata.terms_multitape.OrdMultiTapeProduct.cmp.closure.Insts.CoreOpsFunctionFnOnceTupleOrdering.call_once
+}
+
+/-- [automata_builder::automata::terms_multitape::{impl core::cmp::Ord for automata_builder::automata::terms_multitape::MultiTapeProduct}::cmp]:
+    Source: 'src/automata/terms_multitape.rs', lines 583:4-586:5
+    Visibility: public -/
+def automata.terms_multitape.MultiTapeProduct.Insts.CoreCmpOrd.cmp
+  (self : automata.terms_multitape.MultiTapeProduct)
+  (other : automata.terms_multitape.MultiTapeProduct) :
+  Result Ordering
+  := do
+  let i := alloc.vec.Vec.len self._terms
+  let i1 := alloc.vec.Vec.len other._terms
+  let o ← lift (core.cmp.impls.OrdUsize.cmp i i1)
+  core.cmp.Ordering.then_with
+    automata.terms_multitape.OrdMultiTapeProduct.cmp.closure.Insts.CoreOpsFunctionFnOnceTupleOrdering
+    o (self, other)
+
+/-- [automata_builder::automata::terms_multitape::{impl core::cmp::PartialOrd<automata_builder::automata::terms_multitape::MultiTapeProduct> for automata_builder::automata::terms_multitape::MultiTapeProduct}::partial_cmp]:
+    Source: 'src/automata/terms_multitape.rs', lines 578:4-580:5
+    Visibility: public -/
+def
+  automata.terms_multitape.MultiTapeProduct.Insts.CoreCmpPartialOrdMultiTapeProduct.partial_cmp
+  (self : automata.terms_multitape.MultiTapeProduct)
+  (other : automata.terms_multitape.MultiTapeProduct) :
+  Result (Option Ordering)
+  := do
+  let o ←
+    automata.terms_multitape.MultiTapeProduct.Insts.CoreCmpOrd.cmp self other
+  ok (some o)
+
+/-- Trait implementation: [automata_builder::automata::terms_multitape::{impl core::cmp::PartialOrd<automata_builder::automata::terms_multitape::MultiTapeProduct> for automata_builder::automata::terms_multitape::MultiTapeProduct}]
+    Source: 'src/automata/terms_multitape.rs', lines 577:0-581:1 -/
+@[reducible]
+impl_def
+  automata.terms_multitape.MultiTapeProduct.Insts.CoreCmpPartialOrdMultiTapeProduct
+  : core.cmp.PartialOrd automata.terms_multitape.MultiTapeProduct
+  automata.terms_multitape.MultiTapeProduct := {
+  partialEqInst :=
+    automata.terms_multitape.MultiTapeProduct.Insts.CoreCmpPartialEqMultiTapeProduct
+  partial_cmp :=
+    automata.terms_multitape.MultiTapeProduct.Insts.CoreCmpPartialOrdMultiTapeProduct.partial_cmp
+  le := core.cmp.PartialOrd.le.trait_default
+    automata.terms_multitape.MultiTapeProduct.Insts.CoreCmpPartialOrdMultiTapeProduct
+}
+
+/-- Trait implementation: [automata_builder::automata::terms_multitape::{impl core::cmp::Ord for automata_builder::automata::terms_multitape::MultiTapeProduct}]
+    Source: 'src/automata/terms_multitape.rs', lines 582:0-587:1 -/
+@[reducible]
+impl_def automata.terms_multitape.MultiTapeProduct.Insts.CoreCmpOrd :
+  core.cmp.Ord automata.terms_multitape.MultiTapeProduct := {
+  eqInst := automata.terms_multitape.MultiTapeProduct.Insts.CoreCmpEq
+  partialOrdInst :=
+    automata.terms_multitape.MultiTapeProduct.Insts.CoreCmpPartialOrdMultiTapeProduct
+  cmp := automata.terms_multitape.MultiTapeProduct.Insts.CoreCmpOrd.cmp
+  max := core.cmp.Ord.max.trait_default
+    automata.terms_multitape.MultiTapeProduct.Insts.CoreCmpOrd
+  min := core.cmp.Ord.min.trait_default
+    automata.terms_multitape.MultiTapeProduct.Insts.CoreCmpOrd
+}
+
+/-- [automata_builder::automata::terms_multitape::{impl automata_builder::automata::terms_multitape::AbstractMultiTapeExpression<automata_builder::automata::terms_multitape::MultiTapeProduct, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeTerm}::copy]:
+    Source: 'src/automata/terms_multitape.rs', lines 249:4-251:5
+    Visibility: public -/
+def
+  automata.terms_multitape.MultiTapeTerm.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeProductMultiTapeExpression.copy
+  (self : automata.terms_multitape.MultiTapeTerm) :
+  Result automata.terms_multitape.MultiTapeTerm
+  := do
+  automata.terms_multitape.MultiTapeTerm.Insts.CoreCloneClone.clone self
+
+/-- [automata_builder::automata::terms_multitape::{automata_builder::automata::terms_multitape::MultiTapeProduct}::to_normalized_vec]: loop 0:
+    Source: 'src/automata/terms_multitape.rs', lines 436:8-440:9
+    Visibility: public -/
+@[rust_loop]
+def automata.terms_multitape.MultiTapeProduct.to_normalized_vec_loop
+  (iter : core.slice.iter.Iter automata.terms_multitape.MultiTapeTerm)
+  (unique_terms_set : std.collections.hash.set.HashSet
+  automata.terms_multitape.MultiTapeTerm std.hash.random.RandomState
+  alloc.alloc.Global)
+  (unique_terms : alloc.vec.Vec automata.terms_multitape.MultiTapeTerm) :
+  Result (alloc.vec.Vec automata.terms_multitape.MultiTapeTerm)
+  := do
+  let (o, iter1) ← core.slice.iter.IteratorSliceIter.next iter
+  match o with
+  | none => ok unique_terms
+  | some term =>
+    let b ←
+      std.collections.hash.set.HashSet.contains (Shared0A.Insts.CoreCmpEq
+        automata.terms_multitape.MultiTapeTerm.Insts.CoreCmpEq)
+        (Shared0T.Insts.CoreHashHash
+        automata.terms_multitape.MultiTapeTerm.Insts.CoreHashHash)
+        std.hash.random.RandomState.Insts.CoreHashBuildHasherDefaultHasher
+        (Shared0T.Insts.CoreBorrowBorrow
+        automata.terms_multitape.MultiTapeTerm)
+        automata.terms_multitape.MultiTapeTerm.Insts.CoreHashHash
+        automata.terms_multitape.MultiTapeTerm.Insts.CoreCmpEq unique_terms_set
+        term
+    if b
+    then
+      automata.terms_multitape.MultiTapeProduct.to_normalized_vec_loop iter1
+        unique_terms_set unique_terms
+    else
+      let (_, unique_terms_set1) ←
+        std.collections.hash.set.HashSet.insert (Shared0A.Insts.CoreCmpEq
+          automata.terms_multitape.MultiTapeTerm.Insts.CoreCmpEq)
+          (Shared0T.Insts.CoreHashHash
+          automata.terms_multitape.MultiTapeTerm.Insts.CoreHashHash)
+          std.hash.random.RandomState.Insts.CoreHashBuildHasherDefaultHasher
+          unique_terms_set term
+      let mtt ←
+        automata.terms_multitape.MultiTapeTerm.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeProductMultiTapeExpression.copy
+          term
+      let unique_terms1 ← alloc.vec.Vec.push unique_terms mtt
+      automata.terms_multitape.MultiTapeProduct.to_normalized_vec_loop iter1
+        unique_terms_set1 unique_terms1
+partial_fixpoint
+
+/-- [automata_builder::automata::terms_multitape::{automata_builder::automata::terms_multitape::MultiTapeProduct}::to_normalized_vec]:
+    Source: 'src/automata/terms_multitape.rs', lines 428:4-443:5
+    Visibility: public -/
+def automata.terms_multitape.MultiTapeProduct.to_normalized_vec
+  (self : automata.terms_multitape.MultiTapeProduct) (sort : Bool) :
+  Result (alloc.vec.Vec automata.terms_multitape.MultiTapeTerm)
+  := do
+  let unique_terms_set ←
+    std.collections.hash.set.HashSetTRandomStateGlobal.new
+      automata.terms_multitape.MultiTapeTerm
+  let s := alloc.vec.Vec.deref self._terms
+  let iter ← core.slice.Slice.iter s
+  let unique_terms ←
+    automata.terms_multitape.MultiTapeProduct.to_normalized_vec_loop iter
+      unique_terms_set (alloc.vec.Vec.new
+      automata.terms_multitape.MultiTapeTerm)
+  if sort
+  then
+    let (s1, deref_mut_back) ← lift (alloc.vec.Vec.deref_mut unique_terms)
+    let s2 ←
+      alloc.slice.Slice.sort
+        automata.terms_multitape.MultiTapeTerm.Insts.CoreCmpOrd s1
+    ok (deref_mut_back s2)
+  else ok unique_terms
+
+/-- [automata_builder::automata::terms_multitape::{automata_builder::automata::terms_multitape::MultiTapeProduct}::to_normalized]:
+    Source: 'src/automata/terms_multitape.rs', lines 444:4-448:5
+    Visibility: public -/
+def automata.terms_multitape.MultiTapeProduct.to_normalized
+  (self : automata.terms_multitape.MultiTapeProduct) :
+  Result automata.terms_multitape.MultiTapeProduct
+  := do
+  let norm_terms ←
+    automata.terms_multitape.MultiTapeProduct.to_normalized_vec self true
+  automata.terms_multitape.MultiTapeProduct.new norm_terms
+
+/-- [automata_builder::automata::terms_multitape::{automata_builder::automata::terms_multitape::MultiTapeExpression}::to_normalized_vec]: loop 0:
+    Source: 'src/automata/terms_multitape.rs', lines 759:8-764:9
+    Visibility: public -/
+@[rust_loop]
+def automata.terms_multitape.MultiTapeExpression.to_normalized_vec_loop
+  (iter : core.slice.iter.Iter automata.terms_multitape.MultiTapeProduct)
+  (unique_products_set : std.collections.hash.set.HashSet
+  automata.terms_multitape.MultiTapeProduct std.hash.random.RandomState
+  alloc.alloc.Global)
+  (unique_products : alloc.vec.Vec automata.terms_multitape.MultiTapeProduct) :
+  Result (alloc.vec.Vec automata.terms_multitape.MultiTapeProduct)
+  := do
+  let (o, iter1) ← core.slice.iter.IteratorSliceIter.next iter
+  match o with
+  | none => ok unique_products
+  | some un_normalized_product =>
+    let product ←
+      automata.terms_multitape.MultiTapeProduct.to_normalized
+        un_normalized_product
+    let b ←
+      std.collections.hash.set.HashSet.contains
+        automata.terms_multitape.MultiTapeProduct.Insts.CoreCmpEq
+        automata.terms_multitape.MultiTapeProduct.Insts.CoreHashHash
+        std.hash.random.RandomState.Insts.CoreHashBuildHasherDefaultHasher
+        (core.borrow.Borrow.Blanket automata.terms_multitape.MultiTapeProduct)
+        automata.terms_multitape.MultiTapeProduct.Insts.CoreHashHash
+        automata.terms_multitape.MultiTapeProduct.Insts.CoreCmpEq
+        unique_products_set product
+    if b
+    then
+      automata.terms_multitape.MultiTapeExpression.to_normalized_vec_loop iter1
+        unique_products_set unique_products
+    else
+      let mtp ←
+        automata.terms_multitape.MultiTapeProduct.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeProductMultiTapeExpression.copy
+          product
+      let (_, unique_products_set1) ←
+        std.collections.hash.set.HashSet.insert
+          automata.terms_multitape.MultiTapeProduct.Insts.CoreCmpEq
+          automata.terms_multitape.MultiTapeProduct.Insts.CoreHashHash
+          std.hash.random.RandomState.Insts.CoreHashBuildHasherDefaultHasher
+          unique_products_set mtp
+      let unique_products1 ← alloc.vec.Vec.push unique_products mtp
+      automata.terms_multitape.MultiTapeExpression.to_normalized_vec_loop iter1
+        unique_products_set1 unique_products1
+partial_fixpoint
+
+/-- [automata_builder::automata::terms_multitape::{automata_builder::automata::terms_multitape::MultiTapeExpression}::to_normalized_vec]:
+    Source: 'src/automata/terms_multitape.rs', lines 751:4-767:5
+    Visibility: public -/
+def automata.terms_multitape.MultiTapeExpression.to_normalized_vec
+  (self : automata.terms_multitape.MultiTapeExpression) (sort : Bool) :
+  Result (alloc.vec.Vec automata.terms_multitape.MultiTapeProduct)
+  := do
+  let unique_products_set ←
+    std.collections.hash.set.HashSetTRandomStateGlobal.new
+      automata.terms_multitape.MultiTapeProduct
+  let s := alloc.vec.Vec.deref self.products
+  let iter ← core.slice.Slice.iter s
+  let unique_products ←
+    automata.terms_multitape.MultiTapeExpression.to_normalized_vec_loop iter
+      unique_products_set (alloc.vec.Vec.new
+      automata.terms_multitape.MultiTapeProduct)
+  if sort
+  then
+    let (s1, deref_mut_back) ← lift (alloc.vec.Vec.deref_mut unique_products)
+    let s2 ←
+      alloc.slice.Slice.sort
+        automata.terms_multitape.MultiTapeProduct.Insts.CoreCmpOrd s1
+    ok (deref_mut_back s2)
+  else ok unique_products
+
+/-- [automata_builder::automata::terms_multitape::{automata_builder::automata::terms_multitape::MultiTapeExpression}::to_normalized]:
+    Source: 'src/automata/terms_multitape.rs', lines 768:4-771:5
+    Visibility: public -/
+def automata.terms_multitape.MultiTapeExpression.to_normalized
+  (self : automata.terms_multitape.MultiTapeExpression) (sort : Bool) :
+  Result automata.terms_multitape.MultiTapeExpression
+  := do
+  let norm_products ←
+    automata.terms_multitape.MultiTapeExpression.to_normalized_vec self sort
+  automata.terms_multitape.MultiTapeExpression.new norm_products
+
+/-- [automata_builder::automata::terms_multitape::{automata_builder::automata::terms_multitape::MultiTapeExpression}::_assign_base_expansion_indexes::{impl core::ops::function::FnMut<(&'_0 mut automata_builder::automata::terms_multitape::MultiTapeTerm,), ()> for automata_builder::automata::terms_multitape::{automata_builder::automata::terms_multitape::MultiTapeExpression}::_assign_base_expansion_indexes::{closure}<'_0, '_1>}::call_mut]:
+    Source: 'src/automata/terms_multitape.rs', lines 719:47-722:13 -/
+def
+  automata.terms_multitape.MultiTapeExpression._assign_base_expansion_indexes.closure.Insts.CoreOpsFunctionFnMutTupleMut0MultiTapeTermTuple.call_mut
+  (c :
+  automata.terms_multitape.MultiTapeExpression._assign_base_expansion_indexes.closure)
+  (tupled_args : automata.terms_multitape.MultiTapeTerm) :
+  Result
+    (automata.terms_multitape.MultiTapeExpression._assign_base_expansion_indexes.closure
+    × automata.terms_multitape.MultiTapeTerm ×
+    (automata.terms_multitape.MultiTapeExpression._assign_base_expansion_indexes.closure
+    →
+    automata.terms_multitape.MultiTapeExpression._assign_base_expansion_indexes.closure))
+  := do
+  let i ← lift (UScalar.cast .U16 c)
+  let i1 ← c + 1#usize
+  let back := fun c1 => c1
+  ok (i1,
+    {
+      tupled_args
+        with
+        _debug_info := { tupled_args._debug_info with expansion_index := i }
+    }, back)
+
+/-- [automata_builder::automata::terms_multitape::{automata_builder::automata::terms_multitape::MultiTapeExpression}::_assign_base_expansion_indexes::{impl core::ops::function::FnOnce<(&'_0 mut automata_builder::automata::terms_multitape::MultiTapeTerm,), ()> for automata_builder::automata::terms_multitape::{automata_builder::automata::terms_multitape::MultiTapeExpression}::_assign_base_expansion_indexes::{closure}<'_0, '_1>}::call_once]:
+    Source: 'src/automata/terms_multitape.rs', lines 719:47-722:13 -/
+def
+  automata.terms_multitape.MultiTapeExpression._assign_base_expansion_indexes.closure.Insts.CoreOpsFunctionFnOnceTupleMut0MultiTapeTermTuple.call_once
+  (c :
+  automata.terms_multitape.MultiTapeExpression._assign_base_expansion_indexes.closure)
+  (mtt : automata.terms_multitape.MultiTapeTerm) :
+  Result (automata.terms_multitape.MultiTapeTerm ×
+    automata.terms_multitape.MultiTapeExpression._assign_base_expansion_indexes.closure)
+  := do
+  let (c1, mtt1, call_mut_back) ←
+    automata.terms_multitape.MultiTapeExpression._assign_base_expansion_indexes.closure.Insts.CoreOpsFunctionFnMutTupleMut0MultiTapeTermTuple.call_mut
+      c mtt
+  ok (mtt1, call_mut_back c1)
+
+/-- Trait implementation: [automata_builder::automata::terms_multitape::{automata_builder::automata::terms_multitape::MultiTapeExpression}::_assign_base_expansion_indexes::{impl core::ops::function::FnOnce<(&'_0 mut automata_builder::automata::terms_multitape::MultiTapeTerm,), ()> for automata_builder::automata::terms_multitape::{automata_builder::automata::terms_multitape::MultiTapeExpression}::_assign_base_expansion_indexes::{closure}<'_0, '_1>}]
+    Source: 'src/automata/terms_multitape.rs', lines 719:47-722:13 -/
+@[reducible]
+def
+  automata.terms_multitape.MultiTapeExpression._assign_base_expansion_indexes.closure.Insts.CoreOpsFunctionFnOnceTupleMut0MultiTapeTermTuple
+  : core.ops.function.FnOnce
+  automata.terms_multitape.MultiTapeExpression._assign_base_expansion_indexes.closure
+  automata.terms_multitape.MultiTapeTerm Unit := {
+  call_once :=
+    automata.terms_multitape.MultiTapeExpression._assign_base_expansion_indexes.closure.Insts.CoreOpsFunctionFnOnceTupleMut0MultiTapeTermTuple.call_once
+}
+
+/-- Trait implementation: [automata_builder::automata::terms_multitape::{automata_builder::automata::terms_multitape::MultiTapeExpression}::_assign_base_expansion_indexes::{impl core::ops::function::FnMut<(&'_0 mut automata_builder::automata::terms_multitape::MultiTapeTerm,), ()> for automata_builder::automata::terms_multitape::{automata_builder::automata::terms_multitape::MultiTapeExpression}::_assign_base_expansion_indexes::{closure}<'_0, '_1>}]
+    Source: 'src/automata/terms_multitape.rs', lines 719:47-722:13 -/
+@[reducible]
+def
+  automata.terms_multitape.MultiTapeExpression._assign_base_expansion_indexes.closure.Insts.CoreOpsFunctionFnMutTupleMut0MultiTapeTermTuple
+  : core.ops.function.FnMut
+  automata.terms_multitape.MultiTapeExpression._assign_base_expansion_indexes.closure
+  automata.terms_multitape.MultiTapeTerm Unit := {
+  FnOnceInst :=
+    automata.terms_multitape.MultiTapeExpression._assign_base_expansion_indexes.closure.Insts.CoreOpsFunctionFnOnceTupleMut0MultiTapeTermTuple
+  call_mut :=
+    automata.terms_multitape.MultiTapeExpression._assign_base_expansion_indexes.closure.Insts.CoreOpsFunctionFnMutTupleMut0MultiTapeTermTuple.call_mut
+}
+
+/-- [automata_builder::automata::terms_multitape::{automata_builder::automata::terms_multitape::MultiTapeExpression}::_assign_base_expansion_indexes]: loop 0:
+    Source: 'src/automata/terms_multitape.rs', lines 718:8-723:9 -/
+@[rust_loop]
+def
+  automata.terms_multitape.MultiTapeExpression._assign_base_expansion_indexes_loop
+  (iter : core.slice.iter.IterMut automata.terms_multitape.MultiTapeProduct)
+  (back : core.slice.iter.IterMut automata.terms_multitape.MultiTapeProduct →
+  core.slice.iter.IterMut automata.terms_multitape.MultiTapeProduct)
+  (expansion_index : Std.Usize) :
+  Result (core.slice.iter.IterMut automata.terms_multitape.MultiTapeProduct)
+  := do
+  let (o, iter1, next_back) ← core.slice.iter.IteratorIterMut.next iter
+  match o with
+  | none => ok (let im := next_back iter1 none
+                back im)
+  | some product =>
+    let (s, deref_mut_back) ← lift (alloc.vec.Vec.deref_mut product._terms)
+    let (im, iter_mut_back) ← core.slice.Slice.iter_mut s
+    let (im1, c) ←
+      core.slice.iter.IterMut.Insts.CoreIterTraitsIteratorIteratorMutAT.for_each
+        automata.terms_multitape.MultiTapeExpression._assign_base_expansion_indexes.closure.Insts.CoreOpsFunctionFnMutTupleMut0MultiTapeTermTuple
+        im expansion_index
+    let s1 := iter_mut_back im1
+    let v := deref_mut_back s1
+    automata.terms_multitape.MultiTapeExpression._assign_base_expansion_indexes_loop
+      iter1
+      (fun im2 =>
+        let im3 := next_back im2 (some { product with _terms := v })
+        back im3) c
+partial_fixpoint
+
+/-- [automata_builder::automata::terms_multitape::{automata_builder::automata::terms_multitape::MultiTapeExpression}::_assign_base_expansion_indexes]:
+    Source: 'src/automata/terms_multitape.rs', lines 713:4-724:5 -/
+def automata.terms_multitape.MultiTapeExpression._assign_base_expansion_indexes
+  (self : automata.terms_multitape.MultiTapeExpression) :
+  Result automata.terms_multitape.MultiTapeExpression
+  := do
+  let (s, deref_mut_back) ← lift (alloc.vec.Vec.deref_mut self.products)
+  let (iter, iter_mut_back) ← core.slice.Slice.iter_mut s
+  let back ←
+    automata.terms_multitape.MultiTapeExpression._assign_base_expansion_indexes_loop
+      iter (fun im => im) 0#usize
+  let s1 := iter_mut_back back
+  let v := deref_mut_back s1
+  ok { self with products := v }
+
+/-- [automata_builder::automata::terms_multitape::{automata_builder::automata::terms_multitape::MultiTapeExpression}::_assign_parent_debug_info::{impl core::ops::function::FnMut<(&'_0 mut automata_builder::automata::terms_multitape::MultiTapeTerm,), ()> for automata_builder::automata::terms_multitape::{automata_builder::automata::terms_multitape::MultiTapeExpression}::_assign_parent_debug_info::{closure}<'_0, '_1>}::call_mut]:
+    Source: 'src/automata/terms_multitape.rs', lines 707:47-710:13 -/
+def
+  automata.terms_multitape.MultiTapeExpression._assign_parent_debug_info.closure.Insts.CoreOpsFunctionFnMutTupleMut0MultiTapeTermTuple.call_mut
+  (c :
+  automata.terms_multitape.MultiTapeExpression._assign_parent_debug_info.closure)
+  (tupled_args : automata.terms_multitape.MultiTapeTerm) :
+  Result
+    (automata.terms_multitape.MultiTapeExpression._assign_parent_debug_info.closure
+    × automata.terms_multitape.MultiTapeTerm)
+  := do
+  let o ←
+    core.option.Option.Insts.CoreCloneClone.clone
+      automata.terms.ExprPosition.Insts.CoreCloneClone c.position_info
+  ok (c,
+    {
+      tupled_args
+        with
+        _debug_info :=
+          { tupled_args._debug_info with parent_position_info := o }
+    })
+
+/-- [automata_builder::automata::terms_multitape::{automata_builder::automata::terms_multitape::MultiTapeExpression}::_assign_parent_debug_info::{impl core::ops::function::FnOnce<(&'_0 mut automata_builder::automata::terms_multitape::MultiTapeTerm,), ()> for automata_builder::automata::terms_multitape::{automata_builder::automata::terms_multitape::MultiTapeExpression}::_assign_parent_debug_info::{closure}<'_0, '_1>}::call_once]:
+    Source: 'src/automata/terms_multitape.rs', lines 707:47-710:13 -/
+def
+  automata.terms_multitape.MultiTapeExpression._assign_parent_debug_info.closure.Insts.CoreOpsFunctionFnOnceTupleMut0MultiTapeTermTuple.call_once
+  (c :
+  automata.terms_multitape.MultiTapeExpression._assign_parent_debug_info.closure)
+  (mtt : automata.terms_multitape.MultiTapeTerm) :
+  Result automata.terms_multitape.MultiTapeTerm
+  := do
+  let (_, mtt1) ←
+    automata.terms_multitape.MultiTapeExpression._assign_parent_debug_info.closure.Insts.CoreOpsFunctionFnMutTupleMut0MultiTapeTermTuple.call_mut
+      c mtt
+  ok mtt1
+
+/-- Trait implementation: [automata_builder::automata::terms_multitape::{automata_builder::automata::terms_multitape::MultiTapeExpression}::_assign_parent_debug_info::{impl core::ops::function::FnOnce<(&'_0 mut automata_builder::automata::terms_multitape::MultiTapeTerm,), ()> for automata_builder::automata::terms_multitape::{automata_builder::automata::terms_multitape::MultiTapeExpression}::_assign_parent_debug_info::{closure}<'_0, '_1>}]
+    Source: 'src/automata/terms_multitape.rs', lines 707:47-710:13 -/
+@[reducible]
+def
+  automata.terms_multitape.MultiTapeExpression._assign_parent_debug_info.closure.Insts.CoreOpsFunctionFnOnceTupleMut0MultiTapeTermTuple
+  : core.ops.function.FnOnce
+  automata.terms_multitape.MultiTapeExpression._assign_parent_debug_info.closure
+  automata.terms_multitape.MultiTapeTerm Unit := {
+  call_once :=
+    automata.terms_multitape.MultiTapeExpression._assign_parent_debug_info.closure.Insts.CoreOpsFunctionFnOnceTupleMut0MultiTapeTermTuple.call_once
+}
+
+/-- Trait implementation: [automata_builder::automata::terms_multitape::{automata_builder::automata::terms_multitape::MultiTapeExpression}::_assign_parent_debug_info::{impl core::ops::function::FnMut<(&'_0 mut automata_builder::automata::terms_multitape::MultiTapeTerm,), ()> for automata_builder::automata::terms_multitape::{automata_builder::automata::terms_multitape::MultiTapeExpression}::_assign_parent_debug_info::{closure}<'_0, '_1>}]
+    Source: 'src/automata/terms_multitape.rs', lines 707:47-710:13 -/
+@[reducible]
+def
+  automata.terms_multitape.MultiTapeExpression._assign_parent_debug_info.closure.Insts.CoreOpsFunctionFnMutTupleMut0MultiTapeTermTuple
+  : core.ops.function.FnMut
+  automata.terms_multitape.MultiTapeExpression._assign_parent_debug_info.closure
+  automata.terms_multitape.MultiTapeTerm Unit := {
+  FnOnceInst :=
+    automata.terms_multitape.MultiTapeExpression._assign_parent_debug_info.closure.Insts.CoreOpsFunctionFnOnceTupleMut0MultiTapeTermTuple
+  call_mut :=
+    automata.terms_multitape.MultiTapeExpression._assign_parent_debug_info.closure.Insts.CoreOpsFunctionFnMutTupleMut0MultiTapeTermTuple.call_mut
+}
+
+/-- [automata_builder::automata::terms_multitape::{automata_builder::automata::terms_multitape::MultiTapeExpression}::_assign_parent_debug_info]: loop 0:
+    Source: 'src/automata/terms_multitape.rs', lines 706:8-711:9
+    Visibility: public -/
+@[rust_loop]
+def automata.terms_multitape.MultiTapeExpression._assign_parent_debug_info_loop
+  (iter : core.slice.iter.IterMut automata.terms_multitape.MultiTapeProduct)
+  (back : core.slice.iter.IterMut automata.terms_multitape.MultiTapeProduct →
+  core.slice.iter.IterMut automata.terms_multitape.MultiTapeProduct)
+  (parent_debug_info : automata.terms.ExprDebugInfo) :
+  Result (core.slice.iter.IterMut automata.terms_multitape.MultiTapeProduct)
+  := do
+  let (o, iter1, next_back) ← core.slice.iter.IteratorIterMut.next iter
+  match o with
+  | none => ok (let im := next_back iter1 none
+                back im)
+  | some product =>
+    let (s, deref_mut_back) ← lift (alloc.vec.Vec.deref_mut product._terms)
+    let (im, iter_mut_back) ← core.slice.Slice.iter_mut s
+    let im1 ←
+      core.slice.iter.IterMut.Insts.CoreIterTraitsIteratorIteratorMutAT.for_each
+        automata.terms_multitape.MultiTapeExpression._assign_parent_debug_info.closure.Insts.CoreOpsFunctionFnMutTupleMut0MultiTapeTermTuple
+        im parent_debug_info
+    let s1 := iter_mut_back im1
+    let v := deref_mut_back s1
+    automata.terms_multitape.MultiTapeExpression._assign_parent_debug_info_loop
+      iter1
+      (fun im2 =>
+        let im3 := next_back im2 (some { product with _terms := v })
+        back im3) parent_debug_info
+partial_fixpoint
+
+/-- [automata_builder::automata::terms_multitape::{automata_builder::automata::terms_multitape::MultiTapeExpression}::_assign_parent_debug_info]:
+    Source: 'src/automata/terms_multitape.rs', lines 703:4-712:5
+    Visibility: public -/
+def automata.terms_multitape.MultiTapeExpression._assign_parent_debug_info
+  (self : automata.terms_multitape.MultiTapeExpression)
+  (parent_debug_info : automata.terms.ExprDebugInfo) :
+  Result automata.terms_multitape.MultiTapeExpression
+  := do
+  let (s, deref_mut_back) ← lift (alloc.vec.Vec.deref_mut self.products)
+  let (iter, iter_mut_back) ← core.slice.Slice.iter_mut s
+  let back ←
+    automata.terms_multitape.MultiTapeExpression._assign_parent_debug_info_loop
+      iter (fun im => im) parent_debug_info
+  let s1 := iter_mut_back back
+  let v := deref_mut_back s1
+  ok { self with products := v }
+
+/-- [automata_builder::automata::terms_multitape::{impl automata_builder::automata::terms_multitape::AbstractMultiTapeExpression<automata_builder::automata::terms_multitape::MultiTapeProduct, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeTerm}::_expand]:
+    Source: 'src/automata/terms_multitape.rs', lines 264:4-278:5
+    Visibility: public -/
+def
+  automata.terms_multitape.MultiTapeTerm.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeProductMultiTapeExpression._expand
+  (self : automata.terms_multitape.MultiTapeTerm)
+  (expansion_mapping : std.collections.hash.map.HashMap (Std.U16 × Std.U32)
+  automata.terms_multitape.MultiTapeExpression std.hash.random.RandomState
+  alloc.alloc.Global) (include_debug_info : Bool) (fold : Bool) :
+  Result automata.terms_multitape.MultiTapeExpression
+  := do
+  let mte ←
+    std.collections.hash.map.HashMap.Insts.CoreOpsIndexIndexShared0QV.index
+      (Pair.Insts.CoreCmpEq core.cmp.EqU16 core.cmp.EqU32)
+      (Pair.Insts.CoreHashHash U16.Insts.CoreHashHash U32.Insts.CoreHashHash)
+      (core.borrow.Borrow.Blanket (Std.U16 × Std.U32)) (Pair.Insts.CoreCmpEq
+      core.cmp.EqU16 core.cmp.EqU32) (Pair.Insts.CoreHashHash
+      U16.Insts.CoreHashHash U32.Insts.CoreHashHash)
+      std.hash.random.RandomState.Insts.CoreHashBuildHasherDefaultHasher
+      expansion_mapping self.state
+  let expanded_expr ←
+    automata.terms_multitape.MultiTapeExpression.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeExpressionMultiTapeExpression.offset
+      mte self.position
+  let expanded_expr1 ←
+    if include_debug_info
+    then
+      do
+      let expanded_expr2 ←
+        automata.terms_multitape.MultiTapeExpression._assign_parent_debug_info
+          expanded_expr self._debug_info
+      automata.terms_multitape.MultiTapeExpression._assign_base_expansion_indexes
+        expanded_expr2
+    else ok expanded_expr
+  if fold
+  then
+    automata.terms_multitape.MultiTapeExpression.to_normalized expanded_expr1
+      true
+  else ok expanded_expr1
+
+/-- [automata_builder::automata::terms_multitape::{impl automata_builder::automata::terms_multitape::AbstractMultiTapeExpression<automata_builder::automata::terms_multitape::MultiTapeProduct, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeProduct}::_expand]: loop 0:
+    Source: 'src/automata/terms_multitape.rs', lines 628:8-632:9
+    Visibility: public -/
+@[rust_loop]
+def
+  automata.terms_multitape.MultiTapeProduct.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeProductMultiTapeExpression._expand_loop
+  (iter : core.iter.adapters.skip.Skip (core.slice.iter.Iter
+  automata.terms_multitape.MultiTapeTerm))
+  (expansion_mapping : std.collections.hash.map.HashMap (Std.U16 × Std.U32)
+  automata.terms_multitape.MultiTapeExpression std.hash.random.RandomState
+  alloc.alloc.Global) (include_debug_info : Bool) (fold : Bool)
+  (result : automata.terms_multitape.MultiTapeExpression) :
+  Result automata.terms_multitape.MultiTapeExpression
+  := do
+  let (o, iter1) ←
+    core.iter.adapters.skip.Skip.Insts.CoreIterTraitsIteratorIterator.next
+      (core.iter.traits.iterator.IteratorSliceIter
+      automata.terms_multitape.MultiTapeTerm) iter
+  match o with
+  | none => ok result
+  | some term =>
+    let mte ←
+      automata.terms_multitape.MultiTapeTerm.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeProductMultiTapeExpression._expand
+        term expansion_mapping include_debug_info fold
+    let result1 ←
+      automata.terms_multitape.MultiTapeExpression.Insts.CoreOpsArithMulMultiTapeExpressionMultiTapeExpression.mul
+        result mte
+    automata.terms_multitape.MultiTapeProduct.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeProductMultiTapeExpression._expand_loop
+      iter1 expansion_mapping include_debug_info fold result1
+partial_fixpoint
+
+/-- [automata_builder::automata::terms_multitape::{impl automata_builder::automata::terms_multitape::AbstractMultiTapeExpression<automata_builder::automata::terms_multitape::MultiTapeProduct, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeProduct}::_expand]:
+    Source: 'src/automata/terms_multitape.rs', lines 613:4-635:5
+    Visibility: public -/
+def
+  automata.terms_multitape.MultiTapeProduct.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeProductMultiTapeExpression._expand
+  (self : automata.terms_multitape.MultiTapeProduct)
+  (expansion_mapping : std.collections.hash.map.HashMap (Std.U16 × Std.U32)
+  automata.terms_multitape.MultiTapeExpression std.hash.random.RandomState
+  alloc.alloc.Global) (include_debug_info : Bool) (fold : Bool) :
+  Result automata.terms_multitape.MultiTapeExpression
+  := do
+  let i := alloc.vec.Vec.len self._terms
+  if i = 0#usize
+  then
+    automata.terms_multitape.MultiTapeExpression.new (alloc.vec.Vec.new
+      automata.terms_multitape.MultiTapeProduct)
+  else
+    let s := alloc.vec.Vec.deref self._terms
+    let first_term_opt ←
+      core.slice.Slice.get (core.slice.index.SliceIndexUsizeSlice
+        automata.terms_multitape.MultiTapeTerm) s 0#usize
+    match first_term_opt with
+    | none =>
+      automata.terms_multitape.MultiTapeExpression.new (alloc.vec.Vec.new
+        automata.terms_multitape.MultiTapeProduct)
+    | some term =>
+      let result ←
+        automata.terms_multitape.MultiTapeTerm.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeProductMultiTapeExpression._expand
+          term expansion_mapping include_debug_info fold
+      let s1 := alloc.vec.Vec.deref self._terms
+      let i1 ← core.slice.Slice.iter s1
+      let iter ←
+        core.iter.traits.iterator.Iterator.skip.default
+          (core.iter.traits.iterator.IteratorSliceIter
+          automata.terms_multitape.MultiTapeTerm) i1 1#usize
+      let result1 ←
+        automata.terms_multitape.MultiTapeProduct.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeProductMultiTapeExpression._expand_loop
+          iter expansion_mapping include_debug_info fold result
+      automata.terms_multitape.MultiTapeExpression._assign_expr_positions
+        result1
+
+/-- [automata_builder::automata::terms_multitape::{impl automata_builder::automata::terms_multitape::AbstractMultiTapeExpression<automata_builder::automata::terms_multitape::MultiTapeExpression, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeExpression}::_expand::{impl core::ops::function::Fn<(&'_0 automata_builder::automata::terms_multitape::MultiTapeProduct,), automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::{impl automata_builder::automata::terms_multitape::AbstractMultiTapeExpression<automata_builder::automata::terms_multitape::MultiTapeExpression, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeExpression}::_expand::{closure}<'_0, '_1, '_2, '_3>}::call]:
+    Source: 'src/automata/terms_multitape.rs', lines 908:17-909:76 -/
+def
+  automata.terms_multitape.AbstractMultiTapeExpressionMultiTapeExpressionMultiTapeExpressionMultiTapeExpression._expand.closure.Insts.CoreOpsFunctionFnTupleShared0MultiTapeProductMultiTapeExpression.call
+  (c :
+  automata.terms_multitape.AbstractMultiTapeExpressionMultiTapeExpressionMultiTapeExpressionMultiTapeExpression._expand.closure)
+  (tupled_args : automata.terms_multitape.MultiTapeProduct) :
+  Result automata.terms_multitape.MultiTapeExpression
+  := do
+  let (hm, b, b1) := c
+  automata.terms_multitape.MultiTapeProduct.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeProductMultiTapeExpression._expand
+    tupled_args hm b b1
+
+/-- [automata_builder::automata::terms_multitape::{impl automata_builder::automata::terms_multitape::AbstractMultiTapeExpression<automata_builder::automata::terms_multitape::MultiTapeExpression, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeExpression}::_expand::{impl core::ops::function::FnMut<(&'_0 automata_builder::automata::terms_multitape::MultiTapeProduct,), automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::{impl automata_builder::automata::terms_multitape::AbstractMultiTapeExpression<automata_builder::automata::terms_multitape::MultiTapeExpression, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeExpression}::_expand::{closure}<'_0, '_1, '_2, '_3>}::call_mut]:
+    Source: 'src/automata/terms_multitape.rs', lines 908:17-909:76 -/
+def
+  automata.terms_multitape.AbstractMultiTapeExpressionMultiTapeExpressionMultiTapeExpressionMultiTapeExpression._expand.closure.Insts.CoreOpsFunctionFnMutTupleShared0MultiTapeProductMultiTapeExpression.call_mut
+  (state :
+  automata.terms_multitape.AbstractMultiTapeExpressionMultiTapeExpressionMultiTapeExpressionMultiTapeExpression._expand.closure)
+  (args : automata.terms_multitape.MultiTapeProduct) :
+  Result (automata.terms_multitape.MultiTapeExpression ×
+    automata.terms_multitape.AbstractMultiTapeExpressionMultiTapeExpressionMultiTapeExpressionMultiTapeExpression._expand.closure)
+  := do
+  let mte ←
+    automata.terms_multitape.AbstractMultiTapeExpressionMultiTapeExpressionMultiTapeExpressionMultiTapeExpression._expand.closure.Insts.CoreOpsFunctionFnTupleShared0MultiTapeProductMultiTapeExpression.call
+      state args
+  ok (mte, state)
+
+/-- [automata_builder::automata::terms_multitape::{impl automata_builder::automata::terms_multitape::AbstractMultiTapeExpression<automata_builder::automata::terms_multitape::MultiTapeExpression, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeExpression}::_expand::{impl core::ops::function::FnOnce<(&'_0 automata_builder::automata::terms_multitape::MultiTapeProduct,), automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::{impl automata_builder::automata::terms_multitape::AbstractMultiTapeExpression<automata_builder::automata::terms_multitape::MultiTapeExpression, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeExpression}::_expand::{closure}<'_0, '_1, '_2, '_3>}::call_once]:
+    Source: 'src/automata/terms_multitape.rs', lines 908:17-909:76 -/
+def
+  automata.terms_multitape.AbstractMultiTapeExpressionMultiTapeExpressionMultiTapeExpressionMultiTapeExpression._expand.closure.Insts.CoreOpsFunctionFnOnceTupleShared0MultiTapeProductMultiTapeExpression.call_once
+  (c :
+  automata.terms_multitape.AbstractMultiTapeExpressionMultiTapeExpressionMultiTapeExpressionMultiTapeExpression._expand.closure)
+  (mtp : automata.terms_multitape.MultiTapeProduct) :
+  Result automata.terms_multitape.MultiTapeExpression
+  := do
+  let (mte, _) ←
+    automata.terms_multitape.AbstractMultiTapeExpressionMultiTapeExpressionMultiTapeExpressionMultiTapeExpression._expand.closure.Insts.CoreOpsFunctionFnMutTupleShared0MultiTapeProductMultiTapeExpression.call_mut
+      c mtp
+  ok mte
+
+/-- Trait implementation: [automata_builder::automata::terms_multitape::{impl automata_builder::automata::terms_multitape::AbstractMultiTapeExpression<automata_builder::automata::terms_multitape::MultiTapeExpression, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeExpression}::_expand::{impl core::ops::function::FnOnce<(&'_0 automata_builder::automata::terms_multitape::MultiTapeProduct,), automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::{impl automata_builder::automata::terms_multitape::AbstractMultiTapeExpression<automata_builder::automata::terms_multitape::MultiTapeExpression, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeExpression}::_expand::{closure}<'_0, '_1, '_2, '_3>}]
+    Source: 'src/automata/terms_multitape.rs', lines 908:17-909:76 -/
+@[reducible]
+def
+  automata.terms_multitape.AbstractMultiTapeExpressionMultiTapeExpressionMultiTapeExpressionMultiTapeExpression._expand.closure.Insts.CoreOpsFunctionFnOnceTupleShared0MultiTapeProductMultiTapeExpression
+  : core.ops.function.FnOnce
+  automata.terms_multitape.AbstractMultiTapeExpressionMultiTapeExpressionMultiTapeExpressionMultiTapeExpression._expand.closure
+  automata.terms_multitape.MultiTapeProduct
+  automata.terms_multitape.MultiTapeExpression := {
+  call_once :=
+    automata.terms_multitape.AbstractMultiTapeExpressionMultiTapeExpressionMultiTapeExpressionMultiTapeExpression._expand.closure.Insts.CoreOpsFunctionFnOnceTupleShared0MultiTapeProductMultiTapeExpression.call_once
+}
+
+/-- Trait implementation: [automata_builder::automata::terms_multitape::{impl automata_builder::automata::terms_multitape::AbstractMultiTapeExpression<automata_builder::automata::terms_multitape::MultiTapeExpression, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeExpression}::_expand::{impl core::ops::function::FnMut<(&'_0 automata_builder::automata::terms_multitape::MultiTapeProduct,), automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::{impl automata_builder::automata::terms_multitape::AbstractMultiTapeExpression<automata_builder::automata::terms_multitape::MultiTapeExpression, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeExpression}::_expand::{closure}<'_0, '_1, '_2, '_3>}]
+    Source: 'src/automata/terms_multitape.rs', lines 908:17-909:76 -/
+@[reducible]
+def
+  automata.terms_multitape.AbstractMultiTapeExpressionMultiTapeExpressionMultiTapeExpressionMultiTapeExpression._expand.closure.Insts.CoreOpsFunctionFnMutTupleShared0MultiTapeProductMultiTapeExpression
+  : core.ops.function.FnMut
+  automata.terms_multitape.AbstractMultiTapeExpressionMultiTapeExpressionMultiTapeExpressionMultiTapeExpression._expand.closure
+  automata.terms_multitape.MultiTapeProduct
+  automata.terms_multitape.MultiTapeExpression := {
+  FnOnceInst :=
+    automata.terms_multitape.AbstractMultiTapeExpressionMultiTapeExpressionMultiTapeExpressionMultiTapeExpression._expand.closure.Insts.CoreOpsFunctionFnOnceTupleShared0MultiTapeProductMultiTapeExpression
+  call_mut :=
+    automata.terms_multitape.AbstractMultiTapeExpressionMultiTapeExpressionMultiTapeExpressionMultiTapeExpression._expand.closure.Insts.CoreOpsFunctionFnMutTupleShared0MultiTapeProductMultiTapeExpression.call_mut
+}
+
+/-- Trait implementation: [automata_builder::automata::terms_multitape::{impl automata_builder::automata::terms_multitape::AbstractMultiTapeExpression<automata_builder::automata::terms_multitape::MultiTapeExpression, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeExpression}::_expand::{impl core::ops::function::Fn<(&'_0 automata_builder::automata::terms_multitape::MultiTapeProduct,), automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::{impl automata_builder::automata::terms_multitape::AbstractMultiTapeExpression<automata_builder::automata::terms_multitape::MultiTapeExpression, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeExpression}::_expand::{closure}<'_0, '_1, '_2, '_3>}]
+    Source: 'src/automata/terms_multitape.rs', lines 908:17-909:76 -/
+@[reducible]
+def
+  automata.terms_multitape.AbstractMultiTapeExpressionMultiTapeExpressionMultiTapeExpressionMultiTapeExpression._expand.closure.Insts.CoreOpsFunctionFnTupleShared0MultiTapeProductMultiTapeExpression
+  : core.ops.function.Fn
+  automata.terms_multitape.AbstractMultiTapeExpressionMultiTapeExpressionMultiTapeExpressionMultiTapeExpression._expand.closure
+  automata.terms_multitape.MultiTapeProduct
+  automata.terms_multitape.MultiTapeExpression := {
+  FnMutInst :=
+    automata.terms_multitape.AbstractMultiTapeExpressionMultiTapeExpressionMultiTapeExpressionMultiTapeExpression._expand.closure.Insts.CoreOpsFunctionFnMutTupleShared0MultiTapeProductMultiTapeExpression
+  call :=
+    automata.terms_multitape.AbstractMultiTapeExpressionMultiTapeExpressionMultiTapeExpressionMultiTapeExpression._expand.closure.Insts.CoreOpsFunctionFnTupleShared0MultiTapeProductMultiTapeExpression.call
+}
+
+/-- [automata_builder::automata::terms_multitape::{impl automata_builder::automata::terms_multitape::AbstractMultiTapeExpression<automata_builder::automata::terms_multitape::MultiTapeProduct, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeProduct}::_expand_steps]: loop 0:
+    Source: 'src/automata/terms_multitape.rs', lines 645:8-649:9
+    Visibility: public -/
+@[rust_loop]
+def
+  automata.terms_multitape.MultiTapeProduct.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeProductMultiTapeExpression._expand_steps_loop
+  (iter : core.ops.range.Range Std.U64)
+  (expansion_mapping : std.collections.hash.map.HashMap (Std.U16 × Std.U32)
+  automata.terms_multitape.MultiTapeExpression std.hash.random.RandomState
+  alloc.alloc.Global) (include_debug_info : Bool) (fold : Bool)
+  (result : automata.terms_multitape.MultiTapeExpression) :
+  Result automata.terms_multitape.MultiTapeExpression
+  := do
+  let (o, iter1) ←
+    core.iter.range.IteratorRange.next core.iter.range.StepU64 iter
+  match o with
+  | none => ok result
+  | some _ =>
+    let result1 ←
+      automata.terms_multitape.MultiTapeExpression.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeExpressionMultiTapeExpression._expand
+        result expansion_mapping include_debug_info fold
+    automata.terms_multitape.MultiTapeProduct.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeProductMultiTapeExpression._expand_steps_loop
+      iter1 expansion_mapping include_debug_info fold result1
+partial_fixpoint
+
+/-- [automata_builder::automata::terms_multitape::{impl automata_builder::automata::terms_multitape::AbstractMultiTapeExpression<automata_builder::automata::terms_multitape::MultiTapeProduct, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeProduct}::_expand_steps]:
+    Source: 'src/automata/terms_multitape.rs', lines 636:4-651:5
+    Visibility: public -/
+def
+  automata.terms_multitape.MultiTapeProduct.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeProductMultiTapeExpression._expand_steps
+  (self : automata.terms_multitape.MultiTapeProduct)
+  (expansion_mapping : std.collections.hash.map.HashMap (Std.U16 × Std.U32)
+  automata.terms_multitape.MultiTapeExpression std.hash.random.RandomState
+  alloc.alloc.Global) (steps : Std.U64) (include_debug_info : Bool)
+  (fold : Bool) :
+  Result automata.terms_multitape.MultiTapeExpression
+  := do
+  let copy ←
+    automata.terms_multitape.MultiTapeProduct.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeProductMultiTapeExpression.copy
+      self
+  let copy1 ←
+    automata.terms_multitape.MultiTapeProduct.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeProductMultiTapeExpression._assign_indexes_as_base
+      copy
+  let result ←
+    automata.terms_multitape.MultiTapeProduct.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeProductMultiTapeExpression._expand
+      copy1 expansion_mapping include_debug_info fold
+  automata.terms_multitape.MultiTapeProduct.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeProductMultiTapeExpression._expand_steps_loop
+    { start := 1#u64, «end» := steps } expansion_mapping include_debug_info
+    fold result
+
+/-- [automata_builder::automata::terms_multitape::{impl automata_builder::automata::terms_multitape::AbstractMultiTapeExpression<automata_builder::automata::terms_multitape::MultiTapeProduct, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeTerm}::_sub]:
+    Source: 'src/automata/terms_multitape.rs', lines 253:4-258:5
+    Visibility: public -/
+def
+  automata.terms_multitape.MultiTapeTerm.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeProductMultiTapeExpression._sub
+  (self : automata.terms_multitape.MultiTapeTerm)
+  (substitutions : std.collections.hash.map.HashMap Std.I64 (Std.U16 ×
+  Std.U32) std.hash.random.RandomState alloc.alloc.Global)
+  (default : (Std.U16 × Std.U32)) :
+  Result Bool
+  := do
+  let o ←
+    std.collections.hash.map.HashMap.get core.cmp.EqI64 I64.Insts.CoreHashHash
+      std.hash.random.RandomState.Insts.CoreHashBuildHasherDefaultHasher
+      (core.borrow.Borrow.Blanket Std.I64) I64.Insts.CoreHashHash
+      core.cmp.EqI64 substitutions self.position
+  let p ← lift (core.option.Option.unwrap_or o default)
+  Pair.Insts.CoreCmpPartialEqPair.eq core.cmp.PartialEqU16
+    core.cmp.PartialEqU32 p self.state
+
+/-- [automata_builder::automata::terms_multitape::{impl automata_builder::automata::terms_multitape::AbstractMultiTapeExpression<automata_builder::automata::terms_multitape::MultiTapeProduct, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeProduct}::_sub]: loop 0:
+    Source: 'src/automata/terms_multitape.rs', lines 599:8-605:5
+    Visibility: public -/
+@[rust_loop]
+def
+  automata.terms_multitape.MultiTapeProduct.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeProductMultiTapeExpression._sub_loop
+  (iter : core.slice.iter.Iter automata.terms_multitape.MultiTapeTerm)
+  (substitutions : std.collections.hash.map.HashMap Std.I64 (Std.U16 ×
+  Std.U32) std.hash.random.RandomState alloc.alloc.Global)
+  (default : (Std.U16 × Std.U32)) :
+  Result Bool
+  := do
+  let (o, iter1) ← core.slice.iter.IteratorSliceIter.next iter
+  match o with
+  | none => ok true
+  | some term =>
+    let b ←
+      automata.terms_multitape.MultiTapeTerm.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeProductMultiTapeExpression._sub
+        term substitutions default
+    if b
+    then
+      automata.terms_multitape.MultiTapeProduct.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeProductMultiTapeExpression._sub_loop
+        iter1 substitutions default
+    else ok false
+partial_fixpoint
+
+/-- [automata_builder::automata::terms_multitape::{impl automata_builder::automata::terms_multitape::AbstractMultiTapeExpression<automata_builder::automata::terms_multitape::MultiTapeProduct, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeProduct}::_sub]:
+    Source: 'src/automata/terms_multitape.rs', lines 595:4-605:5
+    Visibility: public -/
+def
+  automata.terms_multitape.MultiTapeProduct.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeProductMultiTapeExpression._sub
+  (self : automata.terms_multitape.MultiTapeProduct)
+  (substitutions : std.collections.hash.map.HashMap Std.I64 (Std.U16 ×
+  Std.U32) std.hash.random.RandomState alloc.alloc.Global)
+  (default : (Std.U16 × Std.U32)) :
+  Result Bool
+  := do
+  let s := alloc.vec.Vec.deref self._terms
+  let iter ← core.slice.Slice.iter s
+  automata.terms_multitape.MultiTapeProduct.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeProductMultiTapeExpression._sub_loop
+    iter substitutions default
+
+/-- [automata_builder::automata::terms_multitape::{impl core::ops::bit::BitOr<automata_builder::automata::terms_multitape::MultiTapeProduct, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeProduct}::bitor]:
+    Source: 'src/automata/terms_multitape.rs', lines 553:4-557:5
+    Visibility: public -/
+def
+  automata.terms_multitape.MultiTapeProduct.Insts.CoreOpsBitBitOrMultiTapeProductMultiTapeExpression.bitor
+  (self : automata.terms_multitape.MultiTapeProduct)
+  (rhs : automata.terms_multitape.MultiTapeProduct) :
+  Result automata.terms_multitape.MultiTapeExpression
+  := do
+  let y ←
+    lift (Std.Array.to_slice (Array.make 2#usize [ self, rhs ] : Array
+      automata.terms_multitape.MultiTapeProduct 2#usize))
+  let ret := alloc.slice.Slice.into_vec y
+  automata.terms_multitape.MultiTapeExpression.new ret
+
+/-- Trait implementation: [automata_builder::automata::terms_multitape::{impl core::ops::bit::BitOr<automata_builder::automata::terms_multitape::MultiTapeProduct, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeProduct}]
+    Source: 'src/automata/terms_multitape.rs', lines 550:0-558:1 -/
+@[reducible]
+def
+  automata.terms_multitape.MultiTapeProduct.Insts.CoreOpsBitBitOrMultiTapeProductMultiTapeExpression
+  : core.ops.bit.BitOr automata.terms_multitape.MultiTapeProduct
+  automata.terms_multitape.MultiTapeProduct
+  automata.terms_multitape.MultiTapeExpression := {
+  bitor :=
+    automata.terms_multitape.MultiTapeProduct.Insts.CoreOpsBitBitOrMultiTapeProductMultiTapeExpression.bitor
+}
+
+/-- Trait implementation: [automata_builder::automata::terms_multitape::{impl core::ops::arith::Mul<automata_builder::automata::terms_multitape::MultiTapeProduct, automata_builder::automata::terms_multitape::MultiTapeProduct> for automata_builder::automata::terms_multitape::MultiTapeProduct}]
+    Source: 'src/automata/terms_multitape.rs', lines 499:0-515:1 -/
+@[reducible]
+def
+  automata.terms_multitape.MultiTapeProduct.Insts.CoreOpsArithMulMultiTapeProductMultiTapeProduct
+  : core.ops.arith.Mul automata.terms_multitape.MultiTapeProduct
+  automata.terms_multitape.MultiTapeProduct
+  automata.terms_multitape.MultiTapeProduct := {
+  mul :=
+    automata.terms_multitape.MultiTapeProduct.Insts.CoreOpsArithMulMultiTapeProductMultiTapeProduct.mul
+}
+
+/-- [automata_builder::automata::terms_multitape::MULTI_TAPE_TERM_SHORT_NAME]
+    Source: 'src/automata/terms_multitape.rs', lines 17:0-17:49
+    Visibility: public -/
+@[global_simps, irreducible]
+def automata.terms_multitape.MULTI_TAPE_TERM_SHORT_NAME : Str := toStr "D"
+
+/-- [automata_builder::automata::terms_multitape::AbstractMultiTapeExpression::_to_short_string]:
+    Source: 'src/automata/terms_multitape.rs', lines 64:4-66:5
+    Visibility: public -/
+@[trait_default]
+def
+  automata.terms_multitape.AbstractMultiTapeExpression._to_short_string.default
+  {Self : Type _} {Clause0_Clause0_Output : Type _} {Clause0_Clause1_Output :
+  Type _} (AbstractMultiTapeExpressionInst :
+  automata.terms_multitape.AbstractMultiTapeExpression Self
+  Clause0_Clause0_Output Clause0_Clause1_Output) (self : Self) :
+  Result String
+  := do
+  AbstractMultiTapeExpressionInst._to_string self
+    automata.terms_multitape.MULTI_TAPE_TERM_SHORT_NAME
+
+/-- Trait implementation: [automata_builder::automata::terms_multitape::{impl automata_builder::automata::terms_multitape::AbstractMultiTapeExpression<automata_builder::automata::terms_multitape::MultiTapeProduct, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeProduct}]
+    Source: 'src/automata/terms_multitape.rs', lines 588:0-669:1 -/
+@[reducible]
+impl_def
+  automata.terms_multitape.MultiTapeProduct.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeProductMultiTapeExpression
+  : automata.terms_multitape.AbstractMultiTapeExpression
+  automata.terms_multitape.MultiTapeProduct
+  automata.terms_multitape.MultiTapeProduct
+  automata.terms_multitape.MultiTapeExpression := {
+  coreopsarithMulInst :=
+    automata.terms_multitape.MultiTapeProduct.Insts.CoreOpsArithMulMultiTapeProductMultiTapeProduct
+  coreopsbitBitOrInst :=
+    automata.terms_multitape.MultiTapeProduct.Insts.CoreOpsBitBitOrMultiTapeProductMultiTapeExpression
+  corecmpEqInst := automata.terms_multitape.MultiTapeProduct.Insts.CoreCmpEq
+  copy :=
+    automata.terms_multitape.MultiTapeProduct.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeProductMultiTapeExpression.copy
+  _sub :=
+    automata.terms_multitape.MultiTapeProduct.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeProductMultiTapeExpression._sub
+  offset :=
+    automata.terms_multitape.MultiTapeProduct.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeProductMultiTapeExpression.offset
+  _expand :=
+    automata.terms_multitape.MultiTapeProduct.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeProductMultiTapeExpression._expand
+  _expand_steps :=
+    automata.terms_multitape.MultiTapeProduct.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeProductMultiTapeExpression._expand_steps
+  to_expression :=
+    automata.terms_multitape.MultiTapeProduct.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeProductMultiTapeExpression.to_expression
+  _to_string :=
+    automata.terms_multitape.MultiTapeProduct.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeProductMultiTapeExpression._to_string
+  _to_short_string :=
+    automata.terms_multitape.AbstractMultiTapeExpression._to_short_string.default
+    automata.terms_multitape.MultiTapeProduct.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeProductMultiTapeExpression
+  _get_num_terms :=
+    automata.terms_multitape.MultiTapeProduct.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeProductMultiTapeExpression._get_num_terms
+  _assign_indexes_as_base :=
+    automata.terms_multitape.MultiTapeProduct.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeProductMultiTapeExpression._assign_indexes_as_base
+}
+
+/-- [automata_builder::automata::terms_multitape::{automata_builder::automata::terms_multitape::MultiTapeProduct}::to_annotated_stub]:
+    Source: 'src/automata/terms_multitape.rs', lines 473:4-477:5
+    Visibility: public -/
+def automata.terms_multitape.MultiTapeProduct.to_annotated_stub
+  (self : automata.terms_multitape.MultiTapeProduct) : Result String := do
+  let short_string ←
+    automata.terms_multitape.AbstractMultiTapeExpression._to_short_string.default
+      automata.terms_multitape.MultiTapeProduct.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeProductMultiTapeExpression
+      self
+  let annotation ←
+    automata.terms_multitape.MultiTapeProduct.get_annotation self
+  let a ←
+    core.fmt.rt.Argument.new_display alloc.string.String.Insts.CoreFmtDisplay
+      short_string
+  let a1 ←
+    core.fmt.rt.Argument.new_display (Shared0T.Insts.CoreFmtDisplay
+      alloc.string.String.Insts.CoreFmtDisplay) annotation
+  let a2 ←
+    core.fmt.Arguments.new
+      (Array.make 5#usize [ 192#u8, 1#u8, 58#u8, 192#u8, 0#u8 ])
+      (Array.make 2#usize [ a, a1 ])
+  let s ← alloc.fmt.format a2
+  core.hint.must_use s
+
+/-- [automata_builder::automata::multi_tape_builder::{impl core::fmt::Display for automata_builder::automata::multi_tape_builder::CompileTapesError}::fmt::{impl core::ops::function::FnMut<(&'_0 (automata_builder::automata::terms_multitape::MultiTapeProduct, u32),), alloc::string::String> for automata_builder::automata::multi_tape_builder::{impl core::fmt::Display for automata_builder::automata::multi_tape_builder::CompileTapesError}::fmt::{closure}<'_0>}::call_mut]:
+    Source: 'src/automata/multi_tape_builder.rs', lines 129:29-135:25 -/
+def
+  automata.multi_tape_builder.DisplayCompileTapesError.fmt.closure.Insts.CoreOpsFunctionFnMutTupleShared0PairMultiTapeProductU32String.call_mut
+  (c : automata.multi_tape_builder.DisplayCompileTapesError.fmt.closure)
+  (tupled_args : (automata.terms_multitape.MultiTapeProduct × Std.U32)) :
+  Result (String ×
+    automata.multi_tape_builder.DisplayCompileTapesError.fmt.closure)
+  := do
+  let (product, cell_state_written) := tupled_args
+  let s ← automata.terms_multitape.MultiTapeProduct.to_annotated_stub product
+  let a ←
+    core.fmt.rt.Argument.new_display alloc.string.String.Insts.CoreFmtDisplay s
+  let a1 ←
+    core.fmt.rt.Argument.new_display (Shared0T.Insts.CoreFmtDisplay
+      U32.Insts.CoreFmtDisplay) cell_state_written
+  let a2 ←
+    core.fmt.Arguments.new
+      (Array.make 8#usize [
+        192#u8, 4#u8, 32#u8, 45#u8, 62#u8, 32#u8, 192#u8, 0#u8
+        ]) (Array.make 2#usize [ a, a1 ])
+  let s1 ← alloc.fmt.format a2
+  let s2 ← core.hint.must_use s1
+  ok (s2, ())
+
+/-- [automata_builder::automata::multi_tape_builder::{impl core::fmt::Display for automata_builder::automata::multi_tape_builder::CompileTapesError}::fmt::{impl core::ops::function::FnOnce<(&'_0 (automata_builder::automata::terms_multitape::MultiTapeProduct, u32),), alloc::string::String> for automata_builder::automata::multi_tape_builder::{impl core::fmt::Display for automata_builder::automata::multi_tape_builder::CompileTapesError}::fmt::{closure}<'_0>}::call_once]:
+    Source: 'src/automata/multi_tape_builder.rs', lines 129:29-135:25 -/
+def
+  automata.multi_tape_builder.DisplayCompileTapesError.fmt.closure.Insts.CoreOpsFunctionFnOnceTupleShared0PairMultiTapeProductU32String.call_once
+  (c : automata.multi_tape_builder.DisplayCompileTapesError.fmt.closure)
+  (p : (automata.terms_multitape.MultiTapeProduct × Std.U32)) :
+  Result String
+  := do
+  let (s, _) ←
+    automata.multi_tape_builder.DisplayCompileTapesError.fmt.closure.Insts.CoreOpsFunctionFnMutTupleShared0PairMultiTapeProductU32String.call_mut
+      () p
+  ok s
+
+/-- Trait implementation: [automata_builder::automata::multi_tape_builder::{impl core::fmt::Display for automata_builder::automata::multi_tape_builder::CompileTapesError}::fmt::{impl core::ops::function::FnOnce<(&'_0 (automata_builder::automata::terms_multitape::MultiTapeProduct, u32),), alloc::string::String> for automata_builder::automata::multi_tape_builder::{impl core::fmt::Display for automata_builder::automata::multi_tape_builder::CompileTapesError}::fmt::{closure}<'_0>}]
+    Source: 'src/automata/multi_tape_builder.rs', lines 129:29-135:25 -/
+@[reducible]
+def
+  automata.multi_tape_builder.DisplayCompileTapesError.fmt.closure.Insts.CoreOpsFunctionFnOnceTupleShared0PairMultiTapeProductU32String
+  : core.ops.function.FnOnce
+  automata.multi_tape_builder.DisplayCompileTapesError.fmt.closure
+  (automata.terms_multitape.MultiTapeProduct × Std.U32) String := {
+  call_once :=
+    automata.multi_tape_builder.DisplayCompileTapesError.fmt.closure.Insts.CoreOpsFunctionFnOnceTupleShared0PairMultiTapeProductU32String.call_once
+}
+
+/-- Trait implementation: [automata_builder::automata::multi_tape_builder::{impl core::fmt::Display for automata_builder::automata::multi_tape_builder::CompileTapesError}::fmt::{impl core::ops::function::FnMut<(&'_0 (automata_builder::automata::terms_multitape::MultiTapeProduct, u32),), alloc::string::String> for automata_builder::automata::multi_tape_builder::{impl core::fmt::Display for automata_builder::automata::multi_tape_builder::CompileTapesError}::fmt::{closure}<'_0>}]
+    Source: 'src/automata/multi_tape_builder.rs', lines 129:29-135:25 -/
+@[reducible]
+def
+  automata.multi_tape_builder.DisplayCompileTapesError.fmt.closure.Insts.CoreOpsFunctionFnMutTupleShared0PairMultiTapeProductU32String
+  : core.ops.function.FnMut
+  automata.multi_tape_builder.DisplayCompileTapesError.fmt.closure
+  (automata.terms_multitape.MultiTapeProduct × Std.U32) String := {
+  FnOnceInst :=
+    automata.multi_tape_builder.DisplayCompileTapesError.fmt.closure.Insts.CoreOpsFunctionFnOnceTupleShared0PairMultiTapeProductU32String
+  call_mut :=
+    automata.multi_tape_builder.DisplayCompileTapesError.fmt.closure.Insts.CoreOpsFunctionFnMutTupleShared0PairMultiTapeProductU32String.call_mut
+}
+
+/-- [automata_builder::automata::multi_tape_builder::{impl core::fmt::Display for automata_builder::automata::multi_tape_builder::CompileTapesError}::fmt]: loop 1:
+    Source: 'src/automata/multi_tape_builder.rs', lines 115:20-121:21
+    Visibility: public -/
+@[rust_loop]
+def
+  automata.multi_tape_builder.CompileTapesError.Insts.CoreFmtDisplay.fmt_loop0_loop0
+  (iter : alloc.collections.btree.map.Iter Std.U16 Std.U32)
+  (tape_write_to_prods : indexmap.map.IndexMap Std.U16 (alloc.vec.Vec
+  (automata.terms_multitape.MultiTapeProduct × Std.U32))
+  std.hash.random.RandomState)
+  (states_written_by_tape : indexmap.map.IndexMap Std.U16
+  (indexmap.set.IndexSet Std.U32 std.hash.random.RandomState)
+  std.hash.random.RandomState)
+  (product : automata.terms_multitape.MultiTapeProduct) :
+  Result ((indexmap.map.IndexMap Std.U16 (alloc.vec.Vec
+    (automata.terms_multitape.MultiTapeProduct × Std.U32))
+    std.hash.random.RandomState) × (indexmap.map.IndexMap Std.U16
+    (indexmap.set.IndexSet Std.U32 std.hash.random.RandomState)
+    std.hash.random.RandomState))
+  := do
+  let (o, iter1) ←
+    alloc.collections.btree.map.Iter.Insts.CoreIterTraitsIteratorIteratorPairSharedAKSharedAV.next
+      iter
+  match o with
+  | none => ok (tape_write_to_prods, states_written_by_tape)
+  | some p =>
+    let (tape_no, cell_state) := p
+    let (e, entry_back) ←
+      indexmap.map.IndexMap.entry U16.Insts.CoreHashHash core.cmp.EqU16
+        std.hash.random.RandomState.Insts.CoreHashBuildHasherDefaultHasher
+        states_written_by_tape tape_no
+    let (is, or_default_back) ←
+      indexmap.map.core.entry.Entry.or_default
+        (indexmap.set.IndexSet.Insts.CoreDefaultDefault Std.U32
+        std.hash.random.RandomState.Insts.CoreDefaultDefault) e
+    let (_, is1) ←
+      indexmap.set.IndexSet.insert U32.Insts.CoreHashHash core.cmp.EqU32
+        std.hash.random.RandomState.Insts.CoreHashBuildHasherDefaultHasher is
+        cell_state
+    let (e1, entry_back1) ←
+      indexmap.map.IndexMap.entry U16.Insts.CoreHashHash core.cmp.EqU16
+        std.hash.random.RandomState.Insts.CoreHashBuildHasherDefaultHasher
+        tape_write_to_prods tape_no
+    let (v, or_default_back1) ←
+      indexmap.map.core.entry.Entry.or_default
+        (alloc.vec.Vec.Insts.CoreDefaultDefault
+        (automata.terms_multitape.MultiTapeProduct × Std.U32)) e1
+    let mtp ←
+      automata.terms_multitape.MultiTapeProduct.Insts.CoreCloneClone.clone
+        product
+    let v1 ← alloc.vec.Vec.push v (mtp, cell_state)
+    let e2 := or_default_back is1
+    let im := entry_back e2
+    let e3 := or_default_back1 v1
+    let im1 := entry_back1 e3
+    automata.multi_tape_builder.CompileTapesError.Insts.CoreFmtDisplay.fmt_loop0_loop0
+      iter1 im1 im product
+partial_fixpoint
+
+/-- [automata_builder::automata::multi_tape_builder::{impl core::fmt::Display for automata_builder::automata::multi_tape_builder::CompileTapesError}::fmt]: loop 0:
+    Source: 'src/automata/multi_tape_builder.rs', lines 113:16-122:17
+    Visibility: public -/
+@[rust_loop]
+def
+  automata.multi_tape_builder.CompileTapesError.Insts.CoreFmtDisplay.fmt_loop0
+  (iter : indexmap.map.iter.Iter
+  automata.multi_tape_transition.MultiTapeTransition
+  (alloc.collections.btree.map.BTreeMap Std.U16 Std.U32 alloc.alloc.Global))
+  (tape_write_to_prods : indexmap.map.IndexMap Std.U16 (alloc.vec.Vec
+  (automata.terms_multitape.MultiTapeProduct × Std.U32))
+  std.hash.random.RandomState)
+  (states_written_by_tape : indexmap.map.IndexMap Std.U16
+  (indexmap.set.IndexSet Std.U32 std.hash.random.RandomState)
+  std.hash.random.RandomState) :
+  Result ((indexmap.map.IndexMap Std.U16 (alloc.vec.Vec
+    (automata.terms_multitape.MultiTapeProduct × Std.U32))
+    std.hash.random.RandomState) × (indexmap.map.IndexMap Std.U16
+    (indexmap.set.IndexSet Std.U32 std.hash.random.RandomState)
+    std.hash.random.RandomState))
+  := do
+  let (o, iter1) ←
+    indexmap.map.iter.Iter.Insts.CoreIterTraitsIteratorIteratorPairSharedAKSharedAV.next
+      iter
+  match o with
+  | none => ok (tape_write_to_prods, states_written_by_tape)
+  | some p =>
+    let (transition, tape_writes) := p
+    let product ←
+      automata.multi_tape_transition.MultiTapeTransition.to_product transition
+    let iter2 ←
+      alloc.collections.btree.map.BTreeMap.iter
+        alloc.alloc.Global.Insts.CoreAllocAllocatorClone tape_writes
+    let (tape_write_to_prods1, states_written_by_tape1) ←
+      automata.multi_tape_builder.CompileTapesError.Insts.CoreFmtDisplay.fmt_loop0_loop0
+        iter2 tape_write_to_prods states_written_by_tape product
+    automata.multi_tape_builder.CompileTapesError.Insts.CoreFmtDisplay.fmt_loop0
+      iter1 tape_write_to_prods1 states_written_by_tape1
+partial_fixpoint
+
+/-- [automata_builder::automata::multi_tape_builder::{impl core::fmt::Display for automata_builder::automata::multi_tape_builder::CompileTapesError}::fmt]: loop 2:
+    Source: 'src/automata/multi_tape_builder.rs', lines 123:16-162:5
+    Visibility: public -/
+@[rust_loop]
+def
+  automata.multi_tape_builder.CompileTapesError.Insts.CoreFmtDisplay.fmt_loop1
+  (iter : indexmap.map.iter.Iter Std.U16 (alloc.vec.Vec
+  (automata.terms_multitape.MultiTapeProduct × Std.U32)))
+  (product_writes_error : automata.product_writes_map.ProductWritesError)
+  (f : core.fmt.Formatter)
+  (states_written_by_tape : indexmap.map.IndexMap Std.U16
+  (indexmap.set.IndexSet Std.U32 std.hash.random.RandomState)
+  std.hash.random.RandomState) :
+  Result ((core.result.Result Unit core.fmt.Error) × core.fmt.Formatter)
+  := do
+  let (o, iter1) ←
+    indexmap.map.iter.Iter.Insts.CoreIterTraitsIteratorIteratorPairSharedAKSharedAV.next
+      iter
+  match o with
+  | none =>
+    let args ←
+      alloc.string.ToString.Blanket.to_string
+        automata.product_writes_map.ProductWritesError.Insts.CoreFmtDisplay
+        product_writes_error
+    let a ←
+      core.fmt.rt.Argument.new_display alloc.string.String.Insts.CoreFmtDisplay
+        args
+    let a1 ←
+      core.fmt.Arguments.new
+        (Array.make 34#usize [
+          31#u8, 79#u8, 114#u8, 105#u8, 103#u8, 105#u8, 110#u8, 97#u8, 108#u8,
+          32#u8, 112#u8, 114#u8, 111#u8, 100#u8, 117#u8, 99#u8, 116#u8, 32#u8,
+          119#u8, 114#u8, 105#u8, 116#u8, 101#u8, 115#u8, 32#u8, 101#u8,
+          114#u8, 114#u8, 111#u8, 114#u8, 58#u8, 10#u8, 192#u8, 0#u8
+          ]) (Array.make 1#usize [ a ])
+    core.fmt.Formatter.write_fmt f a1
+  | some p =>
+    let (tape_no, products) := p
+    let o1 ←
+      indexmap.map.IndexMap.get
+        std.hash.random.RandomState.Insts.CoreHashBuildHasherDefaultHasher
+        U16.Insts.CoreHashHash (equivalent.Equivalent.Blanket core.cmp.EqU16
+        (core.borrow.Borrow.Blanket Std.U16)) states_written_by_tape tape_no
+    let tape_writes ← core.option.Option.unwrap o1
+    let i ← indexmap.set.IndexSet.len tape_writes
+    let conflict_stub ←
+      if i > 1#usize
+      then ok (toStr "[HAS_CONFLICT]")
+      else ok (toStr "")
+    let s := alloc.vec.Vec.deref products
+    let i1 ← core.slice.Slice.iter s
+    let m ←
+      core.iter.traits.iterator.Iterator.map.default
+        (core.iter.traits.iterator.IteratorSliceIter
+        (automata.terms_multitape.MultiTapeProduct × Std.U32))
+        automata.multi_tape_builder.DisplayCompileTapesError.fmt.closure.Insts.CoreOpsFunctionFnMutTupleShared0PairMultiTapeProductU32String
+        i1 ()
+    let v ←
+      core.iter.traits.iterator.Iterator.collect.default
+        (core.iter.adapters.map.Map.Insts.CoreIterTraitsIteratorIterator
+        (core.iter.traits.iterator.IteratorSliceIter
+        (automata.terms_multitape.MultiTapeProduct × Std.U32))
+        automata.multi_tape_builder.DisplayCompileTapesError.fmt.closure.Insts.CoreOpsFunctionFnMutTupleShared0PairMultiTapeProductU32String)
+        (core.iter.traits.collect.FromIteratorVec String) m
+    let s1 := alloc.vec.Vec.deref v
+    let writes_stub ←
+      alloc.slice.Slice.join (Slice.Insts.AllocSliceJoinShared0StrString
+        alloc.string.String.Insts.CoreBorrowBorrowStr) s1 (toStr "\n- ")
+    let a ←
+      core.fmt.rt.Argument.new_display (Shared0T.Insts.CoreFmtDisplay
+        U16.Insts.CoreFmtDisplay) tape_no
+    let a1 ←
+      core.fmt.rt.Argument.new_display (Shared0T.Insts.CoreFmtDisplay
+        Str.Insts.CoreFmtDisplay) conflict_stub
+    let a2 ←
+      core.fmt.rt.Argument.new_display alloc.string.String.Insts.CoreFmtDisplay
+        writes_stub
+    let a3 ←
+      core.fmt.Arguments.new
+        (Array.make 28#usize [
+          5#u8, 84#u8, 97#u8, 112#u8, 101#u8, 32#u8, 192#u8, 8#u8, 32#u8,
+          119#u8, 114#u8, 105#u8, 116#u8, 101#u8, 115#u8, 32#u8, 192#u8, 5#u8,
+          58#u8, 32#u8, 10#u8, 45#u8, 32#u8, 192#u8, 2#u8, 32#u8, 10#u8, 0#u8
+          ]) (Array.make 3#usize [ a, a1, a2 ])
+    let (r, f1) ← core.fmt.Formatter.write_fmt f a3
+    let cf ← core.result.Result.Insts.CoreOpsTry.branch r
+    match cf with
+    | core.ops.control_flow.ControlFlow.Continue _ =>
+      automata.multi_tape_builder.CompileTapesError.Insts.CoreFmtDisplay.fmt_loop1
+        iter1 product_writes_error f1 states_written_by_tape
+    | core.ops.control_flow.ControlFlow.Break residual =>
+      let r1 ←
+        core.result.Result.Insts.CoreOpsTry_traitFromResidualResult.from_residual
+          Unit (core.convert.FromSame core.fmt.Error) residual
+      ok (r1, f1)
+partial_fixpoint
+
 /-- [automata_builder::automata::multi_tape_builder::{impl core::fmt::Display for automata_builder::automata::multi_tape_builder::CompileTapesError}::fmt]:
-    Source: 'src/automata/multi_tape_builder.rs', lines 87:4-103:5
+    Source: 'src/automata/multi_tape_builder.rs', lines 98:4-162:5
     Visibility: public -/
 def automata.multi_tape_builder.CompileTapesError.Insts.CoreFmtDisplay.fmt
   (self : automata.multi_tape_builder.CompileTapesError)
@@ -4923,6 +7326,33 @@ def automata.multi_tape_builder.CompileTapesError.Insts.CoreFmtDisplay.fmt
       core.fmt.Arguments.new (Array.make 2#usize [ 192#u8, 0#u8 ])
         (Array.make 1#usize [ a ])
     core.fmt.Formatter.write_fmt f a1
+  | automata.multi_tape_builder.CompileTapesError.ExtendedProductOutputConflict
+    source_product_writes product_writes_error =>
+    let a ←
+      core.fmt.Arguments.from_str (toStr
+        "Conflicting writes in extended product output\n")
+    let (r, f1) ← core.fmt.Formatter.write_fmt f a
+    let cf ← core.result.Result.Insts.CoreOpsTry.branch r
+    match cf with
+    | core.ops.control_flow.ControlFlow.Continue _ =>
+      let tape_write_to_prods ←
+        indexmap.map.IndexMapKVRandomState.new Std.U16 (alloc.vec.Vec
+          (automata.terms_multitape.MultiTapeProduct × Std.U32))
+      let states_written_by_tape ←
+        indexmap.map.IndexMapKVRandomState.new Std.U16 (indexmap.set.IndexSet
+          Std.U32 std.hash.random.RandomState)
+      let iter ← indexmap.map.IndexMap.iter source_product_writes
+      let (tape_write_to_prods1, states_written_by_tape1) ←
+        automata.multi_tape_builder.CompileTapesError.Insts.CoreFmtDisplay.fmt_loop0
+          iter tape_write_to_prods states_written_by_tape
+      let iter1 ← indexmap.map.IndexMap.iter tape_write_to_prods1
+      automata.multi_tape_builder.CompileTapesError.Insts.CoreFmtDisplay.fmt_loop1
+        iter1 product_writes_error f1 states_written_by_tape1
+    | core.ops.control_flow.ControlFlow.Break residual =>
+      let r1 ←
+        core.result.Result.Insts.CoreOpsTry_traitFromResidualResult.from_residual
+          Unit (core.convert.FromSame core.fmt.Error) residual
+      ok (r1, f1)
   | automata.multi_tape_builder.CompileTapesError.Trie err =>
     let a ←
       core.fmt.rt.Argument.new_display (Shared0T.Insts.CoreFmtDisplay
@@ -5003,7 +7433,7 @@ def automata.multi_tape_builder.CompileTapesError.Insts.CoreFmtDisplay.fmt
     core.fmt.Formatter.write_fmt f a1
 
 /-- Trait implementation: [automata_builder::automata::multi_tape_builder::{impl core::fmt::Display for automata_builder::automata::multi_tape_builder::CompileTapesError}]
-    Source: 'src/automata/multi_tape_builder.rs', lines 86:0-104:1 -/
+    Source: 'src/automata/multi_tape_builder.rs', lines 97:0-163:1 -/
 @[reducible]
 def automata.multi_tape_builder.CompileTapesError.Insts.CoreFmtDisplay :
   core.fmt.Display automata.multi_tape_builder.CompileTapesError := {
@@ -5011,7 +7441,7 @@ def automata.multi_tape_builder.CompileTapesError.Insts.CoreFmtDisplay :
 }
 
 /-- Trait implementation: [automata_builder::automata::multi_tape_builder::{impl core::error::Error for automata_builder::automata::multi_tape_builder::CompileTapesError}]
-    Source: 'src/automata/multi_tape_builder.rs', lines 105:0-105:47 -/
+    Source: 'src/automata/multi_tape_builder.rs', lines 164:0-164:47 -/
 @[reducible]
 def automata.multi_tape_builder.CompileTapesError.Insts.CoreErrorError :
   core.error.Error automata.multi_tape_builder.CompileTapesError := {
@@ -5022,7 +7452,7 @@ def automata.multi_tape_builder.CompileTapesError.Insts.CoreErrorError :
 }
 
 /-- [automata_builder::automata::multi_tape_builder::{impl core::convert::From<automata_builder::automata::product_writes_map::ProductWritesError> for automata_builder::automata::multi_tape_builder::CompileTapesError}::from]:
-    Source: 'src/automata/multi_tape_builder.rs', lines 108:4-110:5
+    Source: 'src/automata/multi_tape_builder.rs', lines 167:4-169:5
     Visibility: public -/
 def
   automata.multi_tape_builder.CompileTapesError.Insts.CoreConvertFromProductWritesError.from
@@ -5032,7 +7462,7 @@ def
   ok (automata.multi_tape_builder.CompileTapesError.ProductWrites err)
 
 /-- Trait implementation: [automata_builder::automata::multi_tape_builder::{impl core::convert::From<automata_builder::automata::product_writes_map::ProductWritesError> for automata_builder::automata::multi_tape_builder::CompileTapesError}]
-    Source: 'src/automata/multi_tape_builder.rs', lines 107:0-111:1 -/
+    Source: 'src/automata/multi_tape_builder.rs', lines 166:0-170:1 -/
 @[reducible]
 def
   automata.multi_tape_builder.CompileTapesError.Insts.CoreConvertFromProductWritesError
@@ -5043,7 +7473,7 @@ def
 }
 
 /-- [automata_builder::automata::multi_tape_builder::{impl core::convert::From<automata_builder::automata::multi_tape_product_trie::TrieError> for automata_builder::automata::multi_tape_builder::CompileTapesError}::from]:
-    Source: 'src/automata/multi_tape_builder.rs', lines 113:4-115:5
+    Source: 'src/automata/multi_tape_builder.rs', lines 172:4-174:5
     Visibility: public -/
 def
   automata.multi_tape_builder.CompileTapesError.Insts.CoreConvertFromTrieError.from
@@ -5053,7 +7483,7 @@ def
   ok (automata.multi_tape_builder.CompileTapesError.Trie err)
 
 /-- Trait implementation: [automata_builder::automata::multi_tape_builder::{impl core::convert::From<automata_builder::automata::multi_tape_product_trie::TrieError> for automata_builder::automata::multi_tape_builder::CompileTapesError}]
-    Source: 'src/automata/multi_tape_builder.rs', lines 112:0-116:1 -/
+    Source: 'src/automata/multi_tape_builder.rs', lines 171:0-175:1 -/
 @[reducible]
 def
   automata.multi_tape_builder.CompileTapesError.Insts.CoreConvertFromTrieError
@@ -5064,7 +7494,7 @@ def
 }
 
 /-- [automata_builder::automata::multi_tape_builder::{impl core::convert::From<automata_builder::automata::tape_overlaps_fsm::TapeOverlapsFSMError> for automata_builder::automata::multi_tape_builder::CompileTapesError}::from]:
-    Source: 'src/automata/multi_tape_builder.rs', lines 118:4-120:5
+    Source: 'src/automata/multi_tape_builder.rs', lines 177:4-179:5
     Visibility: public -/
 def
   automata.multi_tape_builder.CompileTapesError.Insts.CoreConvertFromTapeOverlapsFSMError.from
@@ -5074,7 +7504,7 @@ def
   ok (automata.multi_tape_builder.CompileTapesError.OverlapsFSM err)
 
 /-- Trait implementation: [automata_builder::automata::multi_tape_builder::{impl core::convert::From<automata_builder::automata::tape_overlaps_fsm::TapeOverlapsFSMError> for automata_builder::automata::multi_tape_builder::CompileTapesError}]
-    Source: 'src/automata/multi_tape_builder.rs', lines 117:0-121:1 -/
+    Source: 'src/automata/multi_tape_builder.rs', lines 176:0-180:1 -/
 @[reducible]
 def
   automata.multi_tape_builder.CompileTapesError.Insts.CoreConvertFromTapeOverlapsFSMError
@@ -5084,29 +7514,8 @@ def
     automata.multi_tape_builder.CompileTapesError.Insts.CoreConvertFromTapeOverlapsFSMError.from
 }
 
-/-- [automata_builder::automata::terms_multitape::{impl core::fmt::Debug for automata_builder::automata::terms_multitape::MultiTapeState}::fmt]:
-    Source: 'src/automata/terms_multitape.rs', lines 18:4-18:9
-    Visibility: public -/
-def automata.terms_multitape.MultiTapeState.Insts.CoreFmtDebug.fmt
-  (self : automata.terms_multitape.MultiTapeState) (f : core.fmt.Formatter) :
-  Result ((core.result.Result Unit core.fmt.Error) × core.fmt.Formatter)
-  := do
-  let dyn := Dyn.mk _ core.fmt.DebugU16 self.tape_no
-  let dyn1 :=
-    Dyn.mk _ (core.fmt.DebugShared core.fmt.DebugU32) self.tape_cell_state
-  core.fmt.Formatter.debug_struct_field2_finish f (toStr "MultiTapeState")
-    (toStr "tape_no") dyn (toStr "tape_cell_state") dyn1
-
-/-- Trait implementation: [automata_builder::automata::terms_multitape::{impl core::fmt::Debug for automata_builder::automata::terms_multitape::MultiTapeState}]
-    Source: 'src/automata/terms_multitape.rs', lines 18:4-18:9 -/
-@[reducible]
-def automata.terms_multitape.MultiTapeState.Insts.CoreFmtDebug : core.fmt.Debug
-  automata.terms_multitape.MultiTapeState := {
-  fmt := automata.terms_multitape.MultiTapeState.Insts.CoreFmtDebug.fmt
-}
-
 /-- [automata_builder::automata::multi_tape_builder::{impl core::fmt::Debug for automata_builder::automata::multi_tape_builder::MultiTapeStatePathRemap}::fmt]:
-    Source: 'src/automata/multi_tape_builder.rs', lines 130:9-130:14
+    Source: 'src/automata/multi_tape_builder.rs', lines 189:9-189:14
     Visibility: public -/
 def automata.multi_tape_builder.MultiTapeStatePathRemap.Insts.CoreFmtDebug.fmt
   (self : automata.multi_tape_builder.MultiTapeStatePathRemap)
@@ -5142,7 +7551,7 @@ def automata.multi_tape_builder.MultiTapeStatePathRemap.Insts.CoreFmtDebug.fmt
     "tape_state_path_remap") dyn3 (toStr "rev_state_path_remap") dyn4
 
 /-- Trait implementation: [automata_builder::automata::multi_tape_builder::{impl core::fmt::Debug for automata_builder::automata::multi_tape_builder::MultiTapeStatePathRemap}]
-    Source: 'src/automata/multi_tape_builder.rs', lines 130:9-130:14 -/
+    Source: 'src/automata/multi_tape_builder.rs', lines 189:9-189:14 -/
 @[reducible]
 def automata.multi_tape_builder.MultiTapeStatePathRemap.Insts.CoreFmtDebug :
   core.fmt.Debug automata.multi_tape_builder.MultiTapeStatePathRemap := {
@@ -5151,7 +7560,7 @@ def automata.multi_tape_builder.MultiTapeStatePathRemap.Insts.CoreFmtDebug :
 }
 
 /-- [automata_builder::automata::multi_tape_builder::{impl core::clone::Clone for automata_builder::automata::multi_tape_builder::MultiTapeStatePathRemap}::clone]:
-    Source: 'src/automata/multi_tape_builder.rs', lines 130:16-130:21
+    Source: 'src/automata/multi_tape_builder.rs', lines 189:16-189:21
     Visibility: public -/
 def
   automata.multi_tape_builder.MultiTapeStatePathRemap.Insts.CoreCloneClone.clone
@@ -5191,7 +7600,7 @@ def
     }
 
 /-- Trait implementation: [automata_builder::automata::multi_tape_builder::{impl core::clone::Clone for automata_builder::automata::multi_tape_builder::MultiTapeStatePathRemap}]
-    Source: 'src/automata/multi_tape_builder.rs', lines 130:16-130:21 -/
+    Source: 'src/automata/multi_tape_builder.rs', lines 189:16-189:21 -/
 @[reducible]
 def automata.multi_tape_builder.MultiTapeStatePathRemap.Insts.CoreCloneClone :
   core.clone.Clone automata.multi_tape_builder.MultiTapeStatePathRemap := {
@@ -5200,7 +7609,7 @@ def automata.multi_tape_builder.MultiTapeStatePathRemap.Insts.CoreCloneClone :
 }
 
 /-- [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeStatePathRemap}::new]:
-    Source: 'src/automata/multi_tape_builder.rs', lines 140:4-149:5
+    Source: 'src/automata/multi_tape_builder.rs', lines 199:4-208:5
     Visibility: public -/
 def automata.multi_tape_builder.MultiTapeStatePathRemap.new
   (remap_counter_start : Std.U32) :
@@ -5227,7 +7636,7 @@ def automata.multi_tape_builder.MultiTapeStatePathRemap.new
     }
 
 /-- [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeStatePathRemap}::remap_counter_start]:
-    Source: 'src/automata/multi_tape_builder.rs', lines 151:4-153:5
+    Source: 'src/automata/multi_tape_builder.rs', lines 210:4-212:5
     Visibility: public -/
 def
   automata.multi_tape_builder.MultiTapeStatePathRemap.impl.remap_counter_start
@@ -5237,7 +7646,7 @@ def
   ok self.remap_counter_start
 
 /-- [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeStatePathRemap}::num_normal_remaps]:
-    Source: 'src/automata/multi_tape_builder.rs', lines 155:4-157:5
+    Source: 'src/automata/multi_tape_builder.rs', lines 214:4-216:5
     Visibility: public -/
 def automata.multi_tape_builder.MultiTapeStatePathRemap.num_normal_remaps
   (self : automata.multi_tape_builder.MultiTapeStatePathRemap) :
@@ -5246,7 +7655,7 @@ def automata.multi_tape_builder.MultiTapeStatePathRemap.num_normal_remaps
   indexmap.map.IndexMap.len self.tape_state_path_remap
 
 /-- [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeStatePathRemap}::num_void_remaps]:
-    Source: 'src/automata/multi_tape_builder.rs', lines 159:4-161:5
+    Source: 'src/automata/multi_tape_builder.rs', lines 218:4-220:5
     Visibility: public -/
 def automata.multi_tape_builder.MultiTapeStatePathRemap.num_void_remaps
   (self : automata.multi_tape_builder.MultiTapeStatePathRemap) :
@@ -5256,7 +7665,7 @@ def automata.multi_tape_builder.MultiTapeStatePathRemap.num_void_remaps
     alloc.alloc.Global.Insts.CoreAllocAllocatorClone self.void_state_paths
 
 /-- [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeStatePathRemap}::num_halt_remaps]:
-    Source: 'src/automata/multi_tape_builder.rs', lines 163:4-165:5
+    Source: 'src/automata/multi_tape_builder.rs', lines 222:4-224:5
     Visibility: public -/
 def automata.multi_tape_builder.MultiTapeStatePathRemap.num_halt_remaps
   (self : automata.multi_tape_builder.MultiTapeStatePathRemap) :
@@ -5266,7 +7675,7 @@ def automata.multi_tape_builder.MultiTapeStatePathRemap.num_halt_remaps
     alloc.alloc.Global.Insts.CoreAllocAllocatorClone self.halt_state_paths
 
 /-- [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeStatePathRemap}::remap_counter_end]:
-    Source: 'src/automata/multi_tape_builder.rs', lines 167:4-169:5
+    Source: 'src/automata/multi_tape_builder.rs', lines 226:4-228:5
     Visibility: public -/
 def automata.multi_tape_builder.MultiTapeStatePathRemap.remap_counter_end
   (self : automata.multi_tape_builder.MultiTapeStatePathRemap) :
@@ -5278,7 +7687,7 @@ def automata.multi_tape_builder.MultiTapeStatePathRemap.remap_counter_end
   self.remap_counter_start + i1
 
 /-- [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeStatePathRemap}::next_free_counter]:
-    Source: 'src/automata/multi_tape_builder.rs', lines 171:4-173:5
+    Source: 'src/automata/multi_tape_builder.rs', lines 230:4-232:5
     Visibility: public -/
 def automata.multi_tape_builder.MultiTapeStatePathRemap.next_free_counter
   (self : automata.multi_tape_builder.MultiTapeStatePathRemap) :
@@ -5289,7 +7698,7 @@ def automata.multi_tape_builder.MultiTapeStatePathRemap.next_free_counter
   i + 1#u32
 
 /-- [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeStatePathRemap}::tape_state_path_remap]:
-    Source: 'src/automata/multi_tape_builder.rs', lines 175:4-177:5
+    Source: 'src/automata/multi_tape_builder.rs', lines 234:4-236:5
     Visibility: public -/
 def
   automata.multi_tape_builder.MultiTapeStatePathRemap.impl.tape_state_path_remap
@@ -5301,7 +7710,7 @@ def
   ok self.tape_state_path_remap
 
 /-- [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeStatePathRemap}::void_state_paths]:
-    Source: 'src/automata/multi_tape_builder.rs', lines 179:4-181:5
+    Source: 'src/automata/multi_tape_builder.rs', lines 238:4-240:5
     Visibility: public -/
 def automata.multi_tape_builder.MultiTapeStatePathRemap.impl.void_state_paths
   (self : automata.multi_tape_builder.MultiTapeStatePathRemap) :
@@ -5311,7 +7720,7 @@ def automata.multi_tape_builder.MultiTapeStatePathRemap.impl.void_state_paths
   ok self.void_state_paths
 
 /-- [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeStatePathRemap}::halt_state_paths]:
-    Source: 'src/automata/multi_tape_builder.rs', lines 183:4-185:5
+    Source: 'src/automata/multi_tape_builder.rs', lines 242:4-244:5
     Visibility: public -/
 def automata.multi_tape_builder.MultiTapeStatePathRemap.impl.halt_state_paths
   (self : automata.multi_tape_builder.MultiTapeStatePathRemap) :
@@ -5321,7 +7730,7 @@ def automata.multi_tape_builder.MultiTapeStatePathRemap.impl.halt_state_paths
   ok self.halt_state_paths
 
 /-- [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeStatePathRemap}::is_void_path::{impl core::ops::function::FnMut<(&'_0 automata_builder::automata::terms_multitape::MultiTapeState,), bool> for automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeStatePathRemap}::is_void_path::{closure}<'_0>}::call_mut]:
-    Source: 'src/automata/multi_tape_builder.rs', lines 190:24-190:67 -/
+    Source: 'src/automata/multi_tape_builder.rs', lines 249:24-249:67 -/
 def
   automata.multi_tape_builder.MultiTapeStatePathRemap.is_void_path.closure.Insts.CoreOpsFunctionFnMutTupleShared0MultiTapeStateBool.call_mut
   (c :
@@ -5333,7 +7742,7 @@ def
   ok (tupled_args.tape_cell_state = automata.rule_generator.VOID_STATE, ())
 
 /-- [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeStatePathRemap}::is_void_path::{impl core::ops::function::FnOnce<(&'_0 automata_builder::automata::terms_multitape::MultiTapeState,), bool> for automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeStatePathRemap}::is_void_path::{closure}<'_0>}::call_once]:
-    Source: 'src/automata/multi_tape_builder.rs', lines 190:24-190:67 -/
+    Source: 'src/automata/multi_tape_builder.rs', lines 249:24-249:67 -/
 def
   automata.multi_tape_builder.MultiTapeStatePathRemap.is_void_path.closure.Insts.CoreOpsFunctionFnOnceTupleShared0MultiTapeStateBool.call_once
   (c :
@@ -5347,7 +7756,7 @@ def
   ok b
 
 /-- Trait implementation: [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeStatePathRemap}::is_void_path::{impl core::ops::function::FnOnce<(&'_0 automata_builder::automata::terms_multitape::MultiTapeState,), bool> for automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeStatePathRemap}::is_void_path::{closure}<'_0>}]
-    Source: 'src/automata/multi_tape_builder.rs', lines 190:24-190:67 -/
+    Source: 'src/automata/multi_tape_builder.rs', lines 249:24-249:67 -/
 @[reducible]
 def
   automata.multi_tape_builder.MultiTapeStatePathRemap.is_void_path.closure.Insts.CoreOpsFunctionFnOnceTupleShared0MultiTapeStateBool
@@ -5359,7 +7768,7 @@ def
 }
 
 /-- Trait implementation: [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeStatePathRemap}::is_void_path::{impl core::ops::function::FnMut<(&'_0 automata_builder::automata::terms_multitape::MultiTapeState,), bool> for automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeStatePathRemap}::is_void_path::{closure}<'_0>}]
-    Source: 'src/automata/multi_tape_builder.rs', lines 190:24-190:67 -/
+    Source: 'src/automata/multi_tape_builder.rs', lines 249:24-249:67 -/
 @[reducible]
 def
   automata.multi_tape_builder.MultiTapeStatePathRemap.is_void_path.closure.Insts.CoreOpsFunctionFnMutTupleShared0MultiTapeStateBool
@@ -5373,7 +7782,7 @@ def
 }
 
 /-- [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeStatePathRemap}::is_void_path]:
-    Source: 'src/automata/multi_tape_builder.rs', lines 189:4-191:5
+    Source: 'src/automata/multi_tape_builder.rs', lines 248:4-250:5
     Visibility: public -/
 def automata.multi_tape_builder.MultiTapeStatePathRemap.is_void_path
   (path : Slice automata.terms_multitape.MultiTapeState) : Result Bool := do
@@ -5391,7 +7800,7 @@ def automata.multi_tape_builder.MultiTapeStatePathRemap.is_void_path
 def automata.rule_generator.HALT_STATE : Std.U32 := 1#u32
 
 /-- [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeStatePathRemap}::is_halt_path::{impl core::ops::function::FnMut<(&'_0 automata_builder::automata::terms_multitape::MultiTapeState,), bool> for automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeStatePathRemap}::is_halt_path::{closure}<'_0>}::call_mut]:
-    Source: 'src/automata/multi_tape_builder.rs', lines 196:24-196:67 -/
+    Source: 'src/automata/multi_tape_builder.rs', lines 255:24-255:67 -/
 def
   automata.multi_tape_builder.MultiTapeStatePathRemap.is_halt_path.closure.Insts.CoreOpsFunctionFnMutTupleShared0MultiTapeStateBool.call_mut
   (c :
@@ -5403,7 +7812,7 @@ def
   ok (tupled_args.tape_cell_state = automata.rule_generator.HALT_STATE, ())
 
 /-- [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeStatePathRemap}::is_halt_path::{impl core::ops::function::FnOnce<(&'_0 automata_builder::automata::terms_multitape::MultiTapeState,), bool> for automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeStatePathRemap}::is_halt_path::{closure}<'_0>}::call_once]:
-    Source: 'src/automata/multi_tape_builder.rs', lines 196:24-196:67 -/
+    Source: 'src/automata/multi_tape_builder.rs', lines 255:24-255:67 -/
 def
   automata.multi_tape_builder.MultiTapeStatePathRemap.is_halt_path.closure.Insts.CoreOpsFunctionFnOnceTupleShared0MultiTapeStateBool.call_once
   (c :
@@ -5417,7 +7826,7 @@ def
   ok b
 
 /-- Trait implementation: [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeStatePathRemap}::is_halt_path::{impl core::ops::function::FnOnce<(&'_0 automata_builder::automata::terms_multitape::MultiTapeState,), bool> for automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeStatePathRemap}::is_halt_path::{closure}<'_0>}]
-    Source: 'src/automata/multi_tape_builder.rs', lines 196:24-196:67 -/
+    Source: 'src/automata/multi_tape_builder.rs', lines 255:24-255:67 -/
 @[reducible]
 def
   automata.multi_tape_builder.MultiTapeStatePathRemap.is_halt_path.closure.Insts.CoreOpsFunctionFnOnceTupleShared0MultiTapeStateBool
@@ -5429,7 +7838,7 @@ def
 }
 
 /-- Trait implementation: [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeStatePathRemap}::is_halt_path::{impl core::ops::function::FnMut<(&'_0 automata_builder::automata::terms_multitape::MultiTapeState,), bool> for automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeStatePathRemap}::is_halt_path::{closure}<'_0>}]
-    Source: 'src/automata/multi_tape_builder.rs', lines 196:24-196:67 -/
+    Source: 'src/automata/multi_tape_builder.rs', lines 255:24-255:67 -/
 @[reducible]
 def
   automata.multi_tape_builder.MultiTapeStatePathRemap.is_halt_path.closure.Insts.CoreOpsFunctionFnMutTupleShared0MultiTapeStateBool
@@ -5443,7 +7852,7 @@ def
 }
 
 /-- [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeStatePathRemap}::is_halt_path]:
-    Source: 'src/automata/multi_tape_builder.rs', lines 195:4-197:5
+    Source: 'src/automata/multi_tape_builder.rs', lines 254:4-256:5
     Visibility: public -/
 def automata.multi_tape_builder.MultiTapeStatePathRemap.is_halt_path
   (path : Slice automata.terms_multitape.MultiTapeState) : Result Bool := do
@@ -5455,7 +7864,7 @@ def automata.multi_tape_builder.MultiTapeStatePathRemap.is_halt_path
   ok b
 
 /-- [automata_builder::automata::terms_multitape::{impl core::cmp::Ord for automata_builder::automata::terms_multitape::MultiTapeState}::cmp]:
-    Source: 'src/automata/terms_multitape.rs', lines 18:39-18:42
+    Source: 'src/automata/terms_multitape.rs', lines 20:39-20:42
     Visibility: public -/
 def automata.terms_multitape.MultiTapeState.Insts.CoreCmpOrd.cmp
   (self : automata.terms_multitape.MultiTapeState)
@@ -5470,7 +7879,7 @@ def automata.terms_multitape.MultiTapeState.Insts.CoreCmpOrd.cmp
   | Ordering.gt => ok Ordering.gt
 
 /-- [automata_builder::automata::terms_multitape::{impl core::cmp::PartialOrd<automata_builder::automata::terms_multitape::MultiTapeState> for automata_builder::automata::terms_multitape::MultiTapeState}::partial_cmp]:
-    Source: 'src/automata/terms_multitape.rs', lines 18:44-18:54
+    Source: 'src/automata/terms_multitape.rs', lines 20:44-20:54
     Visibility: public -/
 def
   automata.terms_multitape.MultiTapeState.Insts.CoreCmpPartialOrdMultiTapeState.partial_cmp
@@ -5483,7 +7892,7 @@ def
   ok (some o)
 
 /-- Trait implementation: [automata_builder::automata::terms_multitape::{impl core::cmp::PartialOrd<automata_builder::automata::terms_multitape::MultiTapeState> for automata_builder::automata::terms_multitape::MultiTapeState}]
-    Source: 'src/automata/terms_multitape.rs', lines 18:44-18:54 -/
+    Source: 'src/automata/terms_multitape.rs', lines 20:44-20:54 -/
 @[reducible]
 impl_def
   automata.terms_multitape.MultiTapeState.Insts.CoreCmpPartialOrdMultiTapeState
@@ -5498,7 +7907,7 @@ impl_def
 }
 
 /-- Trait implementation: [automata_builder::automata::terms_multitape::{impl core::cmp::Ord for automata_builder::automata::terms_multitape::MultiTapeState}]
-    Source: 'src/automata/terms_multitape.rs', lines 18:39-18:42 -/
+    Source: 'src/automata/terms_multitape.rs', lines 20:39-20:42 -/
 @[reducible]
 impl_def automata.terms_multitape.MultiTapeState.Insts.CoreCmpOrd :
   core.cmp.Ord automata.terms_multitape.MultiTapeState := {
@@ -5513,7 +7922,7 @@ impl_def automata.terms_multitape.MultiTapeState.Insts.CoreCmpOrd :
 }
 
 /-- [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeStatePathRemap}::insert_overlap_path]:
-    Source: 'src/automata/multi_tape_builder.rs', lines 200:4-216:5
+    Source: 'src/automata/multi_tape_builder.rs', lines 259:4-275:5
     Visibility: public -/
 def automata.multi_tape_builder.MultiTapeStatePathRemap.insert_overlap_path
   (self : automata.multi_tape_builder.MultiTapeStatePathRemap)
@@ -5585,8 +7994,47 @@ def automata.multi_tape_builder.MultiTapeStatePathRemap.insert_overlap_path
         ok (some new_tape_state,
           { self with tape_state_path_remap := im, rev_state_path_remap := hm })
 
+/-- [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeStatePathRemap}::remap::{impl core::ops::function::FnOnce<(), automata_builder::automata::multi_tape_builder::CompileTapesError> for automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeStatePathRemap}::remap::{closure#1}<'_0>}::call_once]:
+    Source: 'src/automata/multi_tape_builder.rs', lines 296:24-299:14 -/
+def
+  automata.multi_tape_builder.MultiTapeStatePathRemap.remap.closure_1.Insts.CoreOpsFunctionFnOnceTupleCompileTapesError.call_once
+  (c : automata.multi_tape_builder.MultiTapeStatePathRemap.remap.closure_1)
+  (_ : Unit) :
+  Result automata.multi_tape_builder.CompileTapesError
+  := do
+  let b ← std.backtrace.Backtrace.capture
+  let a ←
+    core.fmt.rt.Argument.new_display alloc.string.String.Insts.CoreFmtDisplay c
+  let a1 ←
+    core.fmt.rt.Argument.new_display
+      std.backtrace.Backtrace.Insts.CoreFmtDisplay b
+  let a2 ←
+    core.fmt.Arguments.new
+      (Array.make 46#usize [
+        25#u8, 110#u8, 111#u8, 32#u8, 114#u8, 101#u8, 109#u8, 97#u8, 112#u8,
+        32#u8, 102#u8, 111#u8, 114#u8, 32#u8, 115#u8, 116#u8, 97#u8, 116#u8,
+        101#u8, 32#u8, 112#u8, 97#u8, 116#u8, 104#u8, 32#u8, 91#u8, 192#u8,
+        16#u8, 93#u8, 32#u8, 45#u8, 32#u8, 98#u8, 97#u8, 99#u8, 107#u8, 116#u8,
+        114#u8, 97#u8, 99#u8, 101#u8, 58#u8, 32#u8, 10#u8, 192#u8, 0#u8
+        ]) (Array.make 2#usize [ a, a1 ])
+  let s ← alloc.fmt.format a2
+  let s1 ← core.hint.must_use s
+  ok (automata.multi_tape_builder.CompileTapesError.MissingRemap s1)
+
+/-- Trait implementation: [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeStatePathRemap}::remap::{impl core::ops::function::FnOnce<(), automata_builder::automata::multi_tape_builder::CompileTapesError> for automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeStatePathRemap}::remap::{closure#1}<'_0>}]
+    Source: 'src/automata/multi_tape_builder.rs', lines 296:24-299:14 -/
+@[reducible]
+def
+  automata.multi_tape_builder.MultiTapeStatePathRemap.remap.closure_1.Insts.CoreOpsFunctionFnOnceTupleCompileTapesError
+  : core.ops.function.FnOnce
+  automata.multi_tape_builder.MultiTapeStatePathRemap.remap.closure_1 Unit
+  automata.multi_tape_builder.CompileTapesError := {
+  call_once :=
+    automata.multi_tape_builder.MultiTapeStatePathRemap.remap.closure_1.Insts.CoreOpsFunctionFnOnceTupleCompileTapesError.call_once
+}
+
 /-- [automata_builder::automata::terms_multitape::{impl core::fmt::Display for automata_builder::automata::terms_multitape::MultiTapeState}::fmt]:
-    Source: 'src/automata/terms_multitape.rs', lines 43:4-45:5
+    Source: 'src/automata/terms_multitape.rs', lines 45:4-47:5
     Visibility: public -/
 def automata.terms_multitape.MultiTapeState.Insts.CoreFmtDisplay.fmt
   (self : automata.terms_multitape.MultiTapeState) (f : core.fmt.Formatter) :
@@ -5607,123 +8055,68 @@ def automata.terms_multitape.MultiTapeState.Insts.CoreFmtDisplay.fmt
   core.fmt.Formatter.write_fmt f a2
 
 /-- Trait implementation: [automata_builder::automata::terms_multitape::{impl core::fmt::Display for automata_builder::automata::terms_multitape::MultiTapeState}]
-    Source: 'src/automata/terms_multitape.rs', lines 42:0-46:1 -/
+    Source: 'src/automata/terms_multitape.rs', lines 44:0-48:1 -/
 @[reducible]
 def automata.terms_multitape.MultiTapeState.Insts.CoreFmtDisplay :
   core.fmt.Display automata.terms_multitape.MultiTapeState := {
   fmt := automata.terms_multitape.MultiTapeState.Insts.CoreFmtDisplay.fmt
 }
 
-/-- [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeStatePathRemap}::remap::{closure}::{impl core::ops::function::FnMut<(&'_0 automata_builder::automata::terms_multitape::MultiTapeState,), alloc::string::String> for automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeStatePathRemap}::remap::{closure}::{closure}<'_0>}::call_mut]:
-    Source: 'src/automata/multi_tape_builder.rs', lines 234:25-234:50 -/
+/-- [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeStatePathRemap}::remap::{impl core::ops::function::FnMut<(&'_0 automata_builder::automata::terms_multitape::MultiTapeState,), alloc::string::String> for automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeStatePathRemap}::remap::{closure}<'_0>}::call_mut]:
+    Source: 'src/automata/multi_tape_builder.rs', lines 289:17-289:42 -/
 def
-  automata.multi_tape_builder.MultiTapeStatePathRemap.remap.closure.closure.Insts.CoreOpsFunctionFnMutTupleShared0MultiTapeStateString.call_mut
-  (c :
-  automata.multi_tape_builder.MultiTapeStatePathRemap.remap.closure.closure)
+  automata.multi_tape_builder.MultiTapeStatePathRemap.remap.closure.Insts.CoreOpsFunctionFnMutTupleShared0MultiTapeStateString.call_mut
+  (c : automata.multi_tape_builder.MultiTapeStatePathRemap.remap.closure)
   (tupled_args : automata.terms_multitape.MultiTapeState) :
   Result (String ×
-    automata.multi_tape_builder.MultiTapeStatePathRemap.remap.closure.closure)
+    automata.multi_tape_builder.MultiTapeStatePathRemap.remap.closure)
   := do
   let s ←
     alloc.string.ToString.Blanket.to_string
       automata.terms_multitape.MultiTapeState.Insts.CoreFmtDisplay tupled_args
   ok (s, ())
 
-/-- [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeStatePathRemap}::remap::{closure}::{impl core::ops::function::FnOnce<(&'_0 automata_builder::automata::terms_multitape::MultiTapeState,), alloc::string::String> for automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeStatePathRemap}::remap::{closure}::{closure}<'_0>}::call_once]:
-    Source: 'src/automata/multi_tape_builder.rs', lines 234:25-234:50 -/
+/-- [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeStatePathRemap}::remap::{impl core::ops::function::FnOnce<(&'_0 automata_builder::automata::terms_multitape::MultiTapeState,), alloc::string::String> for automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeStatePathRemap}::remap::{closure}<'_0>}::call_once]:
+    Source: 'src/automata/multi_tape_builder.rs', lines 289:17-289:42 -/
 def
-  automata.multi_tape_builder.MultiTapeStatePathRemap.remap.closure.closure.Insts.CoreOpsFunctionFnOnceTupleShared0MultiTapeStateString.call_once
-  (c :
-  automata.multi_tape_builder.MultiTapeStatePathRemap.remap.closure.closure)
+  automata.multi_tape_builder.MultiTapeStatePathRemap.remap.closure.Insts.CoreOpsFunctionFnOnceTupleShared0MultiTapeStateString.call_once
+  (c : automata.multi_tape_builder.MultiTapeStatePathRemap.remap.closure)
   (mts : automata.terms_multitape.MultiTapeState) :
   Result String
   := do
   let (s, _) ←
-    automata.multi_tape_builder.MultiTapeStatePathRemap.remap.closure.closure.Insts.CoreOpsFunctionFnMutTupleShared0MultiTapeStateString.call_mut
+    automata.multi_tape_builder.MultiTapeStatePathRemap.remap.closure.Insts.CoreOpsFunctionFnMutTupleShared0MultiTapeStateString.call_mut
       () mts
   ok s
 
-/-- Trait implementation: [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeStatePathRemap}::remap::{closure}::{impl core::ops::function::FnOnce<(&'_0 automata_builder::automata::terms_multitape::MultiTapeState,), alloc::string::String> for automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeStatePathRemap}::remap::{closure}::{closure}<'_0>}]
-    Source: 'src/automata/multi_tape_builder.rs', lines 234:25-234:50 -/
+/-- Trait implementation: [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeStatePathRemap}::remap::{impl core::ops::function::FnOnce<(&'_0 automata_builder::automata::terms_multitape::MultiTapeState,), alloc::string::String> for automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeStatePathRemap}::remap::{closure}<'_0>}]
+    Source: 'src/automata/multi_tape_builder.rs', lines 289:17-289:42 -/
 @[reducible]
 def
-  automata.multi_tape_builder.MultiTapeStatePathRemap.remap.closure.closure.Insts.CoreOpsFunctionFnOnceTupleShared0MultiTapeStateString
+  automata.multi_tape_builder.MultiTapeStatePathRemap.remap.closure.Insts.CoreOpsFunctionFnOnceTupleShared0MultiTapeStateString
   : core.ops.function.FnOnce
-  automata.multi_tape_builder.MultiTapeStatePathRemap.remap.closure.closure
+  automata.multi_tape_builder.MultiTapeStatePathRemap.remap.closure
   automata.terms_multitape.MultiTapeState String := {
   call_once :=
-    automata.multi_tape_builder.MultiTapeStatePathRemap.remap.closure.closure.Insts.CoreOpsFunctionFnOnceTupleShared0MultiTapeStateString.call_once
+    automata.multi_tape_builder.MultiTapeStatePathRemap.remap.closure.Insts.CoreOpsFunctionFnOnceTupleShared0MultiTapeStateString.call_once
 }
 
-/-- Trait implementation: [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeStatePathRemap}::remap::{closure}::{impl core::ops::function::FnMut<(&'_0 automata_builder::automata::terms_multitape::MultiTapeState,), alloc::string::String> for automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeStatePathRemap}::remap::{closure}::{closure}<'_0>}]
-    Source: 'src/automata/multi_tape_builder.rs', lines 234:25-234:50 -/
+/-- Trait implementation: [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeStatePathRemap}::remap::{impl core::ops::function::FnMut<(&'_0 automata_builder::automata::terms_multitape::MultiTapeState,), alloc::string::String> for automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeStatePathRemap}::remap::{closure}<'_0>}]
+    Source: 'src/automata/multi_tape_builder.rs', lines 289:17-289:42 -/
 @[reducible]
 def
-  automata.multi_tape_builder.MultiTapeStatePathRemap.remap.closure.closure.Insts.CoreOpsFunctionFnMutTupleShared0MultiTapeStateString
+  automata.multi_tape_builder.MultiTapeStatePathRemap.remap.closure.Insts.CoreOpsFunctionFnMutTupleShared0MultiTapeStateString
   : core.ops.function.FnMut
-  automata.multi_tape_builder.MultiTapeStatePathRemap.remap.closure.closure
+  automata.multi_tape_builder.MultiTapeStatePathRemap.remap.closure
   automata.terms_multitape.MultiTapeState String := {
   FnOnceInst :=
-    automata.multi_tape_builder.MultiTapeStatePathRemap.remap.closure.closure.Insts.CoreOpsFunctionFnOnceTupleShared0MultiTapeStateString
+    automata.multi_tape_builder.MultiTapeStatePathRemap.remap.closure.Insts.CoreOpsFunctionFnOnceTupleShared0MultiTapeStateString
   call_mut :=
-    automata.multi_tape_builder.MultiTapeStatePathRemap.remap.closure.closure.Insts.CoreOpsFunctionFnMutTupleShared0MultiTapeStateString.call_mut
-}
-
-/-- [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeStatePathRemap}::remap::{impl core::ops::function::FnOnce<(), automata_builder::automata::multi_tape_builder::CompileTapesError> for automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeStatePathRemap}::remap::{closure}<'_0>}::call_once]:
-    Source: 'src/automata/multi_tape_builder.rs', lines 230:24-237:14 -/
-def
-  automata.multi_tape_builder.MultiTapeStatePathRemap.remap.closure.Insts.CoreOpsFunctionFnOnceTupleCompileTapesError.call_once
-  (c : automata.multi_tape_builder.MultiTapeStatePathRemap.remap.closure)
-  (_ : Unit) :
-  Result automata.multi_tape_builder.CompileTapesError
-  := do
-  let i ← core.slice.Slice.iter c
-  let m ←
-    core.iter.traits.iterator.Iterator.map.default
-      (core.iter.traits.iterator.IteratorSliceIter
-      automata.terms_multitape.MultiTapeState)
-      automata.multi_tape_builder.MultiTapeStatePathRemap.remap.closure.closure.Insts.CoreOpsFunctionFnMutTupleShared0MultiTapeStateString
-      i ()
-  let v ←
-    core.iter.traits.iterator.Iterator.collect.default
-      (core.iter.adapters.map.Map.Insts.CoreIterTraitsIteratorIterator
-      (core.iter.traits.iterator.IteratorSliceIter
-      automata.terms_multitape.MultiTapeState)
-      automata.multi_tape_builder.MultiTapeStatePathRemap.remap.closure.closure.Insts.CoreOpsFunctionFnMutTupleShared0MultiTapeStateString)
-      (core.iter.traits.collect.FromIteratorVec String) m
-  let s := alloc.vec.Vec.deref v
-  let args ←
-    alloc.slice.Slice.join (Slice.Insts.AllocSliceJoinShared0StrString
-      alloc.string.String.Insts.CoreBorrowBorrowStr) s (toStr ", ")
-  let a ←
-    core.fmt.rt.Argument.new_display alloc.string.String.Insts.CoreFmtDisplay
-      args
-  let a1 ←
-    core.fmt.Arguments.new
-      (Array.make 30#usize [
-        25#u8, 110#u8, 111#u8, 32#u8, 114#u8, 101#u8, 109#u8, 97#u8, 112#u8,
-        32#u8, 102#u8, 111#u8, 114#u8, 32#u8, 115#u8, 116#u8, 97#u8, 116#u8,
-        101#u8, 32#u8, 112#u8, 97#u8, 116#u8, 104#u8, 32#u8, 91#u8, 192#u8,
-        1#u8, 93#u8, 0#u8
-        ]) (Array.make 1#usize [ a ])
-  let s1 ← alloc.fmt.format a1
-  let s2 ← core.hint.must_use s1
-  ok (automata.multi_tape_builder.CompileTapesError.MissingRemap s2)
-
-/-- Trait implementation: [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeStatePathRemap}::remap::{impl core::ops::function::FnOnce<(), automata_builder::automata::multi_tape_builder::CompileTapesError> for automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeStatePathRemap}::remap::{closure}<'_0>}]
-    Source: 'src/automata/multi_tape_builder.rs', lines 230:24-237:14 -/
-@[reducible]
-def
-  automata.multi_tape_builder.MultiTapeStatePathRemap.remap.closure.Insts.CoreOpsFunctionFnOnceTupleCompileTapesError
-  : core.ops.function.FnOnce
-  automata.multi_tape_builder.MultiTapeStatePathRemap.remap.closure Unit
-  automata.multi_tape_builder.CompileTapesError := {
-  call_once :=
-    automata.multi_tape_builder.MultiTapeStatePathRemap.remap.closure.Insts.CoreOpsFunctionFnOnceTupleCompileTapesError.call_once
+    automata.multi_tape_builder.MultiTapeStatePathRemap.remap.closure.Insts.CoreOpsFunctionFnMutTupleShared0MultiTapeStateString.call_mut
 }
 
 /-- [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeStatePathRemap}::remap]:
-    Source: 'src/automata/multi_tape_builder.rs', lines 220:4-238:5
+    Source: 'src/automata/multi_tape_builder.rs', lines 279:4-300:5
     Visibility: public -/
 def automata.multi_tape_builder.MultiTapeStatePathRemap.remap
   (self : automata.multi_tape_builder.MultiTapeStatePathRemap)
@@ -5742,6 +8135,24 @@ def automata.multi_tape_builder.MultiTapeStatePathRemap.remap
     if b1
     then ok (core.result.Result.Ok automata.rule_generator.VOID_STATE)
     else
+      let i ← core.slice.Slice.iter state_path
+      let m ←
+        core.iter.traits.iterator.Iterator.map.default
+          (core.iter.traits.iterator.IteratorSliceIter
+          automata.terms_multitape.MultiTapeState)
+          automata.multi_tape_builder.MultiTapeStatePathRemap.remap.closure.Insts.CoreOpsFunctionFnMutTupleShared0MultiTapeStateString
+          i ()
+      let v ←
+        core.iter.traits.iterator.Iterator.collect.default
+          (core.iter.adapters.map.Map.Insts.CoreIterTraitsIteratorIterator
+          (core.iter.traits.iterator.IteratorSliceIter
+          automata.terms_multitape.MultiTapeState)
+          automata.multi_tape_builder.MultiTapeStatePathRemap.remap.closure.Insts.CoreOpsFunctionFnMutTupleShared0MultiTapeStateString)
+          (core.iter.traits.collect.FromIteratorVec String) m
+      let s := alloc.vec.Vec.deref v
+      let state_path_str ←
+        alloc.slice.Slice.join (Slice.Insts.AllocSliceJoinShared0StrString
+          alloc.string.String.Insts.CoreBorrowBorrowStr) s (toStr ", ")
       let o ←
         indexmap.map.IndexMap.get
           std.hash.random.RandomState.Insts.CoreHashBuildHasherDefaultHasher
@@ -5754,11 +8165,11 @@ def automata.multi_tape_builder.MultiTapeStatePathRemap.remap
           self.tape_state_path_remap state_path
       let o1 ← core.option.OptionShared0T.copied core.marker.CopyU32 o
       core.option.Option.ok_or_else
-        automata.multi_tape_builder.MultiTapeStatePathRemap.remap.closure.Insts.CoreOpsFunctionFnOnceTupleCompileTapesError
-        o1 state_path
+        automata.multi_tape_builder.MultiTapeStatePathRemap.remap.closure_1.Insts.CoreOpsFunctionFnOnceTupleCompileTapesError
+        o1 state_path_str
 
 /-- [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeStatePathRemap}::rev_lookup::{impl core::ops::function::FnOnce<(), automata_builder::automata::multi_tape_builder::CompileTapesError> for automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeStatePathRemap}::rev_lookup::{closure}<'_0>}::call_once]:
-    Source: 'src/automata/multi_tape_builder.rs', lines 257:24-259:14 -/
+    Source: 'src/automata/multi_tape_builder.rs', lines 319:24-321:14 -/
 def
   automata.multi_tape_builder.MultiTapeStatePathRemap.rev_lookup.closure.Insts.CoreOpsFunctionFnOnceTupleCompileTapesError.call_once
   (c : automata.multi_tape_builder.MultiTapeStatePathRemap.rev_lookup.closure)
@@ -5779,7 +8190,7 @@ def
   ok (automata.multi_tape_builder.CompileTapesError.MissingRemap s1)
 
 /-- Trait implementation: [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeStatePathRemap}::rev_lookup::{impl core::ops::function::FnOnce<(), automata_builder::automata::multi_tape_builder::CompileTapesError> for automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeStatePathRemap}::rev_lookup::{closure}<'_0>}]
-    Source: 'src/automata/multi_tape_builder.rs', lines 257:24-259:14 -/
+    Source: 'src/automata/multi_tape_builder.rs', lines 319:24-321:14 -/
 @[reducible]
 def
   automata.multi_tape_builder.MultiTapeStatePathRemap.rev_lookup.closure.Insts.CoreOpsFunctionFnOnceTupleCompileTapesError
@@ -5791,7 +8202,7 @@ def
 }
 
 /-- [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeStatePathRemap}::rev_lookup]:
-    Source: 'src/automata/multi_tape_builder.rs', lines 241:4-260:5
+    Source: 'src/automata/multi_tape_builder.rs', lines 303:4-322:5
     Visibility: public -/
 def automata.multi_tape_builder.MultiTapeStatePathRemap.rev_lookup
   (self : automata.multi_tape_builder.MultiTapeStatePathRemap)
@@ -5802,40 +8213,8 @@ def automata.multi_tape_builder.MultiTapeStatePathRemap.rev_lookup
   := do
   sorry
 
-/-- [automata_builder::automata::terms_multitape::{automata_builder::automata::terms_multitape::MultiTapeProduct}::new]:
-    Source: 'src/automata/terms_multitape.rs', lines 348:4-350:5
-    Visibility: public -/
-def automata.terms_multitape.MultiTapeProduct.new
-  (terms : alloc.vec.Vec automata.terms_multitape.MultiTapeTerm) :
-  Result automata.terms_multitape.MultiTapeProduct
-  := do
-  let mtpf ← automata.terms_multitape.MultiTapeProductFactory.new terms
-  automata.terms_multitape.MultiTapeProductFactory.to_product mtpf
-
-/-- [automata_builder::automata::terms::{automata_builder::automata::terms::ExprDebugInfo}::spawn_empty]:
-    Source: 'src/automata/terms.rs', lines 47:4-53:5
-    Visibility: public -/
-def automata.terms.ExprDebugInfo.spawn_empty
-  : Result automata.terms.ExprDebugInfo := do
-  ok
-    {
-      expansion_index := 0#u16,
-      position_info := none,
-      parent_position_info := none
-    }
-
-/-- [automata_builder::automata::terms_multitape::{automata_builder::automata::terms_multitape::MultiTapeTerm}::new]:
-    Source: 'src/automata/terms_multitape.rs', lines 101:4-106:5
-    Visibility: public -/
-def automata.terms_multitape.MultiTapeTerm.new
-  (position : Std.I64) (state : (Std.U16 × Std.U32)) (optimized : Bool) :
-  Result automata.terms_multitape.MultiTapeTerm
-  := do
-  let edi ← automata.terms.ExprDebugInfo.spawn_empty
-  ok { position, state, _optimized := optimized, _debug_info := edi }
-
 /-- [automata_builder::automata::terms_multitape::{automata_builder::automata::terms_multitape::MultiTapeState}::to_multi_tape_cell_state]:
-    Source: 'src/automata/terms_multitape.rs', lines 37:4-39:5
+    Source: 'src/automata/terms_multitape.rs', lines 39:4-41:5
     Visibility: public -/
 def automata.terms_multitape.MultiTapeState.to_multi_tape_cell_state
   (self : automata.terms_multitape.MultiTapeState) :
@@ -5844,7 +8223,7 @@ def automata.terms_multitape.MultiTapeState.to_multi_tape_cell_state
   ok (self.tape_no, self.tape_cell_state)
 
 /-- [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeStatePathRemap}::remap_term_to_multi_tape::{impl core::ops::function::FnMut<(&'_0 automata_builder::automata::terms_multitape::MultiTapeState,), automata_builder::automata::terms_multitape::MultiTapeTerm> for automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeStatePathRemap}::remap_term_to_multi_tape::{closure}<'_0, '_1>}::call_mut]:
-    Source: 'src/automata/multi_tape_builder.rs', lines 293:17-293:94 -/
+    Source: 'src/automata/multi_tape_builder.rs', lines 355:17-355:94 -/
 def
   automata.multi_tape_builder.MultiTapeStatePathRemap.remap_term_to_multi_tape.closure.Insts.CoreOpsFunctionFnMutTupleShared0MultiTapeStateMultiTapeTerm.call_mut
   (c :
@@ -5860,7 +8239,7 @@ def
   ok (mtt, c)
 
 /-- [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeStatePathRemap}::remap_term_to_multi_tape::{impl core::ops::function::FnOnce<(&'_0 automata_builder::automata::terms_multitape::MultiTapeState,), automata_builder::automata::terms_multitape::MultiTapeTerm> for automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeStatePathRemap}::remap_term_to_multi_tape::{closure}<'_0, '_1>}::call_once]:
-    Source: 'src/automata/multi_tape_builder.rs', lines 293:17-293:94 -/
+    Source: 'src/automata/multi_tape_builder.rs', lines 355:17-355:94 -/
 def
   automata.multi_tape_builder.MultiTapeStatePathRemap.remap_term_to_multi_tape.closure.Insts.CoreOpsFunctionFnOnceTupleShared0MultiTapeStateMultiTapeTerm.call_once
   (c :
@@ -5874,7 +8253,7 @@ def
   ok mtt
 
 /-- Trait implementation: [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeStatePathRemap}::remap_term_to_multi_tape::{impl core::ops::function::FnOnce<(&'_0 automata_builder::automata::terms_multitape::MultiTapeState,), automata_builder::automata::terms_multitape::MultiTapeTerm> for automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeStatePathRemap}::remap_term_to_multi_tape::{closure}<'_0, '_1>}]
-    Source: 'src/automata/multi_tape_builder.rs', lines 293:17-293:94 -/
+    Source: 'src/automata/multi_tape_builder.rs', lines 355:17-355:94 -/
 @[reducible]
 def
   automata.multi_tape_builder.MultiTapeStatePathRemap.remap_term_to_multi_tape.closure.Insts.CoreOpsFunctionFnOnceTupleShared0MultiTapeStateMultiTapeTerm
@@ -5887,7 +8266,7 @@ def
 }
 
 /-- Trait implementation: [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeStatePathRemap}::remap_term_to_multi_tape::{impl core::ops::function::FnMut<(&'_0 automata_builder::automata::terms_multitape::MultiTapeState,), automata_builder::automata::terms_multitape::MultiTapeTerm> for automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeStatePathRemap}::remap_term_to_multi_tape::{closure}<'_0, '_1>}]
-    Source: 'src/automata/multi_tape_builder.rs', lines 293:17-293:94 -/
+    Source: 'src/automata/multi_tape_builder.rs', lines 355:17-355:94 -/
 @[reducible]
 def
   automata.multi_tape_builder.MultiTapeStatePathRemap.remap_term_to_multi_tape.closure.Insts.CoreOpsFunctionFnMutTupleShared0MultiTapeStateMultiTapeTerm
@@ -5902,7 +8281,7 @@ def
 }
 
 /-- [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeStatePathRemap}::remap_term_to_multi_tape]:
-    Source: 'src/automata/multi_tape_builder.rs', lines 286:4-296:5
+    Source: 'src/automata/multi_tape_builder.rs', lines 348:4-358:5
     Visibility: public -/
 def
   automata.multi_tape_builder.MultiTapeStatePathRemap.remap_term_to_multi_tape
@@ -5952,7 +8331,7 @@ def
       automata.multi_tape_builder.CompileTapesError) residual
 
 /-- [automata_builder::automata::terms_multitape::{automata_builder::automata::terms_multitape::MultiTapeProduct}::merge_products::{impl core::ops::function::FnMut<(&'_0 automata_builder::automata::terms_multitape::MultiTapeProduct,), bool> for automata_builder::automata::terms_multitape::{automata_builder::automata::terms_multitape::MultiTapeProduct}::merge_products::{closure}<'_0>}::call_mut]:
-    Source: 'src/automata/terms_multitape.rs', lines 373:48-373:64 -/
+    Source: 'src/automata/terms_multitape.rs', lines 390:48-390:64 -/
 def
   automata.terms_multitape.MultiTapeProduct.merge_products.closure.Insts.CoreOpsFunctionFnMutTupleShared0MultiTapeProductBool.call_mut
   (c : automata.terms_multitape.MultiTapeProduct.merge_products.closure)
@@ -5963,7 +8342,7 @@ def
   ok (tupled_args._optimized, ())
 
 /-- [automata_builder::automata::terms_multitape::{automata_builder::automata::terms_multitape::MultiTapeProduct}::merge_products::{impl core::ops::function::FnOnce<(&'_0 automata_builder::automata::terms_multitape::MultiTapeProduct,), bool> for automata_builder::automata::terms_multitape::{automata_builder::automata::terms_multitape::MultiTapeProduct}::merge_products::{closure}<'_0>}::call_once]:
-    Source: 'src/automata/terms_multitape.rs', lines 373:48-373:64 -/
+    Source: 'src/automata/terms_multitape.rs', lines 390:48-390:64 -/
 def
   automata.terms_multitape.MultiTapeProduct.merge_products.closure.Insts.CoreOpsFunctionFnOnceTupleShared0MultiTapeProductBool.call_once
   (c : automata.terms_multitape.MultiTapeProduct.merge_products.closure)
@@ -5976,7 +8355,7 @@ def
   ok b
 
 /-- Trait implementation: [automata_builder::automata::terms_multitape::{automata_builder::automata::terms_multitape::MultiTapeProduct}::merge_products::{impl core::ops::function::FnOnce<(&'_0 automata_builder::automata::terms_multitape::MultiTapeProduct,), bool> for automata_builder::automata::terms_multitape::{automata_builder::automata::terms_multitape::MultiTapeProduct}::merge_products::{closure}<'_0>}]
-    Source: 'src/automata/terms_multitape.rs', lines 373:48-373:64 -/
+    Source: 'src/automata/terms_multitape.rs', lines 390:48-390:64 -/
 @[reducible]
 def
   automata.terms_multitape.MultiTapeProduct.merge_products.closure.Insts.CoreOpsFunctionFnOnceTupleShared0MultiTapeProductBool
@@ -5988,7 +8367,7 @@ def
 }
 
 /-- Trait implementation: [automata_builder::automata::terms_multitape::{automata_builder::automata::terms_multitape::MultiTapeProduct}::merge_products::{impl core::ops::function::FnMut<(&'_0 automata_builder::automata::terms_multitape::MultiTapeProduct,), bool> for automata_builder::automata::terms_multitape::{automata_builder::automata::terms_multitape::MultiTapeProduct}::merge_products::{closure}<'_0>}]
-    Source: 'src/automata/terms_multitape.rs', lines 373:48-373:64 -/
+    Source: 'src/automata/terms_multitape.rs', lines 390:48-390:64 -/
 @[reducible]
 def
   automata.terms_multitape.MultiTapeProduct.merge_products.closure.Insts.CoreOpsFunctionFnMutTupleShared0MultiTapeProductBool
@@ -6001,18 +8380,8 @@ def
     automata.terms_multitape.MultiTapeProduct.merge_products.closure.Insts.CoreOpsFunctionFnMutTupleShared0MultiTapeProductBool.call_mut
 }
 
-/-- [automata_builder::automata::terms_multitape::{impl automata_builder::automata::terms_multitape::AbstractMultiTapeExpression<automata_builder::automata::terms_multitape::MultiTapeProduct, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeTerm}::copy]:
-    Source: 'src/automata/terms_multitape.rs', lines 232:4-234:5
-    Visibility: public -/
-def
-  automata.terms_multitape.MultiTapeTerm.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeProductMultiTapeExpression.copy
-  (self : automata.terms_multitape.MultiTapeTerm) :
-  Result automata.terms_multitape.MultiTapeTerm
-  := do
-  automata.terms_multitape.MultiTapeTerm.Insts.CoreCloneClone.clone self
-
 /-- [automata_builder::automata::terms_multitape::{automata_builder::automata::terms_multitape::MultiTapeProduct}::merge_products]: loop 1:
-    Source: 'src/automata/terms_multitape.rs', lines 368:12-370:13
+    Source: 'src/automata/terms_multitape.rs', lines 385:12-387:13
     Visibility: public -/
 @[rust_loop]
 def automata.terms_multitape.MultiTapeProduct.merge_products_loop0_loop0
@@ -6033,7 +8402,7 @@ def automata.terms_multitape.MultiTapeProduct.merge_products_loop0_loop0
 partial_fixpoint
 
 /-- [automata_builder::automata::terms_multitape::{automata_builder::automata::terms_multitape::MultiTapeProduct}::merge_products]: loop 0:
-    Source: 'src/automata/terms_multitape.rs', lines 367:8-371:9
+    Source: 'src/automata/terms_multitape.rs', lines 384:8-388:9
     Visibility: public -/
 @[rust_loop]
 def automata.terms_multitape.MultiTapeProduct.merge_products_loop0
@@ -6055,7 +8424,7 @@ def automata.terms_multitape.MultiTapeProduct.merge_products_loop0
 partial_fixpoint
 
 /-- [automata_builder::automata::terms_multitape::{automata_builder::automata::terms_multitape::MultiTapeProduct}::merge_products]:
-    Source: 'src/automata/terms_multitape.rs', lines 363:4-375:5
+    Source: 'src/automata/terms_multitape.rs', lines 380:4-392:5
     Visibility: public -/
 def automata.terms_multitape.MultiTapeProduct.merge_products
   (products : alloc.vec.Vec automata.terms_multitape.MultiTapeProduct) :
@@ -6079,7 +8448,7 @@ def automata.terms_multitape.MultiTapeProduct.merge_products
   automata.terms_multitape.MultiTapeProductFactory.to_product mtpf1
 
 /-- [automata_builder::automata::terms_multitape::{automata_builder::automata::terms_multitape::MultiTapeProduct}::set_annotation]:
-    Source: 'src/automata/terms_multitape.rs', lines 357:4-359:5
+    Source: 'src/automata/terms_multitape.rs', lines 374:4-376:5
     Visibility: public -/
 def automata.terms_multitape.MultiTapeProduct.set_annotation
   (self : automata.terms_multitape.MultiTapeProduct) (annotation : String) :
@@ -6088,7 +8457,7 @@ def automata.terms_multitape.MultiTapeProduct.set_annotation
   ok { self with _annotation := annotation }
 
 /-- [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeStatePathRemap}::remap_single_tape_terms]: loop 0:
-    Source: 'src/automata/multi_tape_builder.rs', lines 302:8-308:5
+    Source: 'src/automata/multi_tape_builder.rs', lines 364:8-370:5
     Visibility: public -/
 @[rust_loop]
 def
@@ -6129,7 +8498,7 @@ def
 partial_fixpoint
 
 /-- [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeStatePathRemap}::remap_single_tape_terms]:
-    Source: 'src/automata/multi_tape_builder.rs', lines 298:4-308:5
+    Source: 'src/automata/multi_tape_builder.rs', lines 360:4-370:5
     Visibility: public -/
 def automata.multi_tape_builder.MultiTapeStatePathRemap.remap_single_tape_terms
   (self : automata.multi_tape_builder.MultiTapeStatePathRemap)
@@ -6155,7 +8524,7 @@ def automata.terms.Term.new
   ok { position, state, _optimized := optimized, _debug_info := edi }
 
 /-- [automata_builder::automata::terms_multitape::{automata_builder::automata::terms_multitape::MultiTapeState}::new]:
-    Source: 'src/automata/terms_multitape.rs', lines 27:4-32:5
+    Source: 'src/automata/terms_multitape.rs', lines 29:4-34:5
     Visibility: public -/
 def automata.terms_multitape.MultiTapeState.new
   (tape_no : Std.U16) (tape_cell_state : Std.U32) :
@@ -6164,7 +8533,7 @@ def automata.terms_multitape.MultiTapeState.new
   ok { tape_no, tape_cell_state }
 
 /-- [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeStatePathRemap}::remap_from_product_to_term::{impl core::ops::function::FnMut<(&'_0 automata_builder::automata::terms_multitape::MultiTapeTerm,), automata_builder::automata::terms_multitape::MultiTapeState> for automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeStatePathRemap}::remap_from_product_to_term::{closure#1}<'_0>}::call_mut]:
-    Source: 'src/automata/multi_tape_builder.rs', lines 324:17-324:71 -/
+    Source: 'src/automata/multi_tape_builder.rs', lines 386:17-386:71 -/
 def
   automata.multi_tape_builder.MultiTapeStatePathRemap.remap_from_product_to_term.closure_1.Insts.CoreOpsFunctionFnMutTupleShared0MultiTapeTermMultiTapeState.call_mut
   (c :
@@ -6178,7 +8547,7 @@ def
   ok (mts, ())
 
 /-- [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeStatePathRemap}::remap_from_product_to_term::{impl core::ops::function::FnOnce<(&'_0 automata_builder::automata::terms_multitape::MultiTapeTerm,), automata_builder::automata::terms_multitape::MultiTapeState> for automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeStatePathRemap}::remap_from_product_to_term::{closure#1}<'_0>}::call_once]:
-    Source: 'src/automata/multi_tape_builder.rs', lines 324:17-324:71 -/
+    Source: 'src/automata/multi_tape_builder.rs', lines 386:17-386:71 -/
 def
   automata.multi_tape_builder.MultiTapeStatePathRemap.remap_from_product_to_term.closure_1.Insts.CoreOpsFunctionFnOnceTupleShared0MultiTapeTermMultiTapeState.call_once
   (c :
@@ -6192,7 +8561,7 @@ def
   ok mts
 
 /-- Trait implementation: [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeStatePathRemap}::remap_from_product_to_term::{impl core::ops::function::FnOnce<(&'_0 automata_builder::automata::terms_multitape::MultiTapeTerm,), automata_builder::automata::terms_multitape::MultiTapeState> for automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeStatePathRemap}::remap_from_product_to_term::{closure#1}<'_0>}]
-    Source: 'src/automata/multi_tape_builder.rs', lines 324:17-324:71 -/
+    Source: 'src/automata/multi_tape_builder.rs', lines 386:17-386:71 -/
 @[reducible]
 def
   automata.multi_tape_builder.MultiTapeStatePathRemap.remap_from_product_to_term.closure_1.Insts.CoreOpsFunctionFnOnceTupleShared0MultiTapeTermMultiTapeState
@@ -6205,7 +8574,7 @@ def
 }
 
 /-- Trait implementation: [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeStatePathRemap}::remap_from_product_to_term::{impl core::ops::function::FnMut<(&'_0 automata_builder::automata::terms_multitape::MultiTapeTerm,), automata_builder::automata::terms_multitape::MultiTapeState> for automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeStatePathRemap}::remap_from_product_to_term::{closure#1}<'_0>}]
-    Source: 'src/automata/multi_tape_builder.rs', lines 324:17-324:71 -/
+    Source: 'src/automata/multi_tape_builder.rs', lines 386:17-386:71 -/
 @[reducible]
 def
   automata.multi_tape_builder.MultiTapeStatePathRemap.remap_from_product_to_term.closure_1.Insts.CoreOpsFunctionFnMutTupleShared0MultiTapeTermMultiTapeState
@@ -6220,7 +8589,7 @@ def
 }
 
 /-- [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeStatePathRemap}::remap_from_product_to_term::{impl core::ops::function::FnMut<(&'_0 automata_builder::automata::terms_multitape::MultiTapeTerm,), i64> for automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeStatePathRemap}::remap_from_product_to_term::{closure}<'_0>}::call_mut]:
-    Source: 'src/automata/multi_tape_builder.rs', lines 313:65-313:85 -/
+    Source: 'src/automata/multi_tape_builder.rs', lines 375:65-375:85 -/
 def
   automata.multi_tape_builder.MultiTapeStatePathRemap.remap_from_product_to_term.closure.Insts.CoreOpsFunctionFnMutTupleShared0MultiTapeTermI64.call_mut
   (c :
@@ -6232,7 +8601,7 @@ def
   ok (tupled_args.position, ())
 
 /-- [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeStatePathRemap}::remap_from_product_to_term::{impl core::ops::function::FnOnce<(&'_0 automata_builder::automata::terms_multitape::MultiTapeTerm,), i64> for automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeStatePathRemap}::remap_from_product_to_term::{closure}<'_0>}::call_once]:
-    Source: 'src/automata/multi_tape_builder.rs', lines 313:65-313:85 -/
+    Source: 'src/automata/multi_tape_builder.rs', lines 375:65-375:85 -/
 def
   automata.multi_tape_builder.MultiTapeStatePathRemap.remap_from_product_to_term.closure.Insts.CoreOpsFunctionFnOnceTupleShared0MultiTapeTermI64.call_once
   (c :
@@ -6246,7 +8615,7 @@ def
   ok i
 
 /-- Trait implementation: [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeStatePathRemap}::remap_from_product_to_term::{impl core::ops::function::FnOnce<(&'_0 automata_builder::automata::terms_multitape::MultiTapeTerm,), i64> for automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeStatePathRemap}::remap_from_product_to_term::{closure}<'_0>}]
-    Source: 'src/automata/multi_tape_builder.rs', lines 313:65-313:85 -/
+    Source: 'src/automata/multi_tape_builder.rs', lines 375:65-375:85 -/
 @[reducible]
 def
   automata.multi_tape_builder.MultiTapeStatePathRemap.remap_from_product_to_term.closure.Insts.CoreOpsFunctionFnOnceTupleShared0MultiTapeTermI64
@@ -6258,7 +8627,7 @@ def
 }
 
 /-- Trait implementation: [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeStatePathRemap}::remap_from_product_to_term::{impl core::ops::function::FnMut<(&'_0 automata_builder::automata::terms_multitape::MultiTapeTerm,), i64> for automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeStatePathRemap}::remap_from_product_to_term::{closure}<'_0>}]
-    Source: 'src/automata/multi_tape_builder.rs', lines 313:65-313:85 -/
+    Source: 'src/automata/multi_tape_builder.rs', lines 375:65-375:85 -/
 @[reducible]
 def
   automata.multi_tape_builder.MultiTapeStatePathRemap.remap_from_product_to_term.closure.Insts.CoreOpsFunctionFnMutTupleShared0MultiTapeTermI64
@@ -6272,7 +8641,7 @@ def
 }
 
 /-- [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeStatePathRemap}::remap_from_product_to_term]:
-    Source: 'src/automata/multi_tape_builder.rs', lines 312:4-327:5
+    Source: 'src/automata/multi_tape_builder.rs', lines 374:4-389:5
     Visibility: public -/
 def
   automata.multi_tape_builder.MultiTapeStatePathRemap.remap_from_product_to_term
@@ -6443,7 +8812,7 @@ def automata.rule_generator.AutomataTransitionsGroup.Insts.CoreFmtDebug :
 }
 
 /-- [automata_builder::automata::multi_tape_builder::{impl core::fmt::Debug for automata_builder::automata::multi_tape_builder::CompileTapesResult}::fmt]:
-    Source: 'src/automata/multi_tape_builder.rs', lines 331:9-331:14
+    Source: 'src/automata/multi_tape_builder.rs', lines 393:9-393:14
     Visibility: public -/
 def automata.multi_tape_builder.CompileTapesResult.Insts.CoreFmtDebug.fmt
   (self : automata.multi_tape_builder.CompileTapesResult)
@@ -6466,7 +8835,7 @@ def automata.multi_tape_builder.CompileTapesResult.Insts.CoreFmtDebug.fmt
     "num_unrepresentable_products") dyn2
 
 /-- Trait implementation: [automata_builder::automata::multi_tape_builder::{impl core::fmt::Debug for automata_builder::automata::multi_tape_builder::CompileTapesResult}]
-    Source: 'src/automata/multi_tape_builder.rs', lines 331:9-331:14 -/
+    Source: 'src/automata/multi_tape_builder.rs', lines 393:9-393:14 -/
 @[reducible]
 def automata.multi_tape_builder.CompileTapesResult.Insts.CoreFmtDebug :
   core.fmt.Debug automata.multi_tape_builder.CompileTapesResult := {
@@ -6538,7 +8907,7 @@ def automata.rule_generator.AutomataTransitionsGroup.Insts.CoreCloneClone.clone
   ok { num_states := o, transitions_map := hm, transitions := v }
 
 /-- [automata_builder::automata::multi_tape_builder::{impl core::clone::Clone for automata_builder::automata::multi_tape_builder::CompileTapesResult}::clone]:
-    Source: 'src/automata/multi_tape_builder.rs', lines 331:16-331:21
+    Source: 'src/automata/multi_tape_builder.rs', lines 393:16-393:21
     Visibility: public -/
 def automata.multi_tape_builder.CompileTapesResult.Insts.CoreCloneClone.clone
   (self : automata.multi_tape_builder.CompileTapesResult) :
@@ -6560,7 +8929,7 @@ def automata.multi_tape_builder.CompileTapesResult.Insts.CoreCloneClone.clone
     }
 
 /-- Trait implementation: [automata_builder::automata::multi_tape_builder::{impl core::clone::Clone for automata_builder::automata::multi_tape_builder::CompileTapesResult}]
-    Source: 'src/automata/multi_tape_builder.rs', lines 331:16-331:21 -/
+    Source: 'src/automata/multi_tape_builder.rs', lines 393:16-393:21 -/
 @[reducible]
 def automata.multi_tape_builder.CompileTapesResult.Insts.CoreCloneClone :
   core.clone.Clone automata.multi_tape_builder.CompileTapesResult := {
@@ -6569,7 +8938,7 @@ def automata.multi_tape_builder.CompileTapesResult.Insts.CoreCloneClone :
 }
 
 /-- [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::CompileTapesResult}::count_unique_states]:
-    Source: 'src/automata/multi_tape_builder.rs', lines 339:4-341:5
+    Source: 'src/automata/multi_tape_builder.rs', lines 401:4-403:5
     Visibility: public -/
 def automata.multi_tape_builder.CompileTapesResult.count_unique_states
   (self : automata.multi_tape_builder.CompileTapesResult) :
@@ -6610,11 +8979,11 @@ def automata.tape_overlaps.TapeOverlaps.Insts.CoreFmtDebug : core.fmt.Debug
   fmt := automata.tape_overlaps.TapeOverlaps.Insts.CoreFmtDebug.fmt
 }
 
-/-- [automata_builder::automata::product_writes_map::{impl core::fmt::Debug for automata_builder::automata::product_writes_map::ProductWritesMap}::fmt]:
-    Source: 'src/automata/product_writes_map.rs', lines 69:9-69:14
+/-- [automata_builder::automata::product_writes_map::{impl core::fmt::Debug for automata_builder::automata::product_writes_map::ProductToStateMap}::fmt]:
+    Source: 'src/automata/product_writes_map.rs', lines 82:9-82:14
     Visibility: public -/
-def automata.product_writes_map.ProductWritesMap.Insts.CoreFmtDebug.fmt
-  (self : automata.product_writes_map.ProductWritesMap)
+def automata.product_writes_map.ProductToStateMap.Insts.CoreFmtDebug.fmt
+  (self : automata.product_writes_map.ProductToStateMap)
   (f : core.fmt.Formatter) :
   Result ((core.result.Result Unit core.fmt.Error) × core.fmt.Formatter)
   := do
@@ -6625,12 +8994,41 @@ def automata.product_writes_map.ProductWritesMap.Insts.CoreFmtDebug.fmt
       (alloc.collections.btree.map.BTreeMap.Insts.CoreFmtDebug
       core.fmt.DebugU16 core.fmt.DebugU32
       alloc.alloc.Global.Insts.CoreAllocAllocatorClone)) self.prod_to_state_map
+  let dyn1 :=
+    Dyn.mk _ (core.fmt.DebugShared
+      (std.collections.hash.map.HashMap.Insts.CoreFmtDebug
+      std.hash.random.RandomState alloc.alloc.Global
+      automata.terms_multitape.MultiTapeProduct.Insts.CoreFmtDebug
+      automata.terms_multitape.MultiTapeProduct.Insts.CoreFmtDebug))
+      self.products
+  core.fmt.Formatter.debug_struct_field2_finish f (toStr "ProductToStateMap")
+    (toStr "prod_to_state_map") dyn (toStr "products") dyn1
+
+/-- Trait implementation: [automata_builder::automata::product_writes_map::{impl core::fmt::Debug for automata_builder::automata::product_writes_map::ProductToStateMap}]
+    Source: 'src/automata/product_writes_map.rs', lines 82:9-82:14 -/
+@[reducible]
+def automata.product_writes_map.ProductToStateMap.Insts.CoreFmtDebug :
+  core.fmt.Debug automata.product_writes_map.ProductToStateMap := {
+  fmt := automata.product_writes_map.ProductToStateMap.Insts.CoreFmtDebug.fmt
+}
+
+/-- [automata_builder::automata::product_writes_map::{impl core::fmt::Debug for automata_builder::automata::product_writes_map::ProductWritesMap}::fmt]:
+    Source: 'src/automata/product_writes_map.rs', lines 157:9-157:14
+    Visibility: public -/
+def automata.product_writes_map.ProductWritesMap.Insts.CoreFmtDebug.fmt
+  (self : automata.product_writes_map.ProductWritesMap)
+  (f : core.fmt.Formatter) :
+  Result ((core.result.Result Unit core.fmt.Error) × core.fmt.Formatter)
+  := do
+  let dyn :=
+    Dyn.mk _ automata.product_writes_map.ProductToStateMap.Insts.CoreFmtDebug
+      self.prod_to_state_map
   let dyn1 := Dyn.mk _ (core.fmt.DebugShared core.fmt.DebugBool) self.frozen
   core.fmt.Formatter.debug_struct_field2_finish f (toStr "ProductWritesMap")
     (toStr "prod_to_state_map") dyn (toStr "frozen") dyn1
 
 /-- Trait implementation: [automata_builder::automata::product_writes_map::{impl core::fmt::Debug for automata_builder::automata::product_writes_map::ProductWritesMap}]
-    Source: 'src/automata/product_writes_map.rs', lines 69:9-69:14 -/
+    Source: 'src/automata/product_writes_map.rs', lines 157:9-157:14 -/
 @[reducible]
 def automata.product_writes_map.ProductWritesMap.Insts.CoreFmtDebug :
   core.fmt.Debug automata.product_writes_map.ProductWritesMap := {
@@ -6638,7 +9036,7 @@ def automata.product_writes_map.ProductWritesMap.Insts.CoreFmtDebug :
 }
 
 /-- [automata_builder::automata::multi_tape_builder::{impl core::fmt::Debug for automata_builder::automata::multi_tape_builder::TransitionOptimizations}::fmt]:
-    Source: 'src/automata/multi_tape_builder.rs', lines 347:9-347:14
+    Source: 'src/automata/multi_tape_builder.rs', lines 409:9-409:14
     Visibility: public -/
 def automata.multi_tape_builder.TransitionOptimizations.Insts.CoreFmtDebug.fmt
   (self : automata.multi_tape_builder.TransitionOptimizations)
@@ -6661,7 +9059,7 @@ def automata.multi_tape_builder.TransitionOptimizations.Insts.CoreFmtDebug.fmt
     "new_prod_to_state_map") dyn1 (toStr "whitelist_overlaps") dyn2
 
 /-- Trait implementation: [automata_builder::automata::multi_tape_builder::{impl core::fmt::Debug for automata_builder::automata::multi_tape_builder::TransitionOptimizations}]
-    Source: 'src/automata/multi_tape_builder.rs', lines 347:9-347:14 -/
+    Source: 'src/automata/multi_tape_builder.rs', lines 409:9-409:14 -/
 @[reducible]
 def automata.multi_tape_builder.TransitionOptimizations.Insts.CoreFmtDebug :
   core.fmt.Debug automata.multi_tape_builder.TransitionOptimizations := {
@@ -6689,7 +9087,7 @@ def automata.tape_overlaps.TapeOverlaps.Insts.CoreCloneClone.clone
   ok { overlaps := bm }
 
 /-- [automata_builder::automata::multi_tape_builder::{impl core::clone::Clone for automata_builder::automata::multi_tape_builder::TransitionOptimizations}::clone]:
-    Source: 'src/automata/multi_tape_builder.rs', lines 347:16-347:21
+    Source: 'src/automata/multi_tape_builder.rs', lines 409:16-409:21
     Visibility: public -/
 def
   automata.multi_tape_builder.TransitionOptimizations.Insts.CoreCloneClone.clone
@@ -6714,7 +9112,7 @@ def
     }
 
 /-- Trait implementation: [automata_builder::automata::multi_tape_builder::{impl core::clone::Clone for automata_builder::automata::multi_tape_builder::TransitionOptimizations}]
-    Source: 'src/automata/multi_tape_builder.rs', lines 347:16-347:21 -/
+    Source: 'src/automata/multi_tape_builder.rs', lines 409:16-409:21 -/
 @[reducible]
 def automata.multi_tape_builder.TransitionOptimizations.Insts.CoreCloneClone :
   core.clone.Clone automata.multi_tape_builder.TransitionOptimizations := {
@@ -6754,7 +9152,7 @@ def automata.tape_overlaps_fsm.TapeOverlapsFSMState.get_all_states
   ok self.all_states
 
 /-- [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::RepresentabilityIndex<'a>}::new::{closure}::{impl core::ops::function::FnMut<(&'_2 usize,), &'_3 alloc::collections::btree::set::BTreeSet<automata_builder::automata::terms_multitape::MultiTapeState, alloc::alloc::Global>> for automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::RepresentabilityIndex<'a>}::new::{closure}::{closure}<'a, '_1, '_2, '_3, '_4>}::call_mut]:
-    Source: 'src/automata/multi_tape_builder.rs', lines 382:25-382:94 -/
+    Source: 'src/automata/multi_tape_builder.rs', lines 444:25-444:94 -/
 def
   automata.multi_tape_builder.RepresentabilityIndex.new.closure.closure.Insts.CoreOpsFunctionFnMutTupleShared1UsizeShared2BTreeSetMultiTapeStateGlobal.call_mut
   (c : automata.multi_tape_builder.RepresentabilityIndex.new.closure.closure)
@@ -6769,7 +9167,7 @@ def
   ok (bs, c)
 
 /-- [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::RepresentabilityIndex<'a>}::new::{closure}::{impl core::ops::function::FnOnce<(&'_2 usize,), &'_3 alloc::collections::btree::set::BTreeSet<automata_builder::automata::terms_multitape::MultiTapeState, alloc::alloc::Global>> for automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::RepresentabilityIndex<'a>}::new::{closure}::{closure}<'a, '_1, '_2, '_3, '_4>}::call_once]:
-    Source: 'src/automata/multi_tape_builder.rs', lines 382:25-382:94 -/
+    Source: 'src/automata/multi_tape_builder.rs', lines 444:25-444:94 -/
 def
   automata.multi_tape_builder.RepresentabilityIndex.new.closure.closure.Insts.CoreOpsFunctionFnOnceTupleShared1UsizeShared2BTreeSetMultiTapeStateGlobal.call_once
   (c : automata.multi_tape_builder.RepresentabilityIndex.new.closure.closure)
@@ -6783,7 +9181,7 @@ def
   ok bs
 
 /-- Trait implementation: [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::RepresentabilityIndex<'a>}::new::{closure}::{impl core::ops::function::FnOnce<(&'_2 usize,), &'_3 alloc::collections::btree::set::BTreeSet<automata_builder::automata::terms_multitape::MultiTapeState, alloc::alloc::Global>> for automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::RepresentabilityIndex<'a>}::new::{closure}::{closure}<'a, '_1, '_2, '_3, '_4>}]
-    Source: 'src/automata/multi_tape_builder.rs', lines 382:25-382:94 -/
+    Source: 'src/automata/multi_tape_builder.rs', lines 444:25-444:94 -/
 @[reducible]
 def
   automata.multi_tape_builder.RepresentabilityIndex.new.closure.closure.Insts.CoreOpsFunctionFnOnceTupleShared1UsizeShared2BTreeSetMultiTapeStateGlobal
@@ -6796,7 +9194,7 @@ def
 }
 
 /-- Trait implementation: [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::RepresentabilityIndex<'a>}::new::{closure}::{impl core::ops::function::FnMut<(&'_2 usize,), &'_3 alloc::collections::btree::set::BTreeSet<automata_builder::automata::terms_multitape::MultiTapeState, alloc::alloc::Global>> for automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::RepresentabilityIndex<'a>}::new::{closure}::{closure}<'a, '_1, '_2, '_3, '_4>}]
-    Source: 'src/automata/multi_tape_builder.rs', lines 382:25-382:94 -/
+    Source: 'src/automata/multi_tape_builder.rs', lines 444:25-444:94 -/
 @[reducible]
 def
   automata.multi_tape_builder.RepresentabilityIndex.new.closure.closure.Insts.CoreOpsFunctionFnMutTupleShared1UsizeShared2BTreeSetMultiTapeStateGlobal
@@ -6811,7 +9209,7 @@ def
 }
 
 /-- [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::RepresentabilityIndex<'a>}::new::{impl core::ops::function::FnMut<((&'_2 automata_builder::automata::terms_multitape::MultiTapeProduct, &'_3 alloc::vec::Vec<usize>),), (&'_4 [automata_builder::automata::terms_multitape::MultiTapeTerm], alloc::vec::Vec<&'_5 alloc::collections::btree::set::BTreeSet<automata_builder::automata::terms_multitape::MultiTapeState, alloc::alloc::Global>>)> for automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::RepresentabilityIndex<'a>}::new::{closure}<'a, '_1, '_2, '_3, '_4, '_5, '_6>}::call_mut]:
-    Source: 'src/automata/multi_tape_builder.rs', lines 379:17-385:13 -/
+    Source: 'src/automata/multi_tape_builder.rs', lines 441:17-447:13 -/
 def
   automata.multi_tape_builder.RepresentabilityIndex.new.closure.Insts.CoreOpsFunctionFnMutTuplePairShared1MultiTapeProductShared2VecUsizePairShared3SliceMultiTapeTermVecShared4BTreeSetMultiTapeStateGlobal.call_mut
   (c : automata.multi_tape_builder.RepresentabilityIndex.new.closure)
@@ -6825,7 +9223,7 @@ def
   sorry
 
 /-- [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::RepresentabilityIndex<'a>}::new::{impl core::ops::function::FnOnce<((&'_2 automata_builder::automata::terms_multitape::MultiTapeProduct, &'_3 alloc::vec::Vec<usize>),), (&'_4 [automata_builder::automata::terms_multitape::MultiTapeTerm], alloc::vec::Vec<&'_5 alloc::collections::btree::set::BTreeSet<automata_builder::automata::terms_multitape::MultiTapeState, alloc::alloc::Global>>)> for automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::RepresentabilityIndex<'a>}::new::{closure}<'a, '_1, '_2, '_3, '_4, '_5, '_6>}::call_once]:
-    Source: 'src/automata/multi_tape_builder.rs', lines 379:17-385:13 -/
+    Source: 'src/automata/multi_tape_builder.rs', lines 441:17-447:13 -/
 def
   automata.multi_tape_builder.RepresentabilityIndex.new.closure.Insts.CoreOpsFunctionFnOnceTuplePairShared1MultiTapeProductShared2VecUsizePairShared3SliceMultiTapeTermVecShared4BTreeSetMultiTapeStateGlobal.call_once
   (c : automata.multi_tape_builder.RepresentabilityIndex.new.closure)
@@ -6841,7 +9239,7 @@ def
   ok (s, v)
 
 /-- Trait implementation: [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::RepresentabilityIndex<'a>}::new::{impl core::ops::function::FnOnce<((&'_2 automata_builder::automata::terms_multitape::MultiTapeProduct, &'_3 alloc::vec::Vec<usize>),), (&'_4 [automata_builder::automata::terms_multitape::MultiTapeTerm], alloc::vec::Vec<&'_5 alloc::collections::btree::set::BTreeSet<automata_builder::automata::terms_multitape::MultiTapeState, alloc::alloc::Global>>)> for automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::RepresentabilityIndex<'a>}::new::{closure}<'a, '_1, '_2, '_3, '_4, '_5, '_6>}]
-    Source: 'src/automata/multi_tape_builder.rs', lines 379:17-385:13 -/
+    Source: 'src/automata/multi_tape_builder.rs', lines 441:17-447:13 -/
 @[reducible]
 def
   automata.multi_tape_builder.RepresentabilityIndex.new.closure.Insts.CoreOpsFunctionFnOnceTuplePairShared1MultiTapeProductShared2VecUsizePairShared3SliceMultiTapeTermVecShared4BTreeSetMultiTapeStateGlobal
@@ -6856,7 +9254,7 @@ def
 }
 
 /-- Trait implementation: [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::RepresentabilityIndex<'a>}::new::{impl core::ops::function::FnMut<((&'_2 automata_builder::automata::terms_multitape::MultiTapeProduct, &'_3 alloc::vec::Vec<usize>),), (&'_4 [automata_builder::automata::terms_multitape::MultiTapeTerm], alloc::vec::Vec<&'_5 alloc::collections::btree::set::BTreeSet<automata_builder::automata::terms_multitape::MultiTapeState, alloc::alloc::Global>>)> for automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::RepresentabilityIndex<'a>}::new::{closure}<'a, '_1, '_2, '_3, '_4, '_5, '_6>}]
-    Source: 'src/automata/multi_tape_builder.rs', lines 379:17-385:13 -/
+    Source: 'src/automata/multi_tape_builder.rs', lines 441:17-447:13 -/
 @[reducible]
 def
   automata.multi_tape_builder.RepresentabilityIndex.new.closure.Insts.CoreOpsFunctionFnMutTuplePairShared1MultiTapeProductShared2VecUsizePairShared3SliceMultiTapeTermVecShared4BTreeSetMultiTapeStateGlobal
@@ -6873,7 +9271,7 @@ def
 }
 
 /-- [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::RepresentabilityIndex<'a>}::new]:
-    Source: 'src/automata/multi_tape_builder.rs', lines 375:4-388:5 -/
+    Source: 'src/automata/multi_tape_builder.rs', lines 437:4-450:5 -/
 def automata.multi_tape_builder.RepresentabilityIndex.new
   (tape_overlaps_fsm : automata.tape_overlaps_fsm.TapeOverlapsFSM) :
   Result automata.multi_tape_builder.RepresentabilityIndex
@@ -7006,7 +9404,7 @@ def automata.multi_tape_product_trie.terms_satisfiable_with
   automata.multi_tape_product_trie.terms_satisfiable_with_loop iter self_terms
 
 /-- [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::RepresentabilityIndex<'a>}::is_representable::{impl core::ops::function::FnMut<(&'_2 automata_builder::automata::terms_multitape::MultiTapeTerm,), automata_builder::automata::terms_multitape::MultiTapeState> for automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::RepresentabilityIndex<'a>}::is_representable::{closure}<'a, '_1, '_2>}::call_mut]:
-    Source: 'src/automata/multi_tape_builder.rs', lines 397:17-397:71 -/
+    Source: 'src/automata/multi_tape_builder.rs', lines 459:17-459:71 -/
 def
   automata.multi_tape_builder.RepresentabilityIndex.is_representable.closure.Insts.CoreOpsFunctionFnMutTupleShared1MultiTapeTermMultiTapeState.call_mut
   (c :
@@ -7020,7 +9418,7 @@ def
   ok (mts, ())
 
 /-- [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::RepresentabilityIndex<'a>}::is_representable::{impl core::ops::function::FnOnce<(&'_2 automata_builder::automata::terms_multitape::MultiTapeTerm,), automata_builder::automata::terms_multitape::MultiTapeState> for automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::RepresentabilityIndex<'a>}::is_representable::{closure}<'a, '_1, '_2>}::call_once]:
-    Source: 'src/automata/multi_tape_builder.rs', lines 397:17-397:71 -/
+    Source: 'src/automata/multi_tape_builder.rs', lines 459:17-459:71 -/
 def
   automata.multi_tape_builder.RepresentabilityIndex.is_representable.closure.Insts.CoreOpsFunctionFnOnceTupleShared1MultiTapeTermMultiTapeState.call_once
   (c :
@@ -7034,7 +9432,7 @@ def
   ok mts
 
 /-- Trait implementation: [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::RepresentabilityIndex<'a>}::is_representable::{impl core::ops::function::FnOnce<(&'_2 automata_builder::automata::terms_multitape::MultiTapeTerm,), automata_builder::automata::terms_multitape::MultiTapeState> for automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::RepresentabilityIndex<'a>}::is_representable::{closure}<'a, '_1, '_2>}]
-    Source: 'src/automata/multi_tape_builder.rs', lines 397:17-397:71 -/
+    Source: 'src/automata/multi_tape_builder.rs', lines 459:17-459:71 -/
 @[reducible]
 def
   automata.multi_tape_builder.RepresentabilityIndex.is_representable.closure.Insts.CoreOpsFunctionFnOnceTupleShared1MultiTapeTermMultiTapeState
@@ -7047,7 +9445,7 @@ def
 }
 
 /-- Trait implementation: [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::RepresentabilityIndex<'a>}::is_representable::{impl core::ops::function::FnMut<(&'_2 automata_builder::automata::terms_multitape::MultiTapeTerm,), automata_builder::automata::terms_multitape::MultiTapeState> for automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::RepresentabilityIndex<'a>}::is_representable::{closure}<'a, '_1, '_2>}]
-    Source: 'src/automata/multi_tape_builder.rs', lines 397:17-397:71 -/
+    Source: 'src/automata/multi_tape_builder.rs', lines 459:17-459:71 -/
 @[reducible]
 def
   automata.multi_tape_builder.RepresentabilityIndex.is_representable.closure.Insts.CoreOpsFunctionFnMutTupleShared1MultiTapeTermMultiTapeState
@@ -7062,7 +9460,7 @@ def
 }
 
 /-- [automata_builder::automata::multi_tape_builder::cartesian_product]: loop 2:
-    Source: 'src/automata/multi_tape_builder.rs', lines 421:12-425:13 -/
+    Source: 'src/automata/multi_tape_builder.rs', lines 483:12-487:13 -/
 @[rust_loop]
 def automata.multi_tape_builder.cartesian_product_loop0_loop0_loop0
   {T : Type _} (corecloneCloneInst : core.clone.Clone T)
@@ -7083,7 +9481,7 @@ def automata.multi_tape_builder.cartesian_product_loop0_loop0_loop0
 partial_fixpoint
 
 /-- [automata_builder::automata::multi_tape_builder::cartesian_product]: loop 1:
-    Source: 'src/automata/multi_tape_builder.rs', lines 420:8-426:9 -/
+    Source: 'src/automata/multi_tape_builder.rs', lines 482:8-488:9 -/
 @[rust_loop]
 def automata.multi_tape_builder.cartesian_product_loop0_loop0
   {T : Type _} (corecloneCloneInst : core.clone.Clone T)
@@ -7105,7 +9503,7 @@ def automata.multi_tape_builder.cartesian_product_loop0_loop0
 partial_fixpoint
 
 /-- [automata_builder::automata::multi_tape_builder::cartesian_product]: loop 0:
-    Source: 'src/automata/multi_tape_builder.rs', lines 418:4-428:5 -/
+    Source: 'src/automata/multi_tape_builder.rs', lines 480:4-490:5 -/
 @[rust_loop]
 def automata.multi_tape_builder.cartesian_product_loop0
   {T : Type _} (corecloneCloneInst : core.clone.Clone T)
@@ -7131,7 +9529,7 @@ def automata.multi_tape_builder.cartesian_product_loop0
 partial_fixpoint
 
 /-- [automata_builder::automata::multi_tape_builder::cartesian_product]:
-    Source: 'src/automata/multi_tape_builder.rs', lines 416:0-430:1 -/
+    Source: 'src/automata/multi_tape_builder.rs', lines 478:0-492:1 -/
 def automata.multi_tape_builder.cartesian_product
   {T : Type _} (corecloneCloneInst : core.clone.Clone T)
   (sequences : Slice (alloc.vec.Vec T)) :
@@ -7147,8 +9545,50 @@ def automata.multi_tape_builder.cartesian_product
   automata.multi_tape_builder.cartesian_product_loop0 corecloneCloneInst iter
     ret
 
+/-- [automata_builder::automata::multi_tape_transition::{impl core::fmt::Debug for automata_builder::automata::multi_tape_transition::MultiTapeTransitionsGroup}::fmt]:
+    Source: 'src/automata/multi_tape_transition.rs', lines 132:16-132:21
+    Visibility: public -/
+def
+  automata.multi_tape_transition.MultiTapeTransitionsGroup.Insts.CoreFmtDebug.fmt
+  (self : automata.multi_tape_transition.MultiTapeTransitionsGroup)
+  (f : core.fmt.Formatter) :
+  Result ((core.result.Result Unit core.fmt.Error) × core.fmt.Formatter)
+  := do
+  let dyn :=
+    Dyn.mk _ (core.fmt.DebugVec
+      automata.multi_tape_transition.MultiTapeTransition.Insts.CoreFmtDebug)
+      self.transitions
+  let dyn1 :=
+    Dyn.mk _ (indexmap.map.IndexMap.Insts.CoreFmtDebug
+      std.hash.random.RandomState
+      automata.terms_multitape.MultiTapeProduct.Insts.CoreFmtDebug
+      (indexmap.set.IndexSet.Insts.CoreFmtDebug std.hash.random.RandomState
+      automata.multi_tape_transition.MultiTapeTransition.Insts.CoreFmtDebug))
+      self.prod_to_transitions
+  let dyn2 :=
+    Dyn.mk _ (indexmap.map.IndexMap.Insts.CoreFmtDebug
+      std.hash.random.RandomState
+      automata.terms_multitape.MultiTapeProduct.Insts.CoreFmtDebug
+      core.fmt.DebugU32) self.prod_priority_map
+  let dyn3 :=
+    Dyn.mk _ (core.fmt.DebugShared core.fmt.DebugBool) self.require_annotation
+  core.fmt.Formatter.debug_struct_field4_finish f (toStr
+    "MultiTapeTransitionsGroup") (toStr "transitions") dyn (toStr
+    "prod_to_transitions") dyn1 (toStr "prod_priority_map") dyn2 (toStr
+    "require_annotation") dyn3
+
+/-- Trait implementation: [automata_builder::automata::multi_tape_transition::{impl core::fmt::Debug for automata_builder::automata::multi_tape_transition::MultiTapeTransitionsGroup}]
+    Source: 'src/automata/multi_tape_transition.rs', lines 132:16-132:21 -/
+@[reducible]
+def automata.multi_tape_transition.MultiTapeTransitionsGroup.Insts.CoreFmtDebug
+  : core.fmt.Debug automata.multi_tape_transition.MultiTapeTransitionsGroup
+  := {
+  fmt :=
+    automata.multi_tape_transition.MultiTapeTransitionsGroup.Insts.CoreFmtDebug.fmt
+}
+
 /-- [automata_builder::automata::multi_tape_builder::{impl core::fmt::Debug for automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::fmt]:
-    Source: 'src/automata/multi_tape_builder.rs', lines 433:9-433:14
+    Source: 'src/automata/multi_tape_builder.rs', lines 495:9-495:14
     Visibility: public -/
 def automata.multi_tape_builder.MultiTapeBuilder.Insts.CoreFmtDebug.fmt
   (self : automata.multi_tape_builder.MultiTapeBuilder)
@@ -7163,35 +9603,73 @@ def automata.multi_tape_builder.MultiTapeBuilder.Insts.CoreFmtDebug.fmt
       std.hash.random.RandomState
       automata.terms_multitape.MultiTapeProduct.Insts.CoreFmtDebug
       core.fmt.DebugU32) self.prod_priority_map
-  let dyn2 := Dyn.mk _ (core.fmt.DebugVec core.fmt.DebugU16) self.tape_nos
-  let dyn3 := Dyn.mk _ core.fmt.DebugI64 self.leftmost_extent
-  let dyn4 := Dyn.mk _ core.fmt.DebugI64 self.rightmost_extent
-  let dyn5 :=
+  let dyn2 :=
+    Dyn.mk _
+      automata.multi_tape_transition.MultiTapeTransitionsGroup.Insts.CoreFmtDebug
+      self.transitions_group
+  let dyn3 := Dyn.mk _ (core.fmt.DebugVec core.fmt.DebugU16) self.tape_nos
+  let dyn4 := Dyn.mk _ core.fmt.DebugI64 self.leftmost_extent
+  let dyn5 := Dyn.mk _ core.fmt.DebugI64 self.rightmost_extent
+  let dyn6 :=
     Dyn.mk _ (core.fmt.DebugShared
       automata.tape_overlaps.TapeOverlaps.Insts.CoreFmtDebug)
       self.initial_overlaps
   let values :=
-    Array.to_slice (Array.make 6#usize [ dyn, dyn1, dyn2, dyn3, dyn4, dyn5 ])
+    Array.to_slice
+      (Array.make 7#usize [ dyn, dyn1, dyn2, dyn3, dyn4, dyn5, dyn6 ])
   let s ←
     lift (Array.to_slice
-      (Array.make 6#usize [
-        toStr "prod_to_state_map", toStr "prod_priority_map", toStr "tape_nos",
-        toStr "leftmost_extent", toStr "rightmost_extent", toStr
-        "initial_overlaps"
+      (Array.make 7#usize [
+        toStr "prod_to_state_map", toStr "prod_priority_map", toStr
+        "transitions_group", toStr "tape_nos", toStr "leftmost_extent", toStr
+        "rightmost_extent", toStr "initial_overlaps"
         ]))
   core.fmt.Formatter.debug_struct_fields_finish f (toStr "MultiTapeBuilder") s
     values
 
 /-- Trait implementation: [automata_builder::automata::multi_tape_builder::{impl core::fmt::Debug for automata_builder::automata::multi_tape_builder::MultiTapeBuilder}]
-    Source: 'src/automata/multi_tape_builder.rs', lines 433:9-433:14 -/
+    Source: 'src/automata/multi_tape_builder.rs', lines 495:9-495:14 -/
 @[reducible]
 def automata.multi_tape_builder.MultiTapeBuilder.Insts.CoreFmtDebug :
   core.fmt.Debug automata.multi_tape_builder.MultiTapeBuilder := {
   fmt := automata.multi_tape_builder.MultiTapeBuilder.Insts.CoreFmtDebug.fmt
 }
 
+/-- [automata_builder::automata::multi_tape_transition::{impl core::clone::Clone for automata_builder::automata::multi_tape_transition::MultiTapeTransitionsGroup}::clone]:
+    Source: 'src/automata/multi_tape_transition.rs', lines 132:9-132:14
+    Visibility: public -/
+def
+  automata.multi_tape_transition.MultiTapeTransitionsGroup.Insts.CoreCloneClone.clone
+  (self : automata.multi_tape_transition.MultiTapeTransitionsGroup) :
+  Result automata.multi_tape_transition.MultiTapeTransitionsGroup
+  := do
+  let v ←
+    alloc.vec.CloneVec.clone
+      automata.multi_tape_transition.MultiTapeTransition.Insts.CoreCloneClone
+      self.transitions
+  let im ←
+    indexmap.map.IndexMap.Insts.CoreCloneClone.clone
+      automata.terms_multitape.MultiTapeProduct.Insts.CoreCloneClone
+      (indexmap.set.IndexSet.Insts.CoreCloneClone
+      automata.multi_tape_transition.MultiTapeTransition.Insts.CoreCloneClone
+      std.hash.random.RandomState.Insts.CoreCloneClone)
+      std.hash.random.RandomState.Insts.CoreCloneClone self.prod_to_transitions
+  let im1 ←
+    indexmap.map.IndexMap.Insts.CoreCloneClone.clone
+      automata.terms_multitape.MultiTapeProduct.Insts.CoreCloneClone
+      core.clone.CloneU32 std.hash.random.RandomState.Insts.CoreCloneClone
+      self.prod_priority_map
+  let b ← lift (core.clone.impls.CloneBool.clone self.require_annotation)
+  ok
+    {
+      transitions := v,
+      prod_to_transitions := im,
+      prod_priority_map := im1,
+      require_annotation := b
+    }
+
 /-- [automata_builder::automata::multi_tape_builder::{impl core::clone::Clone for automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::clone]:
-    Source: 'src/automata/multi_tape_builder.rs', lines 433:16-433:21
+    Source: 'src/automata/multi_tape_builder.rs', lines 495:16-495:21
     Visibility: public -/
 def automata.multi_tape_builder.MultiTapeBuilder.Insts.CoreCloneClone.clone
   (self : automata.multi_tape_builder.MultiTapeBuilder) :
@@ -7205,6 +9683,9 @@ def automata.multi_tape_builder.MultiTapeBuilder.Insts.CoreCloneClone.clone
       automata.terms_multitape.MultiTapeProduct.Insts.CoreCloneClone
       core.clone.CloneU32 std.hash.random.RandomState.Insts.CoreCloneClone
       self.prod_priority_map
+  let mttg ←
+    automata.multi_tape_transition.MultiTapeTransitionsGroup.Insts.CoreCloneClone.clone
+      self.transitions_group
   let v ← alloc.vec.CloneVec.clone core.clone.CloneU16 self.tape_nos
   let i ← lift (core.clone.impls.CloneI64.clone self.leftmost_extent)
   let i1 ← lift (core.clone.impls.CloneI64.clone self.rightmost_extent)
@@ -7215,6 +9696,7 @@ def automata.multi_tape_builder.MultiTapeBuilder.Insts.CoreCloneClone.clone
     {
       prod_to_state_map := pwm,
       prod_priority_map := im,
+      transitions_group := mttg,
       tape_nos := v,
       leftmost_extent := i,
       rightmost_extent := i1,
@@ -7222,7 +9704,7 @@ def automata.multi_tape_builder.MultiTapeBuilder.Insts.CoreCloneClone.clone
     }
 
 /-- Trait implementation: [automata_builder::automata::multi_tape_builder::{impl core::clone::Clone for automata_builder::automata::multi_tape_builder::MultiTapeBuilder}]
-    Source: 'src/automata/multi_tape_builder.rs', lines 433:16-433:21 -/
+    Source: 'src/automata/multi_tape_builder.rs', lines 495:16-495:21 -/
 @[reducible]
 def automata.multi_tape_builder.MultiTapeBuilder.Insts.CoreCloneClone :
   core.clone.Clone automata.multi_tape_builder.MultiTapeBuilder := {
@@ -7615,7 +10097,7 @@ def automata.tape_overlaps.TapeOverlaps.insert_direct_overlap
          ok (false, self3)
 
 /-- [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::declare_initial_group_overlaps]:
-    Source: 'src/automata/multi_tape_builder.rs', lines 507:4-532:5
+    Source: 'src/automata/multi_tape_builder.rs', lines 573:4-598:5
     Visibility: public -/
 def automata.multi_tape_builder.MultiTapeBuilder.declare_initial_group_overlaps
   (self : automata.multi_tape_builder.MultiTapeBuilder)
@@ -7626,7 +10108,7 @@ def automata.multi_tape_builder.MultiTapeBuilder.declare_initial_group_overlaps
   sorry
 
 /-- [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::from_parts::{impl core::ops::function::FnMut<(&'_0 u16,), automata_builder::automata::terms_multitape::MultiTapeState> for automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::from_parts::{closure}<'_0>}::call_mut]:
-    Source: 'src/automata/multi_tape_builder.rs', lines 474:17-474:68 -/
+    Source: 'src/automata/multi_tape_builder.rs', lines 540:17-540:68 -/
 def
   automata.multi_tape_builder.MultiTapeBuilder.from_parts.closure.Insts.CoreOpsFunctionFnMutTupleShared0U16MultiTapeState.call_mut
   (c : automata.multi_tape_builder.MultiTapeBuilder.from_parts.closure)
@@ -7640,7 +10122,7 @@ def
   ok (mts, ())
 
 /-- [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::from_parts::{impl core::ops::function::FnOnce<(&'_0 u16,), automata_builder::automata::terms_multitape::MultiTapeState> for automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::from_parts::{closure}<'_0>}::call_once]:
-    Source: 'src/automata/multi_tape_builder.rs', lines 474:17-474:68 -/
+    Source: 'src/automata/multi_tape_builder.rs', lines 540:17-540:68 -/
 def
   automata.multi_tape_builder.MultiTapeBuilder.from_parts.closure.Insts.CoreOpsFunctionFnOnceTupleShared0U16MultiTapeState.call_once
   (c : automata.multi_tape_builder.MultiTapeBuilder.from_parts.closure)
@@ -7653,7 +10135,7 @@ def
   ok mts
 
 /-- Trait implementation: [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::from_parts::{impl core::ops::function::FnOnce<(&'_0 u16,), automata_builder::automata::terms_multitape::MultiTapeState> for automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::from_parts::{closure}<'_0>}]
-    Source: 'src/automata/multi_tape_builder.rs', lines 474:17-474:68 -/
+    Source: 'src/automata/multi_tape_builder.rs', lines 540:17-540:68 -/
 @[reducible]
 def
   automata.multi_tape_builder.MultiTapeBuilder.from_parts.closure.Insts.CoreOpsFunctionFnOnceTupleShared0U16MultiTapeState
@@ -7665,7 +10147,7 @@ def
 }
 
 /-- Trait implementation: [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::from_parts::{impl core::ops::function::FnMut<(&'_0 u16,), automata_builder::automata::terms_multitape::MultiTapeState> for automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::from_parts::{closure}<'_0>}]
-    Source: 'src/automata/multi_tape_builder.rs', lines 474:17-474:68 -/
+    Source: 'src/automata/multi_tape_builder.rs', lines 540:17-540:68 -/
 @[reducible]
 def
   automata.multi_tape_builder.MultiTapeBuilder.from_parts.closure.Insts.CoreOpsFunctionFnMutTupleShared0U16MultiTapeState
@@ -7679,14 +10161,17 @@ def
 }
 
 /-- [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::from_parts]:
-    Source: 'src/automata/multi_tape_builder.rs', lines 455:4-478:5
+    Source: 'src/automata/multi_tape_builder.rs', lines 519:4-544:5
     Visibility: public -/
 def automata.multi_tape_builder.MultiTapeBuilder.from_parts
   (prod_to_state_map : automata.product_writes_map.ProductWritesMap)
   (prod_priority_map : indexmap.map.IndexMap
   automata.terms_multitape.MultiTapeProduct Std.U32
-  std.hash.random.RandomState) (tape_nos : alloc.vec.Vec Std.U16)
-  (leftmost_extent : Std.I64) (rightmost_extent : Std.I64) :
+  std.hash.random.RandomState)
+  (transitions_group :
+  automata.multi_tape_transition.MultiTapeTransitionsGroup)
+  (tape_nos : alloc.vec.Vec Std.U16) (leftmost_extent : Std.I64)
+  (rightmost_extent : Std.I64) :
   Result automata.multi_tape_builder.MultiTapeBuilder
   := do
   let «to» ← automata.tape_overlaps.TapeOverlaps.new
@@ -7708,6 +10193,7 @@ def automata.multi_tape_builder.MultiTapeBuilder.from_parts
     {
       prod_to_state_map,
       prod_priority_map,
+      transitions_group,
       tape_nos,
       leftmost_extent,
       rightmost_extent,
@@ -7715,7 +10201,7 @@ def automata.multi_tape_builder.MultiTapeBuilder.from_parts
     } void_overlap_states
 
 /-- [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::new]:
-    Source: 'src/automata/multi_tape_builder.rs', lines 445:4-453:5
+    Source: 'src/automata/multi_tape_builder.rs', lines 508:4-517:5
     Visibility: public -/
 def automata.multi_tape_builder.MultiTapeBuilder.new
   (automata : automata.multi_tape_automata.MultiTapeAutomata) :
@@ -7731,6 +10217,12 @@ def automata.multi_tape_builder.MultiTapeBuilder.new
     indexmap.map.IndexMap.Insts.CoreCloneClone.clone
       automata.terms_multitape.MultiTapeProduct.Insts.CoreCloneClone
       core.clone.CloneU32 std.hash.random.RandomState.Insts.CoreCloneClone im
+  let mttg ←
+    automata.multi_tape_automata.MultiTapeAutomata.get_transitions_group
+      automata
+  let mttg1 ←
+    automata.multi_tape_transition.MultiTapeTransitionsGroup.Insts.CoreCloneClone.clone
+      mttg
   let v ←
     automata.multi_tape_automata.MultiTapeAutomata.get_tape_nos automata
   let i ←
@@ -7739,24 +10231,24 @@ def automata.multi_tape_builder.MultiTapeBuilder.new
   let i1 ←
     automata.multi_tape_automata.MultiTapeAutomata.impl.rightmost_extent
       automata
-  automata.multi_tape_builder.MultiTapeBuilder.from_parts pwm im1 v i i1
+  automata.multi_tape_builder.MultiTapeBuilder.from_parts pwm im1 mttg1 v i i1
 
 /-- [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::leftmost_extent]:
-    Source: 'src/automata/multi_tape_builder.rs', lines 480:4-482:5
+    Source: 'src/automata/multi_tape_builder.rs', lines 546:4-548:5
     Visibility: public -/
 def automata.multi_tape_builder.MultiTapeBuilder.impl.leftmost_extent
   (self : automata.multi_tape_builder.MultiTapeBuilder) : Result Std.I64 := do
   ok self.leftmost_extent
 
 /-- [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::rightmost_extent]:
-    Source: 'src/automata/multi_tape_builder.rs', lines 484:4-486:5
+    Source: 'src/automata/multi_tape_builder.rs', lines 550:4-552:5
     Visibility: public -/
 def automata.multi_tape_builder.MultiTapeBuilder.impl.rightmost_extent
   (self : automata.multi_tape_builder.MultiTapeBuilder) : Result Std.I64 := do
   ok self.rightmost_extent
 
 /-- [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::get_tape_nos]:
-    Source: 'src/automata/multi_tape_builder.rs', lines 488:4-490:5
+    Source: 'src/automata/multi_tape_builder.rs', lines 554:4-556:5
     Visibility: public -/
 def automata.multi_tape_builder.MultiTapeBuilder.get_tape_nos
   (self : automata.multi_tape_builder.MultiTapeBuilder) :
@@ -7765,7 +10257,7 @@ def automata.multi_tape_builder.MultiTapeBuilder.get_tape_nos
   alloc.vec.CloneVec.clone core.clone.CloneU16 self.tape_nos
 
 /-- [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::get_prod_to_state_map]:
-    Source: 'src/automata/multi_tape_builder.rs', lines 492:4-494:5
+    Source: 'src/automata/multi_tape_builder.rs', lines 558:4-560:5
     Visibility: public -/
 def automata.multi_tape_builder.MultiTapeBuilder.get_prod_to_state_map
   (self : automata.multi_tape_builder.MultiTapeBuilder) :
@@ -7774,190 +10266,13 @@ def automata.multi_tape_builder.MultiTapeBuilder.get_prod_to_state_map
   ok self.prod_to_state_map
 
 /-- [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::get_initial_overlaps]:
-    Source: 'src/automata/multi_tape_builder.rs', lines 496:4-498:5
+    Source: 'src/automata/multi_tape_builder.rs', lines 562:4-564:5
     Visibility: public -/
 def automata.multi_tape_builder.MultiTapeBuilder.get_initial_overlaps
   (self : automata.multi_tape_builder.MultiTapeBuilder) :
   Result automata.tape_overlaps.TapeOverlaps
   := do
   ok self.initial_overlaps
-
-/-- [automata_builder::automata::terms_multitape::{impl core::cmp::Ord for automata_builder::automata::terms_multitape::MultiTapeTerm}::cmp::{impl core::ops::function::FnOnce<(), core::cmp::Ordering> for automata_builder::automata::terms_multitape::{impl core::cmp::Ord for automata_builder::automata::terms_multitape::MultiTapeTerm}::cmp::{closure}<'_0, '_1>}::call_once]:
-    Source: 'src/automata/terms_multitape.rs', lines 90:23-90:54 -/
-def
-  automata.terms_multitape.OrdMultiTapeTerm.cmp.closure.Insts.CoreOpsFunctionFnOnceTupleOrdering.call_once
-  (c : automata.terms_multitape.OrdMultiTapeTerm.cmp.closure) (_ : Unit) :
-  Result Ordering
-  := do
-  let (mtt, mtt1) := c
-  Pair.Insts.CoreCmpOrd.cmp core.cmp.OrdU16 core.cmp.OrdU32 mtt.state
-    mtt1.state
-
-/-- Trait implementation: [automata_builder::automata::terms_multitape::{impl core::cmp::Ord for automata_builder::automata::terms_multitape::MultiTapeTerm}::cmp::{impl core::ops::function::FnOnce<(), core::cmp::Ordering> for automata_builder::automata::terms_multitape::{impl core::cmp::Ord for automata_builder::automata::terms_multitape::MultiTapeTerm}::cmp::{closure}<'_0, '_1>}]
-    Source: 'src/automata/terms_multitape.rs', lines 90:23-90:54 -/
-@[reducible]
-def
-  automata.terms_multitape.OrdMultiTapeTerm.cmp.closure.Insts.CoreOpsFunctionFnOnceTupleOrdering
-  : core.ops.function.FnOnce
-  automata.terms_multitape.OrdMultiTapeTerm.cmp.closure Unit Ordering := {
-  call_once :=
-    automata.terms_multitape.OrdMultiTapeTerm.cmp.closure.Insts.CoreOpsFunctionFnOnceTupleOrdering.call_once
-}
-
-/-- [automata_builder::automata::terms_multitape::{impl core::cmp::Ord for automata_builder::automata::terms_multitape::MultiTapeTerm}::cmp]:
-    Source: 'src/automata/terms_multitape.rs', lines 88:4-91:5
-    Visibility: public -/
-def automata.terms_multitape.MultiTapeTerm.Insts.CoreCmpOrd.cmp
-  (self : automata.terms_multitape.MultiTapeTerm)
-  (other : automata.terms_multitape.MultiTapeTerm) :
-  Result Ordering
-  := do
-  let o ← lift (core.cmp.impls.OrdI64.cmp self.position other.position)
-  core.cmp.Ordering.then_with
-    automata.terms_multitape.OrdMultiTapeTerm.cmp.closure.Insts.CoreOpsFunctionFnOnceTupleOrdering
-    o (self, other)
-
-/-- [automata_builder::automata::terms_multitape::{impl core::cmp::PartialOrd<automata_builder::automata::terms_multitape::MultiTapeTerm> for automata_builder::automata::terms_multitape::MultiTapeTerm}::partial_cmp]:
-    Source: 'src/automata/terms_multitape.rs', lines 83:4-85:5
-    Visibility: public -/
-def
-  automata.terms_multitape.MultiTapeTerm.Insts.CoreCmpPartialOrdMultiTapeTerm.partial_cmp
-  (self : automata.terms_multitape.MultiTapeTerm)
-  (other : automata.terms_multitape.MultiTapeTerm) :
-  Result (Option Ordering)
-  := do
-  let o ←
-    automata.terms_multitape.MultiTapeTerm.Insts.CoreCmpOrd.cmp self other
-  ok (some o)
-
-/-- Trait implementation: [automata_builder::automata::terms_multitape::{impl core::cmp::PartialOrd<automata_builder::automata::terms_multitape::MultiTapeTerm> for automata_builder::automata::terms_multitape::MultiTapeTerm}]
-    Source: 'src/automata/terms_multitape.rs', lines 82:0-86:1 -/
-@[reducible]
-impl_def
-  automata.terms_multitape.MultiTapeTerm.Insts.CoreCmpPartialOrdMultiTapeTerm :
-  core.cmp.PartialOrd automata.terms_multitape.MultiTapeTerm
-  automata.terms_multitape.MultiTapeTerm := {
-  partialEqInst :=
-    automata.terms_multitape.MultiTapeTerm.Insts.CoreCmpPartialEqMultiTapeTerm
-  partial_cmp :=
-    automata.terms_multitape.MultiTapeTerm.Insts.CoreCmpPartialOrdMultiTapeTerm.partial_cmp
-  le := core.cmp.PartialOrd.le.trait_default
-    automata.terms_multitape.MultiTapeTerm.Insts.CoreCmpPartialOrdMultiTapeTerm
-}
-
-/-- [automata_builder::automata::terms_multitape::{impl core::cmp::Eq for automata_builder::automata::terms_multitape::MultiTapeTerm}::assert_fields_are_eq]:
-    Source: 'src/automata/terms_multitape.rs', lines 66:23-66:25
-    Visibility: public -/
-def automata.terms_multitape.MultiTapeTerm.Insts.CoreCmpEq.assert_fields_are_eq
-  (self : automata.terms_multitape.MultiTapeTerm) : Result Unit := do
-  ok ()
-
-/-- Trait implementation: [automata_builder::automata::terms_multitape::{impl core::cmp::Eq for automata_builder::automata::terms_multitape::MultiTapeTerm}]
-    Source: 'src/automata/terms_multitape.rs', lines 66:23-66:25 -/
-@[reducible]
-def automata.terms_multitape.MultiTapeTerm.Insts.CoreCmpEq : core.cmp.Eq
-  automata.terms_multitape.MultiTapeTerm := {
-  partialEqInst :=
-    automata.terms_multitape.MultiTapeTerm.Insts.CoreCmpPartialEqMultiTapeTerm
-  assert_fields_are_eq :=
-    automata.terms_multitape.MultiTapeTerm.Insts.CoreCmpEq.assert_fields_are_eq
-}
-
-/-- Trait implementation: [automata_builder::automata::terms_multitape::{impl core::cmp::Ord for automata_builder::automata::terms_multitape::MultiTapeTerm}]
-    Source: 'src/automata/terms_multitape.rs', lines 87:0-92:1 -/
-@[reducible]
-impl_def automata.terms_multitape.MultiTapeTerm.Insts.CoreCmpOrd : core.cmp.Ord
-  automata.terms_multitape.MultiTapeTerm := {
-  eqInst := automata.terms_multitape.MultiTapeTerm.Insts.CoreCmpEq
-  partialOrdInst :=
-    automata.terms_multitape.MultiTapeTerm.Insts.CoreCmpPartialOrdMultiTapeTerm
-  cmp := automata.terms_multitape.MultiTapeTerm.Insts.CoreCmpOrd.cmp
-  max := core.cmp.Ord.max.trait_default
-    automata.terms_multitape.MultiTapeTerm.Insts.CoreCmpOrd
-  min := core.cmp.Ord.min.trait_default
-    automata.terms_multitape.MultiTapeTerm.Insts.CoreCmpOrd
-}
-
-/-- [automata_builder::automata::terms_multitape::{impl core::cmp::Ord for automata_builder::automata::terms_multitape::MultiTapeProduct}::cmp::{impl core::ops::function::FnOnce<(), core::cmp::Ordering> for automata_builder::automata::terms_multitape::{impl core::cmp::Ord for automata_builder::automata::terms_multitape::MultiTapeProduct}::cmp::{closure}<'_0, '_1>}::call_once]:
-    Source: 'src/automata/terms_multitape.rs', lines 566:23-566:56 -/
-def
-  automata.terms_multitape.OrdMultiTapeProduct.cmp.closure.Insts.CoreOpsFunctionFnOnceTupleOrdering.call_once
-  (c : automata.terms_multitape.OrdMultiTapeProduct.cmp.closure) (_ : Unit) :
-  Result Ordering
-  := do
-  let (mtp, mtp1) := c
-  alloc.vec.Vec.Insts.CoreCmpOrd.cmp alloc.alloc.Global
-    automata.terms_multitape.MultiTapeTerm.Insts.CoreCmpOrd mtp._terms
-    mtp1._terms
-
-/-- Trait implementation: [automata_builder::automata::terms_multitape::{impl core::cmp::Ord for automata_builder::automata::terms_multitape::MultiTapeProduct}::cmp::{impl core::ops::function::FnOnce<(), core::cmp::Ordering> for automata_builder::automata::terms_multitape::{impl core::cmp::Ord for automata_builder::automata::terms_multitape::MultiTapeProduct}::cmp::{closure}<'_0, '_1>}]
-    Source: 'src/automata/terms_multitape.rs', lines 566:23-566:56 -/
-@[reducible]
-def
-  automata.terms_multitape.OrdMultiTapeProduct.cmp.closure.Insts.CoreOpsFunctionFnOnceTupleOrdering
-  : core.ops.function.FnOnce
-  automata.terms_multitape.OrdMultiTapeProduct.cmp.closure Unit Ordering := {
-  call_once :=
-    automata.terms_multitape.OrdMultiTapeProduct.cmp.closure.Insts.CoreOpsFunctionFnOnceTupleOrdering.call_once
-}
-
-/-- [automata_builder::automata::terms_multitape::{impl core::cmp::Ord for automata_builder::automata::terms_multitape::MultiTapeProduct}::cmp]:
-    Source: 'src/automata/terms_multitape.rs', lines 564:4-567:5
-    Visibility: public -/
-def automata.terms_multitape.MultiTapeProduct.Insts.CoreCmpOrd.cmp
-  (self : automata.terms_multitape.MultiTapeProduct)
-  (other : automata.terms_multitape.MultiTapeProduct) :
-  Result Ordering
-  := do
-  let i := alloc.vec.Vec.len self._terms
-  let i1 := alloc.vec.Vec.len other._terms
-  let o ← lift (core.cmp.impls.OrdUsize.cmp i i1)
-  core.cmp.Ordering.then_with
-    automata.terms_multitape.OrdMultiTapeProduct.cmp.closure.Insts.CoreOpsFunctionFnOnceTupleOrdering
-    o (self, other)
-
-/-- [automata_builder::automata::terms_multitape::{impl core::cmp::PartialOrd<automata_builder::automata::terms_multitape::MultiTapeProduct> for automata_builder::automata::terms_multitape::MultiTapeProduct}::partial_cmp]:
-    Source: 'src/automata/terms_multitape.rs', lines 559:4-561:5
-    Visibility: public -/
-def
-  automata.terms_multitape.MultiTapeProduct.Insts.CoreCmpPartialOrdMultiTapeProduct.partial_cmp
-  (self : automata.terms_multitape.MultiTapeProduct)
-  (other : automata.terms_multitape.MultiTapeProduct) :
-  Result (Option Ordering)
-  := do
-  let o ←
-    automata.terms_multitape.MultiTapeProduct.Insts.CoreCmpOrd.cmp self other
-  ok (some o)
-
-/-- Trait implementation: [automata_builder::automata::terms_multitape::{impl core::cmp::PartialOrd<automata_builder::automata::terms_multitape::MultiTapeProduct> for automata_builder::automata::terms_multitape::MultiTapeProduct}]
-    Source: 'src/automata/terms_multitape.rs', lines 558:0-562:1 -/
-@[reducible]
-impl_def
-  automata.terms_multitape.MultiTapeProduct.Insts.CoreCmpPartialOrdMultiTapeProduct
-  : core.cmp.PartialOrd automata.terms_multitape.MultiTapeProduct
-  automata.terms_multitape.MultiTapeProduct := {
-  partialEqInst :=
-    automata.terms_multitape.MultiTapeProduct.Insts.CoreCmpPartialEqMultiTapeProduct
-  partial_cmp :=
-    automata.terms_multitape.MultiTapeProduct.Insts.CoreCmpPartialOrdMultiTapeProduct.partial_cmp
-  le := core.cmp.PartialOrd.le.trait_default
-    automata.terms_multitape.MultiTapeProduct.Insts.CoreCmpPartialOrdMultiTapeProduct
-}
-
-/-- Trait implementation: [automata_builder::automata::terms_multitape::{impl core::cmp::Ord for automata_builder::automata::terms_multitape::MultiTapeProduct}]
-    Source: 'src/automata/terms_multitape.rs', lines 563:0-568:1 -/
-@[reducible]
-impl_def automata.terms_multitape.MultiTapeProduct.Insts.CoreCmpOrd :
-  core.cmp.Ord automata.terms_multitape.MultiTapeProduct := {
-  eqInst := automata.terms_multitape.MultiTapeProduct.Insts.CoreCmpEq
-  partialOrdInst :=
-    automata.terms_multitape.MultiTapeProduct.Insts.CoreCmpPartialOrdMultiTapeProduct
-  cmp := automata.terms_multitape.MultiTapeProduct.Insts.CoreCmpOrd.cmp
-  max := core.cmp.Ord.max.trait_default
-    automata.terms_multitape.MultiTapeProduct.Insts.CoreCmpOrd
-  min := core.cmp.Ord.min.trait_default
-    automata.terms_multitape.MultiTapeProduct.Insts.CoreCmpOrd
-}
 
 /-- [automata_builder::automata::tape_overlaps_fsm::{automata_builder::automata::tape_overlaps_fsm::TapeOverlapsFSMState}::product_writes_map]:
     Source: 'src/automata/tape_overlaps_fsm.rs', lines 49:4-51:5
@@ -7968,11 +10283,11 @@ def automata.tape_overlaps_fsm.TapeOverlapsFSMState.impl.product_writes_map
   := do
   ok self.product_writes_map
 
-/-- [automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::contains_product]:
-    Source: 'src/automata/product_writes_map.rs', lines 110:4-112:5
+/-- [automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductToStateMap}::contains_key]:
+    Source: 'src/automata/product_writes_map.rs', lines 109:4-111:5
     Visibility: public -/
-def automata.product_writes_map.ProductWritesMap.contains_product
-  (self : automata.product_writes_map.ProductWritesMap)
+def automata.product_writes_map.ProductToStateMap.contains_key
+  (self : automata.product_writes_map.ProductToStateMap)
   (product : automata.terms_multitape.MultiTapeProduct) :
   Result Bool
   := do
@@ -7984,8 +10299,19 @@ def automata.product_writes_map.ProductWritesMap.contains_product
     (core.borrow.Borrow.Blanket automata.terms_multitape.MultiTapeProduct))
     self.prod_to_state_map product
 
+/-- [automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::contains_product]:
+    Source: 'src/automata/product_writes_map.rs', lines 198:4-200:5
+    Visibility: public -/
+def automata.product_writes_map.ProductWritesMap.contains_product
+  (self : automata.product_writes_map.ProductWritesMap)
+  (product : automata.terms_multitape.MultiTapeProduct) :
+  Result Bool
+  := do
+  automata.product_writes_map.ProductToStateMap.contains_key
+    self.prod_to_state_map product
+
 /-- [automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::get_translated_variants]:
-    Source: 'src/automata/product_writes_map.rs', lines 306:4-352:5
+    Source: 'src/automata/product_writes_map.rs', lines 380:4-435:5
     Visibility: public -/
 def automata.product_writes_map.ProductWritesMap.get_translated_variants
   (self : automata.product_writes_map.ProductWritesMap)
@@ -7999,11 +10325,11 @@ def automata.product_writes_map.ProductWritesMap.get_translated_variants
   := do
   sorry
 
-/-- [automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::get]:
-    Source: 'src/automata/product_writes_map.rs', lines 115:4-117:5
+/-- [automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductToStateMap}::get]:
+    Source: 'src/automata/product_writes_map.rs', lines 106:4-108:5
     Visibility: public -/
-def automata.product_writes_map.ProductWritesMap.get
-  (self : automata.product_writes_map.ProductWritesMap)
+def automata.product_writes_map.ProductToStateMap.get
+  (self : automata.product_writes_map.ProductToStateMap)
   (product : automata.terms_multitape.MultiTapeProduct) :
   Result (Option (alloc.collections.btree.map.BTreeMap Std.U16 Std.U32
     alloc.alloc.Global))
@@ -8016,8 +10342,20 @@ def automata.product_writes_map.ProductWritesMap.get
     (core.borrow.Borrow.Blanket automata.terms_multitape.MultiTapeProduct))
     self.prod_to_state_map product
 
+/-- [automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::get]:
+    Source: 'src/automata/product_writes_map.rs', lines 203:4-205:5
+    Visibility: public -/
+def automata.product_writes_map.ProductWritesMap.get
+  (self : automata.product_writes_map.ProductWritesMap)
+  (product : automata.terms_multitape.MultiTapeProduct) :
+  Result (Option (alloc.collections.btree.map.BTreeMap Std.U16 Std.U32
+    alloc.alloc.Global))
+  := do
+  automata.product_writes_map.ProductToStateMap.get self.prod_to_state_map
+    product
+
 /-- [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::build_whitelist_overlaps::{impl core::ops::function::FnOnce<(), automata_builder::automata::multi_tape_builder::CompileTapesError> for automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::build_whitelist_overlaps::{closure#2}<'_0>}::call_once]:
-    Source: 'src/automata/multi_tape_builder.rs', lines 603:36-605:26 -/
+    Source: 'src/automata/multi_tape_builder.rs', lines 669:36-671:26 -/
 def
   automata.multi_tape_builder.MultiTapeBuilder.build_whitelist_overlaps.closure_2.Insts.CoreOpsFunctionFnOnceTupleCompileTapesError.call_once
   (c :
@@ -8041,7 +10379,7 @@ def
   ok (automata.multi_tape_builder.CompileTapesError.Invalid s1)
 
 /-- Trait implementation: [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::build_whitelist_overlaps::{impl core::ops::function::FnOnce<(), automata_builder::automata::multi_tape_builder::CompileTapesError> for automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::build_whitelist_overlaps::{closure#2}<'_0>}]
-    Source: 'src/automata/multi_tape_builder.rs', lines 603:36-605:26 -/
+    Source: 'src/automata/multi_tape_builder.rs', lines 669:36-671:26 -/
 @[reducible]
 def
   automata.multi_tape_builder.MultiTapeBuilder.build_whitelist_overlaps.closure_2.Insts.CoreOpsFunctionFnOnceTupleCompileTapesError
@@ -8053,7 +10391,7 @@ def
 }
 
 /-- [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::build_whitelist_overlaps::{impl core::ops::function::FnOnce<(&'_0 alloc::collections::btree::map::BTreeMap<u16, u32, alloc::alloc::Global>,), core::option::Option<&'_1 u32>> for automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::build_whitelist_overlaps::{closure#1}<'_0, '_1, '_2>}::call_once]:
-    Source: 'src/automata/multi_tape_builder.rs', lines 602:34-602:77 -/
+    Source: 'src/automata/multi_tape_builder.rs', lines 668:34-668:77 -/
 def
   automata.multi_tape_builder.MultiTapeBuilder.build_whitelist_overlaps.closure_1.Insts.CoreOpsFunctionFnOnceTupleShared0BTreeMapU16U32GlobalOptionShared1U32.call_once
   (c :
@@ -8065,7 +10403,7 @@ def
   sorry
 
 /-- Trait implementation: [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::build_whitelist_overlaps::{impl core::ops::function::FnOnce<(&'_0 alloc::collections::btree::map::BTreeMap<u16, u32, alloc::alloc::Global>,), core::option::Option<&'_1 u32>> for automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::build_whitelist_overlaps::{closure#1}<'_0, '_1, '_2>}]
-    Source: 'src/automata/multi_tape_builder.rs', lines 602:34-602:77 -/
+    Source: 'src/automata/multi_tape_builder.rs', lines 668:34-668:77 -/
 @[reducible]
 def
   automata.multi_tape_builder.MultiTapeBuilder.build_whitelist_overlaps.closure_1.Insts.CoreOpsFunctionFnOnceTupleShared0BTreeMapU16U32GlobalOptionShared1U32
@@ -8078,7 +10416,7 @@ def
 }
 
 /-- [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::build_whitelist_overlaps::{impl core::ops::function::FnOnce<(&'_0 alloc::collections::btree::map::BTreeMap<u16, u32, alloc::alloc::Global>,), bool> for automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::build_whitelist_overlaps::{closure}<'_0, '_1>}::call_once]:
-    Source: 'src/automata/multi_tape_builder.rs', lines 572:29-572:81 -/
+    Source: 'src/automata/multi_tape_builder.rs', lines 638:29-638:81 -/
 def
   automata.multi_tape_builder.MultiTapeBuilder.build_whitelist_overlaps.closure.Insts.CoreOpsFunctionFnOnceTupleShared0BTreeMapU16U32GlobalBool.call_once
   (c :
@@ -8093,7 +10431,7 @@ def
     tupled_args c
 
 /-- Trait implementation: [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::build_whitelist_overlaps::{impl core::ops::function::FnOnce<(&'_0 alloc::collections::btree::map::BTreeMap<u16, u32, alloc::alloc::Global>,), bool> for automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::build_whitelist_overlaps::{closure}<'_0, '_1>}]
-    Source: 'src/automata/multi_tape_builder.rs', lines 572:29-572:81 -/
+    Source: 'src/automata/multi_tape_builder.rs', lines 638:29-638:81 -/
 @[reducible]
 def
   automata.multi_tape_builder.MultiTapeBuilder.build_whitelist_overlaps.closure.Insts.CoreOpsFunctionFnOnceTupleShared0BTreeMapU16U32GlobalBool
@@ -8114,14 +10452,6 @@ def automata.tape_overlaps_fsm.TapeOverlapsFSMState.impl.tape_overlaps
   := do
   ok self.tape_overlaps
 
-/-- [automata_builder::automata::terms_multitape::{impl automata_builder::automata::terms_multitape::AbstractMultiTapeExpression<automata_builder::automata::terms_multitape::MultiTapeProduct, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeProduct}::_get_num_terms]:
-    Source: 'src/automata/terms_multitape.rs', lines 643:4-645:5
-    Visibility: public -/
-def
-  automata.terms_multitape.MultiTapeProduct.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeProductMultiTapeExpression._get_num_terms
-  (self : automata.terms_multitape.MultiTapeProduct) : Result Std.Usize := do
-  ok (alloc.vec.Vec.len self._terms)
-
 /-- [automata_builder::automata::tape_overlaps::{automata_builder::automata::tape_overlaps::TapeOverlaps}::contains]:
     Source: 'src/automata/tape_overlaps.rs', lines 126:4-128:5
     Visibility: public -/
@@ -8138,7 +10468,7 @@ def automata.tape_overlaps.TapeOverlaps.contains
     state
 
 /-- [automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::get_same_tape_states_transitioned_to::{impl core::ops::function::FnMut<(&'_0 automata_builder::automata::terms_multitape::MultiTapeTerm,), u16> for automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::get_same_tape_states_transitioned_to::{closure#1}<'_0>}::call_mut]:
-    Source: 'src/automata/product_writes_map.rs', lines 687:43-687:62 -/
+    Source: 'src/automata/product_writes_map.rs', lines 770:43-770:62 -/
 def
   automata.product_writes_map.ProductWritesMap.get_same_tape_states_transitioned_to.closure_1.Insts.CoreOpsFunctionFnMutTupleShared0MultiTapeTermU16.call_mut
   (c :
@@ -8151,7 +10481,7 @@ def
   ok (i, ())
 
 /-- [automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::get_same_tape_states_transitioned_to::{impl core::ops::function::FnOnce<(&'_0 automata_builder::automata::terms_multitape::MultiTapeTerm,), u16> for automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::get_same_tape_states_transitioned_to::{closure#1}<'_0>}::call_once]:
-    Source: 'src/automata/product_writes_map.rs', lines 687:43-687:62 -/
+    Source: 'src/automata/product_writes_map.rs', lines 770:43-770:62 -/
 def
   automata.product_writes_map.ProductWritesMap.get_same_tape_states_transitioned_to.closure_1.Insts.CoreOpsFunctionFnOnceTupleShared0MultiTapeTermU16.call_once
   (c :
@@ -8165,7 +10495,7 @@ def
   ok i
 
 /-- Trait implementation: [automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::get_same_tape_states_transitioned_to::{impl core::ops::function::FnOnce<(&'_0 automata_builder::automata::terms_multitape::MultiTapeTerm,), u16> for automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::get_same_tape_states_transitioned_to::{closure#1}<'_0>}]
-    Source: 'src/automata/product_writes_map.rs', lines 687:43-687:62 -/
+    Source: 'src/automata/product_writes_map.rs', lines 770:43-770:62 -/
 @[reducible]
 def
   automata.product_writes_map.ProductWritesMap.get_same_tape_states_transitioned_to.closure_1.Insts.CoreOpsFunctionFnOnceTupleShared0MultiTapeTermU16
@@ -8177,7 +10507,7 @@ def
 }
 
 /-- Trait implementation: [automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::get_same_tape_states_transitioned_to::{impl core::ops::function::FnMut<(&'_0 automata_builder::automata::terms_multitape::MultiTapeTerm,), u16> for automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::get_same_tape_states_transitioned_to::{closure#1}<'_0>}]
-    Source: 'src/automata/product_writes_map.rs', lines 687:43-687:62 -/
+    Source: 'src/automata/product_writes_map.rs', lines 770:43-770:62 -/
 @[reducible]
 def
   automata.product_writes_map.ProductWritesMap.get_same_tape_states_transitioned_to.closure_1.Insts.CoreOpsFunctionFnMutTupleShared0MultiTapeTermU16
@@ -8191,7 +10521,7 @@ def
 }
 
 /-- [automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::get_same_tape_states_transitioned_to::{impl core::ops::function::FnMut<(&'_0 automata_builder::automata::terms_multitape::MultiTapeTerm,), bool> for automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::get_same_tape_states_transitioned_to::{closure}<'_0, '_1>}::call_mut]:
-    Source: 'src/automata/product_writes_map.rs', lines 655:64-658:13 -/
+    Source: 'src/automata/product_writes_map.rs', lines 738:64-741:13 -/
 def
   automata.product_writes_map.ProductWritesMap.get_same_tape_states_transitioned_to.closure.Insts.CoreOpsFunctionFnMutTupleShared0MultiTapeTermBool.call_mut
   (c :
@@ -8207,7 +10537,7 @@ def
   ok (b, c)
 
 /-- [automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::get_same_tape_states_transitioned_to::{impl core::ops::function::FnOnce<(&'_0 automata_builder::automata::terms_multitape::MultiTapeTerm,), bool> for automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::get_same_tape_states_transitioned_to::{closure}<'_0, '_1>}::call_once]:
-    Source: 'src/automata/product_writes_map.rs', lines 655:64-658:13 -/
+    Source: 'src/automata/product_writes_map.rs', lines 738:64-741:13 -/
 def
   automata.product_writes_map.ProductWritesMap.get_same_tape_states_transitioned_to.closure.Insts.CoreOpsFunctionFnOnceTupleShared0MultiTapeTermBool.call_once
   (c :
@@ -8221,7 +10551,7 @@ def
   ok b
 
 /-- Trait implementation: [automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::get_same_tape_states_transitioned_to::{impl core::ops::function::FnOnce<(&'_0 automata_builder::automata::terms_multitape::MultiTapeTerm,), bool> for automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::get_same_tape_states_transitioned_to::{closure}<'_0, '_1>}]
-    Source: 'src/automata/product_writes_map.rs', lines 655:64-658:13 -/
+    Source: 'src/automata/product_writes_map.rs', lines 738:64-741:13 -/
 @[reducible]
 def
   automata.product_writes_map.ProductWritesMap.get_same_tape_states_transitioned_to.closure.Insts.CoreOpsFunctionFnOnceTupleShared0MultiTapeTermBool
@@ -8233,7 +10563,7 @@ def
 }
 
 /-- Trait implementation: [automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::get_same_tape_states_transitioned_to::{impl core::ops::function::FnMut<(&'_0 automata_builder::automata::terms_multitape::MultiTapeTerm,), bool> for automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::get_same_tape_states_transitioned_to::{closure}<'_0, '_1>}]
-    Source: 'src/automata/product_writes_map.rs', lines 655:64-658:13 -/
+    Source: 'src/automata/product_writes_map.rs', lines 738:64-741:13 -/
 @[reducible]
 def
   automata.product_writes_map.ProductWritesMap.get_same_tape_states_transitioned_to.closure.Insts.CoreOpsFunctionFnMutTupleShared0MultiTapeTermBool
@@ -8265,7 +10595,7 @@ def automata.tape_overlaps.TapeOverlaps.get
     source_state
 
 /-- [automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::build_flat_offset_path_combos]: loop 1:
-    Source: 'src/automata/product_writes_map.rs', lines 603:12-608:13
+    Source: 'src/automata/product_writes_map.rs', lines 686:12-691:13
     Visibility: public -/
 @[rust_loop]
 def
@@ -8304,7 +10634,7 @@ def
 partial_fixpoint
 
 /-- [automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::build_flat_offset_path_combos]: loop 4:
-    Source: 'src/automata/product_writes_map.rs', lines 617:20-625:21
+    Source: 'src/automata/product_writes_map.rs', lines 700:20-708:21
     Visibility: public -/
 @[rust_loop]
 def
@@ -8335,7 +10665,7 @@ def
 partial_fixpoint
 
 /-- [automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::build_flat_offset_path_combos]: loop 3:
-    Source: 'src/automata/product_writes_map.rs', lines 616:16-626:17
+    Source: 'src/automata/product_writes_map.rs', lines 699:16-709:17
     Visibility: public -/
 @[rust_loop]
 def
@@ -8364,7 +10694,7 @@ def
 partial_fixpoint
 
 /-- [automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::build_flat_offset_path_combos]: loop 2:
-    Source: 'src/automata/product_writes_map.rs', lines 612:12-628:13
+    Source: 'src/automata/product_writes_map.rs', lines 695:12-711:13
     Visibility: public -/
 @[rust_loop]
 def
@@ -8401,7 +10731,7 @@ def
 partial_fixpoint
 
 /-- [automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::build_flat_offset_path_combos]: loop 0:
-    Source: 'src/automata/product_writes_map.rs', lines 600:13-611:73
+    Source: 'src/automata/product_writes_map.rs', lines 683:13-694:73
     Visibility: public -/
 @[rust_loop]
 def
@@ -8451,7 +10781,7 @@ def
 partial_fixpoint
 
 /-- [automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::build_flat_offset_path_combos]:
-    Source: 'src/automata/product_writes_map.rs', lines 590:4-634:5
+    Source: 'src/automata/product_writes_map.rs', lines 673:4-717:5
     Visibility: public -/
 def automata.product_writes_map.ProductWritesMap.build_flat_offset_path_combos
   (source_state : automata.terms_multitape.MultiTapeState)
@@ -8472,7 +10802,7 @@ def automata.product_writes_map.ProductWritesMap.build_flat_offset_path_combos
       automata.terms_multitape.MultiTapeTerm))
 
 /-- [automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::get_state_attributes::{impl core::ops::function::FnMut<(&'_0 automata_builder::automata::terms_multitape::MultiTapeTerm,), bool> for automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::get_state_attributes::{closure}<'_0, '_1>}::call_mut]:
-    Source: 'src/automata/product_writes_map.rs', lines 525:74-528:17 -/
+    Source: 'src/automata/product_writes_map.rs', lines 608:74-611:17 -/
 def
   automata.product_writes_map.ProductWritesMap.get_state_attributes.closure.Insts.CoreOpsFunctionFnMutTupleShared0MultiTapeTermBool.call_mut
   (c :
@@ -8493,7 +10823,7 @@ def
   ok (¬ b, c)
 
 /-- [automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::get_state_attributes::{impl core::ops::function::FnOnce<(&'_0 automata_builder::automata::terms_multitape::MultiTapeTerm,), bool> for automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::get_state_attributes::{closure}<'_0, '_1>}::call_once]:
-    Source: 'src/automata/product_writes_map.rs', lines 525:74-528:17 -/
+    Source: 'src/automata/product_writes_map.rs', lines 608:74-611:17 -/
 def
   automata.product_writes_map.ProductWritesMap.get_state_attributes.closure.Insts.CoreOpsFunctionFnOnceTupleShared0MultiTapeTermBool.call_once
   (c :
@@ -8507,7 +10837,7 @@ def
   ok b
 
 /-- Trait implementation: [automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::get_state_attributes::{impl core::ops::function::FnOnce<(&'_0 automata_builder::automata::terms_multitape::MultiTapeTerm,), bool> for automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::get_state_attributes::{closure}<'_0, '_1>}]
-    Source: 'src/automata/product_writes_map.rs', lines 525:74-528:17 -/
+    Source: 'src/automata/product_writes_map.rs', lines 608:74-611:17 -/
 @[reducible]
 def
   automata.product_writes_map.ProductWritesMap.get_state_attributes.closure.Insts.CoreOpsFunctionFnOnceTupleShared0MultiTapeTermBool
@@ -8519,7 +10849,7 @@ def
 }
 
 /-- Trait implementation: [automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::get_state_attributes::{impl core::ops::function::FnMut<(&'_0 automata_builder::automata::terms_multitape::MultiTapeTerm,), bool> for automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::get_state_attributes::{closure}<'_0, '_1>}]
-    Source: 'src/automata/product_writes_map.rs', lines 525:74-528:17 -/
+    Source: 'src/automata/product_writes_map.rs', lines 608:74-611:17 -/
 @[reducible]
 def
   automata.product_writes_map.ProductWritesMap.get_state_attributes.closure.Insts.CoreOpsFunctionFnMutTupleShared0MultiTapeTermBool
@@ -8533,7 +10863,7 @@ def
 }
 
 /-- [automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::get_state_attributes]: loop 1:
-    Source: 'src/automata/product_writes_map.rs', lines 535:12-539:13
+    Source: 'src/automata/product_writes_map.rs', lines 618:12-622:13
     Visibility: public -/
 @[rust_loop]
 def
@@ -8564,7 +10894,7 @@ def
 partial_fixpoint
 
 /-- [automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::get_state_attributes]: loop 2:
-    Source: 'src/automata/product_writes_map.rs', lines 546:12-568:13
+    Source: 'src/automata/product_writes_map.rs', lines 629:12-651:13
     Visibility: public -/
 @[rust_loop]
 def
@@ -8617,7 +10947,7 @@ def
 partial_fixpoint
 
 /-- [automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::get_state_attributes]: loop 3:
-    Source: 'src/automata/product_writes_map.rs', lines 535:12-539:13
+    Source: 'src/automata/product_writes_map.rs', lines 618:12-622:13
     Visibility: public -/
 @[rust_loop]
 def
@@ -8648,7 +10978,7 @@ def
 partial_fixpoint
 
 /-- [automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::get_state_attributes]: loop 4:
-    Source: 'src/automata/product_writes_map.rs', lines 546:12-568:13
+    Source: 'src/automata/product_writes_map.rs', lines 629:12-651:13
     Visibility: public -/
 @[rust_loop]
 def
@@ -8701,7 +11031,7 @@ def
 partial_fixpoint
 
 /-- [automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::get_state_attributes]: loop 0:
-    Source: 'src/automata/product_writes_map.rs', lines 522:8-579:9
+    Source: 'src/automata/product_writes_map.rs', lines 605:8-662:9
     Visibility: public -/
 @[rust_loop]
 def automata.product_writes_map.ProductWritesMap.get_state_attributes_loop0
@@ -8840,7 +11170,7 @@ def automata.product_writes_map.ProductWritesMap.get_state_attributes_loop0
 partial_fixpoint
 
 /-- [automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::get_state_attributes]:
-    Source: 'src/automata/product_writes_map.rs', lines 509:4-586:5
+    Source: 'src/automata/product_writes_map.rs', lines 592:4-669:5
     Visibility: public -/
 def automata.product_writes_map.ProductWritesMap.get_state_attributes
   (self : automata.product_writes_map.ProductWritesMap)
@@ -8871,7 +11201,7 @@ def automata.product_writes_map.ProductWritesMap.get_state_attributes
     else ok { writable, deletable, instant_delete := false }
 
 /-- [automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::get_states_set]: loop 1:
-    Source: 'src/automata/product_writes_map.rs', lines 243:12-246:13
+    Source: 'src/automata/product_writes_map.rs', lines 317:12-320:13
     Visibility: public -/
 @[rust_loop]
 def automata.product_writes_map.ProductWritesMap.get_states_set_loop0_loop0
@@ -8899,7 +11229,7 @@ def automata.product_writes_map.ProductWritesMap.get_states_set_loop0_loop0
 partial_fixpoint
 
 /-- [automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::get_states_set]: loop 0:
-    Source: 'src/automata/product_writes_map.rs', lines 242:8-247:9
+    Source: 'src/automata/product_writes_map.rs', lines 316:8-321:9
     Visibility: public -/
 @[rust_loop]
 def automata.product_writes_map.ProductWritesMap.get_states_set_loop0
@@ -8926,7 +11256,7 @@ def automata.product_writes_map.ProductWritesMap.get_states_set_loop0
 partial_fixpoint
 
 /-- [automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::get_states_set]:
-    Source: 'src/automata/product_writes_map.rs', lines 239:4-249:5
+    Source: 'src/automata/product_writes_map.rs', lines 313:4-323:5
     Visibility: public -/
 def automata.product_writes_map.ProductWritesMap.get_states_set
   (self : automata.product_writes_map.ProductWritesMap) :
@@ -8941,7 +11271,7 @@ def automata.product_writes_map.ProductWritesMap.get_states_set
     states_set
 
 /-- [automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::build_all_state_attrs_map]: loop 0:
-    Source: 'src/automata/product_writes_map.rs', lines 498:8-502:9
+    Source: 'src/automata/product_writes_map.rs', lines 581:8-585:9
     Visibility: public -/
 @[rust_loop]
 def automata.product_writes_map.ProductWritesMap.build_all_state_attrs_map_loop
@@ -8975,7 +11305,7 @@ def automata.product_writes_map.ProductWritesMap.build_all_state_attrs_map_loop
 partial_fixpoint
 
 /-- [automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::build_all_state_attrs_map]:
-    Source: 'src/automata/product_writes_map.rs', lines 491:4-504:5
+    Source: 'src/automata/product_writes_map.rs', lines 574:4-587:5
     Visibility: public -/
 def automata.product_writes_map.ProductWritesMap.build_all_state_attrs_map
   (self : automata.product_writes_map.ProductWritesMap)
@@ -8998,7 +11328,7 @@ def automata.product_writes_map.ProductWritesMap.build_all_state_attrs_map
     iter self extant_states tape_overlaps state_attributes_map
 
 /-- [automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::does_product_become_unsatisfiable::{impl core::ops::function::FnOnce<(), automata_builder::automata::product_writes_map::ProductWritesError> for automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::does_product_become_unsatisfiable::{closure}<'_0>}::call_once]:
-    Source: 'src/automata/product_writes_map.rs', lines 428:58-430:9 -/
+    Source: 'src/automata/product_writes_map.rs', lines 511:58-513:9 -/
 def
   automata.product_writes_map.ProductWritesMap.does_product_become_unsatisfiable.closure.Insts.CoreOpsFunctionFnOnceTupleProductWritesError.call_once
   (c :
@@ -9012,7 +11342,7 @@ def
   ok (automata.product_writes_map.ProductWritesError.MissingProduct s)
 
 /-- Trait implementation: [automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::does_product_become_unsatisfiable::{impl core::ops::function::FnOnce<(), automata_builder::automata::product_writes_map::ProductWritesError> for automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::does_product_become_unsatisfiable::{closure}<'_0>}]
-    Source: 'src/automata/product_writes_map.rs', lines 428:58-430:9 -/
+    Source: 'src/automata/product_writes_map.rs', lines 511:58-513:9 -/
 @[reducible]
 def
   automata.product_writes_map.ProductWritesMap.does_product_become_unsatisfiable.closure.Insts.CoreOpsFunctionFnOnceTupleProductWritesError
@@ -9024,7 +11354,7 @@ def
 }
 
 /-- [automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::purge_unsatisfiable_products::{impl core::ops::function::FnMut<(&'_0 automata_builder::automata::terms_multitape::MultiTapeProduct,), automata_builder::automata::terms_multitape::MultiTapeProduct> for automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::purge_unsatisfiable_products::{closure}<'_0>}::call_mut]:
-    Source: 'src/automata/product_writes_map.rs', lines 390:32-390:56 -/
+    Source: 'src/automata/product_writes_map.rs', lines 473:32-473:56 -/
 def
   automata.product_writes_map.ProductWritesMap.purge_unsatisfiable_products.closure.Insts.CoreOpsFunctionFnMutTupleShared0MultiTapeProductMultiTapeProduct.call_mut
   (c :
@@ -9039,7 +11369,7 @@ def
   ok (mtp, ())
 
 /-- [automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::purge_unsatisfiable_products::{impl core::ops::function::FnOnce<(&'_0 automata_builder::automata::terms_multitape::MultiTapeProduct,), automata_builder::automata::terms_multitape::MultiTapeProduct> for automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::purge_unsatisfiable_products::{closure}<'_0>}::call_once]:
-    Source: 'src/automata/product_writes_map.rs', lines 390:32-390:56 -/
+    Source: 'src/automata/product_writes_map.rs', lines 473:32-473:56 -/
 def
   automata.product_writes_map.ProductWritesMap.purge_unsatisfiable_products.closure.Insts.CoreOpsFunctionFnOnceTupleShared0MultiTapeProductMultiTapeProduct.call_once
   (c :
@@ -9053,7 +11383,7 @@ def
   ok mtp1
 
 /-- Trait implementation: [automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::purge_unsatisfiable_products::{impl core::ops::function::FnOnce<(&'_0 automata_builder::automata::terms_multitape::MultiTapeProduct,), automata_builder::automata::terms_multitape::MultiTapeProduct> for automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::purge_unsatisfiable_products::{closure}<'_0>}]
-    Source: 'src/automata/product_writes_map.rs', lines 390:32-390:56 -/
+    Source: 'src/automata/product_writes_map.rs', lines 473:32-473:56 -/
 @[reducible]
 def
   automata.product_writes_map.ProductWritesMap.purge_unsatisfiable_products.closure.Insts.CoreOpsFunctionFnOnceTupleShared0MultiTapeProductMultiTapeProduct
@@ -9066,7 +11396,7 @@ def
 }
 
 /-- Trait implementation: [automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::purge_unsatisfiable_products::{impl core::ops::function::FnMut<(&'_0 automata_builder::automata::terms_multitape::MultiTapeProduct,), automata_builder::automata::terms_multitape::MultiTapeProduct> for automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::purge_unsatisfiable_products::{closure}<'_0>}]
-    Source: 'src/automata/product_writes_map.rs', lines 390:32-390:56 -/
+    Source: 'src/automata/product_writes_map.rs', lines 473:32-473:56 -/
 @[reducible]
 def
   automata.product_writes_map.ProductWritesMap.purge_unsatisfiable_products.closure.Insts.CoreOpsFunctionFnMutTupleShared0MultiTapeProductMultiTapeProduct
@@ -9080,8 +11410,27 @@ def
     automata.product_writes_map.ProductWritesMap.purge_unsatisfiable_products.closure.Insts.CoreOpsFunctionFnMutTupleShared0MultiTapeProductMultiTapeProduct.call_mut
 }
 
+/-- [automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductToStateMap}::shift_remove]:
+    Source: 'src/automata/product_writes_map.rs', lines 112:4-114:5
+    Visibility: public -/
+def automata.product_writes_map.ProductToStateMap.shift_remove
+  (self : automata.product_writes_map.ProductToStateMap)
+  (product : automata.terms_multitape.MultiTapeProduct) :
+  Result ((Option (alloc.collections.btree.map.BTreeMap Std.U16 Std.U32
+    alloc.alloc.Global)) × automata.product_writes_map.ProductToStateMap)
+  := do
+  let (o, im) ←
+    indexmap.map.IndexMap.shift_remove
+      std.hash.random.RandomState.Insts.CoreHashBuildHasherDefaultHasher
+      automata.terms_multitape.MultiTapeProduct.Insts.CoreHashHash
+      (equivalent.Equivalent.Blanket
+      automata.terms_multitape.MultiTapeProduct.Insts.CoreCmpEq
+      (core.borrow.Borrow.Blanket automata.terms_multitape.MultiTapeProduct))
+      self.prod_to_state_map product
+  ok (o, { self with prod_to_state_map := im })
+
 /-- [automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::purge_unsatisfiable_products]:
-    Source: 'src/automata/product_writes_map.rs', lines 382:4-411:5
+    Source: 'src/automata/product_writes_map.rs', lines 465:4-494:5
     Visibility: public -/
 def automata.product_writes_map.ProductWritesMap.purge_unsatisfiable_products
   (self : automata.product_writes_map.ProductWritesMap)
@@ -9096,23 +11445,19 @@ def automata.product_writes_map.ProductWritesMap.purge_unsatisfiable_products
   sorry
 
 /-- [automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::to_unfrozen]:
-    Source: 'src/automata/product_writes_map.rs', lines 98:4-100:5
+    Source: 'src/automata/product_writes_map.rs', lines 186:4-188:5
     Visibility: public -/
 def automata.product_writes_map.ProductWritesMap.to_unfrozen
   (self : automata.product_writes_map.ProductWritesMap) :
   Result automata.product_writes_map.ProductWritesMap
   := do
-  let im ←
-    indexmap.map.IndexMap.Insts.CoreCloneClone.clone
-      automata.terms_multitape.MultiTapeProduct.Insts.CoreCloneClone
-      (alloc.collections.btree.map.BTreeMap.Insts.CoreCloneClone
-      core.clone.CloneU16 core.clone.CloneU32
-      alloc.alloc.Global.Insts.CoreAllocAllocatorClone)
-      std.hash.random.RandomState.Insts.CoreCloneClone self.prod_to_state_map
-  ok { prod_to_state_map := im, frozen := false }
+  let ptsm ←
+    automata.product_writes_map.ProductToStateMap.Insts.CoreCloneClone.clone
+      self.prod_to_state_map
+  ok { prod_to_state_map := ptsm, frozen := false }
 
 /-- [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::create_optimizations]: loop 0:
-    Source: 'src/automata/multi_tape_builder.rs', lines 634:8-647:9
+    Source: 'src/automata/multi_tape_builder.rs', lines 700:8-713:9
     Visibility: public -/
 @[rust_loop]
 def automata.multi_tape_builder.MultiTapeBuilder.create_optimizations_loop0
@@ -9188,7 +11533,7 @@ def automata.multi_tape_builder.MultiTapeBuilder.create_optimizations_loop0
 partial_fixpoint
 
 /-- [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::create_optimizations]: loop 1:
-    Source: 'src/automata/multi_tape_builder.rs', lines 659:12-661:13
+    Source: 'src/automata/multi_tape_builder.rs', lines 725:12-727:13
     Visibility: public -/
 @[rust_loop]
 def automata.multi_tape_builder.MultiTapeBuilder.create_optimizations_loop1
@@ -9222,7 +11567,7 @@ def automata.multi_tape_builder.MultiTapeBuilder.create_optimizations_loop1
 partial_fixpoint
 
 /-- [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::create_optimizations]:
-    Source: 'src/automata/multi_tape_builder.rs', lines 622:4-669:5
+    Source: 'src/automata/multi_tape_builder.rs', lines 688:4-735:5
     Visibility: public -/
 def automata.multi_tape_builder.MultiTapeBuilder.create_optimizations
   (start_overlaps_fsm_state : automata.tape_overlaps_fsm.TapeOverlapsFSMState)
@@ -9312,7 +11657,7 @@ def
   ok self.relevant_input_products
 
 /-- [automata_builder::automata::terms_multitape::{automata_builder::automata::terms_multitape::MultiTapeState}::from_term]:
-    Source: 'src/automata/terms_multitape.rs', lines 33:4-36:5
+    Source: 'src/automata/terms_multitape.rs', lines 35:4-38:5
     Visibility: public -/
 def automata.terms_multitape.MultiTapeState.from_term
   (term : automata.terms_multitape.MultiTapeTerm) :
@@ -9415,7 +11760,7 @@ def automata.tape_overlaps.is_product_satisfiable
       default_if_term_missing
 
 /-- [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::determine_state_written]: loop 1:
-    Source: 'src/automata/multi_tape_builder.rs', lines 694:12-697:13
+    Source: 'src/automata/multi_tape_builder.rs', lines 760:12-763:13
     Visibility: public -/
 @[rust_loop]
 def
@@ -9466,7 +11811,7 @@ def
 partial_fixpoint
 
 /-- [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::determine_state_written]: loop 0:
-    Source: 'src/automata/multi_tape_builder.rs', lines 681:8-698:9
+    Source: 'src/automata/multi_tape_builder.rs', lines 747:8-764:9
     Visibility: public -/
 @[rust_loop]
 def automata.multi_tape_builder.MultiTapeBuilder.determine_state_written_loop0
@@ -9561,7 +11906,7 @@ def automata.multi_tape_builder.MultiTapeBuilder.determine_state_written_loop0
 partial_fixpoint
 
 /-- [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::determine_state_written]:
-    Source: 'src/automata/multi_tape_builder.rs', lines 674:4-700:5
+    Source: 'src/automata/multi_tape_builder.rs', lines 740:4-766:5
     Visibility: public -/
 def automata.multi_tape_builder.MultiTapeBuilder.determine_state_written
   (overlaps_fsm_state : automata.tape_overlaps_fsm.TapeOverlapsFSMState)
@@ -9593,7 +11938,7 @@ def automata.multi_tape_builder.MultiTapeBuilder.determine_state_written
     iter verbose prev_overlaps prev_prod_to_state_map states_written
 
 /-- Trait implementation: [automata_builder::automata::terms_multitape::{impl core::marker::Copy for automata_builder::automata::terms_multitape::MultiTapeState}]
-    Source: 'src/automata/terms_multitape.rs', lines 18:18-18:22 -/
+    Source: 'src/automata/terms_multitape.rs', lines 20:18-20:22 -/
 @[reducible]
 def automata.terms_multitape.MultiTapeState.Insts.CoreMarkerCopy :
   core.marker.Copy automata.terms_multitape.MultiTapeState := {
@@ -9601,7 +11946,7 @@ def automata.terms_multitape.MultiTapeState.Insts.CoreMarkerCopy :
 }
 
 /-- [automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::freeze]:
-    Source: 'src/automata/product_writes_map.rs', lines 90:4-92:5
+    Source: 'src/automata/product_writes_map.rs', lines 178:4-180:5
     Visibility: public -/
 def automata.product_writes_map.ProductWritesMap.freeze
   (self : automata.product_writes_map.ProductWritesMap) :
@@ -10490,7 +12835,7 @@ def automata.tape_overlaps.TapeOverlaps.delete_state
   ok { overlaps := bm1 }
 
 /-- [automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::build_input_state_to_prod_map]: loop 1:
-    Source: 'src/automata/product_writes_map.rs', lines 275:12-279:13
+    Source: 'src/automata/product_writes_map.rs', lines 349:12-353:13
     Visibility: public -/
 @[rust_loop]
 def
@@ -10533,7 +12878,7 @@ def
 partial_fixpoint
 
 /-- [automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::build_input_state_to_prod_map]: loop 0:
-    Source: 'src/automata/product_writes_map.rs', lines 274:8-280:9
+    Source: 'src/automata/product_writes_map.rs', lines 348:8-354:9
     Visibility: public -/
 @[rust_loop]
 def
@@ -10563,7 +12908,7 @@ def
 partial_fixpoint
 
 /-- [automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::build_input_state_to_prod_map]:
-    Source: 'src/automata/product_writes_map.rs', lines 268:4-282:5
+    Source: 'src/automata/product_writes_map.rs', lines 342:4-356:5
     Visibility: public -/
 def automata.product_writes_map.ProductWritesMap.build_input_state_to_prod_map
   (self : automata.product_writes_map.ProductWritesMap) :
@@ -10580,7 +12925,7 @@ def automata.product_writes_map.ProductWritesMap.build_input_state_to_prod_map
     iter input_state_to_prod
 
 /-- [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::transition_overlaps::{impl core::ops::function::FnMut<(&'_0 automata_builder::automata::terms_multitape::MultiTapeState,), alloc::string::String> for automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::transition_overlaps::{closure}<'_0>}::call_mut]:
-    Source: 'src/automata/multi_tape_builder.rs', lines 766:60-766:77 -/
+    Source: 'src/automata/multi_tape_builder.rs', lines 832:60-832:77 -/
 def
   automata.multi_tape_builder.MultiTapeBuilder.transition_overlaps.closure.Insts.CoreOpsFunctionFnMutTupleShared0MultiTapeStateString.call_mut
   (c :
@@ -10595,7 +12940,7 @@ def
   ok (s, ())
 
 /-- [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::transition_overlaps::{impl core::ops::function::FnOnce<(&'_0 automata_builder::automata::terms_multitape::MultiTapeState,), alloc::string::String> for automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::transition_overlaps::{closure}<'_0>}::call_once]:
-    Source: 'src/automata/multi_tape_builder.rs', lines 766:60-766:77 -/
+    Source: 'src/automata/multi_tape_builder.rs', lines 832:60-832:77 -/
 def
   automata.multi_tape_builder.MultiTapeBuilder.transition_overlaps.closure.Insts.CoreOpsFunctionFnOnceTupleShared0MultiTapeStateString.call_once
   (c :
@@ -10609,7 +12954,7 @@ def
   ok s
 
 /-- Trait implementation: [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::transition_overlaps::{impl core::ops::function::FnOnce<(&'_0 automata_builder::automata::terms_multitape::MultiTapeState,), alloc::string::String> for automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::transition_overlaps::{closure}<'_0>}]
-    Source: 'src/automata/multi_tape_builder.rs', lines 766:60-766:77 -/
+    Source: 'src/automata/multi_tape_builder.rs', lines 832:60-832:77 -/
 @[reducible]
 def
   automata.multi_tape_builder.MultiTapeBuilder.transition_overlaps.closure.Insts.CoreOpsFunctionFnOnceTupleShared0MultiTapeStateString
@@ -10621,7 +12966,7 @@ def
 }
 
 /-- Trait implementation: [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::transition_overlaps::{impl core::ops::function::FnMut<(&'_0 automata_builder::automata::terms_multitape::MultiTapeState,), alloc::string::String> for automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::transition_overlaps::{closure}<'_0>}]
-    Source: 'src/automata/multi_tape_builder.rs', lines 766:60-766:77 -/
+    Source: 'src/automata/multi_tape_builder.rs', lines 832:60-832:77 -/
 @[reducible]
 def
   automata.multi_tape_builder.MultiTapeBuilder.transition_overlaps.closure.Insts.CoreOpsFunctionFnMutTupleShared0MultiTapeStateString
@@ -10635,7 +12980,7 @@ def
 }
 
 /-- [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::transition_overlaps]:
-    Source: 'src/automata/multi_tape_builder.rs', lines 702:4-776:5
+    Source: 'src/automata/multi_tape_builder.rs', lines 768:4-842:5
     Visibility: public -/
 def automata.multi_tape_builder.MultiTapeBuilder.transition_overlaps
   (self : automata.multi_tape_builder.MultiTapeBuilder)
@@ -10754,16 +13099,6 @@ def automata.multi_tape_product_trie.MultiTapeProductTrie.Insts.CoreCloneClone
   : core.clone.Clone automata.multi_tape_product_trie.MultiTapeProductTrie := {
   clone :=
     automata.multi_tape_product_trie.MultiTapeProductTrie.Insts.CoreCloneClone.clone
-}
-
-/-- Trait implementation: [automata_builder::automata::terms_multitape::{impl core::hash::Hash for automata_builder::automata::terms_multitape::MultiTapeTerm}]
-    Source: 'src/automata/terms_multitape.rs', lines 94:0-99:1 -/
-@[reducible]
-def automata.terms_multitape.MultiTapeTerm.Insts.CoreHashHash : core.hash.Hash
-  automata.terms_multitape.MultiTapeTerm := {
-  hash := fun {H : Type} (corehashHasherInst : core.hash.Hasher H) =>
-    automata.terms_multitape.MultiTapeTerm.Insts.CoreHashHash.hash
-    corehashHasherInst
 }
 
 /-- [automata_builder::automata::multi_tape_product_trie::{impl core::hash::Hash for automata_builder::automata::multi_tape_product_trie::OffsetGroupedTerms}::hash]:
@@ -11177,8 +13512,37 @@ def automata.tape_overlaps.TapeOverlaps.Insts.CoreCmpPartialEqTapeOverlaps.eq
     alloc.alloc.Global.Insts.CoreAllocAllocatorClone self.overlaps
     other.overlaps
 
+/-- [automata_builder::automata::product_writes_map::{impl core::cmp::PartialEq<automata_builder::automata::product_writes_map::ProductToStateMap> for automata_builder::automata::product_writes_map::ProductToStateMap}::eq]:
+    Source: 'src/automata/product_writes_map.rs', lines 82:32-82:41
+    Visibility: public -/
+def
+  automata.product_writes_map.ProductToStateMap.Insts.CoreCmpPartialEqProductToStateMap.eq
+  (self : automata.product_writes_map.ProductToStateMap)
+  (other : automata.product_writes_map.ProductToStateMap) :
+  Result Bool
+  := do
+  let b ←
+    indexmap.map.IndexMap.Insts.CoreCmpPartialEqIndexMap.eq
+      automata.terms_multitape.MultiTapeProduct.Insts.CoreHashHash
+      automata.terms_multitape.MultiTapeProduct.Insts.CoreCmpEq
+      (alloc.collections.btree.map.BTreeMap.Insts.CoreCmpPartialEqBTreeMap
+      core.cmp.PartialEqU16 core.cmp.PartialEqU32
+      alloc.alloc.Global.Insts.CoreAllocAllocatorClone)
+      std.hash.random.RandomState.Insts.CoreHashBuildHasherDefaultHasher
+      std.hash.random.RandomState.Insts.CoreHashBuildHasherDefaultHasher
+      self.prod_to_state_map other.prod_to_state_map
+  if b
+  then
+    std.collections.hash.map.HashMap.Insts.CoreCmpPartialEqHashMap.eq
+      automata.terms_multitape.MultiTapeProduct.Insts.CoreCmpEq
+      automata.terms_multitape.MultiTapeProduct.Insts.CoreHashHash
+      automata.terms_multitape.MultiTapeProduct.Insts.CoreCmpPartialEqMultiTapeProduct
+      std.hash.random.RandomState.Insts.CoreHashBuildHasherDefaultHasher
+      self.products other.products
+  else ok false
+
 /-- [automata_builder::automata::product_writes_map::{impl core::cmp::PartialEq<automata_builder::automata::product_writes_map::ProductWritesMap> for automata_builder::automata::product_writes_map::ProductWritesMap}::eq]:
-    Source: 'src/automata/product_writes_map.rs', lines 79:4-81:5
+    Source: 'src/automata/product_writes_map.rs', lines 167:4-169:5
     Visibility: public -/
 def
   automata.product_writes_map.ProductWritesMap.Insts.CoreCmpPartialEqProductWritesMap.eq
@@ -11186,14 +13550,7 @@ def
   (other : automata.product_writes_map.ProductWritesMap) :
   Result Bool
   := do
-  indexmap.map.IndexMap.Insts.CoreCmpPartialEqIndexMap.eq
-    automata.terms_multitape.MultiTapeProduct.Insts.CoreHashHash
-    automata.terms_multitape.MultiTapeProduct.Insts.CoreCmpEq
-    (alloc.collections.btree.map.BTreeMap.Insts.CoreCmpPartialEqBTreeMap
-    core.cmp.PartialEqU16 core.cmp.PartialEqU32
-    alloc.alloc.Global.Insts.CoreAllocAllocatorClone)
-    std.hash.random.RandomState.Insts.CoreHashBuildHasherDefaultHasher
-    std.hash.random.RandomState.Insts.CoreHashBuildHasherDefaultHasher
+  automata.product_writes_map.ProductToStateMap.Insts.CoreCmpPartialEqProductToStateMap.eq
     self.prod_to_state_map other.prod_to_state_map
 
 /-- [automata_builder::automata::tape_overlaps_fsm::{impl core::cmp::PartialEq<automata_builder::automata::tape_overlaps_fsm::TapeOverlapsFSMState> for automata_builder::automata::tape_overlaps_fsm::TapeOverlapsFSMState}::eq]:
@@ -11483,7 +13840,7 @@ def automata.tape_overlaps.TapeOverlaps.group_states_by_tape
     tape_states
 
 /-- [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::build_tape_state_combos::{impl core::ops::function::FnMut<(alloc::collections::btree::set::BTreeSet<automata_builder::automata::terms_multitape::MultiTapeState, alloc::alloc::Global>,), alloc::vec::Vec<automata_builder::automata::terms_multitape::MultiTapeState>> for automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::build_tape_state_combos::{closure}}::call_mut]:
-    Source: 'src/automata/multi_tape_builder.rs', lines 823:17-823:54 -/
+    Source: 'src/automata/multi_tape_builder.rs', lines 889:17-889:54 -/
 def
   automata.multi_tape_builder.MultiTapeBuilder.build_tape_state_combos.closure.Insts.CoreOpsFunctionFnMutTupleBTreeSetMultiTapeStateGlobalVecMultiTapeState.call_mut
   (c :
@@ -11506,7 +13863,7 @@ def
   ok (v, c)
 
 /-- [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::build_tape_state_combos::{impl core::ops::function::FnOnce<(alloc::collections::btree::set::BTreeSet<automata_builder::automata::terms_multitape::MultiTapeState, alloc::alloc::Global>,), alloc::vec::Vec<automata_builder::automata::terms_multitape::MultiTapeState>> for automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::build_tape_state_combos::{closure}}::call_once]:
-    Source: 'src/automata/multi_tape_builder.rs', lines 823:17-823:54 -/
+    Source: 'src/automata/multi_tape_builder.rs', lines 889:17-889:54 -/
 def
   automata.multi_tape_builder.MultiTapeBuilder.build_tape_state_combos.closure.Insts.CoreOpsFunctionFnOnceTupleBTreeSetMultiTapeStateGlobalVecMultiTapeState.call_once
   (c :
@@ -11521,7 +13878,7 @@ def
   ok v
 
 /-- Trait implementation: [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::build_tape_state_combos::{impl core::ops::function::FnOnce<(alloc::collections::btree::set::BTreeSet<automata_builder::automata::terms_multitape::MultiTapeState, alloc::alloc::Global>,), alloc::vec::Vec<automata_builder::automata::terms_multitape::MultiTapeState>> for automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::build_tape_state_combos::{closure}}]
-    Source: 'src/automata/multi_tape_builder.rs', lines 823:17-823:54 -/
+    Source: 'src/automata/multi_tape_builder.rs', lines 889:17-889:54 -/
 @[reducible]
 def
   automata.multi_tape_builder.MultiTapeBuilder.build_tape_state_combos.closure.Insts.CoreOpsFunctionFnOnceTupleBTreeSetMultiTapeStateGlobalVecMultiTapeState
@@ -11535,7 +13892,7 @@ def
 }
 
 /-- Trait implementation: [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::build_tape_state_combos::{impl core::ops::function::FnMut<(alloc::collections::btree::set::BTreeSet<automata_builder::automata::terms_multitape::MultiTapeState, alloc::alloc::Global>,), alloc::vec::Vec<automata_builder::automata::terms_multitape::MultiTapeState>> for automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::build_tape_state_combos::{closure}}]
-    Source: 'src/automata/multi_tape_builder.rs', lines 823:17-823:54 -/
+    Source: 'src/automata/multi_tape_builder.rs', lines 889:17-889:54 -/
 @[reducible]
 def
   automata.multi_tape_builder.MultiTapeBuilder.build_tape_state_combos.closure.Insts.CoreOpsFunctionFnMutTupleBTreeSetMultiTapeStateGlobalVecMultiTapeState
@@ -11551,7 +13908,7 @@ def
 }
 
 /-- [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::build_tape_state_combos]:
-    Source: 'src/automata/multi_tape_builder.rs', lines 819:4-826:5 -/
+    Source: 'src/automata/multi_tape_builder.rs', lines 885:4-892:5 -/
 def automata.multi_tape_builder.MultiTapeBuilder.build_tape_state_combos
   (overlaps : automata.tape_overlaps.TapeOverlaps) :
   Result (alloc.vec.Vec (alloc.vec.Vec
@@ -11584,7 +13941,7 @@ def automata.multi_tape_builder.MultiTapeBuilder.build_tape_state_combos
     automata.terms_multitape.MultiTapeState.Insts.CoreCloneClone s
 
 /-- [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::combo_to_group::{impl core::ops::function::FnMut<(&'_0 automata_builder::automata::terms_multitape::MultiTapeState,), automata_builder::automata::terms_multitape::MultiTapeTerm> for automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::combo_to_group::{closure}<'_0, '_1>}::call_mut]:
-    Source: 'src/automata/multi_tape_builder.rs', lines 831:17-831:92 -/
+    Source: 'src/automata/multi_tape_builder.rs', lines 897:17-897:92 -/
 def
   automata.multi_tape_builder.MultiTapeBuilder.combo_to_group.closure.Insts.CoreOpsFunctionFnMutTupleShared0MultiTapeStateMultiTapeTerm.call_mut
   (c : automata.multi_tape_builder.MultiTapeBuilder.combo_to_group.closure)
@@ -11599,7 +13956,7 @@ def
   ok (mtt, c)
 
 /-- [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::combo_to_group::{impl core::ops::function::FnOnce<(&'_0 automata_builder::automata::terms_multitape::MultiTapeState,), automata_builder::automata::terms_multitape::MultiTapeTerm> for automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::combo_to_group::{closure}<'_0, '_1>}::call_once]:
-    Source: 'src/automata/multi_tape_builder.rs', lines 831:17-831:92 -/
+    Source: 'src/automata/multi_tape_builder.rs', lines 897:17-897:92 -/
 def
   automata.multi_tape_builder.MultiTapeBuilder.combo_to_group.closure.Insts.CoreOpsFunctionFnOnceTupleShared0MultiTapeStateMultiTapeTerm.call_once
   (c : automata.multi_tape_builder.MultiTapeBuilder.combo_to_group.closure)
@@ -11612,7 +13969,7 @@ def
   ok mtt
 
 /-- Trait implementation: [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::combo_to_group::{impl core::ops::function::FnOnce<(&'_0 automata_builder::automata::terms_multitape::MultiTapeState,), automata_builder::automata::terms_multitape::MultiTapeTerm> for automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::combo_to_group::{closure}<'_0, '_1>}]
-    Source: 'src/automata/multi_tape_builder.rs', lines 831:17-831:92 -/
+    Source: 'src/automata/multi_tape_builder.rs', lines 897:17-897:92 -/
 @[reducible]
 def
   automata.multi_tape_builder.MultiTapeBuilder.combo_to_group.closure.Insts.CoreOpsFunctionFnOnceTupleShared0MultiTapeStateMultiTapeTerm
@@ -11625,7 +13982,7 @@ def
 }
 
 /-- Trait implementation: [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::combo_to_group::{impl core::ops::function::FnMut<(&'_0 automata_builder::automata::terms_multitape::MultiTapeState,), automata_builder::automata::terms_multitape::MultiTapeTerm> for automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::combo_to_group::{closure}<'_0, '_1>}]
-    Source: 'src/automata/multi_tape_builder.rs', lines 831:17-831:92 -/
+    Source: 'src/automata/multi_tape_builder.rs', lines 897:17-897:92 -/
 @[reducible]
 def
   automata.multi_tape_builder.MultiTapeBuilder.combo_to_group.closure.Insts.CoreOpsFunctionFnMutTupleShared0MultiTapeStateMultiTapeTerm
@@ -11640,7 +13997,7 @@ def
 }
 
 /-- [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::combo_to_group]:
-    Source: 'src/automata/multi_tape_builder.rs', lines 828:4-834:5 -/
+    Source: 'src/automata/multi_tape_builder.rs', lines 894:4-900:5 -/
 def automata.multi_tape_builder.MultiTapeBuilder.combo_to_group
   (combo : Slice automata.terms_multitape.MultiTapeState) (offset : Std.I64) :
   Result automata.multi_tape_product_trie.OffsetGroupedTerms
@@ -12780,7 +15137,7 @@ def automata.multi_tape_product_trie.offset_group_path_to_product
   automata.terms_multitape.MultiTapeProduct.new flat_terms
 
 /-- [automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::insert_neutral_product]: loop 0:
-    Source: 'src/automata/product_writes_map.rs', lines 180:8-188:5
+    Source: 'src/automata/product_writes_map.rs', lines 254:8-262:5
     Visibility: public -/
 @[rust_loop]
 def automata.product_writes_map.ProductWritesMap.insert_neutral_product_loop
@@ -12821,7 +15178,7 @@ def automata.product_writes_map.ProductWritesMap.insert_neutral_product_loop
 partial_fixpoint
 
 /-- [automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::insert_neutral_product]:
-    Source: 'src/automata/product_writes_map.rs', lines 177:4-188:5
+    Source: 'src/automata/product_writes_map.rs', lines 251:4-262:5
     Visibility: public -/
 def automata.product_writes_map.ProductWritesMap.insert_neutral_product
   (self : automata.product_writes_map.ProductWritesMap)
@@ -12836,7 +15193,7 @@ def automata.product_writes_map.ProductWritesMap.insert_neutral_product
     self product
 
 /-- [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::build_product_same_writes_map::{impl core::ops::function::Fn<(&'_0 alloc::vec::Vec<automata_builder::automata::terms_multitape::MultiTapeState>,), core::result::Result<alloc::vec::Vec<automata_builder::automata::terms_multitape::MultiTapeProduct>, automata_builder::automata::multi_tape_builder::CompileTapesError>> for automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::build_product_same_writes_map::{closure}<'_0, '_1, '_2>}::call]:
-    Source: 'src/automata/multi_tape_builder.rs', lines 900:21-909:17 -/
+    Source: 'src/automata/multi_tape_builder.rs', lines 966:21-975:17 -/
 def
   automata.multi_tape_builder.MultiTapeBuilder.build_product_same_writes_map.closure.Insts.CoreOpsFunctionFnTupleShared0VecMultiTapeStateResultVecMultiTapeProductCompileTapesError.call
   (c :
@@ -12881,7 +15238,7 @@ def
       residual
 
 /-- [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::build_product_same_writes_map::{impl core::ops::function::FnMut<(&'_0 alloc::vec::Vec<automata_builder::automata::terms_multitape::MultiTapeState>,), core::result::Result<alloc::vec::Vec<automata_builder::automata::terms_multitape::MultiTapeProduct>, automata_builder::automata::multi_tape_builder::CompileTapesError>> for automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::build_product_same_writes_map::{closure}<'_0, '_1, '_2>}::call_mut]:
-    Source: 'src/automata/multi_tape_builder.rs', lines 900:21-909:17 -/
+    Source: 'src/automata/multi_tape_builder.rs', lines 966:21-975:17 -/
 def
   automata.multi_tape_builder.MultiTapeBuilder.build_product_same_writes_map.closure.Insts.CoreOpsFunctionFnMutTupleShared0VecMultiTapeStateResultVecMultiTapeProductCompileTapesError.call_mut
   (state :
@@ -12898,7 +15255,7 @@ def
   ok (r, state)
 
 /-- [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::build_product_same_writes_map::{impl core::ops::function::FnOnce<(&'_0 alloc::vec::Vec<automata_builder::automata::terms_multitape::MultiTapeState>,), core::result::Result<alloc::vec::Vec<automata_builder::automata::terms_multitape::MultiTapeProduct>, automata_builder::automata::multi_tape_builder::CompileTapesError>> for automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::build_product_same_writes_map::{closure}<'_0, '_1, '_2>}::call_once]:
-    Source: 'src/automata/multi_tape_builder.rs', lines 900:21-909:17 -/
+    Source: 'src/automata/multi_tape_builder.rs', lines 966:21-975:17 -/
 def
   automata.multi_tape_builder.MultiTapeBuilder.build_product_same_writes_map.closure.Insts.CoreOpsFunctionFnOnceTupleShared0VecMultiTapeStateResultVecMultiTapeProductCompileTapesError.call_once
   (c :
@@ -12914,7 +15271,7 @@ def
   ok r
 
 /-- Trait implementation: [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::build_product_same_writes_map::{impl core::ops::function::FnOnce<(&'_0 alloc::vec::Vec<automata_builder::automata::terms_multitape::MultiTapeState>,), core::result::Result<alloc::vec::Vec<automata_builder::automata::terms_multitape::MultiTapeProduct>, automata_builder::automata::multi_tape_builder::CompileTapesError>> for automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::build_product_same_writes_map::{closure}<'_0, '_1, '_2>}]
-    Source: 'src/automata/multi_tape_builder.rs', lines 900:21-909:17 -/
+    Source: 'src/automata/multi_tape_builder.rs', lines 966:21-975:17 -/
 @[reducible]
 def
   automata.multi_tape_builder.MultiTapeBuilder.build_product_same_writes_map.closure.Insts.CoreOpsFunctionFnOnceTupleShared0VecMultiTapeStateResultVecMultiTapeProductCompileTapesError
@@ -12928,7 +15285,7 @@ def
 }
 
 /-- Trait implementation: [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::build_product_same_writes_map::{impl core::ops::function::FnMut<(&'_0 alloc::vec::Vec<automata_builder::automata::terms_multitape::MultiTapeState>,), core::result::Result<alloc::vec::Vec<automata_builder::automata::terms_multitape::MultiTapeProduct>, automata_builder::automata::multi_tape_builder::CompileTapesError>> for automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::build_product_same_writes_map::{closure}<'_0, '_1, '_2>}]
-    Source: 'src/automata/multi_tape_builder.rs', lines 900:21-909:17 -/
+    Source: 'src/automata/multi_tape_builder.rs', lines 966:21-975:17 -/
 @[reducible]
 def
   automata.multi_tape_builder.MultiTapeBuilder.build_product_same_writes_map.closure.Insts.CoreOpsFunctionFnMutTupleShared0VecMultiTapeStateResultVecMultiTapeProductCompileTapesError
@@ -12944,7 +15301,7 @@ def
 }
 
 /-- Trait implementation: [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::build_product_same_writes_map::{impl core::ops::function::Fn<(&'_0 alloc::vec::Vec<automata_builder::automata::terms_multitape::MultiTapeState>,), core::result::Result<alloc::vec::Vec<automata_builder::automata::terms_multitape::MultiTapeProduct>, automata_builder::automata::multi_tape_builder::CompileTapesError>> for automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::build_product_same_writes_map::{closure}<'_0, '_1, '_2>}]
-    Source: 'src/automata/multi_tape_builder.rs', lines 900:21-909:17 -/
+    Source: 'src/automata/multi_tape_builder.rs', lines 966:21-975:17 -/
 @[reducible]
 def
   automata.multi_tape_builder.MultiTapeBuilder.build_product_same_writes_map.closure.Insts.CoreOpsFunctionFnTupleShared0VecMultiTapeStateResultVecMultiTapeProductCompileTapesError
@@ -12972,7 +15329,7 @@ def automata.multi_tape_product_trie.OffsetGroupedTerms.to_product
   automata.terms_multitape.MultiTapeProduct.new v
 
 /-- [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::build_self_writes_map]: loop 0:
-    Source: 'src/automata/multi_tape_builder.rs', lines 929:8-934:5
+    Source: 'src/automata/multi_tape_builder.rs', lines 995:8-1000:5
     Visibility: public -/
 @[rust_loop]
 def automata.multi_tape_builder.MultiTapeBuilder.build_self_writes_map_loop
@@ -13007,7 +15364,7 @@ def automata.multi_tape_builder.MultiTapeBuilder.build_self_writes_map_loop
 partial_fixpoint
 
 /-- [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::build_self_writes_map]:
-    Source: 'src/automata/multi_tape_builder.rs', lines 927:4-934:5
+    Source: 'src/automata/multi_tape_builder.rs', lines 993:4-1000:5
     Visibility: public -/
 def automata.multi_tape_builder.MultiTapeBuilder.build_self_writes_map
   (global_overlaps : automata.tape_overlaps.TapeOverlaps) :
@@ -13491,7 +15848,7 @@ def automata.tape_overlaps.MultiTapeStatesMap.Insts.CoreCloneClone :
 }
 
 /-- [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::build_offset_group_choices::{closure}::{impl core::ops::function::FnMut<(&'_0 alloc::vec::Vec<automata_builder::automata::terms_multitape::MultiTapeState>,), automata_builder::automata::multi_tape_product_trie::OffsetGroupedTerms> for automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::build_offset_group_choices::{closure}::{closure}<'_0, '_1>}::call_mut]:
-    Source: 'src/automata/multi_tape_builder.rs', lines 962:25-962:69 -/
+    Source: 'src/automata/multi_tape_builder.rs', lines 1028:25-1028:69 -/
 def
   automata.multi_tape_builder.MultiTapeBuilder.build_offset_group_choices.closure.closure.Insts.CoreOpsFunctionFnMutTupleShared0VecMultiTapeStateOffsetGroupedTerms.call_mut
   (c :
@@ -13505,7 +15862,7 @@ def
   ok (ogt, c)
 
 /-- [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::build_offset_group_choices::{closure}::{impl core::ops::function::FnOnce<(&'_0 alloc::vec::Vec<automata_builder::automata::terms_multitape::MultiTapeState>,), automata_builder::automata::multi_tape_product_trie::OffsetGroupedTerms> for automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::build_offset_group_choices::{closure}::{closure}<'_0, '_1>}::call_once]:
-    Source: 'src/automata/multi_tape_builder.rs', lines 962:25-962:69 -/
+    Source: 'src/automata/multi_tape_builder.rs', lines 1028:25-1028:69 -/
 def
   automata.multi_tape_builder.MultiTapeBuilder.build_offset_group_choices.closure.closure.Insts.CoreOpsFunctionFnOnceTupleShared0VecMultiTapeStateOffsetGroupedTerms.call_once
   (c :
@@ -13519,7 +15876,7 @@ def
   ok ogt
 
 /-- Trait implementation: [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::build_offset_group_choices::{closure}::{impl core::ops::function::FnOnce<(&'_0 alloc::vec::Vec<automata_builder::automata::terms_multitape::MultiTapeState>,), automata_builder::automata::multi_tape_product_trie::OffsetGroupedTerms> for automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::build_offset_group_choices::{closure}::{closure}<'_0, '_1>}]
-    Source: 'src/automata/multi_tape_builder.rs', lines 962:25-962:69 -/
+    Source: 'src/automata/multi_tape_builder.rs', lines 1028:25-1028:69 -/
 @[reducible]
 def
   automata.multi_tape_builder.MultiTapeBuilder.build_offset_group_choices.closure.closure.Insts.CoreOpsFunctionFnOnceTupleShared0VecMultiTapeStateOffsetGroupedTerms
@@ -13532,7 +15889,7 @@ def
 }
 
 /-- Trait implementation: [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::build_offset_group_choices::{closure}::{impl core::ops::function::FnMut<(&'_0 alloc::vec::Vec<automata_builder::automata::terms_multitape::MultiTapeState>,), automata_builder::automata::multi_tape_product_trie::OffsetGroupedTerms> for automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::build_offset_group_choices::{closure}::{closure}<'_0, '_1>}]
-    Source: 'src/automata/multi_tape_builder.rs', lines 962:25-962:69 -/
+    Source: 'src/automata/multi_tape_builder.rs', lines 1028:25-1028:69 -/
 @[reducible]
 def
   automata.multi_tape_builder.MultiTapeBuilder.build_offset_group_choices.closure.closure.Insts.CoreOpsFunctionFnMutTupleShared0VecMultiTapeStateOffsetGroupedTerms
@@ -13547,7 +15904,7 @@ def
 }
 
 /-- [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::build_offset_group_choices::{impl core::ops::function::FnMut<(&'_0 i64,), alloc::vec::Vec<automata_builder::automata::multi_tape_product_trie::OffsetGroupedTerms>> for automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::build_offset_group_choices::{closure}<'_0, '_1, '_2, '_3>}::call_mut]: loop 0:
-    Source: 'src/automata/multi_tape_builder.rs', lines 952:16-958:17 -/
+    Source: 'src/automata/multi_tape_builder.rs', lines 1018:16-1024:17 -/
 @[rust_loop]
 def
   automata.multi_tape_builder.MultiTapeBuilder.build_offset_group_choices.closure.Insts.CoreOpsFunctionFnMutTupleShared0I64VecOffsetGroupedTerms.call_mut_loop
@@ -13586,7 +15943,7 @@ def
 partial_fixpoint
 
 /-- [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::build_offset_group_choices::{impl core::ops::function::FnMut<(&'_0 i64,), alloc::vec::Vec<automata_builder::automata::multi_tape_product_trie::OffsetGroupedTerms>> for automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::build_offset_group_choices::{closure}<'_0, '_1, '_2, '_3>}::call_mut]:
-    Source: 'src/automata/multi_tape_builder.rs', lines 947:17-964:13 -/
+    Source: 'src/automata/multi_tape_builder.rs', lines 1013:17-1030:13 -/
 def
   automata.multi_tape_builder.MultiTapeBuilder.build_offset_group_choices.closure.Insts.CoreOpsFunctionFnMutTupleShared0I64VecOffsetGroupedTerms.call_mut
   (c :
@@ -13640,7 +15997,7 @@ def
   ok (v1, c)
 
 /-- [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::build_offset_group_choices::{impl core::ops::function::FnOnce<(&'_0 i64,), alloc::vec::Vec<automata_builder::automata::multi_tape_product_trie::OffsetGroupedTerms>> for automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::build_offset_group_choices::{closure}<'_0, '_1, '_2, '_3>}::call_once]:
-    Source: 'src/automata/multi_tape_builder.rs', lines 947:17-964:13 -/
+    Source: 'src/automata/multi_tape_builder.rs', lines 1013:17-1030:13 -/
 def
   automata.multi_tape_builder.MultiTapeBuilder.build_offset_group_choices.closure.Insts.CoreOpsFunctionFnOnceTupleShared0I64VecOffsetGroupedTerms.call_once
   (c :
@@ -13654,7 +16011,7 @@ def
   ok v
 
 /-- Trait implementation: [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::build_offset_group_choices::{impl core::ops::function::FnOnce<(&'_0 i64,), alloc::vec::Vec<automata_builder::automata::multi_tape_product_trie::OffsetGroupedTerms>> for automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::build_offset_group_choices::{closure}<'_0, '_1, '_2, '_3>}]
-    Source: 'src/automata/multi_tape_builder.rs', lines 947:17-964:13 -/
+    Source: 'src/automata/multi_tape_builder.rs', lines 1013:17-1030:13 -/
 @[reducible]
 def
   automata.multi_tape_builder.MultiTapeBuilder.build_offset_group_choices.closure.Insts.CoreOpsFunctionFnOnceTupleShared0I64VecOffsetGroupedTerms
@@ -13667,7 +16024,7 @@ def
 }
 
 /-- Trait implementation: [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::build_offset_group_choices::{impl core::ops::function::FnMut<(&'_0 i64,), alloc::vec::Vec<automata_builder::automata::multi_tape_product_trie::OffsetGroupedTerms>> for automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::build_offset_group_choices::{closure}<'_0, '_1, '_2, '_3>}]
-    Source: 'src/automata/multi_tape_builder.rs', lines 947:17-964:13 -/
+    Source: 'src/automata/multi_tape_builder.rs', lines 1013:17-1030:13 -/
 @[reducible]
 def
   automata.multi_tape_builder.MultiTapeBuilder.build_offset_group_choices.closure.Insts.CoreOpsFunctionFnMutTupleShared0I64VecOffsetGroupedTerms
@@ -13682,7 +16039,7 @@ def
 }
 
 /-- [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::build_offset_group_choices]:
-    Source: 'src/automata/multi_tape_builder.rs', lines 939:4-966:5 -/
+    Source: 'src/automata/multi_tape_builder.rs', lines 1005:4-1032:5 -/
 def automata.multi_tape_builder.MultiTapeBuilder.build_offset_group_choices
   (overlaps : automata.tape_overlaps.TapeOverlaps) (offsets : Slice Std.I64)
   (requirements_by_offset : alloc.collections.btree.map.BTreeMap Std.I64
@@ -13706,7 +16063,7 @@ def automata.multi_tape_builder.MultiTapeBuilder.build_offset_group_choices
     automata.multi_tape_product_trie.OffsetGroupedTerms)) m
 
 /-- [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::build_full_group_paths_satisfying]:
-    Source: 'src/automata/multi_tape_builder.rs', lines 969:4-977:5
+    Source: 'src/automata/multi_tape_builder.rs', lines 1035:4-1043:5
     Visibility: public -/
 def
   automata.multi_tape_builder.MultiTapeBuilder.build_full_group_paths_satisfying
@@ -13724,7 +16081,7 @@ def
     automata.multi_tape_product_trie.OffsetGroupedTerms.Insts.CoreCloneClone s
 
 /-- [automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::get_state_writes_for::{impl core::ops::function::FnMut<((&'_0 u16, &'_1 u32),), automata_builder::automata::terms_multitape::MultiTapeState> for automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::get_state_writes_for::{closure#1}<'_0, '_1>}::call_mut]:
-    Source: 'src/automata/product_writes_map.rs', lines 208:17-208:83 -/
+    Source: 'src/automata/product_writes_map.rs', lines 282:17-282:83 -/
 def
   automata.product_writes_map.ProductWritesMap.get_state_writes_for.closure_1.Insts.CoreOpsFunctionFnMutTuplePairShared0U16Shared1U32MultiTapeState.call_mut
   (c :
@@ -13738,7 +16095,7 @@ def
   ok (mts, ())
 
 /-- [automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::get_state_writes_for::{impl core::ops::function::FnOnce<((&'_0 u16, &'_1 u32),), automata_builder::automata::terms_multitape::MultiTapeState> for automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::get_state_writes_for::{closure#1}<'_0, '_1>}::call_once]:
-    Source: 'src/automata/product_writes_map.rs', lines 208:17-208:83 -/
+    Source: 'src/automata/product_writes_map.rs', lines 282:17-282:83 -/
 def
   automata.product_writes_map.ProductWritesMap.get_state_writes_for.closure_1.Insts.CoreOpsFunctionFnOnceTuplePairShared0U16Shared1U32MultiTapeState.call_once
   (c :
@@ -13752,7 +16109,7 @@ def
   ok mts
 
 /-- Trait implementation: [automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::get_state_writes_for::{impl core::ops::function::FnOnce<((&'_0 u16, &'_1 u32),), automata_builder::automata::terms_multitape::MultiTapeState> for automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::get_state_writes_for::{closure#1}<'_0, '_1>}]
-    Source: 'src/automata/product_writes_map.rs', lines 208:17-208:83 -/
+    Source: 'src/automata/product_writes_map.rs', lines 282:17-282:83 -/
 @[reducible]
 def
   automata.product_writes_map.ProductWritesMap.get_state_writes_for.closure_1.Insts.CoreOpsFunctionFnOnceTuplePairShared0U16Shared1U32MultiTapeState
@@ -13764,7 +16121,7 @@ def
 }
 
 /-- Trait implementation: [automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::get_state_writes_for::{impl core::ops::function::FnMut<((&'_0 u16, &'_1 u32),), automata_builder::automata::terms_multitape::MultiTapeState> for automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::get_state_writes_for::{closure#1}<'_0, '_1>}]
-    Source: 'src/automata/product_writes_map.rs', lines 208:17-208:83 -/
+    Source: 'src/automata/product_writes_map.rs', lines 282:17-282:83 -/
 @[reducible]
 def
   automata.product_writes_map.ProductWritesMap.get_state_writes_for.closure_1.Insts.CoreOpsFunctionFnMutTuplePairShared0U16Shared1U32MultiTapeState
@@ -13778,7 +16135,7 @@ def
 }
 
 /-- [automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::get_state_writes_for::{impl core::ops::function::FnOnce<(), automata_builder::automata::product_writes_map::ProductWritesError> for automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::get_state_writes_for::{closure}<'_0>}::call_once]:
-    Source: 'src/automata/product_writes_map.rs', lines 202:54-204:9 -/
+    Source: 'src/automata/product_writes_map.rs', lines 276:54-278:9 -/
 def
   automata.product_writes_map.ProductWritesMap.get_state_writes_for.closure.Insts.CoreOpsFunctionFnOnceTupleProductWritesError.call_once
   (c :
@@ -13792,7 +16149,7 @@ def
   ok (automata.product_writes_map.ProductWritesError.MissingProduct s)
 
 /-- Trait implementation: [automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::get_state_writes_for::{impl core::ops::function::FnOnce<(), automata_builder::automata::product_writes_map::ProductWritesError> for automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::get_state_writes_for::{closure}<'_0>}]
-    Source: 'src/automata/product_writes_map.rs', lines 202:54-204:9 -/
+    Source: 'src/automata/product_writes_map.rs', lines 276:54-278:9 -/
 @[reducible]
 def
   automata.product_writes_map.ProductWritesMap.get_state_writes_for.closure.Insts.CoreOpsFunctionFnOnceTupleProductWritesError
@@ -13804,7 +16161,7 @@ def
 }
 
 /-- [automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::get_state_writes_for]:
-    Source: 'src/automata/product_writes_map.rs', lines 199:4-210:5
+    Source: 'src/automata/product_writes_map.rs', lines 273:4-284:5
     Visibility: public -/
 def automata.product_writes_map.ProductWritesMap.get_state_writes_for
   (self : automata.product_writes_map.ProductWritesMap)
@@ -14036,7 +16393,7 @@ def
     iter all_products
 
 /-- [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::build_extended_products_for::{impl core::ops::function::FnMut<(&'_0 automata_builder::automata::terms_multitape::MultiTapeProduct,), bool> for automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::build_extended_products_for::{closure#3}<'_0, '_1>}::call_mut]:
-    Source: 'src/automata/multi_tape_builder.rs', lines 1070:72-1072:17 -/
+    Source: 'src/automata/multi_tape_builder.rs', lines 1136:72-1138:17 -/
 def
   automata.multi_tape_builder.MultiTapeBuilder.build_extended_products_for.closure_3.Insts.CoreOpsFunctionFnMutTupleShared0MultiTapeProductBool.call_mut
   (c :
@@ -14051,7 +16408,7 @@ def
   ok (b, c)
 
 /-- [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::build_extended_products_for::{impl core::ops::function::FnOnce<(&'_0 automata_builder::automata::terms_multitape::MultiTapeProduct,), bool> for automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::build_extended_products_for::{closure#3}<'_0, '_1>}::call_once]:
-    Source: 'src/automata/multi_tape_builder.rs', lines 1070:72-1072:17 -/
+    Source: 'src/automata/multi_tape_builder.rs', lines 1136:72-1138:17 -/
 def
   automata.multi_tape_builder.MultiTapeBuilder.build_extended_products_for.closure_3.Insts.CoreOpsFunctionFnOnceTupleShared0MultiTapeProductBool.call_once
   (c :
@@ -14065,7 +16422,7 @@ def
   ok b
 
 /-- Trait implementation: [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::build_extended_products_for::{impl core::ops::function::FnOnce<(&'_0 automata_builder::automata::terms_multitape::MultiTapeProduct,), bool> for automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::build_extended_products_for::{closure#3}<'_0, '_1>}]
-    Source: 'src/automata/multi_tape_builder.rs', lines 1070:72-1072:17 -/
+    Source: 'src/automata/multi_tape_builder.rs', lines 1136:72-1138:17 -/
 @[reducible]
 def
   automata.multi_tape_builder.MultiTapeBuilder.build_extended_products_for.closure_3.Insts.CoreOpsFunctionFnOnceTupleShared0MultiTapeProductBool
@@ -14077,7 +16434,7 @@ def
 }
 
 /-- Trait implementation: [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::build_extended_products_for::{impl core::ops::function::FnMut<(&'_0 automata_builder::automata::terms_multitape::MultiTapeProduct,), bool> for automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::build_extended_products_for::{closure#3}<'_0, '_1>}]
-    Source: 'src/automata/multi_tape_builder.rs', lines 1070:72-1072:17 -/
+    Source: 'src/automata/multi_tape_builder.rs', lines 1136:72-1138:17 -/
 @[reducible]
 def
   automata.multi_tape_builder.MultiTapeBuilder.build_extended_products_for.closure_3.Insts.CoreOpsFunctionFnMutTupleShared0MultiTapeProductBool
@@ -14091,7 +16448,7 @@ def
 }
 
 /-- [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::build_extended_products_for::{impl core::ops::function::FnOnce<((usize, &'_0 usize),), core::iter::adapters::cloned::Cloned<core::slice::iter::Iter<'_1, automata_builder::automata::terms_multitape::MultiTapeTerm>>> for automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::build_extended_products_for::{closure#2}<'_0, '_1, '_2>}::call_once]:
-    Source: 'src/automata/multi_tape_builder.rs', lines 1067:30-1067:89 -/
+    Source: 'src/automata/multi_tape_builder.rs', lines 1133:30-1133:89 -/
 def
   automata.multi_tape_builder.MultiTapeBuilder.build_extended_products_for.closure_2.Insts.CoreOpsFunctionFnOnceTuplePairUsizeShared0UsizeClonedIter1MultiTapeTerm.call_once
   (c :
@@ -14106,7 +16463,7 @@ def
   ok c1
 
 /-- Trait implementation: [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::build_extended_products_for::{impl core::ops::function::FnOnce<((usize, &'_0 usize),), core::iter::adapters::cloned::Cloned<core::slice::iter::Iter<'_1, automata_builder::automata::terms_multitape::MultiTapeTerm>>> for automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::build_extended_products_for::{closure#2}<'_0, '_1, '_2>}]
-    Source: 'src/automata/multi_tape_builder.rs', lines 1067:30-1067:89 -/
+    Source: 'src/automata/multi_tape_builder.rs', lines 1133:30-1133:89 -/
 @[reducible]
 def
   automata.multi_tape_builder.MultiTapeBuilder.build_extended_products_for.closure_2.Insts.CoreOpsFunctionFnOnceTuplePairUsizeShared0UsizeClonedIter1MultiTapeTerm
@@ -14119,7 +16476,7 @@ def
 }
 
 /-- Trait implementation: [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::build_extended_products_for::{impl core::ops::function::FnMut<((usize, &'_0 usize),), core::iter::adapters::cloned::Cloned<core::slice::iter::Iter<'_1, automata_builder::automata::terms_multitape::MultiTapeTerm>>> for automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::build_extended_products_for::{closure#2}<'_0, '_1, '_2>}]
-    Source: 'src/automata/multi_tape_builder.rs', lines 1067:30-1067:89 -/
+    Source: 'src/automata/multi_tape_builder.rs', lines 1133:30-1133:89 -/
 @[reducible]
 def
   automata.multi_tape_builder.MultiTapeBuilder.build_extended_products_for.closure_2.Insts.CoreOpsFunctionFnMutTuplePairUsizeShared0UsizeClonedIter1MultiTapeTerm
@@ -14134,7 +16491,7 @@ def
 }
 
 /-- [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::build_extended_products_for::{impl core::ops::function::FnMut<(&'_0 alloc::vec::Vec<automata_builder::automata::multi_tape_product_trie::OffsetGroupedTerms>,), bool> for automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::build_extended_products_for::{closure#1}<'_0>}::call_mut]:
-    Source: 'src/automata/multi_tape_builder.rs', lines 1059:36-1059:65 -/
+    Source: 'src/automata/multi_tape_builder.rs', lines 1125:36-1125:65 -/
 def
   automata.multi_tape_builder.MultiTapeBuilder.build_extended_products_for.closure_1.Insts.CoreOpsFunctionFnMutTupleShared0VecOffsetGroupedTermsBool.call_mut
   (c :
@@ -14148,7 +16505,7 @@ def
   ok (¬ b, ())
 
 /-- [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::build_extended_products_for::{impl core::ops::function::FnOnce<(&'_0 alloc::vec::Vec<automata_builder::automata::multi_tape_product_trie::OffsetGroupedTerms>,), bool> for automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::build_extended_products_for::{closure#1}<'_0>}::call_once]:
-    Source: 'src/automata/multi_tape_builder.rs', lines 1059:36-1059:65 -/
+    Source: 'src/automata/multi_tape_builder.rs', lines 1125:36-1125:65 -/
 def
   automata.multi_tape_builder.MultiTapeBuilder.build_extended_products_for.closure_1.Insts.CoreOpsFunctionFnOnceTupleShared0VecOffsetGroupedTermsBool.call_once
   (c :
@@ -14162,7 +16519,7 @@ def
   ok b
 
 /-- Trait implementation: [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::build_extended_products_for::{impl core::ops::function::FnOnce<(&'_0 alloc::vec::Vec<automata_builder::automata::multi_tape_product_trie::OffsetGroupedTerms>,), bool> for automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::build_extended_products_for::{closure#1}<'_0>}]
-    Source: 'src/automata/multi_tape_builder.rs', lines 1059:36-1059:65 -/
+    Source: 'src/automata/multi_tape_builder.rs', lines 1125:36-1125:65 -/
 @[reducible]
 def
   automata.multi_tape_builder.MultiTapeBuilder.build_extended_products_for.closure_1.Insts.CoreOpsFunctionFnOnceTupleShared0VecOffsetGroupedTermsBool
@@ -14174,7 +16531,7 @@ def
 }
 
 /-- Trait implementation: [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::build_extended_products_for::{impl core::ops::function::FnMut<(&'_0 alloc::vec::Vec<automata_builder::automata::multi_tape_product_trie::OffsetGroupedTerms>,), bool> for automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::build_extended_products_for::{closure#1}<'_0>}]
-    Source: 'src/automata/multi_tape_builder.rs', lines 1059:36-1059:65 -/
+    Source: 'src/automata/multi_tape_builder.rs', lines 1125:36-1125:65 -/
 @[reducible]
 def
   automata.multi_tape_builder.MultiTapeBuilder.build_extended_products_for.closure_1.Insts.CoreOpsFunctionFnMutTupleShared0VecOffsetGroupedTermsBool
@@ -14188,7 +16545,7 @@ def
 }
 
 /-- [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::build_extended_products_for::{closure}::{impl core::ops::function::FnOnce<(), automata_builder::automata::multi_tape_builder::CompileTapesError> for automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::build_extended_products_for::{closure}::{closure}<'_0>}::call_once]:
-    Source: 'src/automata/multi_tape_builder.rs', lines 994:28-994:88 -/
+    Source: 'src/automata/multi_tape_builder.rs', lines 1060:28-1060:88 -/
 def
   automata.multi_tape_builder.MultiTapeBuilder.build_extended_products_for.closure.closure.Insts.CoreOpsFunctionFnOnceTupleCompileTapesError.call_once
   (c :
@@ -14200,7 +16557,7 @@ def
   ok (automata.multi_tape_builder.CompileTapesError.MissingPriority s)
 
 /-- Trait implementation: [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::build_extended_products_for::{closure}::{impl core::ops::function::FnOnce<(), automata_builder::automata::multi_tape_builder::CompileTapesError> for automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::build_extended_products_for::{closure}::{closure}<'_0>}]
-    Source: 'src/automata/multi_tape_builder.rs', lines 994:28-994:88 -/
+    Source: 'src/automata/multi_tape_builder.rs', lines 1060:28-1060:88 -/
 @[reducible]
 def
   automata.multi_tape_builder.MultiTapeBuilder.build_extended_products_for.closure.closure.Insts.CoreOpsFunctionFnOnceTupleCompileTapesError
@@ -14212,7 +16569,7 @@ def
 }
 
 /-- [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::build_extended_products_for::{impl core::ops::function::Fn<(&'_1 automata_builder::automata::terms_multitape::MultiTapeProduct,), core::result::Result<u32, automata_builder::automata::multi_tape_builder::CompileTapesError>> for automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::build_extended_products_for::{closure}<'_0>}::call]:
-    Source: 'src/automata/multi_tape_builder.rs', lines 990:27-995:9 -/
+    Source: 'src/automata/multi_tape_builder.rs', lines 1056:27-1061:9 -/
 def
   automata.multi_tape_builder.MultiTapeBuilder.build_extended_products_for.closure.Insts.CoreOpsFunctionFnTupleShared1MultiTapeProductResultU32CompileTapesError.call
   (c :
@@ -14248,7 +16605,7 @@ def automata.tape_overlaps.MultiTapeStatesMap.get_ref
     self.whitelist tape_no
 
 /-- [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::_build_remap_state_paths]:
-    Source: 'src/automata/multi_tape_builder.rs', lines 1128:4-1174:5 -/
+    Source: 'src/automata/multi_tape_builder.rs', lines 1194:4-1240:5 -/
 def automata.multi_tape_builder.MultiTapeBuilder._build_remap_state_paths
   (tape_nos : Slice Std.U16) (tape_no_index : Std.Usize)
   (multi_tape_states_map : automata.tape_overlaps.MultiTapeStatesMap)
@@ -14262,7 +16619,7 @@ def automata.multi_tape_builder.MultiTapeBuilder._build_remap_state_paths
   sorry
 
 /-- [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::build_remap_state_paths]:
-    Source: 'src/automata/multi_tape_builder.rs', lines 1114:4-1126:5
+    Source: 'src/automata/multi_tape_builder.rs', lines 1180:4-1192:5
     Visibility: public -/
 def automata.multi_tape_builder.MultiTapeBuilder.build_remap_state_paths
   (tape_nos : Slice Std.U16)
@@ -14282,7 +16639,7 @@ def automata.multi_tape_builder.MultiTapeBuilder.build_remap_state_paths
   ok state_paths
 
 /-- [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::build_remap_states]: loop 0:
-    Source: 'src/automata/multi_tape_builder.rs', lines 1183:8-1187:9
+    Source: 'src/automata/multi_tape_builder.rs', lines 1249:8-1253:9
     Visibility: public -/
 @[rust_loop]
 def automata.multi_tape_builder.MultiTapeBuilder.build_remap_states_loop
@@ -14303,7 +16660,7 @@ def automata.multi_tape_builder.MultiTapeBuilder.build_remap_states_loop
 partial_fixpoint
 
 /-- [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::build_remap_states]:
-    Source: 'src/automata/multi_tape_builder.rs', lines 1176:4-1189:5
+    Source: 'src/automata/multi_tape_builder.rs', lines 1242:4-1255:5
     Visibility: public -/
 def automata.multi_tape_builder.MultiTapeBuilder.build_remap_states
   (tape_nos : Slice Std.U16)
@@ -14332,7 +16689,7 @@ def automata.tape_overlaps.MultiTapeStatesMap.new
   ok { whitelist := bm }
 
 /-- [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::build_global_state_path_remap]: loop 1:
-    Source: 'src/automata/multi_tape_builder.rs', lines 1199:12-1201:13
+    Source: 'src/automata/multi_tape_builder.rs', lines 1265:12-1267:13
     Visibility: public -/
 @[rust_loop]
 def
@@ -14356,7 +16713,7 @@ def
 partial_fixpoint
 
 /-- [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::build_global_state_path_remap]: loop 2:
-    Source: 'src/automata/multi_tape_builder.rs', lines 1203:12-1206:13
+    Source: 'src/automata/multi_tape_builder.rs', lines 1269:12-1272:13
     Visibility: public -/
 @[rust_loop]
 def
@@ -14378,7 +16735,7 @@ def
 partial_fixpoint
 
 /-- [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::build_global_state_path_remap]: loop 0:
-    Source: 'src/automata/multi_tape_builder.rs', lines 1197:8-1207:9
+    Source: 'src/automata/multi_tape_builder.rs', lines 1263:8-1273:9
     Visibility: public -/
 @[rust_loop]
 def
@@ -14411,7 +16768,7 @@ def
 partial_fixpoint
 
 /-- [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::build_global_state_path_remap]:
-    Source: 'src/automata/multi_tape_builder.rs', lines 1192:4-1212:5
+    Source: 'src/automata/multi_tape_builder.rs', lines 1258:4-1278:5
     Visibility: public -/
 def automata.multi_tape_builder.MultiTapeBuilder.build_global_state_path_remap
   (product_writes_map : automata.product_writes_map.ProductWritesMap)
@@ -14433,7 +16790,7 @@ def automata.multi_tape_builder.MultiTapeBuilder.build_global_state_path_remap
     automata.multi_tape_builder.REMAP_COUNTER_START
 
 /-- [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::reassign_state_path::{impl core::ops::function::FnMut<(&'_0 automata_builder::automata::terms_multitape::MultiTapeState,), automata_builder::automata::terms_multitape::MultiTapeState> for automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::reassign_state_path::{closure}<'_0, '_1>}::call_mut]:
-    Source: 'src/automata/multi_tape_builder.rs', lines 1221:17-1224:13 -/
+    Source: 'src/automata/multi_tape_builder.rs', lines 1287:17-1290:13 -/
 def
   automata.multi_tape_builder.MultiTapeBuilder.reassign_state_path.closure.Insts.CoreOpsFunctionFnMutTupleShared0MultiTapeStateMultiTapeState.call_mut
   (c :
@@ -14456,7 +16813,7 @@ def
     ok (mts, c)
 
 /-- [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::reassign_state_path::{impl core::ops::function::FnOnce<(&'_0 automata_builder::automata::terms_multitape::MultiTapeState,), automata_builder::automata::terms_multitape::MultiTapeState> for automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::reassign_state_path::{closure}<'_0, '_1>}::call_once]:
-    Source: 'src/automata/multi_tape_builder.rs', lines 1221:17-1224:13 -/
+    Source: 'src/automata/multi_tape_builder.rs', lines 1287:17-1290:13 -/
 def
   automata.multi_tape_builder.MultiTapeBuilder.reassign_state_path.closure.Insts.CoreOpsFunctionFnOnceTupleShared0MultiTapeStateMultiTapeState.call_once
   (c :
@@ -14470,7 +16827,7 @@ def
   ok mts1
 
 /-- Trait implementation: [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::reassign_state_path::{impl core::ops::function::FnOnce<(&'_0 automata_builder::automata::terms_multitape::MultiTapeState,), automata_builder::automata::terms_multitape::MultiTapeState> for automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::reassign_state_path::{closure}<'_0, '_1>}]
-    Source: 'src/automata/multi_tape_builder.rs', lines 1221:17-1224:13 -/
+    Source: 'src/automata/multi_tape_builder.rs', lines 1287:17-1290:13 -/
 @[reducible]
 def
   automata.multi_tape_builder.MultiTapeBuilder.reassign_state_path.closure.Insts.CoreOpsFunctionFnOnceTupleShared0MultiTapeStateMultiTapeState
@@ -14483,7 +16840,7 @@ def
 }
 
 /-- Trait implementation: [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::reassign_state_path::{impl core::ops::function::FnMut<(&'_0 automata_builder::automata::terms_multitape::MultiTapeState,), automata_builder::automata::terms_multitape::MultiTapeState> for automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::reassign_state_path::{closure}<'_0, '_1>}]
-    Source: 'src/automata/multi_tape_builder.rs', lines 1221:17-1224:13 -/
+    Source: 'src/automata/multi_tape_builder.rs', lines 1287:17-1290:13 -/
 @[reducible]
 def
   automata.multi_tape_builder.MultiTapeBuilder.reassign_state_path.closure.Insts.CoreOpsFunctionFnMutTupleShared0MultiTapeStateMultiTapeState
@@ -14498,7 +16855,7 @@ def
 }
 
 /-- [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::reassign_state_path]:
-    Source: 'src/automata/multi_tape_builder.rs', lines 1216:4-1226:5
+    Source: 'src/automata/multi_tape_builder.rs', lines 1282:4-1292:5
     Visibility: public -/
 def automata.multi_tape_builder.MultiTapeBuilder.reassign_state_path
   (input_state_path : Slice automata.terms_multitape.MultiTapeState)
@@ -14856,60 +17213,205 @@ def
   automata.multi_tape_product_trie.MultiTapeProductTrie.load_matching_products_for_terms
     self s
 
-/-- [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::build_transitions_for_product::{impl core::ops::function::FnMut<(&'_1 &'_0 automata_builder::automata::terms::Term,), bool> for automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::build_transitions_for_product::{closure#1}<'_0>}::call_mut]:
-    Source: 'src/automata/multi_tape_builder.rs', lines 1349:24-1349:49 -/
+/-- [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::build_transitions_for_product::{impl core::ops::function::FnOnce<(automata_builder::automata::multi_tape_builder::CompileTapesError,), automata_builder::automata::multi_tape_builder::CompileTapesError> for automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::build_transitions_for_product::{closure#3}<'_0, '_1, '_2, '_3, '_4>}::call_once]:
+    Source: 'src/automata/multi_tape_builder.rs', lines 1446:33-1458:25 -/
 def
-  automata.multi_tape_builder.MultiTapeBuilder.build_transitions_for_product.closure_1.Insts.CoreOpsFunctionFnMutTupleShared1Shared0TermBool.call_mut
+  automata.multi_tape_builder.MultiTapeBuilder.build_transitions_for_product.closure_3.Insts.CoreOpsFunctionFnOnceTupleCompileTapesErrorCompileTapesError.call_once
   (c :
-  automata.multi_tape_builder.MultiTapeBuilder.build_transitions_for_product.closure_1)
+  automata.multi_tape_builder.MultiTapeBuilder.build_transitions_for_product.closure_3)
+  (tupled_args : automata.multi_tape_builder.CompileTapesError) :
+  Result automata.multi_tape_builder.CompileTapesError
+  := do
+  let (v, bm, mtp, mtp1) := c
+  match tupled_args with
+  | automata.multi_tape_builder.CompileTapesError.ProductWrites _ =>
+    ok tupled_args
+  | automata.multi_tape_builder.CompileTapesError.ExtendedProductOutputConflict
+    _ _ =>
+    ok tupled_args
+  | automata.multi_tape_builder.CompileTapesError.Trie _ => ok tupled_args
+  | automata.multi_tape_builder.CompileTapesError.OverlapsFSM _ =>
+    ok tupled_args
+  | automata.multi_tape_builder.CompileTapesError.MissingRemap msg =>
+    let s ← automata.multi_tape_builder.product_repr mtp
+    let s1 ← automata.terms_multitape.MultiTapeProduct.get_annotation mtp
+    let s2 ← automata.multi_tape_builder.product_repr mtp1
+    let a ←
+      core.fmt.rt.Argument.new_display alloc.string.String.Insts.CoreFmtDisplay
+        msg
+    let a1 ←
+      core.fmt.rt.Argument.new_debug (core.fmt.DebugShared (core.fmt.DebugVec
+        automata.terms_multitape.MultiTapeState.Insts.CoreFmtDebug)) v
+    let a2 ←
+      core.fmt.rt.Argument.new_debug
+        (alloc.collections.btree.map.BTreeMap.Insts.CoreFmtDebug
+        core.fmt.DebugU16 core.fmt.DebugU32
+        alloc.alloc.Global.Insts.CoreAllocAllocatorClone) bm
+    let a3 ←
+      core.fmt.rt.Argument.new_display alloc.string.String.Insts.CoreFmtDisplay
+        s
+    let a4 ←
+      core.fmt.rt.Argument.new_display (Shared0T.Insts.CoreFmtDisplay
+        alloc.string.String.Insts.CoreFmtDisplay) s1
+    let a5 ←
+      core.fmt.rt.Argument.new_display alloc.string.String.Insts.CoreFmtDisplay
+        s2
+    let a6 ←
+      core.fmt.Arguments.new
+        (Array.make 91#usize [
+          192#u8, 30#u8, 32#u8, 124#u8, 32#u8, 111#u8, 117#u8, 116#u8, 112#u8,
+          117#u8, 116#u8, 32#u8, 111#u8, 102#u8, 32#u8, 105#u8, 110#u8, 112#u8,
+          117#u8, 116#u8, 32#u8, 115#u8, 116#u8, 97#u8, 116#u8, 101#u8, 32#u8,
+          112#u8, 97#u8, 116#u8, 104#u8, 32#u8, 192#u8, 13#u8, 32#u8, 119#u8,
+          105#u8, 116#u8, 104#u8, 32#u8, 119#u8, 114#u8, 105#u8, 116#u8,
+          101#u8, 115#u8, 32#u8, 192#u8, 12#u8, 32#u8, 124#u8, 32#u8, 112#u8,
+          114#u8, 111#u8, 100#u8, 117#u8, 99#u8, 116#u8, 58#u8, 32#u8, 192#u8,
+          2#u8, 32#u8, 91#u8, 192#u8, 22#u8, 93#u8, 32#u8, 124#u8, 32#u8,
+          101#u8, 120#u8, 112#u8, 97#u8, 110#u8, 100#u8, 101#u8, 100#u8, 32#u8,
+          112#u8, 114#u8, 111#u8, 100#u8, 117#u8, 99#u8, 116#u8, 58#u8, 32#u8,
+          192#u8, 0#u8
+          ]) (Array.make 6#usize [ a, a1, a2, a3, a4, a5 ])
+    let s3 ← alloc.fmt.format a6
+    let s4 ← core.hint.must_use s3
+    ok (automata.multi_tape_builder.CompileTapesError.MissingRemap s4)
+  | automata.multi_tape_builder.CompileTapesError.HaltState _ => ok tupled_args
+  | automata.multi_tape_builder.CompileTapesError.ConflictingWrites _ =>
+    ok tupled_args
+  | automata.multi_tape_builder.CompileTapesError.Transition _ =>
+    ok tupled_args
+  | automata.multi_tape_builder.CompileTapesError.MissingPriority _ =>
+    ok tupled_args
+  | automata.multi_tape_builder.CompileTapesError.Invalid _ => ok tupled_args
+
+/-- Trait implementation: [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::build_transitions_for_product::{impl core::ops::function::FnOnce<(automata_builder::automata::multi_tape_builder::CompileTapesError,), automata_builder::automata::multi_tape_builder::CompileTapesError> for automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::build_transitions_for_product::{closure#3}<'_0, '_1, '_2, '_3, '_4>}]
+    Source: 'src/automata/multi_tape_builder.rs', lines 1446:33-1458:25 -/
+@[reducible]
+def
+  automata.multi_tape_builder.MultiTapeBuilder.build_transitions_for_product.closure_3.Insts.CoreOpsFunctionFnOnceTupleCompileTapesErrorCompileTapesError
+  : core.ops.function.FnOnce
+  automata.multi_tape_builder.MultiTapeBuilder.build_transitions_for_product.closure_3
+  automata.multi_tape_builder.CompileTapesError
+  automata.multi_tape_builder.CompileTapesError := {
+  call_once :=
+    automata.multi_tape_builder.MultiTapeBuilder.build_transitions_for_product.closure_3.Insts.CoreOpsFunctionFnOnceTupleCompileTapesErrorCompileTapesError.call_once
+}
+
+/-- [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::build_transitions_for_product::{impl core::ops::function::FnMut<(&'_1 &'_0 automata_builder::automata::terms::Term,), bool> for automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::build_transitions_for_product::{closure#2}<'_0>}::call_mut]:
+    Source: 'src/automata/multi_tape_builder.rs', lines 1425:24-1425:49 -/
+def
+  automata.multi_tape_builder.MultiTapeBuilder.build_transitions_for_product.closure_2.Insts.CoreOpsFunctionFnMutTupleShared1Shared0TermBool.call_mut
+  (c :
+  automata.multi_tape_builder.MultiTapeBuilder.build_transitions_for_product.closure_2)
   (tupled_args : automata.terms.Term) :
   Result (Bool ×
-    automata.multi_tape_builder.MultiTapeBuilder.build_transitions_for_product.closure_1)
+    automata.multi_tape_builder.MultiTapeBuilder.build_transitions_for_product.closure_2)
   := do
   ok (tupled_args.position = 0#i64, ())
 
-/-- [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::build_transitions_for_product::{impl core::ops::function::FnOnce<(&'_1 &'_0 automata_builder::automata::terms::Term,), bool> for automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::build_transitions_for_product::{closure#1}<'_0>}::call_once]:
-    Source: 'src/automata/multi_tape_builder.rs', lines 1349:24-1349:49 -/
+/-- [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::build_transitions_for_product::{impl core::ops::function::FnOnce<(&'_1 &'_0 automata_builder::automata::terms::Term,), bool> for automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::build_transitions_for_product::{closure#2}<'_0>}::call_once]:
+    Source: 'src/automata/multi_tape_builder.rs', lines 1425:24-1425:49 -/
 def
-  automata.multi_tape_builder.MultiTapeBuilder.build_transitions_for_product.closure_1.Insts.CoreOpsFunctionFnOnceTupleShared1Shared0TermBool.call_once
+  automata.multi_tape_builder.MultiTapeBuilder.build_transitions_for_product.closure_2.Insts.CoreOpsFunctionFnOnceTupleShared1Shared0TermBool.call_once
   (c :
-  automata.multi_tape_builder.MultiTapeBuilder.build_transitions_for_product.closure_1)
+  automata.multi_tape_builder.MultiTapeBuilder.build_transitions_for_product.closure_2)
   (t : automata.terms.Term) :
   Result Bool
   := do
   let (b, _) ←
-    automata.multi_tape_builder.MultiTapeBuilder.build_transitions_for_product.closure_1.Insts.CoreOpsFunctionFnMutTupleShared1Shared0TermBool.call_mut
+    automata.multi_tape_builder.MultiTapeBuilder.build_transitions_for_product.closure_2.Insts.CoreOpsFunctionFnMutTupleShared1Shared0TermBool.call_mut
       () t
   ok b
 
-/-- Trait implementation: [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::build_transitions_for_product::{impl core::ops::function::FnOnce<(&'_1 &'_0 automata_builder::automata::terms::Term,), bool> for automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::build_transitions_for_product::{closure#1}<'_0>}]
-    Source: 'src/automata/multi_tape_builder.rs', lines 1349:24-1349:49 -/
+/-- Trait implementation: [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::build_transitions_for_product::{impl core::ops::function::FnOnce<(&'_1 &'_0 automata_builder::automata::terms::Term,), bool> for automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::build_transitions_for_product::{closure#2}<'_0>}]
+    Source: 'src/automata/multi_tape_builder.rs', lines 1425:24-1425:49 -/
 @[reducible]
 def
-  automata.multi_tape_builder.MultiTapeBuilder.build_transitions_for_product.closure_1.Insts.CoreOpsFunctionFnOnceTupleShared1Shared0TermBool
+  automata.multi_tape_builder.MultiTapeBuilder.build_transitions_for_product.closure_2.Insts.CoreOpsFunctionFnOnceTupleShared1Shared0TermBool
   : core.ops.function.FnOnce
-  automata.multi_tape_builder.MultiTapeBuilder.build_transitions_for_product.closure_1
+  automata.multi_tape_builder.MultiTapeBuilder.build_transitions_for_product.closure_2
   automata.terms.Term Bool := {
   call_once :=
-    automata.multi_tape_builder.MultiTapeBuilder.build_transitions_for_product.closure_1.Insts.CoreOpsFunctionFnOnceTupleShared1Shared0TermBool.call_once
+    automata.multi_tape_builder.MultiTapeBuilder.build_transitions_for_product.closure_2.Insts.CoreOpsFunctionFnOnceTupleShared1Shared0TermBool.call_once
 }
 
-/-- Trait implementation: [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::build_transitions_for_product::{impl core::ops::function::FnMut<(&'_1 &'_0 automata_builder::automata::terms::Term,), bool> for automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::build_transitions_for_product::{closure#1}<'_0>}]
-    Source: 'src/automata/multi_tape_builder.rs', lines 1349:24-1349:49 -/
+/-- Trait implementation: [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::build_transitions_for_product::{impl core::ops::function::FnMut<(&'_1 &'_0 automata_builder::automata::terms::Term,), bool> for automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::build_transitions_for_product::{closure#2}<'_0>}]
+    Source: 'src/automata/multi_tape_builder.rs', lines 1425:24-1425:49 -/
 @[reducible]
 def
-  automata.multi_tape_builder.MultiTapeBuilder.build_transitions_for_product.closure_1.Insts.CoreOpsFunctionFnMutTupleShared1Shared0TermBool
+  automata.multi_tape_builder.MultiTapeBuilder.build_transitions_for_product.closure_2.Insts.CoreOpsFunctionFnMutTupleShared1Shared0TermBool
   : core.ops.function.FnMut
-  automata.multi_tape_builder.MultiTapeBuilder.build_transitions_for_product.closure_1
+  automata.multi_tape_builder.MultiTapeBuilder.build_transitions_for_product.closure_2
   automata.terms.Term Bool := {
   FnOnceInst :=
-    automata.multi_tape_builder.MultiTapeBuilder.build_transitions_for_product.closure_1.Insts.CoreOpsFunctionFnOnceTupleShared1Shared0TermBool
+    automata.multi_tape_builder.MultiTapeBuilder.build_transitions_for_product.closure_2.Insts.CoreOpsFunctionFnOnceTupleShared1Shared0TermBool
   call_mut :=
-    automata.multi_tape_builder.MultiTapeBuilder.build_transitions_for_product.closure_1.Insts.CoreOpsFunctionFnMutTupleShared1Shared0TermBool.call_mut
+    automata.multi_tape_builder.MultiTapeBuilder.build_transitions_for_product.closure_2.Insts.CoreOpsFunctionFnMutTupleShared1Shared0TermBool.call_mut
+}
+
+/-- [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::build_transitions_for_product::{impl core::ops::function::FnOnce<(automata_builder::automata::multi_tape_builder::CompileTapesError,), automata_builder::automata::multi_tape_builder::CompileTapesError> for automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::build_transitions_for_product::{closure#1}<'_0>}::call_once]:
+    Source: 'src/automata/multi_tape_builder.rs', lines 1366:29-1374:21 -/
+def
+  automata.multi_tape_builder.MultiTapeBuilder.build_transitions_for_product.closure_1.Insts.CoreOpsFunctionFnOnceTupleCompileTapesErrorCompileTapesError.call_once
+  (c :
+  automata.multi_tape_builder.MultiTapeBuilder.build_transitions_for_product.closure_1)
+  (tupled_args : automata.multi_tape_builder.CompileTapesError) :
+  Result automata.multi_tape_builder.CompileTapesError
+  := do
+  match tupled_args with
+  | automata.multi_tape_builder.CompileTapesError.ProductWrites _ =>
+    ok tupled_args
+  | automata.multi_tape_builder.CompileTapesError.ExtendedProductOutputConflict
+    _ _ =>
+    ok tupled_args
+  | automata.multi_tape_builder.CompileTapesError.Trie _ => ok tupled_args
+  | automata.multi_tape_builder.CompileTapesError.OverlapsFSM _ =>
+    ok tupled_args
+  | automata.multi_tape_builder.CompileTapesError.MissingRemap msg =>
+    let s ← automata.multi_tape_builder.product_repr c
+    let s1 ← automata.terms_multitape.MultiTapeProduct.get_annotation c
+    let a ←
+      core.fmt.rt.Argument.new_display alloc.string.String.Insts.CoreFmtDisplay
+        msg
+    let a1 ←
+      core.fmt.rt.Argument.new_display alloc.string.String.Insts.CoreFmtDisplay
+        s
+    let a2 ←
+      core.fmt.rt.Argument.new_display (Shared0T.Insts.CoreFmtDisplay
+        alloc.string.String.Insts.CoreFmtDisplay) s1
+    let a3 ←
+      core.fmt.Arguments.new
+        (Array.make 22#usize [
+          192#u8, 12#u8, 32#u8, 124#u8, 32#u8, 112#u8, 114#u8, 111#u8, 100#u8,
+          117#u8, 99#u8, 116#u8, 58#u8, 32#u8, 192#u8, 2#u8, 32#u8, 91#u8,
+          192#u8, 1#u8, 93#u8, 0#u8
+          ]) (Array.make 3#usize [ a, a1, a2 ])
+    let s2 ← alloc.fmt.format a3
+    let s3 ← core.hint.must_use s2
+    ok (automata.multi_tape_builder.CompileTapesError.MissingRemap s3)
+  | automata.multi_tape_builder.CompileTapesError.HaltState _ => ok tupled_args
+  | automata.multi_tape_builder.CompileTapesError.ConflictingWrites _ =>
+    ok tupled_args
+  | automata.multi_tape_builder.CompileTapesError.Transition _ =>
+    ok tupled_args
+  | automata.multi_tape_builder.CompileTapesError.MissingPriority _ =>
+    ok tupled_args
+  | automata.multi_tape_builder.CompileTapesError.Invalid _ => ok tupled_args
+
+/-- Trait implementation: [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::build_transitions_for_product::{impl core::ops::function::FnOnce<(automata_builder::automata::multi_tape_builder::CompileTapesError,), automata_builder::automata::multi_tape_builder::CompileTapesError> for automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::build_transitions_for_product::{closure#1}<'_0>}]
+    Source: 'src/automata/multi_tape_builder.rs', lines 1366:29-1374:21 -/
+@[reducible]
+def
+  automata.multi_tape_builder.MultiTapeBuilder.build_transitions_for_product.closure_1.Insts.CoreOpsFunctionFnOnceTupleCompileTapesErrorCompileTapesError
+  : core.ops.function.FnOnce
+  automata.multi_tape_builder.MultiTapeBuilder.build_transitions_for_product.closure_1
+  automata.multi_tape_builder.CompileTapesError
+  automata.multi_tape_builder.CompileTapesError := {
+  call_once :=
+    automata.multi_tape_builder.MultiTapeBuilder.build_transitions_for_product.closure_1.Insts.CoreOpsFunctionFnOnceTupleCompileTapesErrorCompileTapesError.call_once
 }
 
 /-- [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::build_transitions_for_product::{impl core::ops::function::FnOnce<(), automata_builder::automata::product_writes_map::ProductWritesError> for automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::build_transitions_for_product::{closure}<'_0>}::call_once]:
-    Source: 'src/automata/multi_tape_builder.rs', lines 1243:24-1245:13 -/
+    Source: 'src/automata/multi_tape_builder.rs', lines 1309:24-1311:13 -/
 def
   automata.multi_tape_builder.MultiTapeBuilder.build_transitions_for_product.closure.Insts.CoreOpsFunctionFnOnceTupleProductWritesError.call_once
   (c :
@@ -14921,7 +17423,7 @@ def
   ok (automata.product_writes_map.ProductWritesError.MissingProduct s)
 
 /-- Trait implementation: [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::build_transitions_for_product::{impl core::ops::function::FnOnce<(), automata_builder::automata::product_writes_map::ProductWritesError> for automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::build_transitions_for_product::{closure}<'_0>}]
-    Source: 'src/automata/multi_tape_builder.rs', lines 1243:24-1245:13 -/
+    Source: 'src/automata/multi_tape_builder.rs', lines 1309:24-1311:13 -/
 @[reducible]
 def
   automata.multi_tape_builder.MultiTapeBuilder.build_transitions_for_product.closure.Insts.CoreOpsFunctionFnOnceTupleProductWritesError
@@ -14931,6 +17433,87 @@ def
   call_once :=
     automata.multi_tape_builder.MultiTapeBuilder.build_transitions_for_product.closure.Insts.CoreOpsFunctionFnOnceTupleProductWritesError.call_once
 }
+
+/-- [automata_builder::automata::terms_multitape::{automata_builder::automata::terms_multitape::MultiTapeProduct}::is_satisfiable_with]: loop 0:
+    Source: 'src/automata/terms_multitape.rs', lines 454:8-458:9
+    Visibility: public -/
+@[rust_loop]
+def automata.terms_multitape.MultiTapeProduct.is_satisfiable_with_loop0
+  (iter : core.slice.iter.Iter automata.terms_multitape.MultiTapeTerm)
+  (allocations : std.collections.hash.map.HashMap (Std.I64 × Std.U16) Std.U32
+  std.hash.random.RandomState alloc.alloc.Global) :
+  Result (std.collections.hash.map.HashMap (Std.I64 × Std.U16) Std.U32
+    std.hash.random.RandomState alloc.alloc.Global)
+  := do
+  let (o, iter1) ← core.slice.iter.IteratorSliceIter.next iter
+  match o with
+  | none => ok allocations
+  | some term =>
+    let (tape_no, cell_state) := term.state
+    let (_, allocations1) ←
+      std.collections.hash.map.HashMap.insert (Pair.Insts.CoreCmpEq
+        core.cmp.EqI64 core.cmp.EqU16) (Pair.Insts.CoreHashHash
+        I64.Insts.CoreHashHash U16.Insts.CoreHashHash)
+        std.hash.random.RandomState.Insts.CoreHashBuildHasherDefaultHasher
+        allocations (term.position, tape_no) cell_state
+    automata.terms_multitape.MultiTapeProduct.is_satisfiable_with_loop0 iter1
+      allocations1
+partial_fixpoint
+
+/-- [automata_builder::automata::terms_multitape::{automata_builder::automata::terms_multitape::MultiTapeProduct}::is_satisfiable_with]: loop 1:
+    Source: 'src/automata/terms_multitape.rs', lines 459:8-472:5
+    Visibility: public -/
+@[rust_loop]
+def automata.terms_multitape.MultiTapeProduct.is_satisfiable_with_loop1
+  (iter : core.slice.iter.Iter automata.terms_multitape.MultiTapeTerm)
+  (allocations : std.collections.hash.map.HashMap (Std.I64 × Std.U16) Std.U32
+  std.hash.random.RandomState alloc.alloc.Global) :
+  Result Bool
+  := do
+  let (o, iter1) ← core.slice.iter.IteratorSliceIter.next iter
+  match o with
+  | none => ok true
+  | some other_term =>
+    let (tape_no, cell_state) := other_term.state
+    let o1 ←
+      std.collections.hash.map.HashMap.get (Pair.Insts.CoreCmpEq core.cmp.EqI64
+        core.cmp.EqU16) (Pair.Insts.CoreHashHash I64.Insts.CoreHashHash
+        U16.Insts.CoreHashHash)
+        std.hash.random.RandomState.Insts.CoreHashBuildHasherDefaultHasher
+        (core.borrow.Borrow.Blanket (Std.I64 × Std.U16))
+        (Pair.Insts.CoreHashHash I64.Insts.CoreHashHash U16.Insts.CoreHashHash)
+        (Pair.Insts.CoreCmpEq core.cmp.EqI64 core.cmp.EqU16) allocations
+        (other_term.position, tape_no)
+    let existing_write ← lift (core.option.Option.unwrap_or o1 cell_state)
+    if existing_write != cell_state
+    then ok false
+    else
+      automata.terms_multitape.MultiTapeProduct.is_satisfiable_with_loop1 iter1
+        allocations
+partial_fixpoint
+
+/-- [automata_builder::automata::terms_multitape::{automata_builder::automata::terms_multitape::MultiTapeProduct}::is_satisfiable_with]:
+    Source: 'src/automata/terms_multitape.rs', lines 450:4-472:5
+    Visibility: public -/
+def automata.terms_multitape.MultiTapeProduct.is_satisfiable_with
+  (self : automata.terms_multitape.MultiTapeProduct)
+  (other : automata.terms_multitape.MultiTapeProduct) :
+  Result Bool
+  := do
+  let other_terms ←
+    automata.terms_multitape.MultiTapeProduct.to_flat_terms other
+  let allocations ←
+    std.collections.hash.map.HashMapKVRandomStateGlobal.new (Std.I64 ×
+      Std.U16) Std.U32
+  let s := alloc.vec.Vec.deref self._terms
+  let iter ← core.slice.Slice.iter s
+  let allocations1 ←
+    automata.terms_multitape.MultiTapeProduct.is_satisfiable_with_loop0 iter
+      allocations
+  let s1 := alloc.vec.Vec.deref other_terms
+  let iter1 ← core.slice.Slice.iter s1
+  automata.terms_multitape.MultiTapeProduct.is_satisfiable_with_loop1 iter1
+    allocations1
 
 /-- [automata_builder::automata::tape_overlaps_fsm::{automata_builder::automata::tape_overlaps_fsm::TapeOverlapsFSM}::merge::{impl core::ops::function::FnMut<(&'_0 automata_builder::automata::tape_overlaps_fsm::TapeOverlapsFSMState,), &'_1 automata_builder::automata::tape_overlaps::TapeOverlaps> for automata_builder::automata::tape_overlaps_fsm::{automata_builder::automata::tape_overlaps_fsm::TapeOverlapsFSM}::merge::{closure}<'_0, '_1>}::call_mut]:
     Source: 'src/automata/tape_overlaps_fsm.rs', lines 209:55-209:84 -/
@@ -15175,128 +17758,8 @@ def automata.rule_generator.AutomataTransitionsGroup.merge
   let iter ← alloc.vec.IntoIteratorVec.into_iter other.transitions
   automata.rule_generator.AutomataTransitionsGroup.merge_loop iter self
 
-/-- [automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::get_stub_writes_str_for::{closure}::{impl core::ops::function::FnMut<((&'_0 u16, &'_1 u32),), alloc::string::String> for automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::get_stub_writes_str_for::{closure}::{closure}<'_0, '_1>}::call_mut]:
-    Source: 'src/automata/product_writes_map.rs', lines 232:25-232:87 -/
-def
-  automata.product_writes_map.ProductWritesMap.get_stub_writes_str_for.closure.closure.Insts.CoreOpsFunctionFnMutTuplePairShared0U16Shared1U32String.call_mut
-  (c :
-  automata.product_writes_map.ProductWritesMap.get_stub_writes_str_for.closure.closure)
-  (tupled_args : (Std.U16 × Std.U32)) :
-  Result (String ×
-    automata.product_writes_map.ProductWritesMap.get_stub_writes_str_for.closure.closure)
-  := do
-  let (tape_no, cell_state) := tupled_args
-  let a ←
-    core.fmt.rt.Argument.new_display (Shared0T.Insts.CoreFmtDisplay
-      U16.Insts.CoreFmtDisplay) tape_no
-  let a1 ←
-    core.fmt.rt.Argument.new_display (Shared0T.Insts.CoreFmtDisplay
-      U32.Insts.CoreFmtDisplay) cell_state
-  let a2 ←
-    core.fmt.Arguments.new
-      (Array.make 7#usize [ 1#u8, 84#u8, 192#u8, 1#u8, 58#u8, 192#u8, 0#u8 ])
-      (Array.make 2#usize [ a, a1 ])
-  let s ← alloc.fmt.format a2
-  let s1 ← core.hint.must_use s
-  ok (s1, ())
-
-/-- [automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::get_stub_writes_str_for::{closure}::{impl core::ops::function::FnOnce<((&'_0 u16, &'_1 u32),), alloc::string::String> for automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::get_stub_writes_str_for::{closure}::{closure}<'_0, '_1>}::call_once]:
-    Source: 'src/automata/product_writes_map.rs', lines 232:25-232:87 -/
-def
-  automata.product_writes_map.ProductWritesMap.get_stub_writes_str_for.closure.closure.Insts.CoreOpsFunctionFnOnceTuplePairShared0U16Shared1U32String.call_once
-  (c :
-  automata.product_writes_map.ProductWritesMap.get_stub_writes_str_for.closure.closure)
-  (p : (Std.U16 × Std.U32)) :
-  Result String
-  := do
-  let (s, _) ←
-    automata.product_writes_map.ProductWritesMap.get_stub_writes_str_for.closure.closure.Insts.CoreOpsFunctionFnMutTuplePairShared0U16Shared1U32String.call_mut
-      () p
-  ok s
-
-/-- Trait implementation: [automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::get_stub_writes_str_for::{closure}::{impl core::ops::function::FnOnce<((&'_0 u16, &'_1 u32),), alloc::string::String> for automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::get_stub_writes_str_for::{closure}::{closure}<'_0, '_1>}]
-    Source: 'src/automata/product_writes_map.rs', lines 232:25-232:87 -/
-@[reducible]
-def
-  automata.product_writes_map.ProductWritesMap.get_stub_writes_str_for.closure.closure.Insts.CoreOpsFunctionFnOnceTuplePairShared0U16Shared1U32String
-  : core.ops.function.FnOnce
-  automata.product_writes_map.ProductWritesMap.get_stub_writes_str_for.closure.closure
-  (Std.U16 × Std.U32) String := {
-  call_once :=
-    automata.product_writes_map.ProductWritesMap.get_stub_writes_str_for.closure.closure.Insts.CoreOpsFunctionFnOnceTuplePairShared0U16Shared1U32String.call_once
-}
-
-/-- Trait implementation: [automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::get_stub_writes_str_for::{closure}::{impl core::ops::function::FnMut<((&'_0 u16, &'_1 u32),), alloc::string::String> for automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::get_stub_writes_str_for::{closure}::{closure}<'_0, '_1>}]
-    Source: 'src/automata/product_writes_map.rs', lines 232:25-232:87 -/
-@[reducible]
-def
-  automata.product_writes_map.ProductWritesMap.get_stub_writes_str_for.closure.closure.Insts.CoreOpsFunctionFnMutTuplePairShared0U16Shared1U32String
-  : core.ops.function.FnMut
-  automata.product_writes_map.ProductWritesMap.get_stub_writes_str_for.closure.closure
-  (Std.U16 × Std.U32) String := {
-  FnOnceInst :=
-    automata.product_writes_map.ProductWritesMap.get_stub_writes_str_for.closure.closure.Insts.CoreOpsFunctionFnOnceTuplePairShared0U16Shared1U32String
-  call_mut :=
-    automata.product_writes_map.ProductWritesMap.get_stub_writes_str_for.closure.closure.Insts.CoreOpsFunctionFnMutTuplePairShared0U16Shared1U32String.call_mut
-}
-
-/-- [automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::get_stub_writes_str_for::{impl core::ops::function::FnOnce<(&'_0 alloc::collections::btree::map::BTreeMap<u16, u32, alloc::alloc::Global>,), alloc::string::String> for automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::get_stub_writes_str_for::{closure}<'_0>}::call_once]:
-    Source: 'src/automata/product_writes_map.rs', lines 229:17-234:13 -/
-def
-  automata.product_writes_map.ProductWritesMap.get_stub_writes_str_for.closure.Insts.CoreOpsFunctionFnOnceTupleShared0BTreeMapU16U32GlobalString.call_once
-  (c :
-  automata.product_writes_map.ProductWritesMap.get_stub_writes_str_for.closure)
-  (tupled_args : alloc.collections.btree.map.BTreeMap Std.U16 Std.U32
-  alloc.alloc.Global) :
-  Result String
-  := do
-  let i ←
-    alloc.collections.btree.map.BTreeMap.iter
-      alloc.alloc.Global.Insts.CoreAllocAllocatorClone tupled_args
-  let m ←
-    core.iter.traits.iterator.Iterator.map.default
-      (alloc.collections.btree.map.Iter.Insts.CoreIterTraitsIteratorIteratorPairSharedAKSharedAV
-      Std.U16 Std.U32)
-      automata.product_writes_map.ProductWritesMap.get_stub_writes_str_for.closure.closure.Insts.CoreOpsFunctionFnMutTuplePairShared0U16Shared1U32String
-      i ()
-  core.iter.traits.iterator.Iterator.collect.default
-    (core.iter.adapters.map.Map.Insts.CoreIterTraitsIteratorIterator
-    (alloc.collections.btree.map.Iter.Insts.CoreIterTraitsIteratorIteratorPairSharedAKSharedAV
-    Std.U16 Std.U32)
-    automata.product_writes_map.ProductWritesMap.get_stub_writes_str_for.closure.closure.Insts.CoreOpsFunctionFnMutTuplePairShared0U16Shared1U32String)
-    alloc.string.String.Insts.CoreIterTraitsCollectFromIteratorString m
-
-/-- Trait implementation: [automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::get_stub_writes_str_for::{impl core::ops::function::FnOnce<(&'_0 alloc::collections::btree::map::BTreeMap<u16, u32, alloc::alloc::Global>,), alloc::string::String> for automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::get_stub_writes_str_for::{closure}<'_0>}]
-    Source: 'src/automata/product_writes_map.rs', lines 229:17-234:13 -/
-@[reducible]
-def
-  automata.product_writes_map.ProductWritesMap.get_stub_writes_str_for.closure.Insts.CoreOpsFunctionFnOnceTupleShared0BTreeMapU16U32GlobalString
-  : core.ops.function.FnOnce
-  automata.product_writes_map.ProductWritesMap.get_stub_writes_str_for.closure
-  (alloc.collections.btree.map.BTreeMap Std.U16 Std.U32 alloc.alloc.Global)
-  String := {
-  call_once :=
-    automata.product_writes_map.ProductWritesMap.get_stub_writes_str_for.closure.Insts.CoreOpsFunctionFnOnceTupleShared0BTreeMapU16U32GlobalString.call_once
-}
-
-/-- [automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::get_stub_writes_str_for]:
-    Source: 'src/automata/product_writes_map.rs', lines 227:4-236:5
-    Visibility: public -/
-def automata.product_writes_map.ProductWritesMap.get_stub_writes_str_for
-  (self : automata.product_writes_map.ProductWritesMap)
-  (product : automata.terms_multitape.MultiTapeProduct) :
-  Result String
-  := do
-  let o ← automata.product_writes_map.ProductWritesMap.get self product
-  let o1 ←
-    core.option.Option.map
-      automata.product_writes_map.ProductWritesMap.get_stub_writes_str_for.closure.Insts.CoreOpsFunctionFnOnceTupleShared0BTreeMapU16U32GlobalString
-      o ()
-  core.option.Option.unwrap_or_default
-    alloc.string.String.Insts.CoreDefaultDefault o1
-
 /-- [automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::get_multi_tape_writes_for::{closure}::{impl core::ops::function::FnMut<((&'_0 u16, &'_1 u32),), automata_builder::automata::terms_multitape::MultiTapeState> for automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::get_multi_tape_writes_for::{closure}::{closure}<'_0, '_1>}::call_mut]:
-    Source: 'src/automata/product_writes_map.rs', lines 220:25-220:91 -/
+    Source: 'src/automata/product_writes_map.rs', lines 294:25-294:91 -/
 def
   automata.product_writes_map.ProductWritesMap.get_multi_tape_writes_for.closure.closure.Insts.CoreOpsFunctionFnMutTuplePairShared0U16Shared1U32MultiTapeState.call_mut
   (c :
@@ -15310,7 +17773,7 @@ def
   ok (mts, ())
 
 /-- [automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::get_multi_tape_writes_for::{closure}::{impl core::ops::function::FnOnce<((&'_0 u16, &'_1 u32),), automata_builder::automata::terms_multitape::MultiTapeState> for automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::get_multi_tape_writes_for::{closure}::{closure}<'_0, '_1>}::call_once]:
-    Source: 'src/automata/product_writes_map.rs', lines 220:25-220:91 -/
+    Source: 'src/automata/product_writes_map.rs', lines 294:25-294:91 -/
 def
   automata.product_writes_map.ProductWritesMap.get_multi_tape_writes_for.closure.closure.Insts.CoreOpsFunctionFnOnceTuplePairShared0U16Shared1U32MultiTapeState.call_once
   (c :
@@ -15324,7 +17787,7 @@ def
   ok mts
 
 /-- Trait implementation: [automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::get_multi_tape_writes_for::{closure}::{impl core::ops::function::FnOnce<((&'_0 u16, &'_1 u32),), automata_builder::automata::terms_multitape::MultiTapeState> for automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::get_multi_tape_writes_for::{closure}::{closure}<'_0, '_1>}]
-    Source: 'src/automata/product_writes_map.rs', lines 220:25-220:91 -/
+    Source: 'src/automata/product_writes_map.rs', lines 294:25-294:91 -/
 @[reducible]
 def
   automata.product_writes_map.ProductWritesMap.get_multi_tape_writes_for.closure.closure.Insts.CoreOpsFunctionFnOnceTuplePairShared0U16Shared1U32MultiTapeState
@@ -15336,7 +17799,7 @@ def
 }
 
 /-- Trait implementation: [automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::get_multi_tape_writes_for::{closure}::{impl core::ops::function::FnMut<((&'_0 u16, &'_1 u32),), automata_builder::automata::terms_multitape::MultiTapeState> for automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::get_multi_tape_writes_for::{closure}::{closure}<'_0, '_1>}]
-    Source: 'src/automata/product_writes_map.rs', lines 220:25-220:91 -/
+    Source: 'src/automata/product_writes_map.rs', lines 294:25-294:91 -/
 @[reducible]
 def
   automata.product_writes_map.ProductWritesMap.get_multi_tape_writes_for.closure.closure.Insts.CoreOpsFunctionFnMutTuplePairShared0U16Shared1U32MultiTapeState
@@ -15350,7 +17813,7 @@ def
 }
 
 /-- [automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::get_multi_tape_writes_for::{impl core::ops::function::FnOnce<(&'_0 alloc::collections::btree::map::BTreeMap<u16, u32, alloc::alloc::Global>,), alloc::collections::btree::set::BTreeSet<automata_builder::automata::terms_multitape::MultiTapeState, alloc::alloc::Global>> for automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::get_multi_tape_writes_for::{closure}<'_0>}::call_once]:
-    Source: 'src/automata/product_writes_map.rs', lines 217:17-222:13 -/
+    Source: 'src/automata/product_writes_map.rs', lines 291:17-296:13 -/
 def
   automata.product_writes_map.ProductWritesMap.get_multi_tape_writes_for.closure.Insts.CoreOpsFunctionFnOnceTupleShared0BTreeMapU16U32GlobalBTreeSetMultiTapeStateGlobal.call_once
   (c :
@@ -15378,7 +17841,7 @@ def
     automata.terms_multitape.MultiTapeState.Insts.CoreCmpOrd) m
 
 /-- Trait implementation: [automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::get_multi_tape_writes_for::{impl core::ops::function::FnOnce<(&'_0 alloc::collections::btree::map::BTreeMap<u16, u32, alloc::alloc::Global>,), alloc::collections::btree::set::BTreeSet<automata_builder::automata::terms_multitape::MultiTapeState, alloc::alloc::Global>> for automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::get_multi_tape_writes_for::{closure}<'_0>}]
-    Source: 'src/automata/product_writes_map.rs', lines 217:17-222:13 -/
+    Source: 'src/automata/product_writes_map.rs', lines 291:17-296:13 -/
 @[reducible]
 def
   automata.product_writes_map.ProductWritesMap.get_multi_tape_writes_for.closure.Insts.CoreOpsFunctionFnOnceTupleShared0BTreeMapU16U32GlobalBTreeSetMultiTapeStateGlobal
@@ -15392,7 +17855,7 @@ def
 }
 
 /-- [automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::get_multi_tape_writes_for]:
-    Source: 'src/automata/product_writes_map.rs', lines 213:4-224:5
+    Source: 'src/automata/product_writes_map.rs', lines 287:4-298:5
     Visibility: public -/
 def automata.product_writes_map.ProductWritesMap.get_multi_tape_writes_for
   (self : automata.product_writes_map.ProductWritesMap)
@@ -15409,8 +17872,19 @@ def automata.product_writes_map.ProductWritesMap.get_multi_tape_writes_for
     (alloc.collections.btree.set.BTreeSetTGlobal.Insts.CoreDefaultDefault
     automata.terms_multitape.MultiTapeState) o1
 
+/-- [automata_builder::automata::multi_tape_transition::{automata_builder::automata::multi_tape_transition::MultiTapeTransitionsGroup}::iter_transitions]:
+    Source: 'src/automata/multi_tape_transition.rs', lines 155:4-157:5
+    Visibility: public -/
+def automata.multi_tape_transition.MultiTapeTransitionsGroup.iter_transitions
+  (self : automata.multi_tape_transition.MultiTapeTransitionsGroup) :
+  Result (core.slice.iter.Iter
+    automata.multi_tape_transition.MultiTapeTransition)
+  := do
+  let s := alloc.vec.Vec.deref self.transitions
+  core.slice.Slice.iter s
+
 /-- [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::compile_tapes::{impl core::ops::function::Fn<(&'_0 &'_1 automata_builder::automata::terms_multitape::MultiTapeProduct,), core::result::Result<(automata_builder::automata::rule_generator::AutomataTransitionsGroup, alloc::vec::Vec<automata_builder::automata::terms_multitape::MultiTapeProduct>), automata_builder::automata::multi_tape_builder::CompileTapesError>> for automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::compile_tapes::{closure#1}<'_0, '_1, '_2, '_3>}::call]:
-    Source: 'src/automata/multi_tape_builder.rs', lines 1477:21-1477:81 -/
+    Source: 'src/automata/multi_tape_builder.rs', lines 1613:21-1613:81 -/
 def
   automata.multi_tape_builder.MultiTapeBuilder.compile_tapes.closure_1.Insts.CoreOpsFunctionFnTupleShared0Shared1MultiTapeProductResultPairAutomataTransitionsGroupVecMultiTapeProductCompileTapesError.call
   (c : automata.multi_tape_builder.MultiTapeBuilder.compile_tapes.closure_1)
@@ -15423,7 +17897,7 @@ def
     tupled_args
 
 /-- [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::compile_tapes::{impl core::ops::function::FnMut<(&'_0 &'_1 automata_builder::automata::terms_multitape::MultiTapeProduct,), core::result::Result<(automata_builder::automata::rule_generator::AutomataTransitionsGroup, alloc::vec::Vec<automata_builder::automata::terms_multitape::MultiTapeProduct>), automata_builder::automata::multi_tape_builder::CompileTapesError>> for automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::compile_tapes::{closure#1}<'_0, '_1, '_2, '_3>}::call_mut]:
-    Source: 'src/automata/multi_tape_builder.rs', lines 1477:21-1477:81 -/
+    Source: 'src/automata/multi_tape_builder.rs', lines 1613:21-1613:81 -/
 def
   automata.multi_tape_builder.MultiTapeBuilder.compile_tapes.closure_1.Insts.CoreOpsFunctionFnMutTupleShared0Shared1MultiTapeProductResultPairAutomataTransitionsGroupVecMultiTapeProductCompileTapesError.call_mut
   (state :
@@ -15440,7 +17914,7 @@ def
   ok (r, state)
 
 /-- [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::compile_tapes::{impl core::ops::function::FnOnce<(&'_0 &'_1 automata_builder::automata::terms_multitape::MultiTapeProduct,), core::result::Result<(automata_builder::automata::rule_generator::AutomataTransitionsGroup, alloc::vec::Vec<automata_builder::automata::terms_multitape::MultiTapeProduct>), automata_builder::automata::multi_tape_builder::CompileTapesError>> for automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::compile_tapes::{closure#1}<'_0, '_1, '_2, '_3>}::call_once]:
-    Source: 'src/automata/multi_tape_builder.rs', lines 1477:21-1477:81 -/
+    Source: 'src/automata/multi_tape_builder.rs', lines 1613:21-1613:81 -/
 def
   automata.multi_tape_builder.MultiTapeBuilder.compile_tapes.closure_1.Insts.CoreOpsFunctionFnOnceTupleShared0Shared1MultiTapeProductResultPairAutomataTransitionsGroupVecMultiTapeProductCompileTapesError.call_once
   (c : automata.multi_tape_builder.MultiTapeBuilder.compile_tapes.closure_1)
@@ -15455,7 +17929,7 @@ def
   ok r
 
 /-- Trait implementation: [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::compile_tapes::{impl core::ops::function::FnOnce<(&'_0 &'_1 automata_builder::automata::terms_multitape::MultiTapeProduct,), core::result::Result<(automata_builder::automata::rule_generator::AutomataTransitionsGroup, alloc::vec::Vec<automata_builder::automata::terms_multitape::MultiTapeProduct>), automata_builder::automata::multi_tape_builder::CompileTapesError>> for automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::compile_tapes::{closure#1}<'_0, '_1, '_2, '_3>}]
-    Source: 'src/automata/multi_tape_builder.rs', lines 1477:21-1477:81 -/
+    Source: 'src/automata/multi_tape_builder.rs', lines 1613:21-1613:81 -/
 @[reducible]
 def
   automata.multi_tape_builder.MultiTapeBuilder.compile_tapes.closure_1.Insts.CoreOpsFunctionFnOnceTupleShared0Shared1MultiTapeProductResultPairAutomataTransitionsGroupVecMultiTapeProductCompileTapesError
@@ -15470,7 +17944,7 @@ def
 }
 
 /-- Trait implementation: [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::compile_tapes::{impl core::ops::function::FnMut<(&'_0 &'_1 automata_builder::automata::terms_multitape::MultiTapeProduct,), core::result::Result<(automata_builder::automata::rule_generator::AutomataTransitionsGroup, alloc::vec::Vec<automata_builder::automata::terms_multitape::MultiTapeProduct>), automata_builder::automata::multi_tape_builder::CompileTapesError>> for automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::compile_tapes::{closure#1}<'_0, '_1, '_2, '_3>}]
-    Source: 'src/automata/multi_tape_builder.rs', lines 1477:21-1477:81 -/
+    Source: 'src/automata/multi_tape_builder.rs', lines 1613:21-1613:81 -/
 @[reducible]
 def
   automata.multi_tape_builder.MultiTapeBuilder.compile_tapes.closure_1.Insts.CoreOpsFunctionFnMutTupleShared0Shared1MultiTapeProductResultPairAutomataTransitionsGroupVecMultiTapeProductCompileTapesError
@@ -15487,7 +17961,7 @@ def
 }
 
 /-- Trait implementation: [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::compile_tapes::{impl core::ops::function::Fn<(&'_0 &'_1 automata_builder::automata::terms_multitape::MultiTapeProduct,), core::result::Result<(automata_builder::automata::rule_generator::AutomataTransitionsGroup, alloc::vec::Vec<automata_builder::automata::terms_multitape::MultiTapeProduct>), automata_builder::automata::multi_tape_builder::CompileTapesError>> for automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::compile_tapes::{closure#1}<'_0, '_1, '_2, '_3>}]
-    Source: 'src/automata/multi_tape_builder.rs', lines 1477:21-1477:81 -/
+    Source: 'src/automata/multi_tape_builder.rs', lines 1613:21-1613:81 -/
 @[reducible]
 def
   automata.multi_tape_builder.MultiTapeBuilder.compile_tapes.closure_1.Insts.CoreOpsFunctionFnTupleShared0Shared1MultiTapeProductResultPairAutomataTransitionsGroupVecMultiTapeProductCompileTapesError
@@ -15504,7 +17978,7 @@ def
 }
 
 /-- [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::compile_tapes::{impl core::ops::function::Fn<(&'_0 &'_1 automata_builder::automata::terms_multitape::MultiTapeProduct,), core::result::Result<indexmap::set::IndexSet<automata_builder::automata::terms_multitape::MultiTapeProduct, std::hash::random::RandomState>, automata_builder::automata::multi_tape_builder::CompileTapesError>> for automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::compile_tapes::{closure}<'_0, '_1, '_2, '_3, '_4, '_5>}::call]:
-    Source: 'src/automata/multi_tape_builder.rs', lines 1402:21-1410:17 -/
+    Source: 'src/automata/multi_tape_builder.rs', lines 1493:21-1501:17 -/
 def
   automata.multi_tape_builder.MultiTapeBuilder.compile_tapes.closure.Insts.CoreOpsFunctionFnTupleShared0Shared1MultiTapeProductResultIndexSetMultiTapeProductRandomStateCompileTapesError.call
   (c : automata.multi_tape_builder.MultiTapeBuilder.compile_tapes.closure)
@@ -15518,7 +17992,7 @@ def
     tupled_args «to» mtpt im pwm
 
 /-- [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::compile_tapes::{impl core::ops::function::FnMut<(&'_0 &'_1 automata_builder::automata::terms_multitape::MultiTapeProduct,), core::result::Result<indexmap::set::IndexSet<automata_builder::automata::terms_multitape::MultiTapeProduct, std::hash::random::RandomState>, automata_builder::automata::multi_tape_builder::CompileTapesError>> for automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::compile_tapes::{closure}<'_0, '_1, '_2, '_3, '_4, '_5>}::call_mut]:
-    Source: 'src/automata/multi_tape_builder.rs', lines 1402:21-1410:17 -/
+    Source: 'src/automata/multi_tape_builder.rs', lines 1493:21-1501:17 -/
 def
   automata.multi_tape_builder.MultiTapeBuilder.compile_tapes.closure.Insts.CoreOpsFunctionFnMutTupleShared0Shared1MultiTapeProductResultIndexSetMultiTapeProductRandomStateCompileTapesError.call_mut
   (state : automata.multi_tape_builder.MultiTapeBuilder.compile_tapes.closure)
@@ -15534,7 +18008,7 @@ def
   ok (r, state)
 
 /-- [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::compile_tapes::{impl core::ops::function::FnOnce<(&'_0 &'_1 automata_builder::automata::terms_multitape::MultiTapeProduct,), core::result::Result<indexmap::set::IndexSet<automata_builder::automata::terms_multitape::MultiTapeProduct, std::hash::random::RandomState>, automata_builder::automata::multi_tape_builder::CompileTapesError>> for automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::compile_tapes::{closure}<'_0, '_1, '_2, '_3, '_4, '_5>}::call_once]:
-    Source: 'src/automata/multi_tape_builder.rs', lines 1402:21-1410:17 -/
+    Source: 'src/automata/multi_tape_builder.rs', lines 1493:21-1501:17 -/
 def
   automata.multi_tape_builder.MultiTapeBuilder.compile_tapes.closure.Insts.CoreOpsFunctionFnOnceTupleShared0Shared1MultiTapeProductResultIndexSetMultiTapeProductRandomStateCompileTapesError.call_once
   (c : automata.multi_tape_builder.MultiTapeBuilder.compile_tapes.closure)
@@ -15549,7 +18023,7 @@ def
   ok r
 
 /-- Trait implementation: [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::compile_tapes::{impl core::ops::function::FnOnce<(&'_0 &'_1 automata_builder::automata::terms_multitape::MultiTapeProduct,), core::result::Result<indexmap::set::IndexSet<automata_builder::automata::terms_multitape::MultiTapeProduct, std::hash::random::RandomState>, automata_builder::automata::multi_tape_builder::CompileTapesError>> for automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::compile_tapes::{closure}<'_0, '_1, '_2, '_3, '_4, '_5>}]
-    Source: 'src/automata/multi_tape_builder.rs', lines 1402:21-1410:17 -/
+    Source: 'src/automata/multi_tape_builder.rs', lines 1493:21-1501:17 -/
 @[reducible]
 def
   automata.multi_tape_builder.MultiTapeBuilder.compile_tapes.closure.Insts.CoreOpsFunctionFnOnceTupleShared0Shared1MultiTapeProductResultIndexSetMultiTapeProductRandomStateCompileTapesError
@@ -15564,7 +18038,7 @@ def
 }
 
 /-- Trait implementation: [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::compile_tapes::{impl core::ops::function::FnMut<(&'_0 &'_1 automata_builder::automata::terms_multitape::MultiTapeProduct,), core::result::Result<indexmap::set::IndexSet<automata_builder::automata::terms_multitape::MultiTapeProduct, std::hash::random::RandomState>, automata_builder::automata::multi_tape_builder::CompileTapesError>> for automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::compile_tapes::{closure}<'_0, '_1, '_2, '_3, '_4, '_5>}]
-    Source: 'src/automata/multi_tape_builder.rs', lines 1402:21-1410:17 -/
+    Source: 'src/automata/multi_tape_builder.rs', lines 1493:21-1501:17 -/
 @[reducible]
 def
   automata.multi_tape_builder.MultiTapeBuilder.compile_tapes.closure.Insts.CoreOpsFunctionFnMutTupleShared0Shared1MultiTapeProductResultIndexSetMultiTapeProductRandomStateCompileTapesError
@@ -15581,7 +18055,7 @@ def
 }
 
 /-- Trait implementation: [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::compile_tapes::{impl core::ops::function::Fn<(&'_0 &'_1 automata_builder::automata::terms_multitape::MultiTapeProduct,), core::result::Result<indexmap::set::IndexSet<automata_builder::automata::terms_multitape::MultiTapeProduct, std::hash::random::RandomState>, automata_builder::automata::multi_tape_builder::CompileTapesError>> for automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::compile_tapes::{closure}<'_0, '_1, '_2, '_3, '_4, '_5>}]
-    Source: 'src/automata/multi_tape_builder.rs', lines 1402:21-1410:17 -/
+    Source: 'src/automata/multi_tape_builder.rs', lines 1493:21-1501:17 -/
 @[reducible]
 def
   automata.multi_tape_builder.MultiTapeBuilder.compile_tapes.closure.Insts.CoreOpsFunctionFnTupleShared0Shared1MultiTapeProductResultIndexSetMultiTapeProductRandomStateCompileTapesError
@@ -15969,64 +18443,6 @@ def automata.multi_tape_product_trie.MultiTapeProductTrie.search_all_products
   automata.multi_tape_product_trie.MultiTapeProductTrie._search_all_products
     self all_products
 
-/-- [automata_builder::automata::multi_tape_transition::{impl core::fmt::Debug for automata_builder::automata::multi_tape_transition::MultiTapeTransition}::fmt]:
-    Source: 'src/automata/multi_tape_transition.rs', lines 14:9-14:14
-    Visibility: public -/
-def automata.multi_tape_transition.MultiTapeTransition.Insts.CoreFmtDebug.fmt
-  (self : automata.multi_tape_transition.MultiTapeTransition)
-  (f : core.fmt.Formatter) :
-  Result ((core.result.Result Unit core.fmt.Error) × core.fmt.Formatter)
-  := do
-  let dyn :=
-    Dyn.mk _ (core.fmt.DebugVec
-      automata.terms_multitape.MultiTapeTerm.Insts.CoreFmtDebug)
-      self.input_terms
-  let dyn1 :=
-    Dyn.mk _ automata.terms_multitape.MultiTapeState.Insts.CoreFmtDebug
-      self.output_state
-  let dyn2 := Dyn.mk _ alloc.string.String.Insts.CoreFmtDebug self.annotation
-  let dyn3 := Dyn.mk _ (core.fmt.DebugShared core.fmt.DebugU32) self.priority
-  core.fmt.Formatter.debug_struct_field4_finish f (toStr "MultiTapeTransition")
-    (toStr "input_terms") dyn (toStr "output_state") dyn1 (toStr "annotation")
-    dyn2 (toStr "priority") dyn3
-
-/-- Trait implementation: [automata_builder::automata::multi_tape_transition::{impl core::fmt::Debug for automata_builder::automata::multi_tape_transition::MultiTapeTransition}]
-    Source: 'src/automata/multi_tape_transition.rs', lines 14:9-14:14 -/
-@[reducible]
-def automata.multi_tape_transition.MultiTapeTransition.Insts.CoreFmtDebug :
-  core.fmt.Debug automata.multi_tape_transition.MultiTapeTransition := {
-  fmt :=
-    automata.multi_tape_transition.MultiTapeTransition.Insts.CoreFmtDebug.fmt
-}
-
-/-- [automata_builder::automata::multi_tape_transition::{impl core::clone::Clone for automata_builder::automata::multi_tape_transition::MultiTapeTransition}::clone]:
-    Source: 'src/automata/multi_tape_transition.rs', lines 14:16-14:21
-    Visibility: public -/
-def
-  automata.multi_tape_transition.MultiTapeTransition.Insts.CoreCloneClone.clone
-  (self : automata.multi_tape_transition.MultiTapeTransition) :
-  Result automata.multi_tape_transition.MultiTapeTransition
-  := do
-  let v ←
-    alloc.vec.CloneVec.clone
-      automata.terms_multitape.MultiTapeTerm.Insts.CoreCloneClone
-      self.input_terms
-  let mts ←
-    automata.terms_multitape.MultiTapeState.Insts.CoreCloneClone.clone
-      self.output_state
-  let s ← alloc.string.String.Insts.CoreCloneClone.clone self.annotation
-  let i ← lift (core.clone.impls.CloneU32.clone self.priority)
-  ok { input_terms := v, output_state := mts, annotation := s, priority := i }
-
-/-- Trait implementation: [automata_builder::automata::multi_tape_transition::{impl core::clone::Clone for automata_builder::automata::multi_tape_transition::MultiTapeTransition}]
-    Source: 'src/automata/multi_tape_transition.rs', lines 14:16-14:21 -/
-@[reducible]
-def automata.multi_tape_transition.MultiTapeTransition.Insts.CoreCloneClone :
-  core.clone.Clone automata.multi_tape_transition.MultiTapeTransition := {
-  clone :=
-    automata.multi_tape_transition.MultiTapeTransition.Insts.CoreCloneClone.clone
-}
-
 /-- Trait implementation: [automata_builder::automata::multi_tape_transition::{impl core::marker::StructuralPartialEq for automata_builder::automata::multi_tape_transition::MultiTapeTransition}]
     Source: 'src/automata/multi_tape_transition.rs', lines 14:23-14:32 -/
 @[reducible]
@@ -16034,99 +18450,6 @@ def
   automata.multi_tape_transition.MultiTapeTransition.Insts.CoreMarkerStructuralPartialEq
   : core.marker.StructuralPartialEq
   automata.multi_tape_transition.MultiTapeTransition := {
-}
-
-/-- [automata_builder::automata::multi_tape_transition::{impl core::cmp::PartialEq<automata_builder::automata::multi_tape_transition::MultiTapeTransition> for automata_builder::automata::multi_tape_transition::MultiTapeTransition}::eq]:
-    Source: 'src/automata/multi_tape_transition.rs', lines 14:23-14:32
-    Visibility: public -/
-def
-  automata.multi_tape_transition.MultiTapeTransition.Insts.CoreCmpPartialEqMultiTapeTransition.eq
-  (self : automata.multi_tape_transition.MultiTapeTransition)
-  (other : automata.multi_tape_transition.MultiTapeTransition) :
-  Result Bool
-  := do
-  let b ←
-    alloc.vec.partial_eq.PartialEqVec.eq
-      automata.terms_multitape.MultiTapeTerm.Insts.CoreCmpPartialEqMultiTapeTerm
-      self.input_terms other.input_terms
-  if b
-  then
-    let b1 ←
-      automata.terms_multitape.MultiTapeState.Insts.CoreCmpPartialEqMultiTapeState.eq
-        self.output_state other.output_state
-    if b1
-    then
-      let b2 ←
-        alloc.string.String.Insts.CoreCmpPartialEqString.eq self.annotation
-          other.annotation
-      if b2
-      then ok (self.priority = other.priority)
-      else ok false
-    else ok false
-  else ok false
-
-/-- Trait implementation: [automata_builder::automata::multi_tape_transition::{impl core::cmp::PartialEq<automata_builder::automata::multi_tape_transition::MultiTapeTransition> for automata_builder::automata::multi_tape_transition::MultiTapeTransition}]
-    Source: 'src/automata/multi_tape_transition.rs', lines 14:23-14:32 -/
-@[reducible]
-impl_def
-  automata.multi_tape_transition.MultiTapeTransition.Insts.CoreCmpPartialEqMultiTapeTransition
-  : core.cmp.PartialEq automata.multi_tape_transition.MultiTapeTransition
-  automata.multi_tape_transition.MultiTapeTransition := {
-  eq :=
-    automata.multi_tape_transition.MultiTapeTransition.Insts.CoreCmpPartialEqMultiTapeTransition.eq
-  ne := core.cmp.PartialEq.ne.trait_default
-    automata.multi_tape_transition.MultiTapeTransition.Insts.CoreCmpPartialEqMultiTapeTransition
-}
-
-/-- [automata_builder::automata::multi_tape_transition::{impl core::cmp::Eq for automata_builder::automata::multi_tape_transition::MultiTapeTransition}::assert_fields_are_eq]:
-    Source: 'src/automata/multi_tape_transition.rs', lines 14:34-14:36
-    Visibility: public -/
-def
-  automata.multi_tape_transition.MultiTapeTransition.Insts.CoreCmpEq.assert_fields_are_eq
-  (self : automata.multi_tape_transition.MultiTapeTransition) :
-  Result Unit
-  := do
-  ok ()
-
-/-- Trait implementation: [automata_builder::automata::multi_tape_transition::{impl core::cmp::Eq for automata_builder::automata::multi_tape_transition::MultiTapeTransition}]
-    Source: 'src/automata/multi_tape_transition.rs', lines 14:34-14:36 -/
-@[reducible]
-def automata.multi_tape_transition.MultiTapeTransition.Insts.CoreCmpEq :
-  core.cmp.Eq automata.multi_tape_transition.MultiTapeTransition := {
-  partialEqInst :=
-    automata.multi_tape_transition.MultiTapeTransition.Insts.CoreCmpPartialEqMultiTapeTransition
-  assert_fields_are_eq :=
-    automata.multi_tape_transition.MultiTapeTransition.Insts.CoreCmpEq.assert_fields_are_eq
-}
-
-/-- [automata_builder::automata::multi_tape_transition::{impl core::hash::Hash for automata_builder::automata::multi_tape_transition::MultiTapeTransition}::hash]:
-    Source: 'src/automata/multi_tape_transition.rs', lines 14:38-14:42
-    Visibility: public -/
-def automata.multi_tape_transition.MultiTapeTransition.Insts.CoreHashHash.hash
-  {__H : Type _} (corehashHasherInst : core.hash.Hasher __H)
-  (self : automata.multi_tape_transition.MultiTapeTransition) (state : __H) :
-  Result __H
-  := do
-  let state1 ←
-    alloc.vec.Vec.Insts.CoreHashHash.hash alloc.alloc.Global
-      automata.terms_multitape.MultiTapeTerm.Insts.CoreHashHash
-      corehashHasherInst self.input_terms state
-  let state2 ←
-    automata.terms_multitape.MultiTapeState.Insts.CoreHashHash.hash
-      corehashHasherInst self.output_state state1
-  let state3 ←
-    alloc.string.String.Insts.CoreHashHash.hash corehashHasherInst
-      self.annotation state2
-  U32.Insts.CoreHashHash.hash corehashHasherInst self.priority state3
-
-/-- Trait implementation: [automata_builder::automata::multi_tape_transition::{impl core::hash::Hash for automata_builder::automata::multi_tape_transition::MultiTapeTransition}]
-    Source: 'src/automata/multi_tape_transition.rs', lines 14:38-14:42 -/
-@[reducible]
-def automata.multi_tape_transition.MultiTapeTransition.Insts.CoreHashHash :
-  core.hash.Hash automata.multi_tape_transition.MultiTapeTransition := {
-  hash := fun {H : Type} (corehashHasherInst : core.hash.Hasher H) =>
-    automata.multi_tape_transition.MultiTapeTransition.Insts.CoreHashHash.hash
-    corehashHasherInst
 }
 
 /-- [automata_builder::automata::multi_tape_transition::_]
@@ -16148,23 +18471,6 @@ def automata.multi_tape_transition.MultiTapeTransition.new
   Result automata.multi_tape_transition.MultiTapeTransition
   := do
   ok { input_terms, output_state, annotation, priority }
-
-/-- [automata_builder::automata::multi_tape_transition::{automata_builder::automata::multi_tape_transition::MultiTapeTransition}::to_product]:
-    Source: 'src/automata/multi_tape_transition.rs', lines 35:4-39:5
-    Visibility: public -/
-def automata.multi_tape_transition.MultiTapeTransition.to_product
-  (self : automata.multi_tape_transition.MultiTapeTransition) :
-  Result automata.terms_multitape.MultiTapeProduct
-  := do
-  let v ←
-    alloc.vec.CloneVec.clone
-      automata.terms_multitape.MultiTapeTerm.Insts.CoreCloneClone
-      self.input_terms
-  let mtpf ← automata.terms_multitape.MultiTapeProductFactory.new v
-  let s ← alloc.string.String.Insts.CoreCloneClone.clone self.annotation
-  let (mtpf1, _) ←
-    automata.terms_multitape.MultiTapeProductFactory.with_annotation mtpf s
-  automata.terms_multitape.MultiTapeProductFactory.to_product mtpf1
 
 /-- [automata_builder::automata::multi_tape_transition::{impl core::fmt::Display for automata_builder::automata::multi_tape_transition::MultiTapeTransition}::fmt]:
     Source: 'src/automata/multi_tape_transition.rs', lines 43:4-51:5
@@ -16824,39 +19130,6 @@ def automata.multi_tape_transition.CombineTransitionsError.Insts.CoreFmtDisplay
     automata.multi_tape_transition.CombineTransitionsError.Insts.CoreFmtDisplay.fmt
 }
 
-/-- [automata_builder::automata::multi_tape_transition::{impl core::clone::Clone for automata_builder::automata::multi_tape_transition::MultiTapeTransitionsGroup}::clone]:
-    Source: 'src/automata/multi_tape_transition.rs', lines 132:9-132:14
-    Visibility: public -/
-def
-  automata.multi_tape_transition.MultiTapeTransitionsGroup.Insts.CoreCloneClone.clone
-  (self : automata.multi_tape_transition.MultiTapeTransitionsGroup) :
-  Result automata.multi_tape_transition.MultiTapeTransitionsGroup
-  := do
-  let v ←
-    alloc.vec.CloneVec.clone
-      automata.multi_tape_transition.MultiTapeTransition.Insts.CoreCloneClone
-      self.transitions
-  let im ←
-    indexmap.map.IndexMap.Insts.CoreCloneClone.clone
-      automata.terms_multitape.MultiTapeProduct.Insts.CoreCloneClone
-      (indexmap.set.IndexSet.Insts.CoreCloneClone
-      automata.multi_tape_transition.MultiTapeTransition.Insts.CoreCloneClone
-      std.hash.random.RandomState.Insts.CoreCloneClone)
-      std.hash.random.RandomState.Insts.CoreCloneClone self.prod_to_transitions
-  let im1 ←
-    indexmap.map.IndexMap.Insts.CoreCloneClone.clone
-      automata.terms_multitape.MultiTapeProduct.Insts.CoreCloneClone
-      core.clone.CloneU32 std.hash.random.RandomState.Insts.CoreCloneClone
-      self.prod_priority_map
-  let b ← lift (core.clone.impls.CloneBool.clone self.require_annotation)
-  ok
-    {
-      transitions := v,
-      prod_to_transitions := im,
-      prod_priority_map := im1,
-      require_annotation := b
-    }
-
 /-- Trait implementation: [automata_builder::automata::multi_tape_transition::{impl core::clone::Clone for automata_builder::automata::multi_tape_transition::MultiTapeTransitionsGroup}]
     Source: 'src/automata/multi_tape_transition.rs', lines 132:9-132:14 -/
 @[reducible]
@@ -16866,48 +19139,6 @@ def
   := {
   clone :=
     automata.multi_tape_transition.MultiTapeTransitionsGroup.Insts.CoreCloneClone.clone
-}
-
-/-- [automata_builder::automata::multi_tape_transition::{impl core::fmt::Debug for automata_builder::automata::multi_tape_transition::MultiTapeTransitionsGroup}::fmt]:
-    Source: 'src/automata/multi_tape_transition.rs', lines 132:16-132:21
-    Visibility: public -/
-def
-  automata.multi_tape_transition.MultiTapeTransitionsGroup.Insts.CoreFmtDebug.fmt
-  (self : automata.multi_tape_transition.MultiTapeTransitionsGroup)
-  (f : core.fmt.Formatter) :
-  Result ((core.result.Result Unit core.fmt.Error) × core.fmt.Formatter)
-  := do
-  let dyn :=
-    Dyn.mk _ (core.fmt.DebugVec
-      automata.multi_tape_transition.MultiTapeTransition.Insts.CoreFmtDebug)
-      self.transitions
-  let dyn1 :=
-    Dyn.mk _ (indexmap.map.IndexMap.Insts.CoreFmtDebug
-      std.hash.random.RandomState
-      automata.terms_multitape.MultiTapeProduct.Insts.CoreFmtDebug
-      (indexmap.set.IndexSet.Insts.CoreFmtDebug std.hash.random.RandomState
-      automata.multi_tape_transition.MultiTapeTransition.Insts.CoreFmtDebug))
-      self.prod_to_transitions
-  let dyn2 :=
-    Dyn.mk _ (indexmap.map.IndexMap.Insts.CoreFmtDebug
-      std.hash.random.RandomState
-      automata.terms_multitape.MultiTapeProduct.Insts.CoreFmtDebug
-      core.fmt.DebugU32) self.prod_priority_map
-  let dyn3 :=
-    Dyn.mk _ (core.fmt.DebugShared core.fmt.DebugBool) self.require_annotation
-  core.fmt.Formatter.debug_struct_field4_finish f (toStr
-    "MultiTapeTransitionsGroup") (toStr "transitions") dyn (toStr
-    "prod_to_transitions") dyn1 (toStr "prod_priority_map") dyn2 (toStr
-    "require_annotation") dyn3
-
-/-- Trait implementation: [automata_builder::automata::multi_tape_transition::{impl core::fmt::Debug for automata_builder::automata::multi_tape_transition::MultiTapeTransitionsGroup}]
-    Source: 'src/automata/multi_tape_transition.rs', lines 132:16-132:21 -/
-@[reducible]
-def automata.multi_tape_transition.MultiTapeTransitionsGroup.Insts.CoreFmtDebug
-  : core.fmt.Debug automata.multi_tape_transition.MultiTapeTransitionsGroup
-  := {
-  fmt :=
-    automata.multi_tape_transition.MultiTapeTransitionsGroup.Insts.CoreFmtDebug.fmt
 }
 
 /-- [automata_builder::automata::multi_tape_transition::{automata_builder::automata::multi_tape_transition::MultiTapeTransitionsGroup}::new]:
@@ -16937,7 +19168,7 @@ def automata.multi_tape_transition.MultiTapeTransitionsGroup.new
     }
 
 /-- [automata_builder::automata::multi_tape_transition::{automata_builder::automata::multi_tape_transition::MultiTapeTransitionsGroup}::len]:
-    Source: 'src/automata/multi_tape_transition.rs', lines 155:4-157:5
+    Source: 'src/automata/multi_tape_transition.rs', lines 159:4-161:5
     Visibility: public -/
 def automata.multi_tape_transition.MultiTapeTransitionsGroup.len
   (self : automata.multi_tape_transition.MultiTapeTransitionsGroup) :
@@ -16946,7 +19177,7 @@ def automata.multi_tape_transition.MultiTapeTransitionsGroup.len
   ok (alloc.vec.Vec.len self.transitions)
 
 /-- [automata_builder::automata::multi_tape_transition::{automata_builder::automata::multi_tape_transition::MultiTapeTransitionsGroup}::is_empty]:
-    Source: 'src/automata/multi_tape_transition.rs', lines 159:4-161:5
+    Source: 'src/automata/multi_tape_transition.rs', lines 163:4-165:5
     Visibility: public -/
 def automata.multi_tape_transition.MultiTapeTransitionsGroup.is_empty
   (self : automata.multi_tape_transition.MultiTapeTransitionsGroup) :
@@ -16954,8 +19185,27 @@ def automata.multi_tape_transition.MultiTapeTransitionsGroup.is_empty
   := do
   alloc.vec.Vec.is_empty alloc.alloc.Global self.transitions
 
+/-- [automata_builder::automata::multi_tape_transition::{automata_builder::automata::multi_tape_transition::MultiTapeTransitionsGroup}::get_transitions_for_product]:
+    Source: 'src/automata/multi_tape_transition.rs', lines 167:4-171:5
+    Visibility: public -/
+def
+  automata.multi_tape_transition.MultiTapeTransitionsGroup.get_transitions_for_product
+  (self : automata.multi_tape_transition.MultiTapeTransitionsGroup)
+  (product : automata.terms_multitape.MultiTapeProduct) :
+  Result (Option (indexmap.set.IndexSet
+    automata.multi_tape_transition.MultiTapeTransition
+    std.hash.random.RandomState))
+  := do
+  indexmap.map.IndexMap.get
+    std.hash.random.RandomState.Insts.CoreHashBuildHasherDefaultHasher
+    automata.terms_multitape.MultiTapeProduct.Insts.CoreHashHash
+    (equivalent.Equivalent.Blanket
+    automata.terms_multitape.MultiTapeProduct.Insts.CoreCmpEq
+    (core.borrow.Borrow.Blanket automata.terms_multitape.MultiTapeProduct))
+    self.prod_to_transitions product
+
 /-- [automata_builder::automata::multi_tape_transition::{automata_builder::automata::multi_tape_transition::MultiTapeTransitionsGroup}::get_all_states]: loop 1:
-    Source: 'src/automata/multi_tape_transition.rs', lines 167:12-169:13
+    Source: 'src/automata/multi_tape_transition.rs', lines 177:12-179:13
     Visibility: public -/
 @[rust_loop]
 def
@@ -16984,7 +19234,7 @@ def
 partial_fixpoint
 
 /-- [automata_builder::automata::multi_tape_transition::{automata_builder::automata::multi_tape_transition::MultiTapeTransitionsGroup}::get_all_states]: loop 0:
-    Source: 'src/automata/multi_tape_transition.rs', lines 166:8-171:9
+    Source: 'src/automata/multi_tape_transition.rs', lines 176:8-181:9
     Visibility: public -/
 @[rust_loop]
 def
@@ -17019,7 +19269,7 @@ def
 partial_fixpoint
 
 /-- [automata_builder::automata::multi_tape_transition::{automata_builder::automata::multi_tape_transition::MultiTapeTransitionsGroup}::get_all_states]:
-    Source: 'src/automata/multi_tape_transition.rs', lines 163:4-173:5
+    Source: 'src/automata/multi_tape_transition.rs', lines 173:4-183:5
     Visibility: public -/
 def automata.multi_tape_transition.MultiTapeTransitionsGroup.get_all_states
   (self : automata.multi_tape_transition.MultiTapeTransitionsGroup) :
@@ -17035,7 +19285,7 @@ def automata.multi_tape_transition.MultiTapeTransitionsGroup.get_all_states
     iter all_states
 
 /-- [automata_builder::automata::multi_tape_transition::{automata_builder::automata::multi_tape_transition::MultiTapeTransitionsGroup}::add_transition::{impl core::ops::function::FnMut<(&'_0 automata_builder::automata::terms_multitape::MultiTapeTerm,), bool> for automata_builder::automata::multi_tape_transition::{automata_builder::automata::multi_tape_transition::MultiTapeTransitionsGroup}::add_transition::{closure}<'_0>}::call_mut]:
-    Source: 'src/automata/multi_tape_transition.rs', lines 206:53-209:13 -/
+    Source: 'src/automata/multi_tape_transition.rs', lines 216:53-219:13 -/
 def
   automata.multi_tape_transition.MultiTapeTransitionsGroup.add_transition.closure.Insts.CoreOpsFunctionFnMutTupleShared0MultiTapeTermBool.call_mut
   (c :
@@ -17048,7 +19298,7 @@ def
   ok (cell_state = automata.rule_generator.VOID_STATE, ())
 
 /-- [automata_builder::automata::multi_tape_transition::{automata_builder::automata::multi_tape_transition::MultiTapeTransitionsGroup}::add_transition::{impl core::ops::function::FnOnce<(&'_0 automata_builder::automata::terms_multitape::MultiTapeTerm,), bool> for automata_builder::automata::multi_tape_transition::{automata_builder::automata::multi_tape_transition::MultiTapeTransitionsGroup}::add_transition::{closure}<'_0>}::call_once]:
-    Source: 'src/automata/multi_tape_transition.rs', lines 206:53-209:13 -/
+    Source: 'src/automata/multi_tape_transition.rs', lines 216:53-219:13 -/
 def
   automata.multi_tape_transition.MultiTapeTransitionsGroup.add_transition.closure.Insts.CoreOpsFunctionFnOnceTupleShared0MultiTapeTermBool.call_once
   (c :
@@ -17062,7 +19312,7 @@ def
   ok b
 
 /-- Trait implementation: [automata_builder::automata::multi_tape_transition::{automata_builder::automata::multi_tape_transition::MultiTapeTransitionsGroup}::add_transition::{impl core::ops::function::FnOnce<(&'_0 automata_builder::automata::terms_multitape::MultiTapeTerm,), bool> for automata_builder::automata::multi_tape_transition::{automata_builder::automata::multi_tape_transition::MultiTapeTransitionsGroup}::add_transition::{closure}<'_0>}]
-    Source: 'src/automata/multi_tape_transition.rs', lines 206:53-209:13 -/
+    Source: 'src/automata/multi_tape_transition.rs', lines 216:53-219:13 -/
 @[reducible]
 def
   automata.multi_tape_transition.MultiTapeTransitionsGroup.add_transition.closure.Insts.CoreOpsFunctionFnOnceTupleShared0MultiTapeTermBool
@@ -17074,7 +19324,7 @@ def
 }
 
 /-- Trait implementation: [automata_builder::automata::multi_tape_transition::{automata_builder::automata::multi_tape_transition::MultiTapeTransitionsGroup}::add_transition::{impl core::ops::function::FnMut<(&'_0 automata_builder::automata::terms_multitape::MultiTapeTerm,), bool> for automata_builder::automata::multi_tape_transition::{automata_builder::automata::multi_tape_transition::MultiTapeTransitionsGroup}::add_transition::{closure}<'_0>}]
-    Source: 'src/automata/multi_tape_transition.rs', lines 206:53-209:13 -/
+    Source: 'src/automata/multi_tape_transition.rs', lines 216:53-219:13 -/
 @[reducible]
 def
   automata.multi_tape_transition.MultiTapeTransitionsGroup.add_transition.closure.Insts.CoreOpsFunctionFnMutTupleShared0MultiTapeTermBool
@@ -17088,7 +19338,7 @@ def
 }
 
 /-- [automata_builder::automata::multi_tape_transition::{automata_builder::automata::multi_tape_transition::MultiTapeTransitionsGroup}::add_transition]:
-    Source: 'src/automata/multi_tape_transition.rs', lines 175:4-230:5
+    Source: 'src/automata/multi_tape_transition.rs', lines 185:4-240:5
     Visibility: public -/
 def automata.multi_tape_transition.MultiTapeTransitionsGroup.add_transition
   (self : automata.multi_tape_transition.MultiTapeTransitionsGroup)
@@ -17103,7 +19353,7 @@ def automata.multi_tape_transition.MultiTapeTransitionsGroup.add_transition
   sorry
 
 /-- [automata_builder::automata::multi_tape_transition::{automata_builder::automata::multi_tape_transition::MultiTapeTransitionsGroup}::_insert_transitions]: loop 0:
-    Source: 'src/automata/multi_tape_transition.rs', lines 261:8-265:5
+    Source: 'src/automata/multi_tape_transition.rs', lines 271:8-275:5
     Visibility: public -/
 @[rust_loop]
 def
@@ -17136,7 +19386,7 @@ def
 partial_fixpoint
 
 /-- [automata_builder::automata::multi_tape_transition::{automata_builder::automata::multi_tape_transition::MultiTapeTransitionsGroup}::_insert_transitions]:
-    Source: 'src/automata/multi_tape_transition.rs', lines 258:4-265:5
+    Source: 'src/automata/multi_tape_transition.rs', lines 268:4-275:5
     Visibility: public -/
 def
   automata.multi_tape_transition.MultiTapeTransitionsGroup._insert_transitions
@@ -17152,7 +19402,7 @@ def
     iter self
 
 /-- [automata_builder::automata::multi_tape_transition::{automata_builder::automata::multi_tape_transition::MultiTapeTransitionsGroup}::or]:
-    Source: 'src/automata/multi_tape_transition.rs', lines 267:4-295:5
+    Source: 'src/automata/multi_tape_transition.rs', lines 277:4-305:5
     Visibility: public -/
 def automata.multi_tape_transition.MultiTapeTransitionsGroup.or
   (self : automata.multi_tape_transition.MultiTapeTransitionsGroup)
@@ -17238,7 +19488,7 @@ def automata.multi_tape_transition.MultiTapeTransitionsGroup.or
         err))
 
 /-- [automata_builder::automata::multi_tape_transition::{impl core::cmp::PartialEq<automata_builder::automata::multi_tape_transition::MultiTapeTransitionsGroup> for automata_builder::automata::multi_tape_transition::MultiTapeTransitionsGroup}::eq]:
-    Source: 'src/automata/multi_tape_transition.rs', lines 367:4-371:5
+    Source: 'src/automata/multi_tape_transition.rs', lines 377:4-381:5
     Visibility: public -/
 def
   automata.multi_tape_transition.MultiTapeTransitionsGroup.Insts.CoreCmpPartialEqMultiTapeTransitionsGroup.eq
@@ -17277,7 +19527,7 @@ def
   else ok false
 
 /-- Trait implementation: [automata_builder::automata::multi_tape_transition::{impl core::cmp::PartialEq<automata_builder::automata::multi_tape_transition::MultiTapeTransitionsGroup> for automata_builder::automata::multi_tape_transition::MultiTapeTransitionsGroup}]
-    Source: 'src/automata/multi_tape_transition.rs', lines 366:0-372:1 -/
+    Source: 'src/automata/multi_tape_transition.rs', lines 376:0-382:1 -/
 @[reducible]
 impl_def
   automata.multi_tape_transition.MultiTapeTransitionsGroup.Insts.CoreCmpPartialEqMultiTapeTransitionsGroup
@@ -17289,8 +19539,98 @@ impl_def
     automata.multi_tape_transition.MultiTapeTransitionsGroup.Insts.CoreCmpPartialEqMultiTapeTransitionsGroup
 }
 
+/-- [automata_builder::automata::product_writes_map::tape_writes_to_str::{impl core::ops::function::FnMut<((&'_0 u16, &'_1 u32),), alloc::string::String> for automata_builder::automata::product_writes_map::tape_writes_to_str::{closure}<'_0, '_1>}::call_mut]:
+    Source: 'src/automata/product_writes_map.rs', lines 22:13-22:65 -/
+def
+  automata.product_writes_map.tape_writes_to_str.closure.Insts.CoreOpsFunctionFnMutTuplePairShared0U16Shared1U32String.call_mut
+  (c : automata.product_writes_map.tape_writes_to_str.closure)
+  (tupled_args : (Std.U16 × Std.U32)) :
+  Result (String × automata.product_writes_map.tape_writes_to_str.closure)
+  := do
+  let (tape_no, state) := tupled_args
+  let a ←
+    core.fmt.rt.Argument.new_display (Shared0T.Insts.CoreFmtDisplay
+      U16.Insts.CoreFmtDisplay) tape_no
+  let a1 ←
+    core.fmt.rt.Argument.new_display (Shared0T.Insts.CoreFmtDisplay
+      U32.Insts.CoreFmtDisplay) state
+  let a2 ←
+    core.fmt.Arguments.new
+      (Array.make 7#usize [ 1#u8, 84#u8, 192#u8, 1#u8, 58#u8, 192#u8, 0#u8 ])
+      (Array.make 2#usize [ a, a1 ])
+  let s ← alloc.fmt.format a2
+  let s1 ← core.hint.must_use s
+  ok (s1, ())
+
+/-- [automata_builder::automata::product_writes_map::tape_writes_to_str::{impl core::ops::function::FnOnce<((&'_0 u16, &'_1 u32),), alloc::string::String> for automata_builder::automata::product_writes_map::tape_writes_to_str::{closure}<'_0, '_1>}::call_once]:
+    Source: 'src/automata/product_writes_map.rs', lines 22:13-22:65 -/
+def
+  automata.product_writes_map.tape_writes_to_str.closure.Insts.CoreOpsFunctionFnOnceTuplePairShared0U16Shared1U32String.call_once
+  (c : automata.product_writes_map.tape_writes_to_str.closure)
+  (p : (Std.U16 × Std.U32)) :
+  Result String
+  := do
+  let (s, _) ←
+    automata.product_writes_map.tape_writes_to_str.closure.Insts.CoreOpsFunctionFnMutTuplePairShared0U16Shared1U32String.call_mut
+      () p
+  ok s
+
+/-- Trait implementation: [automata_builder::automata::product_writes_map::tape_writes_to_str::{impl core::ops::function::FnOnce<((&'_0 u16, &'_1 u32),), alloc::string::String> for automata_builder::automata::product_writes_map::tape_writes_to_str::{closure}<'_0, '_1>}]
+    Source: 'src/automata/product_writes_map.rs', lines 22:13-22:65 -/
+@[reducible]
+def
+  automata.product_writes_map.tape_writes_to_str.closure.Insts.CoreOpsFunctionFnOnceTuplePairShared0U16Shared1U32String
+  : core.ops.function.FnOnce
+  automata.product_writes_map.tape_writes_to_str.closure (Std.U16 × Std.U32)
+  String := {
+  call_once :=
+    automata.product_writes_map.tape_writes_to_str.closure.Insts.CoreOpsFunctionFnOnceTuplePairShared0U16Shared1U32String.call_once
+}
+
+/-- Trait implementation: [automata_builder::automata::product_writes_map::tape_writes_to_str::{impl core::ops::function::FnMut<((&'_0 u16, &'_1 u32),), alloc::string::String> for automata_builder::automata::product_writes_map::tape_writes_to_str::{closure}<'_0, '_1>}]
+    Source: 'src/automata/product_writes_map.rs', lines 22:13-22:65 -/
+@[reducible]
+def
+  automata.product_writes_map.tape_writes_to_str.closure.Insts.CoreOpsFunctionFnMutTuplePairShared0U16Shared1U32String
+  : core.ops.function.FnMut
+  automata.product_writes_map.tape_writes_to_str.closure (Std.U16 × Std.U32)
+  String := {
+  FnOnceInst :=
+    automata.product_writes_map.tape_writes_to_str.closure.Insts.CoreOpsFunctionFnOnceTuplePairShared0U16Shared1U32String
+  call_mut :=
+    automata.product_writes_map.tape_writes_to_str.closure.Insts.CoreOpsFunctionFnMutTuplePairShared0U16Shared1U32String.call_mut
+}
+
+/-- [automata_builder::automata::product_writes_map::tape_writes_to_str]:
+    Source: 'src/automata/product_writes_map.rs', lines 19:0-25:1
+    Visibility: public -/
+def automata.product_writes_map.tape_writes_to_str
+  (product_writes : alloc.collections.btree.map.BTreeMap Std.U16 Std.U32
+  alloc.alloc.Global) :
+  Result String
+  := do
+  let i ←
+    alloc.collections.btree.map.BTreeMap.iter
+      alloc.alloc.Global.Insts.CoreAllocAllocatorClone product_writes
+  let m ←
+    core.iter.traits.iterator.Iterator.map.default
+      (alloc.collections.btree.map.Iter.Insts.CoreIterTraitsIteratorIteratorPairSharedAKSharedAV
+      Std.U16 Std.U32)
+      automata.product_writes_map.tape_writes_to_str.closure.Insts.CoreOpsFunctionFnMutTuplePairShared0U16Shared1U32String
+      i ()
+  let v ←
+    core.iter.traits.iterator.Iterator.collect.default
+      (core.iter.adapters.map.Map.Insts.CoreIterTraitsIteratorIterator
+      (alloc.collections.btree.map.Iter.Insts.CoreIterTraitsIteratorIteratorPairSharedAKSharedAV
+      Std.U16 Std.U32)
+      automata.product_writes_map.tape_writes_to_str.closure.Insts.CoreOpsFunctionFnMutTuplePairShared0U16Shared1U32String)
+      (core.iter.traits.collect.FromIteratorVec String) m
+  let s := alloc.vec.Vec.deref v
+  alloc.slice.Slice.join (Slice.Insts.AllocSliceJoinShared0StrString
+    alloc.string.String.Insts.CoreBorrowBorrowStr) s (toStr " ")
+
 /-- Trait implementation: [automata_builder::automata::product_writes_map::{impl core::clone::Clone for automata_builder::automata::product_writes_map::ProductWritesError}]
-    Source: 'src/automata/product_writes_map.rs', lines 15:16-15:21 -/
+    Source: 'src/automata/product_writes_map.rs', lines 27:16-27:21 -/
 @[reducible]
 def automata.product_writes_map.ProductWritesError.Insts.CoreCloneClone :
   core.clone.Clone automata.product_writes_map.ProductWritesError := {
@@ -17299,7 +19639,7 @@ def automata.product_writes_map.ProductWritesError.Insts.CoreCloneClone :
 }
 
 /-- [automata_builder::automata::product_writes_map::{impl core::cmp::Eq for automata_builder::automata::product_writes_map::ProductWritesError}::assert_fields_are_eq]:
-    Source: 'src/automata/product_writes_map.rs', lines 15:23-15:25
+    Source: 'src/automata/product_writes_map.rs', lines 27:23-27:25
     Visibility: public -/
 def
   automata.product_writes_map.ProductWritesError.Insts.CoreCmpEq.assert_fields_are_eq
@@ -17307,7 +19647,7 @@ def
   ok ()
 
 /-- Trait implementation: [automata_builder::automata::product_writes_map::{impl core::cmp::Eq for automata_builder::automata::product_writes_map::ProductWritesError}]
-    Source: 'src/automata/product_writes_map.rs', lines 15:23-15:25 -/
+    Source: 'src/automata/product_writes_map.rs', lines 27:23-27:25 -/
 @[reducible]
 def automata.product_writes_map.ProductWritesError.Insts.CoreCmpEq :
   core.cmp.Eq automata.product_writes_map.ProductWritesError := {
@@ -17318,7 +19658,7 @@ def automata.product_writes_map.ProductWritesError.Insts.CoreCmpEq :
 }
 
 /-- Trait implementation: [automata_builder::automata::product_writes_map::{impl core::marker::StructuralPartialEq for automata_builder::automata::product_writes_map::ProductWritesError}]
-    Source: 'src/automata/product_writes_map.rs', lines 15:27-15:36 -/
+    Source: 'src/automata/product_writes_map.rs', lines 27:27-27:36 -/
 @[reducible]
 def
   automata.product_writes_map.ProductWritesError.Insts.CoreMarkerStructuralPartialEq
@@ -17327,7 +19667,7 @@ def
 }
 
 /-- Trait implementation: [automata_builder::automata::product_writes_map::{impl core::error::Error for automata_builder::automata::product_writes_map::ProductWritesError}]
-    Source: 'src/automata/product_writes_map.rs', lines 49:0-49:48 -/
+    Source: 'src/automata/product_writes_map.rs', lines 67:0-67:48 -/
 @[reducible]
 def automata.product_writes_map.ProductWritesError.Insts.CoreErrorError :
   core.error.Error automata.product_writes_map.ProductWritesError := {
@@ -17338,7 +19678,7 @@ def automata.product_writes_map.ProductWritesError.Insts.CoreErrorError :
 }
 
 /-- [automata_builder::automata::product_writes_map::{impl core::fmt::Debug for automata_builder::automata::product_writes_map::MultiTapeStateAttributes}::fmt]:
-    Source: 'src/automata/product_writes_map.rs', lines 55:9-55:14
+    Source: 'src/automata/product_writes_map.rs', lines 73:9-73:14
     Visibility: public -/
 def automata.product_writes_map.MultiTapeStateAttributes.Insts.CoreFmtDebug.fmt
   (self : automata.product_writes_map.MultiTapeStateAttributes)
@@ -17354,7 +19694,7 @@ def automata.product_writes_map.MultiTapeStateAttributes.Insts.CoreFmtDebug.fmt
     (toStr "instant_delete") dyn2
 
 /-- Trait implementation: [automata_builder::automata::product_writes_map::{impl core::fmt::Debug for automata_builder::automata::product_writes_map::MultiTapeStateAttributes}]
-    Source: 'src/automata/product_writes_map.rs', lines 55:9-55:14 -/
+    Source: 'src/automata/product_writes_map.rs', lines 73:9-73:14 -/
 @[reducible]
 def automata.product_writes_map.MultiTapeStateAttributes.Insts.CoreFmtDebug :
   core.fmt.Debug automata.product_writes_map.MultiTapeStateAttributes := {
@@ -17363,7 +19703,7 @@ def automata.product_writes_map.MultiTapeStateAttributes.Insts.CoreFmtDebug :
 }
 
 /-- [automata_builder::automata::product_writes_map::{impl core::clone::Clone for automata_builder::automata::product_writes_map::MultiTapeStateAttributes}::clone]:
-    Source: 'src/automata/product_writes_map.rs', lines 55:16-55:21
+    Source: 'src/automata/product_writes_map.rs', lines 73:16-73:21
     Visibility: public -/
 def
   automata.product_writes_map.MultiTapeStateAttributes.Insts.CoreCloneClone.clone
@@ -17373,7 +19713,7 @@ def
   ok self
 
 /-- Trait implementation: [automata_builder::automata::product_writes_map::{impl core::clone::Clone for automata_builder::automata::product_writes_map::MultiTapeStateAttributes}]
-    Source: 'src/automata/product_writes_map.rs', lines 55:16-55:21 -/
+    Source: 'src/automata/product_writes_map.rs', lines 73:16-73:21 -/
 @[reducible]
 def automata.product_writes_map.MultiTapeStateAttributes.Insts.CoreCloneClone :
   core.clone.Clone automata.product_writes_map.MultiTapeStateAttributes := {
@@ -17382,7 +19722,7 @@ def automata.product_writes_map.MultiTapeStateAttributes.Insts.CoreCloneClone :
 }
 
 /-- Trait implementation: [automata_builder::automata::product_writes_map::{impl core::marker::Copy for automata_builder::automata::product_writes_map::MultiTapeStateAttributes}]
-    Source: 'src/automata/product_writes_map.rs', lines 55:23-55:27 -/
+    Source: 'src/automata/product_writes_map.rs', lines 73:23-73:27 -/
 @[reducible]
 def automata.product_writes_map.MultiTapeStateAttributes.Insts.CoreMarkerCopy :
   core.marker.Copy automata.product_writes_map.MultiTapeStateAttributes := {
@@ -17391,7 +19731,7 @@ def automata.product_writes_map.MultiTapeStateAttributes.Insts.CoreMarkerCopy :
 }
 
 /-- [automata_builder::automata::product_writes_map::{impl core::cmp::PartialEq<automata_builder::automata::product_writes_map::MultiTapeStateAttributes> for automata_builder::automata::product_writes_map::MultiTapeStateAttributes}::eq]:
-    Source: 'src/automata/product_writes_map.rs', lines 55:33-55:42
+    Source: 'src/automata/product_writes_map.rs', lines 73:33-73:42
     Visibility: public -/
 def
   automata.product_writes_map.MultiTapeStateAttributes.Insts.CoreCmpPartialEqMultiTapeStateAttributes.eq
@@ -17407,7 +19747,7 @@ def
   else ok false
 
 /-- Trait implementation: [automata_builder::automata::product_writes_map::{impl core::cmp::PartialEq<automata_builder::automata::product_writes_map::MultiTapeStateAttributes> for automata_builder::automata::product_writes_map::MultiTapeStateAttributes}]
-    Source: 'src/automata/product_writes_map.rs', lines 55:33-55:42 -/
+    Source: 'src/automata/product_writes_map.rs', lines 73:33-73:42 -/
 @[reducible]
 impl_def
   automata.product_writes_map.MultiTapeStateAttributes.Insts.CoreCmpPartialEqMultiTapeStateAttributes
@@ -17420,7 +19760,7 @@ impl_def
 }
 
 /-- [automata_builder::automata::product_writes_map::{impl core::cmp::Eq for automata_builder::automata::product_writes_map::MultiTapeStateAttributes}::assert_fields_are_eq]:
-    Source: 'src/automata/product_writes_map.rs', lines 55:29-55:31
+    Source: 'src/automata/product_writes_map.rs', lines 73:29-73:31
     Visibility: public -/
 def
   automata.product_writes_map.MultiTapeStateAttributes.Insts.CoreCmpEq.assert_fields_are_eq
@@ -17430,7 +19770,7 @@ def
   ok ()
 
 /-- Trait implementation: [automata_builder::automata::product_writes_map::{impl core::cmp::Eq for automata_builder::automata::product_writes_map::MultiTapeStateAttributes}]
-    Source: 'src/automata/product_writes_map.rs', lines 55:29-55:31 -/
+    Source: 'src/automata/product_writes_map.rs', lines 73:29-73:31 -/
 @[reducible]
 def automata.product_writes_map.MultiTapeStateAttributes.Insts.CoreCmpEq :
   core.cmp.Eq automata.product_writes_map.MultiTapeStateAttributes := {
@@ -17441,7 +19781,7 @@ def automata.product_writes_map.MultiTapeStateAttributes.Insts.CoreCmpEq :
 }
 
 /-- Trait implementation: [automata_builder::automata::product_writes_map::{impl core::marker::StructuralPartialEq for automata_builder::automata::product_writes_map::MultiTapeStateAttributes}]
-    Source: 'src/automata/product_writes_map.rs', lines 55:33-55:42 -/
+    Source: 'src/automata/product_writes_map.rs', lines 73:33-73:42 -/
 @[reducible]
 def
   automata.product_writes_map.MultiTapeStateAttributes.Insts.CoreMarkerStructuralPartialEq
@@ -17449,8 +19789,82 @@ def
   automata.product_writes_map.MultiTapeStateAttributes := {
 }
 
+/-- Trait implementation: [automata_builder::automata::product_writes_map::{impl core::clone::Clone for automata_builder::automata::product_writes_map::ProductToStateMap}]
+    Source: 'src/automata/product_writes_map.rs', lines 82:16-82:21 -/
+@[reducible]
+def automata.product_writes_map.ProductToStateMap.Insts.CoreCloneClone :
+  core.clone.Clone automata.product_writes_map.ProductToStateMap := {
+  clone :=
+    automata.product_writes_map.ProductToStateMap.Insts.CoreCloneClone.clone
+}
+
+/-- [automata_builder::automata::product_writes_map::{impl core::default::Default for automata_builder::automata::product_writes_map::ProductToStateMap}::default]:
+    Source: 'src/automata/product_writes_map.rs', lines 82:23-82:30
+    Visibility: public -/
+def
+  automata.product_writes_map.ProductToStateMap.Insts.CoreDefaultDefault.default
+  : Result automata.product_writes_map.ProductToStateMap := do
+  let im ←
+    indexmap.map.IndexMap.Insts.CoreDefaultDefault.default
+      automata.terms_multitape.MultiTapeProduct
+      (alloc.collections.btree.map.BTreeMap Std.U16 Std.U32 alloc.alloc.Global)
+      std.hash.random.RandomState.Insts.CoreDefaultDefault
+  let hm ←
+    std.collections.hash.map.HashMapKVSGlobal.Insts.CoreDefaultDefault.default
+      automata.terms_multitape.MultiTapeProduct
+      automata.terms_multitape.MultiTapeProduct
+      std.hash.random.RandomState.Insts.CoreDefaultDefault
+  ok { prod_to_state_map := im, products := hm }
+
+/-- Trait implementation: [automata_builder::automata::product_writes_map::{impl core::default::Default for automata_builder::automata::product_writes_map::ProductToStateMap}]
+    Source: 'src/automata/product_writes_map.rs', lines 82:23-82:30 -/
+@[reducible]
+def automata.product_writes_map.ProductToStateMap.Insts.CoreDefaultDefault :
+  core.default.Default automata.product_writes_map.ProductToStateMap := {
+  default :=
+    automata.product_writes_map.ProductToStateMap.Insts.CoreDefaultDefault.default
+}
+
+/-- Trait implementation: [automata_builder::automata::product_writes_map::{impl core::marker::StructuralPartialEq for automata_builder::automata::product_writes_map::ProductToStateMap}]
+    Source: 'src/automata/product_writes_map.rs', lines 82:32-82:41 -/
+@[reducible]
+def
+  automata.product_writes_map.ProductToStateMap.Insts.CoreMarkerStructuralPartialEq
+  : core.marker.StructuralPartialEq
+  automata.product_writes_map.ProductToStateMap := {
+}
+
+/-- Trait implementation: [automata_builder::automata::product_writes_map::{impl core::cmp::PartialEq<automata_builder::automata::product_writes_map::ProductToStateMap> for automata_builder::automata::product_writes_map::ProductToStateMap}]
+    Source: 'src/automata/product_writes_map.rs', lines 82:32-82:41 -/
+@[reducible]
+impl_def
+  automata.product_writes_map.ProductToStateMap.Insts.CoreCmpPartialEqProductToStateMap
+  : core.cmp.PartialEq automata.product_writes_map.ProductToStateMap
+  automata.product_writes_map.ProductToStateMap := {
+  eq :=
+    automata.product_writes_map.ProductToStateMap.Insts.CoreCmpPartialEqProductToStateMap.eq
+  ne := core.cmp.PartialEq.ne.trait_default
+    automata.product_writes_map.ProductToStateMap.Insts.CoreCmpPartialEqProductToStateMap
+}
+
+/-- [automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductToStateMap}::len]:
+    Source: 'src/automata/product_writes_map.rs', lines 97:4-99:5
+    Visibility: public -/
+def automata.product_writes_map.ProductToStateMap.len
+  (self : automata.product_writes_map.ProductToStateMap) :
+  Result Std.Usize
+  := do
+  indexmap.map.IndexMap.len self.prod_to_state_map
+
+/-- [automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductToStateMap}::is_empty]:
+    Source: 'src/automata/product_writes_map.rs', lines 100:4-102:5
+    Visibility: public -/
+def automata.product_writes_map.ProductToStateMap.is_empty
+  (self : automata.product_writes_map.ProductToStateMap) : Result Bool := do
+  indexmap.map.IndexMap.is_empty self.prod_to_state_map
+
 /-- Trait implementation: [automata_builder::automata::product_writes_map::{impl core::clone::Clone for automata_builder::automata::product_writes_map::ProductWritesMap}]
-    Source: 'src/automata/product_writes_map.rs', lines 69:16-69:21 -/
+    Source: 'src/automata/product_writes_map.rs', lines 157:16-157:21 -/
 @[reducible]
 def automata.product_writes_map.ProductWritesMap.Insts.CoreCloneClone :
   core.clone.Clone automata.product_writes_map.ProductWritesMap := {
@@ -17459,21 +19873,18 @@ def automata.product_writes_map.ProductWritesMap.Insts.CoreCloneClone :
 }
 
 /-- [automata_builder::automata::product_writes_map::{impl core::default::Default for automata_builder::automata::product_writes_map::ProductWritesMap}::default]:
-    Source: 'src/automata/product_writes_map.rs', lines 69:23-69:30
+    Source: 'src/automata/product_writes_map.rs', lines 157:23-157:30
     Visibility: public -/
 def
   automata.product_writes_map.ProductWritesMap.Insts.CoreDefaultDefault.default
   : Result automata.product_writes_map.ProductWritesMap := do
-  let im ←
-    indexmap.map.IndexMap.Insts.CoreDefaultDefault.default
-      automata.terms_multitape.MultiTapeProduct
-      (alloc.collections.btree.map.BTreeMap Std.U16 Std.U32 alloc.alloc.Global)
-      std.hash.random.RandomState.Insts.CoreDefaultDefault
+  let ptsm ←
+    automata.product_writes_map.ProductToStateMap.Insts.CoreDefaultDefault.default
   let b ← core.default.DefaultBool.default
-  ok { prod_to_state_map := im, frozen := b }
+  ok { prod_to_state_map := ptsm, frozen := b }
 
 /-- Trait implementation: [automata_builder::automata::product_writes_map::{impl core::default::Default for automata_builder::automata::product_writes_map::ProductWritesMap}]
-    Source: 'src/automata/product_writes_map.rs', lines 69:23-69:30 -/
+    Source: 'src/automata/product_writes_map.rs', lines 157:23-157:30 -/
 @[reducible]
 def automata.product_writes_map.ProductWritesMap.Insts.CoreDefaultDefault :
   core.default.Default automata.product_writes_map.ProductWritesMap := {
@@ -17482,7 +19893,7 @@ def automata.product_writes_map.ProductWritesMap.Insts.CoreDefaultDefault :
 }
 
 /-- Trait implementation: [automata_builder::automata::product_writes_map::{impl core::cmp::PartialEq<automata_builder::automata::product_writes_map::ProductWritesMap> for automata_builder::automata::product_writes_map::ProductWritesMap}]
-    Source: 'src/automata/product_writes_map.rs', lines 78:0-82:1 -/
+    Source: 'src/automata/product_writes_map.rs', lines 166:0-170:1 -/
 @[reducible]
 impl_def
   automata.product_writes_map.ProductWritesMap.Insts.CoreCmpPartialEqProductWritesMap
@@ -17495,7 +19906,7 @@ impl_def
 }
 
 /-- Trait implementation: [automata_builder::automata::product_writes_map::{impl core::cmp::Eq for automata_builder::automata::product_writes_map::ProductWritesMap}]
-    Source: 'src/automata/product_writes_map.rs', lines 83:0-83:31 -/
+    Source: 'src/automata/product_writes_map.rs', lines 171:0-171:31 -/
 @[reducible]
 impl_def automata.product_writes_map.ProductWritesMap.Insts.CoreCmpEq :
   core.cmp.Eq automata.product_writes_map.ProductWritesMap := {
@@ -17506,30 +19917,30 @@ impl_def automata.product_writes_map.ProductWritesMap.Insts.CoreCmpEq :
 }
 
 /-- [automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::is_frozen]:
-    Source: 'src/automata/product_writes_map.rs', lines 94:4-96:5
+    Source: 'src/automata/product_writes_map.rs', lines 182:4-184:5
     Visibility: public -/
 def automata.product_writes_map.ProductWritesMap.is_frozen
   (self : automata.product_writes_map.ProductWritesMap) : Result Bool := do
   ok self.frozen
 
 /-- [automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::len]:
-    Source: 'src/automata/product_writes_map.rs', lines 102:4-104:5
+    Source: 'src/automata/product_writes_map.rs', lines 190:4-192:5
     Visibility: public -/
 def automata.product_writes_map.ProductWritesMap.len
   (self : automata.product_writes_map.ProductWritesMap) :
   Result Std.Usize
   := do
-  indexmap.map.IndexMap.len self.prod_to_state_map
+  automata.product_writes_map.ProductToStateMap.len self.prod_to_state_map
 
 /-- [automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::is_empty]:
-    Source: 'src/automata/product_writes_map.rs', lines 106:4-108:5
+    Source: 'src/automata/product_writes_map.rs', lines 194:4-196:5
     Visibility: public -/
 def automata.product_writes_map.ProductWritesMap.is_empty
   (self : automata.product_writes_map.ProductWritesMap) : Result Bool := do
-  indexmap.map.IndexMap.is_empty self.prod_to_state_map
+  automata.product_writes_map.ProductToStateMap.is_empty self.prod_to_state_map
 
 /-- [automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::remove]:
-    Source: 'src/automata/product_writes_map.rs', lines 130:4-137:5
+    Source: 'src/automata/product_writes_map.rs', lines 218:4-225:5
     Visibility: public -/
 def automata.product_writes_map.ProductWritesMap.remove
   (self : automata.product_writes_map.ProductWritesMap)
@@ -17544,18 +19955,133 @@ def automata.product_writes_map.ProductWritesMap.remove
     ok (core.result.Result.Err
       automata.product_writes_map.ProductWritesError.Frozen, self)
   else
-    let (o, im) ←
-      indexmap.map.IndexMap.shift_remove
-        std.hash.random.RandomState.Insts.CoreHashBuildHasherDefaultHasher
-        automata.terms_multitape.MultiTapeProduct.Insts.CoreHashHash
-        (equivalent.Equivalent.Blanket
-        automata.terms_multitape.MultiTapeProduct.Insts.CoreCmpEq
-        (core.borrow.Borrow.Blanket automata.terms_multitape.MultiTapeProduct))
+    let (o, ptsm) ←
+      automata.product_writes_map.ProductToStateMap.shift_remove
         self.prod_to_state_map product
-    ok (core.result.Result.Ok o, { self with prod_to_state_map := im })
+    ok (core.result.Result.Ok o, { self with prod_to_state_map := ptsm })
+
+/-- [automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::get_stub_writes_str_for::{closure}::{impl core::ops::function::FnMut<((&'_0 u16, &'_1 u32),), alloc::string::String> for automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::get_stub_writes_str_for::{closure}::{closure}<'_0, '_1>}::call_mut]:
+    Source: 'src/automata/product_writes_map.rs', lines 306:25-306:87 -/
+def
+  automata.product_writes_map.ProductWritesMap.get_stub_writes_str_for.closure.closure.Insts.CoreOpsFunctionFnMutTuplePairShared0U16Shared1U32String.call_mut
+  (c :
+  automata.product_writes_map.ProductWritesMap.get_stub_writes_str_for.closure.closure)
+  (tupled_args : (Std.U16 × Std.U32)) :
+  Result (String ×
+    automata.product_writes_map.ProductWritesMap.get_stub_writes_str_for.closure.closure)
+  := do
+  let (tape_no, cell_state) := tupled_args
+  let a ←
+    core.fmt.rt.Argument.new_display (Shared0T.Insts.CoreFmtDisplay
+      U16.Insts.CoreFmtDisplay) tape_no
+  let a1 ←
+    core.fmt.rt.Argument.new_display (Shared0T.Insts.CoreFmtDisplay
+      U32.Insts.CoreFmtDisplay) cell_state
+  let a2 ←
+    core.fmt.Arguments.new
+      (Array.make 7#usize [ 1#u8, 84#u8, 192#u8, 1#u8, 58#u8, 192#u8, 0#u8 ])
+      (Array.make 2#usize [ a, a1 ])
+  let s ← alloc.fmt.format a2
+  let s1 ← core.hint.must_use s
+  ok (s1, ())
+
+/-- [automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::get_stub_writes_str_for::{closure}::{impl core::ops::function::FnOnce<((&'_0 u16, &'_1 u32),), alloc::string::String> for automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::get_stub_writes_str_for::{closure}::{closure}<'_0, '_1>}::call_once]:
+    Source: 'src/automata/product_writes_map.rs', lines 306:25-306:87 -/
+def
+  automata.product_writes_map.ProductWritesMap.get_stub_writes_str_for.closure.closure.Insts.CoreOpsFunctionFnOnceTuplePairShared0U16Shared1U32String.call_once
+  (c :
+  automata.product_writes_map.ProductWritesMap.get_stub_writes_str_for.closure.closure)
+  (p : (Std.U16 × Std.U32)) :
+  Result String
+  := do
+  let (s, _) ←
+    automata.product_writes_map.ProductWritesMap.get_stub_writes_str_for.closure.closure.Insts.CoreOpsFunctionFnMutTuplePairShared0U16Shared1U32String.call_mut
+      () p
+  ok s
+
+/-- Trait implementation: [automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::get_stub_writes_str_for::{closure}::{impl core::ops::function::FnOnce<((&'_0 u16, &'_1 u32),), alloc::string::String> for automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::get_stub_writes_str_for::{closure}::{closure}<'_0, '_1>}]
+    Source: 'src/automata/product_writes_map.rs', lines 306:25-306:87 -/
+@[reducible]
+def
+  automata.product_writes_map.ProductWritesMap.get_stub_writes_str_for.closure.closure.Insts.CoreOpsFunctionFnOnceTuplePairShared0U16Shared1U32String
+  : core.ops.function.FnOnce
+  automata.product_writes_map.ProductWritesMap.get_stub_writes_str_for.closure.closure
+  (Std.U16 × Std.U32) String := {
+  call_once :=
+    automata.product_writes_map.ProductWritesMap.get_stub_writes_str_for.closure.closure.Insts.CoreOpsFunctionFnOnceTuplePairShared0U16Shared1U32String.call_once
+}
+
+/-- Trait implementation: [automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::get_stub_writes_str_for::{closure}::{impl core::ops::function::FnMut<((&'_0 u16, &'_1 u32),), alloc::string::String> for automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::get_stub_writes_str_for::{closure}::{closure}<'_0, '_1>}]
+    Source: 'src/automata/product_writes_map.rs', lines 306:25-306:87 -/
+@[reducible]
+def
+  automata.product_writes_map.ProductWritesMap.get_stub_writes_str_for.closure.closure.Insts.CoreOpsFunctionFnMutTuplePairShared0U16Shared1U32String
+  : core.ops.function.FnMut
+  automata.product_writes_map.ProductWritesMap.get_stub_writes_str_for.closure.closure
+  (Std.U16 × Std.U32) String := {
+  FnOnceInst :=
+    automata.product_writes_map.ProductWritesMap.get_stub_writes_str_for.closure.closure.Insts.CoreOpsFunctionFnOnceTuplePairShared0U16Shared1U32String
+  call_mut :=
+    automata.product_writes_map.ProductWritesMap.get_stub_writes_str_for.closure.closure.Insts.CoreOpsFunctionFnMutTuplePairShared0U16Shared1U32String.call_mut
+}
+
+/-- [automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::get_stub_writes_str_for::{impl core::ops::function::FnOnce<(&'_0 alloc::collections::btree::map::BTreeMap<u16, u32, alloc::alloc::Global>,), alloc::string::String> for automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::get_stub_writes_str_for::{closure}<'_0>}::call_once]:
+    Source: 'src/automata/product_writes_map.rs', lines 303:17-308:13 -/
+def
+  automata.product_writes_map.ProductWritesMap.get_stub_writes_str_for.closure.Insts.CoreOpsFunctionFnOnceTupleShared0BTreeMapU16U32GlobalString.call_once
+  (c :
+  automata.product_writes_map.ProductWritesMap.get_stub_writes_str_for.closure)
+  (tupled_args : alloc.collections.btree.map.BTreeMap Std.U16 Std.U32
+  alloc.alloc.Global) :
+  Result String
+  := do
+  let i ←
+    alloc.collections.btree.map.BTreeMap.iter
+      alloc.alloc.Global.Insts.CoreAllocAllocatorClone tupled_args
+  let m ←
+    core.iter.traits.iterator.Iterator.map.default
+      (alloc.collections.btree.map.Iter.Insts.CoreIterTraitsIteratorIteratorPairSharedAKSharedAV
+      Std.U16 Std.U32)
+      automata.product_writes_map.ProductWritesMap.get_stub_writes_str_for.closure.closure.Insts.CoreOpsFunctionFnMutTuplePairShared0U16Shared1U32String
+      i ()
+  core.iter.traits.iterator.Iterator.collect.default
+    (core.iter.adapters.map.Map.Insts.CoreIterTraitsIteratorIterator
+    (alloc.collections.btree.map.Iter.Insts.CoreIterTraitsIteratorIteratorPairSharedAKSharedAV
+    Std.U16 Std.U32)
+    automata.product_writes_map.ProductWritesMap.get_stub_writes_str_for.closure.closure.Insts.CoreOpsFunctionFnMutTuplePairShared0U16Shared1U32String)
+    alloc.string.String.Insts.CoreIterTraitsCollectFromIteratorString m
+
+/-- Trait implementation: [automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::get_stub_writes_str_for::{impl core::ops::function::FnOnce<(&'_0 alloc::collections::btree::map::BTreeMap<u16, u32, alloc::alloc::Global>,), alloc::string::String> for automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::get_stub_writes_str_for::{closure}<'_0>}]
+    Source: 'src/automata/product_writes_map.rs', lines 303:17-308:13 -/
+@[reducible]
+def
+  automata.product_writes_map.ProductWritesMap.get_stub_writes_str_for.closure.Insts.CoreOpsFunctionFnOnceTupleShared0BTreeMapU16U32GlobalString
+  : core.ops.function.FnOnce
+  automata.product_writes_map.ProductWritesMap.get_stub_writes_str_for.closure
+  (alloc.collections.btree.map.BTreeMap Std.U16 Std.U32 alloc.alloc.Global)
+  String := {
+  call_once :=
+    automata.product_writes_map.ProductWritesMap.get_stub_writes_str_for.closure.Insts.CoreOpsFunctionFnOnceTupleShared0BTreeMapU16U32GlobalString.call_once
+}
+
+/-- [automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::get_stub_writes_str_for]:
+    Source: 'src/automata/product_writes_map.rs', lines 301:4-310:5
+    Visibility: public -/
+def automata.product_writes_map.ProductWritesMap.get_stub_writes_str_for
+  (self : automata.product_writes_map.ProductWritesMap)
+  (product : automata.terms_multitape.MultiTapeProduct) :
+  Result String
+  := do
+  let o ← automata.product_writes_map.ProductWritesMap.get self product
+  let o1 ←
+    core.option.Option.map
+      automata.product_writes_map.ProductWritesMap.get_stub_writes_str_for.closure.Insts.CoreOpsFunctionFnOnceTupleShared0BTreeMapU16U32GlobalString
+      o ()
+  core.option.Option.unwrap_or_default
+    alloc.string.String.Insts.CoreDefaultDefault o1
 
 /-- [automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::build_state_to_products_map]: loop 1:
-    Source: 'src/automata/product_writes_map.rs', lines 259:12-262:13
+    Source: 'src/automata/product_writes_map.rs', lines 333:12-336:13
     Visibility: public -/
 @[rust_loop]
 def
@@ -17600,7 +20126,7 @@ def
 partial_fixpoint
 
 /-- [automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::build_state_to_products_map]: loop 0:
-    Source: 'src/automata/product_writes_map.rs', lines 258:8-263:9
+    Source: 'src/automata/product_writes_map.rs', lines 332:8-337:9
     Visibility: public -/
 @[rust_loop]
 def
@@ -17632,7 +20158,7 @@ def
 partial_fixpoint
 
 /-- [automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::build_state_to_products_map]:
-    Source: 'src/automata/product_writes_map.rs', lines 252:4-265:5
+    Source: 'src/automata/product_writes_map.rs', lines 326:4-339:5
     Visibility: public -/
 def automata.product_writes_map.ProductWritesMap.build_state_to_products_map
   (self : automata.product_writes_map.ProductWritesMap) :
@@ -17649,7 +20175,7 @@ def automata.product_writes_map.ProductWritesMap.build_state_to_products_map
     iter state_to_products
 
 /-- [automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::extinct_input_state::{impl core::ops::function::FnMut<(&'_0 automata_builder::automata::terms_multitape::MultiTapeProduct,), automata_builder::automata::terms_multitape::MultiTapeProduct> for automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::extinct_input_state::{closure#1}<'_0>}::call_mut]:
-    Source: 'src/automata/product_writes_map.rs', lines 370:17-370:41 -/
+    Source: 'src/automata/product_writes_map.rs', lines 453:17-453:41 -/
 def
   automata.product_writes_map.ProductWritesMap.extinct_input_state.closure_1.Insts.CoreOpsFunctionFnMutTupleShared0MultiTapeProductMultiTapeProduct.call_mut
   (c :
@@ -17664,7 +20190,7 @@ def
   ok (mtp, ())
 
 /-- [automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::extinct_input_state::{impl core::ops::function::FnOnce<(&'_0 automata_builder::automata::terms_multitape::MultiTapeProduct,), automata_builder::automata::terms_multitape::MultiTapeProduct> for automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::extinct_input_state::{closure#1}<'_0>}::call_once]:
-    Source: 'src/automata/product_writes_map.rs', lines 370:17-370:41 -/
+    Source: 'src/automata/product_writes_map.rs', lines 453:17-453:41 -/
 def
   automata.product_writes_map.ProductWritesMap.extinct_input_state.closure_1.Insts.CoreOpsFunctionFnOnceTupleShared0MultiTapeProductMultiTapeProduct.call_once
   (c :
@@ -17678,7 +20204,7 @@ def
   ok mtp1
 
 /-- Trait implementation: [automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::extinct_input_state::{impl core::ops::function::FnOnce<(&'_0 automata_builder::automata::terms_multitape::MultiTapeProduct,), automata_builder::automata::terms_multitape::MultiTapeProduct> for automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::extinct_input_state::{closure#1}<'_0>}]
-    Source: 'src/automata/product_writes_map.rs', lines 370:17-370:41 -/
+    Source: 'src/automata/product_writes_map.rs', lines 453:17-453:41 -/
 @[reducible]
 def
   automata.product_writes_map.ProductWritesMap.extinct_input_state.closure_1.Insts.CoreOpsFunctionFnOnceTupleShared0MultiTapeProductMultiTapeProduct
@@ -17691,7 +20217,7 @@ def
 }
 
 /-- Trait implementation: [automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::extinct_input_state::{impl core::ops::function::FnMut<(&'_0 automata_builder::automata::terms_multitape::MultiTapeProduct,), automata_builder::automata::terms_multitape::MultiTapeProduct> for automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::extinct_input_state::{closure#1}<'_0>}]
-    Source: 'src/automata/product_writes_map.rs', lines 370:17-370:41 -/
+    Source: 'src/automata/product_writes_map.rs', lines 453:17-453:41 -/
 @[reducible]
 def
   automata.product_writes_map.ProductWritesMap.extinct_input_state.closure_1.Insts.CoreOpsFunctionFnMutTupleShared0MultiTapeProductMultiTapeProduct
@@ -17706,7 +20232,7 @@ def
 }
 
 /-- [automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::extinct_input_state::{closure}::{impl core::ops::function::FnMut<(&'_0 automata_builder::automata::terms_multitape::MultiTapeTerm,), bool> for automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::extinct_input_state::{closure}::{closure}<'_0, '_1>}::call_mut]:
-    Source: 'src/automata/product_writes_map.rs', lines 365:51-368:17 -/
+    Source: 'src/automata/product_writes_map.rs', lines 448:51-451:17 -/
 def
   automata.product_writes_map.ProductWritesMap.extinct_input_state.closure.closure.Insts.CoreOpsFunctionFnMutTupleShared0MultiTapeTermBool.call_mut
   (c :
@@ -17724,7 +20250,7 @@ def
   ok (b, c)
 
 /-- [automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::extinct_input_state::{closure}::{impl core::ops::function::FnOnce<(&'_0 automata_builder::automata::terms_multitape::MultiTapeTerm,), bool> for automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::extinct_input_state::{closure}::{closure}<'_0, '_1>}::call_once]:
-    Source: 'src/automata/product_writes_map.rs', lines 365:51-368:17 -/
+    Source: 'src/automata/product_writes_map.rs', lines 448:51-451:17 -/
 def
   automata.product_writes_map.ProductWritesMap.extinct_input_state.closure.closure.Insts.CoreOpsFunctionFnOnceTupleShared0MultiTapeTermBool.call_once
   (c :
@@ -17738,7 +20264,7 @@ def
   ok b
 
 /-- Trait implementation: [automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::extinct_input_state::{closure}::{impl core::ops::function::FnOnce<(&'_0 automata_builder::automata::terms_multitape::MultiTapeTerm,), bool> for automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::extinct_input_state::{closure}::{closure}<'_0, '_1>}]
-    Source: 'src/automata/product_writes_map.rs', lines 365:51-368:17 -/
+    Source: 'src/automata/product_writes_map.rs', lines 448:51-451:17 -/
 @[reducible]
 def
   automata.product_writes_map.ProductWritesMap.extinct_input_state.closure.closure.Insts.CoreOpsFunctionFnOnceTupleShared0MultiTapeTermBool
@@ -17750,7 +20276,7 @@ def
 }
 
 /-- Trait implementation: [automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::extinct_input_state::{closure}::{impl core::ops::function::FnMut<(&'_0 automata_builder::automata::terms_multitape::MultiTapeTerm,), bool> for automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::extinct_input_state::{closure}::{closure}<'_0, '_1>}]
-    Source: 'src/automata/product_writes_map.rs', lines 365:51-368:17 -/
+    Source: 'src/automata/product_writes_map.rs', lines 448:51-451:17 -/
 @[reducible]
 def
   automata.product_writes_map.ProductWritesMap.extinct_input_state.closure.closure.Insts.CoreOpsFunctionFnMutTupleShared0MultiTapeTermBool
@@ -17764,7 +20290,7 @@ def
 }
 
 /-- [automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::extinct_input_state::{impl core::ops::function::FnMut<(&'_2 &'_0 automata_builder::automata::terms_multitape::MultiTapeProduct,), bool> for automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::extinct_input_state::{closure}<'_0, '_1>}::call_mut]:
-    Source: 'src/automata/product_writes_map.rs', lines 364:20-369:13 -/
+    Source: 'src/automata/product_writes_map.rs', lines 447:20-452:13 -/
 def
   automata.product_writes_map.ProductWritesMap.extinct_input_state.closure.Insts.CoreOpsFunctionFnMutTupleShared2Shared0MultiTapeProductBool.call_mut
   (c :
@@ -17783,7 +20309,7 @@ def
   ok (b, c)
 
 /-- [automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::extinct_input_state::{impl core::ops::function::FnOnce<(&'_2 &'_0 automata_builder::automata::terms_multitape::MultiTapeProduct,), bool> for automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::extinct_input_state::{closure}<'_0, '_1>}::call_once]:
-    Source: 'src/automata/product_writes_map.rs', lines 364:20-369:13 -/
+    Source: 'src/automata/product_writes_map.rs', lines 447:20-452:13 -/
 def
   automata.product_writes_map.ProductWritesMap.extinct_input_state.closure.Insts.CoreOpsFunctionFnOnceTupleShared2Shared0MultiTapeProductBool.call_once
   (c :
@@ -17797,7 +20323,7 @@ def
   ok b
 
 /-- Trait implementation: [automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::extinct_input_state::{impl core::ops::function::FnOnce<(&'_2 &'_0 automata_builder::automata::terms_multitape::MultiTapeProduct,), bool> for automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::extinct_input_state::{closure}<'_0, '_1>}]
-    Source: 'src/automata/product_writes_map.rs', lines 364:20-369:13 -/
+    Source: 'src/automata/product_writes_map.rs', lines 447:20-452:13 -/
 @[reducible]
 def
   automata.product_writes_map.ProductWritesMap.extinct_input_state.closure.Insts.CoreOpsFunctionFnOnceTupleShared2Shared0MultiTapeProductBool
@@ -17809,7 +20335,7 @@ def
 }
 
 /-- Trait implementation: [automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::extinct_input_state::{impl core::ops::function::FnMut<(&'_2 &'_0 automata_builder::automata::terms_multitape::MultiTapeProduct,), bool> for automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::extinct_input_state::{closure}<'_0, '_1>}]
-    Source: 'src/automata/product_writes_map.rs', lines 364:20-369:13 -/
+    Source: 'src/automata/product_writes_map.rs', lines 447:20-452:13 -/
 @[reducible]
 def
   automata.product_writes_map.ProductWritesMap.extinct_input_state.closure.Insts.CoreOpsFunctionFnMutTupleShared2Shared0MultiTapeProductBool
@@ -17823,7 +20349,7 @@ def
 }
 
 /-- [automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::extinct_input_state]:
-    Source: 'src/automata/product_writes_map.rs', lines 355:4-378:5
+    Source: 'src/automata/product_writes_map.rs', lines 438:4-461:5
     Visibility: public -/
 def automata.product_writes_map.ProductWritesMap.extinct_input_state
   (self : automata.product_writes_map.ProductWritesMap)
@@ -17835,7 +20361,7 @@ def automata.product_writes_map.ProductWritesMap.extinct_input_state
   sorry
 
 /-- [automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::build_input_products::{impl core::ops::function::FnMut<(&'_0 automata_builder::automata::terms_multitape::MultiTapeProduct,), automata_builder::automata::terms_multitape::MultiTapeProduct> for automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::build_input_products::{closure}<'_0>}::call_mut]:
-    Source: 'src/automata/product_writes_map.rs', lines 487:28-487:52 -/
+    Source: 'src/automata/product_writes_map.rs', lines 570:28-570:52 -/
 def
   automata.product_writes_map.ProductWritesMap.build_input_products.closure.Insts.CoreOpsFunctionFnMutTupleShared0MultiTapeProductMultiTapeProduct.call_mut
   (c :
@@ -17850,7 +20376,7 @@ def
   ok (mtp, ())
 
 /-- [automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::build_input_products::{impl core::ops::function::FnOnce<(&'_0 automata_builder::automata::terms_multitape::MultiTapeProduct,), automata_builder::automata::terms_multitape::MultiTapeProduct> for automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::build_input_products::{closure}<'_0>}::call_once]:
-    Source: 'src/automata/product_writes_map.rs', lines 487:28-487:52 -/
+    Source: 'src/automata/product_writes_map.rs', lines 570:28-570:52 -/
 def
   automata.product_writes_map.ProductWritesMap.build_input_products.closure.Insts.CoreOpsFunctionFnOnceTupleShared0MultiTapeProductMultiTapeProduct.call_once
   (c :
@@ -17864,7 +20390,7 @@ def
   ok mtp1
 
 /-- Trait implementation: [automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::build_input_products::{impl core::ops::function::FnOnce<(&'_0 automata_builder::automata::terms_multitape::MultiTapeProduct,), automata_builder::automata::terms_multitape::MultiTapeProduct> for automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::build_input_products::{closure}<'_0>}]
-    Source: 'src/automata/product_writes_map.rs', lines 487:28-487:52 -/
+    Source: 'src/automata/product_writes_map.rs', lines 570:28-570:52 -/
 @[reducible]
 def
   automata.product_writes_map.ProductWritesMap.build_input_products.closure.Insts.CoreOpsFunctionFnOnceTupleShared0MultiTapeProductMultiTapeProduct
@@ -17877,7 +20403,7 @@ def
 }
 
 /-- Trait implementation: [automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::build_input_products::{impl core::ops::function::FnMut<(&'_0 automata_builder::automata::terms_multitape::MultiTapeProduct,), automata_builder::automata::terms_multitape::MultiTapeProduct> for automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::build_input_products::{closure}<'_0>}]
-    Source: 'src/automata/product_writes_map.rs', lines 487:28-487:52 -/
+    Source: 'src/automata/product_writes_map.rs', lines 570:28-570:52 -/
 @[reducible]
 def
   automata.product_writes_map.ProductWritesMap.build_input_products.closure.Insts.CoreOpsFunctionFnMutTupleShared0MultiTapeProductMultiTapeProduct
@@ -17892,7 +20418,7 @@ def
 }
 
 /-- [automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::build_input_products]:
-    Source: 'src/automata/product_writes_map.rs', lines 486:4-488:5
+    Source: 'src/automata/product_writes_map.rs', lines 569:4-571:5
     Visibility: public -/
 def automata.product_writes_map.ProductWritesMap.build_input_products
   (self : automata.product_writes_map.ProductWritesMap) :
@@ -17921,7 +20447,7 @@ def automata.product_writes_map.ProductWritesMap.build_input_products
     std.hash.random.RandomState.Insts.CoreDefaultDefault) m
 
 /-- [automata_builder::automata::product_writes_map::{impl core::iter::traits::collect::IntoIterator<(&'a automata_builder::automata::terms_multitape::MultiTapeProduct, &'a alloc::collections::btree::map::BTreeMap<u16, u32, alloc::alloc::Global>), indexmap::map::iter::Iter<'a, automata_builder::automata::terms_multitape::MultiTapeProduct, alloc::collections::btree::map::BTreeMap<u16, u32, alloc::alloc::Global>>> for &'a automata_builder::automata::product_writes_map::ProductWritesMap}::into_iter]:
-    Source: 'src/automata/product_writes_map.rs', lines 730:4-732:5
+    Source: 'src/automata/product_writes_map.rs', lines 813:4-815:5
     Visibility: public -/
 def
   SharedAProductWritesMap.Insts.CoreIterTraitsCollectIntoIteratorPairSharedAMultiTapeProductSharedABTreeMapU16U32GlobalIterAMultiTapeProductBTreeMapU16U32Global.into_iter
@@ -17929,10 +20455,10 @@ def
   Result (indexmap.map.iter.Iter automata.terms_multitape.MultiTapeProduct
     (alloc.collections.btree.map.BTreeMap Std.U16 Std.U32 alloc.alloc.Global))
   := do
-  indexmap.map.IndexMap.iter self.prod_to_state_map
+  automata.product_writes_map.ProductToStateMap.iter self.prod_to_state_map
 
 /-- Trait implementation: [automata_builder::automata::product_writes_map::{impl core::iter::traits::collect::IntoIterator<(&'a automata_builder::automata::terms_multitape::MultiTapeProduct, &'a alloc::collections::btree::map::BTreeMap<u16, u32, alloc::alloc::Global>), indexmap::map::iter::Iter<'a, automata_builder::automata::terms_multitape::MultiTapeProduct, alloc::collections::btree::map::BTreeMap<u16, u32, alloc::alloc::Global>>> for &'a automata_builder::automata::product_writes_map::ProductWritesMap}]
-    Source: 'src/automata/product_writes_map.rs', lines 726:0-733:1 -/
+    Source: 'src/automata/product_writes_map.rs', lines 809:0-816:1 -/
 @[reducible]
 def
   SharedAProductWritesMap.Insts.CoreIterTraitsCollectIntoIteratorPairSharedAMultiTapeProductSharedABTreeMapU16U32GlobalIterAMultiTapeProductBTreeMapU16U32Global
@@ -19157,7 +21683,7 @@ def automata.rule_generator.BidirectionalTape.Insts.CoreOpsIndexIndexI64U32 :
 }
 
 /-- [automata_builder::automata::rule_generator_multitape::{impl core::fmt::Debug for automata_builder::automata::rule_generator_multitape::MultiTapeDataRegion}::fmt]:
-    Source: 'src/automata/rule_generator_multitape.rs', lines 11:9-11:14
+    Source: 'src/automata/rule_generator_multitape.rs', lines 12:9-12:14
     Visibility: public -/
 def
   automata.rule_generator_multitape.MultiTapeDataRegion.Insts.CoreFmtDebug.fmt
@@ -19177,7 +21703,7 @@ def
     dyn2
 
 /-- Trait implementation: [automata_builder::automata::rule_generator_multitape::{impl core::fmt::Debug for automata_builder::automata::rule_generator_multitape::MultiTapeDataRegion}]
-    Source: 'src/automata/rule_generator_multitape.rs', lines 11:9-11:14 -/
+    Source: 'src/automata/rule_generator_multitape.rs', lines 12:9-12:14 -/
 @[reducible]
 def automata.rule_generator_multitape.MultiTapeDataRegion.Insts.CoreFmtDebug :
   core.fmt.Debug automata.rule_generator_multitape.MultiTapeDataRegion := {
@@ -19186,7 +21712,7 @@ def automata.rule_generator_multitape.MultiTapeDataRegion.Insts.CoreFmtDebug :
 }
 
 /-- [automata_builder::automata::rule_generator_multitape::{impl core::clone::Clone for automata_builder::automata::rule_generator_multitape::MultiTapeDataRegion}::clone]:
-    Source: 'src/automata/rule_generator_multitape.rs', lines 11:16-11:21
+    Source: 'src/automata/rule_generator_multitape.rs', lines 12:16-12:21
     Visibility: public -/
 def
   automata.rule_generator_multitape.MultiTapeDataRegion.Insts.CoreCloneClone.clone
@@ -19202,7 +21728,7 @@ def
   ok { start_position := i, length := i1, tape_regions := bm }
 
 /-- Trait implementation: [automata_builder::automata::rule_generator_multitape::{impl core::clone::Clone for automata_builder::automata::rule_generator_multitape::MultiTapeDataRegion}]
-    Source: 'src/automata/rule_generator_multitape.rs', lines 11:16-11:21 -/
+    Source: 'src/automata/rule_generator_multitape.rs', lines 12:16-12:21 -/
 @[reducible]
 def automata.rule_generator_multitape.MultiTapeDataRegion.Insts.CoreCloneClone
   : core.clone.Clone automata.rule_generator_multitape.MultiTapeDataRegion := {
@@ -19211,7 +21737,7 @@ def automata.rule_generator_multitape.MultiTapeDataRegion.Insts.CoreCloneClone
 }
 
 /-- [automata_builder::automata::rule_generator_multitape::{impl core::default::Default for automata_builder::automata::rule_generator_multitape::MultiTapeDataRegion}::default]:
-    Source: 'src/automata/rule_generator_multitape.rs', lines 11:23-11:30
+    Source: 'src/automata/rule_generator_multitape.rs', lines 12:23-12:30
     Visibility: public -/
 def
   automata.rule_generator_multitape.MultiTapeDataRegion.Insts.CoreDefaultDefault.default
@@ -19227,7 +21753,7 @@ def
     }
 
 /-- Trait implementation: [automata_builder::automata::rule_generator_multitape::{impl core::default::Default for automata_builder::automata::rule_generator_multitape::MultiTapeDataRegion}]
-    Source: 'src/automata/rule_generator_multitape.rs', lines 11:23-11:30 -/
+    Source: 'src/automata/rule_generator_multitape.rs', lines 12:23-12:30 -/
 @[reducible]
 def
   automata.rule_generator_multitape.MultiTapeDataRegion.Insts.CoreDefaultDefault
@@ -19238,7 +21764,7 @@ def
 }
 
 /-- [automata_builder::automata::rule_generator_multitape::{automata_builder::automata::rule_generator_multitape::MultiTapeDataRegion}::new]:
-    Source: 'src/automata/rule_generator_multitape.rs', lines 18:4-20:5
+    Source: 'src/automata/rule_generator_multitape.rs', lines 19:4-21:5
     Visibility: public -/
 def automata.rule_generator_multitape.MultiTapeDataRegion.new
   (start_position : Std.I64) (length : Std.Usize) :
@@ -19250,7 +21776,7 @@ def automata.rule_generator_multitape.MultiTapeDataRegion.new
   ok { start_position, length, tape_regions := bm }
 
 /-- [automata_builder::automata::rule_generator_multitape::{automata_builder::automata::rule_generator_multitape::MultiTapeDataRegion}::add_tape_region]:
-    Source: 'src/automata/rule_generator_multitape.rs', lines 21:4-24:5
+    Source: 'src/automata/rule_generator_multitape.rs', lines 22:4-25:5
     Visibility: public -/
 def automata.rule_generator_multitape.MultiTapeDataRegion.add_tape_region
   (self : automata.rule_generator_multitape.MultiTapeDataRegion)
@@ -19266,7 +21792,7 @@ def automata.rule_generator_multitape.MultiTapeDataRegion.add_tape_region
   ok { self with tape_regions := bm }
 
 /-- [automata_builder::automata::rule_generator_multitape::{automata_builder::automata::rule_generator_multitape::MultiTapeDataRegion}::get_product_slice_at]: loop 0:
-    Source: 'src/automata/rule_generator_multitape.rs', lines 29:8-36:9
+    Source: 'src/automata/rule_generator_multitape.rs', lines 30:8-37:9
     Visibility: public -/
 @[rust_loop]
 def
@@ -19301,7 +21827,7 @@ def
 partial_fixpoint
 
 /-- [automata_builder::automata::rule_generator_multitape::{automata_builder::automata::rule_generator_multitape::MultiTapeDataRegion}::get_product_slice_at]:
-    Source: 'src/automata/rule_generator_multitape.rs', lines 25:4-39:5
+    Source: 'src/automata/rule_generator_multitape.rs', lines 26:4-40:5
     Visibility: public -/
 def automata.rule_generator_multitape.MultiTapeDataRegion.get_product_slice_at
   (self : automata.rule_generator_multitape.MultiTapeDataRegion)
@@ -19320,7 +21846,7 @@ def automata.rule_generator_multitape.MultiTapeDataRegion.get_product_slice_at
   automata.terms_multitape.MultiTapeProduct.new terms
 
 /-- Trait implementation: [automata_builder::automata::rule_generator_multitape::{impl core::clone::Clone for automata_builder::automata::rule_generator_multitape::BiDirectionalMultiTape}]
-    Source: 'src/automata/rule_generator_multitape.rs', lines 43:16-43:21 -/
+    Source: 'src/automata/rule_generator_multitape.rs', lines 44:16-44:21 -/
 @[reducible]
 def
   automata.rule_generator_multitape.BiDirectionalMultiTape.Insts.CoreCloneClone
@@ -19331,7 +21857,7 @@ def
 }
 
 /-- Trait implementation: [automata_builder::automata::rule_generator_multitape::{impl core::default::Default for automata_builder::automata::rule_generator_multitape::BiDirectionalMultiTape}]
-    Source: 'src/automata/rule_generator_multitape.rs', lines 43:23-43:30 -/
+    Source: 'src/automata/rule_generator_multitape.rs', lines 44:23-44:30 -/
 @[reducible]
 def
   automata.rule_generator_multitape.BiDirectionalMultiTape.Insts.CoreDefaultDefault
@@ -19342,7 +21868,7 @@ def
 }
 
 /-- [automata_builder::automata::rule_generator_multitape::{automata_builder::automata::rule_generator_multitape::BiDirectionalMultiTape}::new]:
-    Source: 'src/automata/rule_generator_multitape.rs', lines 51:4-53:5
+    Source: 'src/automata/rule_generator_multitape.rs', lines 52:4-54:5
     Visibility: public -/
 def automata.rule_generator_multitape.BiDirectionalMultiTape.new
   (tapes : alloc.collections.btree.map.BTreeMap Std.U16
@@ -19352,7 +21878,7 @@ def automata.rule_generator_multitape.BiDirectionalMultiTape.new
   ok { tapes, freeze_tapes := false }
 
 /-- [automata_builder::automata::rule_generator_multitape::{automata_builder::automata::rule_generator_multitape::BiDirectionalMultiTape}::get_all_states]: loop 0:
-    Source: 'src/automata/rule_generator_multitape.rs', lines 111:8-113:9
+    Source: 'src/automata/rule_generator_multitape.rs', lines 112:8-114:9
     Visibility: public -/
 @[rust_loop]
 def
@@ -19380,7 +21906,7 @@ def
 partial_fixpoint
 
 /-- [automata_builder::automata::rule_generator_multitape::{automata_builder::automata::rule_generator_multitape::BiDirectionalMultiTape}::get_all_states]:
-    Source: 'src/automata/rule_generator_multitape.rs', lines 109:4-115:5
+    Source: 'src/automata/rule_generator_multitape.rs', lines 110:4-116:5
     Visibility: public -/
 def automata.rule_generator_multitape.BiDirectionalMultiTape.get_all_states
   (self : automata.rule_generator_multitape.BiDirectionalMultiTape) :
@@ -19394,7 +21920,7 @@ def automata.rule_generator_multitape.BiDirectionalMultiTape.get_all_states
     iter all_states
 
 /-- [automata_builder::automata::rule_generator_multitape::{automata_builder::automata::rule_generator_multitape::BiDirectionalMultiTape}::prune]: loop 0:
-    Source: 'src/automata/rule_generator_multitape.rs', lines 126:8-128:9
+    Source: 'src/automata/rule_generator_multitape.rs', lines 127:8-129:9
     Visibility: public -/
 @[rust_loop]
 def automata.rule_generator_multitape.BiDirectionalMultiTape.prune_loop
@@ -19421,7 +21947,7 @@ def automata.rule_generator_multitape.BiDirectionalMultiTape.prune_loop
 partial_fixpoint
 
 /-- [automata_builder::automata::rule_generator_multitape::{automata_builder::automata::rule_generator_multitape::BiDirectionalMultiTape}::prune]:
-    Source: 'src/automata/rule_generator_multitape.rs', lines 125:4-129:5
+    Source: 'src/automata/rule_generator_multitape.rs', lines 126:4-130:5
     Visibility: public -/
 def automata.rule_generator_multitape.BiDirectionalMultiTape.prune
   (self : automata.rule_generator_multitape.BiDirectionalMultiTape) :
@@ -19437,7 +21963,7 @@ def automata.rule_generator_multitape.BiDirectionalMultiTape.prune
   ok { self with tapes := bm }
 
 /-- [automata_builder::automata::rule_generator_multitape::{automata_builder::automata::rule_generator_multitape::BiDirectionalMultiTape}::get_minimal_data_range::{impl core::ops::function::FnOnce<(i64,), i64> for automata_builder::automata::rule_generator_multitape::{automata_builder::automata::rule_generator_multitape::BiDirectionalMultiTape}::get_minimal_data_range::{closure#1}<'_0>}::call_once]:
-    Source: 'src/automata/rule_generator_multitape.rs', lines 234:56-234:75 -/
+    Source: 'src/automata/rule_generator_multitape.rs', lines 235:56-235:75 -/
 def
   automata.rule_generator_multitape.BiDirectionalMultiTape.get_minimal_data_range.closure_1.Insts.CoreOpsFunctionFnOnceTupleI64I64.call_once
   (c :
@@ -19448,7 +21974,7 @@ def
   ok (core.cmp.impls.OrdI64.max tupled_args c)
 
 /-- Trait implementation: [automata_builder::automata::rule_generator_multitape::{automata_builder::automata::rule_generator_multitape::BiDirectionalMultiTape}::get_minimal_data_range::{impl core::ops::function::FnOnce<(i64,), i64> for automata_builder::automata::rule_generator_multitape::{automata_builder::automata::rule_generator_multitape::BiDirectionalMultiTape}::get_minimal_data_range::{closure#1}<'_0>}]
-    Source: 'src/automata/rule_generator_multitape.rs', lines 234:56-234:75 -/
+    Source: 'src/automata/rule_generator_multitape.rs', lines 235:56-235:75 -/
 @[reducible]
 def
   automata.rule_generator_multitape.BiDirectionalMultiTape.get_minimal_data_range.closure_1.Insts.CoreOpsFunctionFnOnceTupleI64I64
@@ -19460,7 +21986,7 @@ def
 }
 
 /-- [automata_builder::automata::rule_generator_multitape::{automata_builder::automata::rule_generator_multitape::BiDirectionalMultiTape}::get_minimal_data_range::{impl core::ops::function::FnOnce<(i64,), i64> for automata_builder::automata::rule_generator_multitape::{automata_builder::automata::rule_generator_multitape::BiDirectionalMultiTape}::get_minimal_data_range::{closure}<'_0>}::call_once]:
-    Source: 'src/automata/rule_generator_multitape.rs', lines 233:62-233:83 -/
+    Source: 'src/automata/rule_generator_multitape.rs', lines 234:62-234:83 -/
 def
   automata.rule_generator_multitape.BiDirectionalMultiTape.get_minimal_data_range.closure.Insts.CoreOpsFunctionFnOnceTupleI64I64.call_once
   (c :
@@ -19471,7 +21997,7 @@ def
   ok (core.cmp.impls.OrdI64.min tupled_args c)
 
 /-- Trait implementation: [automata_builder::automata::rule_generator_multitape::{automata_builder::automata::rule_generator_multitape::BiDirectionalMultiTape}::get_minimal_data_range::{impl core::ops::function::FnOnce<(i64,), i64> for automata_builder::automata::rule_generator_multitape::{automata_builder::automata::rule_generator_multitape::BiDirectionalMultiTape}::get_minimal_data_range::{closure}<'_0>}]
-    Source: 'src/automata/rule_generator_multitape.rs', lines 233:62-233:83 -/
+    Source: 'src/automata/rule_generator_multitape.rs', lines 234:62-234:83 -/
 @[reducible]
 def
   automata.rule_generator_multitape.BiDirectionalMultiTape.get_minimal_data_range.closure.Insts.CoreOpsFunctionFnOnceTupleI64I64
@@ -19483,7 +22009,7 @@ def
 }
 
 /-- [automata_builder::automata::rule_generator_multitape::{automata_builder::automata::rule_generator_multitape::BiDirectionalMultiTape}::get_minimal_data_range]: loop 0:
-    Source: 'src/automata/rule_generator_multitape.rs', lines 231:8-236:9
+    Source: 'src/automata/rule_generator_multitape.rs', lines 232:8-237:9
     Visibility: public -/
 @[rust_loop]
 def
@@ -19521,7 +22047,7 @@ def
 partial_fixpoint
 
 /-- [automata_builder::automata::rule_generator_multitape::{automata_builder::automata::rule_generator_multitape::BiDirectionalMultiTape}::get_minimal_data_range]:
-    Source: 'src/automata/rule_generator_multitape.rs', lines 223:4-238:5
+    Source: 'src/automata/rule_generator_multitape.rs', lines 224:4-239:5
     Visibility: public -/
 def
   automata.rule_generator_multitape.BiDirectionalMultiTape.get_minimal_data_range
@@ -19537,7 +22063,7 @@ def
   core.option.Option.zip start_pos end_pos
 
 /-- [automata_builder::automata::rule_generator_multitape::{automata_builder::automata::rule_generator_multitape::BiDirectionalMultiTape}::get_minimal_data_region]: loop 0:
-    Source: 'src/automata/rule_generator_multitape.rs', lines 255:8-260:9
+    Source: 'src/automata/rule_generator_multitape.rs', lines 256:8-261:9
     Visibility: public -/
 @[rust_loop]
 def
@@ -19567,7 +22093,7 @@ def
 partial_fixpoint
 
 /-- [automata_builder::automata::rule_generator_multitape::{automata_builder::automata::rule_generator_multitape::BiDirectionalMultiTape}::get_minimal_data_region]:
-    Source: 'src/automata/rule_generator_multitape.rs', lines 240:4-262:5
+    Source: 'src/automata/rule_generator_multitape.rs', lines 241:4-263:5
     Visibility: public -/
 def
   automata.rule_generator_multitape.BiDirectionalMultiTape.get_minimal_data_region
@@ -19597,7 +22123,7 @@ def
     iter data_length start_pos multi_tape_data_region
 
 /-- [automata_builder::automata::rule_generator_multitape::{impl core::fmt::Debug for automata_builder::automata::rule_generator_multitape::AutomataError}::fmt]:
-    Source: 'src/automata/rule_generator_multitape.rs', lines 265:9-265:14
+    Source: 'src/automata/rule_generator_multitape.rs', lines 266:9-266:14
     Visibility: public -/
 def automata.rule_generator_multitape.AutomataError.Insts.CoreFmtDebug.fmt
   (self : automata.rule_generator_multitape.AutomataError)
@@ -19667,9 +22193,19 @@ def automata.rule_generator_multitape.AutomataError.Insts.CoreFmtDebug.fmt
         automata.terms_multitape.MultiTapeState.Insts.CoreFmtDebug) __self_0
     core.fmt.Formatter.debug_struct_field1_finish f (toStr
       "NoProductsForState") (toStr "state") __self_01
+  | automata.rule_generator_multitape.AutomataError.InvalidInputOrOutputTape
+    __self_0 __self_1 =>
+    let __self_01 := Dyn.mk _ core.fmt.DebugU16 __self_0
+    let __self_11 :=
+      Dyn.mk _ (core.fmt.DebugShared
+        automata.multi_tape_transition.MultiTapeTransition.Insts.CoreFmtDebug)
+        __self_1
+    core.fmt.Formatter.debug_struct_field2_finish f (toStr
+      "InvalidInputOrOutputTape") (toStr "tape_no") __self_01 (toStr
+      "transition") __self_11
 
 /-- Trait implementation: [automata_builder::automata::rule_generator_multitape::{impl core::fmt::Debug for automata_builder::automata::rule_generator_multitape::AutomataError}]
-    Source: 'src/automata/rule_generator_multitape.rs', lines 265:9-265:14 -/
+    Source: 'src/automata/rule_generator_multitape.rs', lines 266:9-266:14 -/
 @[reducible]
 def automata.rule_generator_multitape.AutomataError.Insts.CoreFmtDebug :
   core.fmt.Debug automata.rule_generator_multitape.AutomataError := {
@@ -19677,7 +22213,7 @@ def automata.rule_generator_multitape.AutomataError.Insts.CoreFmtDebug :
 }
 
 /-- [automata_builder::automata::rule_generator_multitape::{impl core::clone::Clone for automata_builder::automata::rule_generator_multitape::AutomataError}::clone]:
-    Source: 'src/automata/rule_generator_multitape.rs', lines 265:16-265:21
+    Source: 'src/automata/rule_generator_multitape.rs', lines 266:16-266:21
     Visibility: public -/
 def automata.rule_generator_multitape.AutomataError.Insts.CoreCloneClone.clone
   (self : automata.rule_generator_multitape.AutomataError) :
@@ -19728,9 +22264,18 @@ def automata.rule_generator_multitape.AutomataError.Insts.CoreCloneClone.clone
       automata.terms_multitape.MultiTapeState.Insts.CoreCloneClone.clone
         __self_0
     ok (automata.rule_generator_multitape.AutomataError.NoProductsForState mts)
+  | automata.rule_generator_multitape.AutomataError.InvalidInputOrOutputTape
+    __self_0 __self_1 =>
+    let i ← lift (core.clone.impls.CloneU16.clone __self_0)
+    let mtt ←
+      automata.multi_tape_transition.MultiTapeTransition.Insts.CoreCloneClone.clone
+        __self_1
+    ok
+      (automata.rule_generator_multitape.AutomataError.InvalidInputOrOutputTape
+      i mtt)
 
 /-- Trait implementation: [automata_builder::automata::rule_generator_multitape::{impl core::clone::Clone for automata_builder::automata::rule_generator_multitape::AutomataError}]
-    Source: 'src/automata/rule_generator_multitape.rs', lines 265:16-265:21 -/
+    Source: 'src/automata/rule_generator_multitape.rs', lines 266:16-266:21 -/
 @[reducible]
 def automata.rule_generator_multitape.AutomataError.Insts.CoreCloneClone :
   core.clone.Clone automata.rule_generator_multitape.AutomataError := {
@@ -19739,7 +22284,7 @@ def automata.rule_generator_multitape.AutomataError.Insts.CoreCloneClone :
 }
 
 /-- [automata_builder::automata::rule_generator_multitape::{impl core::fmt::Display for automata_builder::automata::rule_generator_multitape::AutomataError}::fmt]:
-    Source: 'src/automata/rule_generator_multitape.rs', lines 301:4-333:5
+    Source: 'src/automata/rule_generator_multitape.rs', lines 306:4-345:5
     Visibility: public -/
 def automata.rule_generator_multitape.AutomataError.Insts.CoreFmtDisplay.fmt
   (self : automata.rule_generator_multitape.AutomataError)
@@ -19861,9 +22406,34 @@ def automata.rule_generator_multitape.AutomataError.Insts.CoreFmtDisplay.fmt
           101#u8, 115#u8, 115#u8, 105#u8, 111#u8, 110#u8, 0#u8
           ]) (Array.make 1#usize [ a ])
     core.fmt.Formatter.write_fmt f a1
+  | automata.rule_generator_multitape.AutomataError.InvalidInputOrOutputTape
+    tape_no transition =>
+    let a ←
+      core.fmt.rt.Argument.new_display (Shared0T.Insts.CoreFmtDisplay
+        U16.Insts.CoreFmtDisplay) tape_no
+    let a1 ←
+      core.fmt.rt.Argument.new_debug (core.fmt.DebugShared
+        automata.multi_tape_transition.MultiTapeTransition.Insts.CoreFmtDebug)
+        transition
+    let a2 ←
+      core.fmt.Arguments.new
+        (Array.make 97#usize [
+          16#u8, 73#u8, 110#u8, 118#u8, 97#u8, 108#u8, 105#u8, 100#u8, 32#u8,
+          116#u8, 97#u8, 112#u8, 101#u8, 95#u8, 110#u8, 111#u8, 32#u8, 192#u8,
+          31#u8, 32#u8, 117#u8, 115#u8, 101#u8, 100#u8, 32#u8, 111#u8, 114#u8,
+          32#u8, 119#u8, 114#u8, 105#u8, 116#u8, 116#u8, 101#u8, 110#u8, 32#u8,
+          105#u8, 110#u8, 32#u8, 116#u8, 114#u8, 97#u8, 110#u8, 115#u8, 105#u8,
+          116#u8, 105#u8, 111#u8, 110#u8, 32#u8, 192#u8, 12#u8, 32#u8, 40#u8,
+          105#u8, 46#u8, 101#u8, 46#u8, 32#u8, 116#u8, 97#u8, 112#u8, 101#u8,
+          32#u8, 200#u8, 0#u8, 0#u8, 28#u8, 32#u8, 110#u8, 111#u8, 116#u8,
+          32#u8, 100#u8, 101#u8, 99#u8, 108#u8, 97#u8, 114#u8, 101#u8, 100#u8,
+          32#u8, 105#u8, 110#u8, 32#u8, 105#u8, 110#u8, 105#u8, 116#u8, 95#u8,
+          116#u8, 97#u8, 112#u8, 101#u8, 115#u8, 41#u8, 0#u8
+          ]) (Array.make 2#usize [ a, a1 ])
+    core.fmt.Formatter.write_fmt f a2
 
 /-- Trait implementation: [automata_builder::automata::rule_generator_multitape::{impl core::fmt::Display for automata_builder::automata::rule_generator_multitape::AutomataError}]
-    Source: 'src/automata/rule_generator_multitape.rs', lines 300:0-334:1 -/
+    Source: 'src/automata/rule_generator_multitape.rs', lines 305:0-346:1 -/
 @[reducible]
 def automata.rule_generator_multitape.AutomataError.Insts.CoreFmtDisplay :
   core.fmt.Display automata.rule_generator_multitape.AutomataError := {
@@ -19872,7 +22442,7 @@ def automata.rule_generator_multitape.AutomataError.Insts.CoreFmtDisplay :
 }
 
 /-- Trait implementation: [automata_builder::automata::rule_generator_multitape::{impl core::error::Error for automata_builder::automata::rule_generator_multitape::AutomataError}]
-    Source: 'src/automata/rule_generator_multitape.rs', lines 335:0-335:43 -/
+    Source: 'src/automata/rule_generator_multitape.rs', lines 347:0-347:43 -/
 @[reducible]
 def automata.rule_generator_multitape.AutomataError.Insts.CoreErrorError :
   core.error.Error automata.rule_generator_multitape.AutomataError := {
@@ -26389,7 +28959,7 @@ def automata.terms.validate_debug_info_exists
   automata.terms.validate_debug_info_exists_loop0 iter
 
 /-- Trait implementation: [automata_builder::automata::terms_multitape::{impl core::marker::StructuralPartialEq for automata_builder::automata::terms_multitape::MultiTapeState}]
-    Source: 'src/automata/terms_multitape.rs', lines 18:28-18:37 -/
+    Source: 'src/automata/terms_multitape.rs', lines 20:28-20:37 -/
 @[reducible]
 def automata.terms_multitape.MultiTapeState.Insts.CoreMarkerStructuralPartialEq
   : core.marker.StructuralPartialEq automata.terms_multitape.MultiTapeState
@@ -26397,23 +28967,40 @@ def automata.terms_multitape.MultiTapeState.Insts.CoreMarkerStructuralPartialEq
 }
 
 /-- [automata_builder::automata::terms_multitape::_]
-    Source: 'src/automata/terms_multitape.rs', lines 19:10-19:19 -/
+    Source: 'src/automata/terms_multitape.rs', lines 21:10-21:19 -/
 @[global_simps, irreducible] def automata.terms_multitape._ : Unit := ()
 
 /-- [automata_builder::automata::terms_multitape::_#1]
-    Source: 'src/automata/terms_multitape.rs', lines 19:21-19:32 -/
+    Source: 'src/automata/terms_multitape.rs', lines 21:21-21:32 -/
 @[global_simps, irreducible] def automata.terms_multitape.__1 : Unit := ()
 
 /-- [automata_builder::automata::terms_multitape::_#2]
-    Source: 'src/automata/terms_multitape.rs', lines 66:27-66:36 -/
+    Source: 'src/automata/terms_multitape.rs', lines 71:27-71:36 -/
 @[global_simps, irreducible] def automata.terms_multitape.__2 : Unit := ()
 
 /-- [automata_builder::automata::terms_multitape::_#3]
-    Source: 'src/automata/terms_multitape.rs', lines 66:38-66:49 -/
+    Source: 'src/automata/terms_multitape.rs', lines 71:38-71:49 -/
 @[global_simps, irreducible] def automata.terms_multitape.__3 : Unit := ()
 
+/-- [automata_builder::automata::terms_multitape::{automata_builder::automata::terms_multitape::MultiTapeTerm}::get_state]:
+    Source: 'src/automata/terms_multitape.rs', lines 113:4-115:5
+    Visibility: public -/
+def automata.terms_multitape.MultiTapeTerm.get_state
+  (self : automata.terms_multitape.MultiTapeTerm) :
+  Result (Std.U16 × Std.U32)
+  := do
+  ok self.state
+
+/-- [automata_builder::automata::terms_multitape::{automata_builder::automata::terms_multitape::MultiTapeTerm}::get_tape_cell_state]:
+    Source: 'src/automata/terms_multitape.rs', lines 120:4-123:5
+    Visibility: public -/
+def automata.terms_multitape.MultiTapeTerm.get_tape_cell_state
+  (self : automata.terms_multitape.MultiTapeTerm) : Result Std.U32 := do
+  let (_, cell_state) := self.state
+  ok cell_state
+
 /-- [automata_builder::automata::terms_multitape::{automata_builder::automata::terms_multitape::MultiTapeTerm}::shift]:
-    Source: 'src/automata/terms_multitape.rs', lines 108:4-115:5
+    Source: 'src/automata/terms_multitape.rs', lines 125:4-132:5
     Visibility: public -/
 def automata.terms_multitape.MultiTapeTerm.shift
   (self : automata.terms_multitape.MultiTapeTerm) (offset : Std.I64) :
@@ -26425,14 +29012,14 @@ def automata.terms_multitape.MultiTapeTerm.shift
   ok { self with position := i, _debug_info := edi }
 
 /-- [automata_builder::automata::terms_multitape::{automata_builder::automata::terms_multitape::MultiTapeTerm}::has_debug_position_info]:
-    Source: 'src/automata/terms_multitape.rs', lines 117:4-119:5
+    Source: 'src/automata/terms_multitape.rs', lines 134:4-136:5
     Visibility: public -/
 def automata.terms_multitape.MultiTapeTerm.has_debug_position_info
   (self : automata.terms_multitape.MultiTapeTerm) : Result Bool := do
   ok (core.option.Option.is_some self._debug_info.position_info)
 
 /-- [automata_builder::automata::terms_multitape::{automata_builder::automata::terms_multitape::MultiTapeTerm}::_assign_expr_position]:
-    Source: 'src/automata/terms_multitape.rs', lines 121:4-127:5
+    Source: 'src/automata/terms_multitape.rs', lines 138:4-144:5
     Visibility: public -/
 def automata.terms_multitape.MultiTapeTerm._assign_expr_position
   (self : automata.terms_multitape.MultiTapeTerm) (product_idx : Std.U64)
@@ -26452,7 +29039,7 @@ def automata.terms_multitape.MultiTapeTerm._assign_expr_position
     }
 
 /-- [automata_builder::automata::terms_multitape::{automata_builder::automata::terms_multitape::MultiTapeTerm}::_assign_expr_position_if_empty]:
-    Source: 'src/automata/terms_multitape.rs', lines 128:4-136:5
+    Source: 'src/automata/terms_multitape.rs', lines 145:4-153:5
     Visibility: public -/
 def automata.terms_multitape.MultiTapeTerm._assign_expr_position_if_empty
   (self : automata.terms_multitape.MultiTapeTerm) (product_idx : Std.U64)
@@ -26466,51 +29053,8 @@ def automata.terms_multitape.MultiTapeTerm._assign_expr_position_if_empty
       product_idx term_idx
   else ok self
 
-/-- [automata_builder::automata::terms_multitape::{automata_builder::automata::terms_multitape::MultiTapeTerm}::insert_expr_position]:
-    Source: 'src/automata/terms_multitape.rs', lines 137:4-149:5
-    Visibility: public -/
-def automata.terms_multitape.MultiTapeTerm.insert_expr_position
-  (self : automata.terms_multitape.MultiTapeTerm)
-  (position : automata.terms.ExprPosition) (require_empty : Bool) :
-  Result automata.terms_multitape.MultiTapeTerm
-  := do
-  if require_empty
-  then
-    let b := core.option.Option.is_none self._debug_info.position_info
-    if b
-    then
-      ok
-        {
-          self
-            with
-            _debug_info :=
-              { self._debug_info with position_info := (some position) }
-        }
-    else
-      let a ←
-        core.fmt.rt.Argument.new_debug (core.option.Option.Insts.CoreFmtDebug
-          automata.terms.ExprPosition.Insts.CoreFmtDebug)
-          self._debug_info.position_info
-      let _ ←
-        core.fmt.Arguments.new
-          (Array.make 35#usize [
-            32#u8, 84#u8, 101#u8, 114#u8, 109#u8, 32#u8, 97#u8, 108#u8, 114#u8,
-            101#u8, 97#u8, 100#u8, 121#u8, 32#u8, 104#u8, 97#u8, 115#u8, 32#u8,
-            112#u8, 111#u8, 115#u8, 105#u8, 116#u8, 105#u8, 111#u8, 110#u8,
-            32#u8, 105#u8, 110#u8, 102#u8, 111#u8, 58#u8, 32#u8, 192#u8, 0#u8
-            ]) (Array.make 1#usize [ a ])
-      fail panic
-  else
-    ok
-      {
-        self
-          with
-          _debug_info :=
-            { self._debug_info with position_info := (some position) }
-      }
-
 /-- [automata_builder::automata::terms_multitape::{automata_builder::automata::terms_multitape::MultiTapeTerm}::_to_product]:
-    Source: 'src/automata/terms_multitape.rs', lines 151:4-153:5
+    Source: 'src/automata/terms_multitape.rs', lines 168:4-170:5
     Visibility: public -/
 def automata.terms_multitape.MultiTapeTerm._to_product
   (self : automata.terms_multitape.MultiTapeTerm) :
@@ -26526,7 +29070,7 @@ def automata.terms_multitape.MultiTapeTerm._to_product
   automata.terms_multitape.MultiTapeProduct.new ret
 
 /-- [automata_builder::automata::terms_multitape::{automata_builder::automata::terms_multitape::MultiTapeTerm}::_get_name::TERM_EXAMPLE]
-    Source: 'src/automata/terms_multitape.rs', lines 155:8-162:10 -/
+    Source: 'src/automata/terms_multitape.rs', lines 172:8-179:10 -/
 @[global_simps, irreducible]
 def automata.terms_multitape.MultiTapeTerm._get_name.TERM_EXAMPLE
   : automata.terms_multitape.MultiTapeTerm :=
@@ -26543,7 +29087,7 @@ def automata.terms_multitape.MultiTapeTerm._get_name.TERM_EXAMPLE
   }
 
 /-- [automata_builder::automata::terms_multitape::{automata_builder::automata::terms_multitape::MultiTapeTerm}::_get_name]:
-    Source: 'src/automata/terms_multitape.rs', lines 154:4-164:5
+    Source: 'src/automata/terms_multitape.rs', lines 171:4-181:5
     Visibility: public -/
 def automata.terms_multitape.MultiTapeTerm._get_name : Result String := do
   let a ←
@@ -26558,7 +29102,7 @@ def automata.terms_multitape.MultiTapeTerm._get_name : Result String := do
   automata.terms.clip_after_space s1
 
 /-- [automata_builder::automata::terms_multitape::{impl core::ops::arith::Mul<automata_builder::automata::terms_multitape::MultiTapeTerm, automata_builder::automata::terms_multitape::MultiTapeProduct> for automata_builder::automata::terms_multitape::MultiTapeTerm}::mul]:
-    Source: 'src/automata/terms_multitape.rs', lines 170:4-172:5
+    Source: 'src/automata/terms_multitape.rs', lines 187:4-189:5
     Visibility: public -/
 def
   automata.terms_multitape.MultiTapeTerm.Insts.CoreOpsArithMulMultiTapeTermMultiTapeProduct.mul
@@ -26573,7 +29117,7 @@ def
   automata.terms_multitape.MultiTapeProduct.new ret
 
 /-- Trait implementation: [automata_builder::automata::terms_multitape::{impl core::ops::arith::Mul<automata_builder::automata::terms_multitape::MultiTapeTerm, automata_builder::automata::terms_multitape::MultiTapeProduct> for automata_builder::automata::terms_multitape::MultiTapeTerm}]
-    Source: 'src/automata/terms_multitape.rs', lines 167:0-173:1 -/
+    Source: 'src/automata/terms_multitape.rs', lines 184:0-190:1 -/
 @[reducible]
 def
   automata.terms_multitape.MultiTapeTerm.Insts.CoreOpsArithMulMultiTapeTermMultiTapeProduct
@@ -26585,7 +29129,7 @@ def
 }
 
 /-- [automata_builder::automata::terms_multitape::{impl core::ops::arith::Mul<automata_builder::automata::terms_multitape::MultiTapeProduct, automata_builder::automata::terms_multitape::MultiTapeProduct> for automata_builder::automata::terms_multitape::MultiTapeTerm}::mul]: loop 0:
-    Source: 'src/automata/terms_multitape.rs', lines 180:8-182:9
+    Source: 'src/automata/terms_multitape.rs', lines 197:8-199:9
     Visibility: public -/
 @[rust_loop]
 def
@@ -26607,7 +29151,7 @@ def
 partial_fixpoint
 
 /-- [automata_builder::automata::terms_multitape::{impl core::ops::arith::Mul<automata_builder::automata::terms_multitape::MultiTapeProduct, automata_builder::automata::terms_multitape::MultiTapeProduct> for automata_builder::automata::terms_multitape::MultiTapeTerm}::mul]:
-    Source: 'src/automata/terms_multitape.rs', lines 177:4-187:5
+    Source: 'src/automata/terms_multitape.rs', lines 194:4-204:5
     Visibility: public -/
 def
   automata.terms_multitape.MultiTapeTerm.Insts.CoreOpsArithMulMultiTapeProductMultiTapeProduct.mul
@@ -26639,7 +29183,7 @@ def
     automata.terms_multitape.MultiTapeProductFactory.to_product mtpf1
 
 /-- Trait implementation: [automata_builder::automata::terms_multitape::{impl core::ops::arith::Mul<automata_builder::automata::terms_multitape::MultiTapeProduct, automata_builder::automata::terms_multitape::MultiTapeProduct> for automata_builder::automata::terms_multitape::MultiTapeTerm}]
-    Source: 'src/automata/terms_multitape.rs', lines 174:0-188:1 -/
+    Source: 'src/automata/terms_multitape.rs', lines 191:0-205:1 -/
 @[reducible]
 def
   automata.terms_multitape.MultiTapeTerm.Insts.CoreOpsArithMulMultiTapeProductMultiTapeProduct
@@ -26651,7 +29195,7 @@ def
 }
 
 /-- [automata_builder::automata::terms_multitape::{impl core::ops::arith::Mul<automata_builder::automata::terms_multitape::MultiTapeExpression, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeTerm}::mul]: loop 0:
-    Source: 'src/automata/terms_multitape.rs', lines 194:8-196:9
+    Source: 'src/automata/terms_multitape.rs', lines 211:8-213:9
     Visibility: public -/
 @[rust_loop]
 def
@@ -26679,7 +29223,7 @@ def
 partial_fixpoint
 
 /-- [automata_builder::automata::terms_multitape::{impl core::ops::arith::Mul<automata_builder::automata::terms_multitape::MultiTapeExpression, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeTerm}::mul]:
-    Source: 'src/automata/terms_multitape.rs', lines 192:4-198:5
+    Source: 'src/automata/terms_multitape.rs', lines 209:4-215:5
     Visibility: public -/
 def
   automata.terms_multitape.MultiTapeTerm.Insts.CoreOpsArithMulMultiTapeExpressionMultiTapeExpression.mul
@@ -26695,7 +29239,7 @@ def
   automata.terms_multitape.MultiTapeExpression.new new_products
 
 /-- Trait implementation: [automata_builder::automata::terms_multitape::{impl core::ops::arith::Mul<automata_builder::automata::terms_multitape::MultiTapeExpression, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeTerm}]
-    Source: 'src/automata/terms_multitape.rs', lines 189:0-199:1 -/
+    Source: 'src/automata/terms_multitape.rs', lines 206:0-216:1 -/
 @[reducible]
 def
   automata.terms_multitape.MultiTapeTerm.Insts.CoreOpsArithMulMultiTapeExpressionMultiTapeExpression
@@ -26707,7 +29251,7 @@ def
 }
 
 /-- [automata_builder::automata::terms_multitape::{impl core::ops::bit::BitOr<automata_builder::automata::terms_multitape::MultiTapeTerm, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeTerm}::bitor]:
-    Source: 'src/automata/terms_multitape.rs', lines 203:4-208:5
+    Source: 'src/automata/terms_multitape.rs', lines 220:4-225:5
     Visibility: public -/
 def
   automata.terms_multitape.MultiTapeTerm.Insts.CoreOpsBitBitOrMultiTapeTermMultiTapeExpression.bitor
@@ -26732,7 +29276,7 @@ def
   automata.terms_multitape.MultiTapeExpression.new ret2
 
 /-- Trait implementation: [automata_builder::automata::terms_multitape::{impl core::ops::bit::BitOr<automata_builder::automata::terms_multitape::MultiTapeTerm, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeTerm}]
-    Source: 'src/automata/terms_multitape.rs', lines 200:0-209:1 -/
+    Source: 'src/automata/terms_multitape.rs', lines 217:0-226:1 -/
 @[reducible]
 def
   automata.terms_multitape.MultiTapeTerm.Insts.CoreOpsBitBitOrMultiTapeTermMultiTapeExpression
@@ -26744,7 +29288,7 @@ def
 }
 
 /-- [automata_builder::automata::terms_multitape::{impl core::ops::bit::BitOr<automata_builder::automata::terms_multitape::MultiTapeProduct, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeTerm}::bitor]:
-    Source: 'src/automata/terms_multitape.rs', lines 213:4-217:5
+    Source: 'src/automata/terms_multitape.rs', lines 230:4-234:5
     Visibility: public -/
 def
   automata.terms_multitape.MultiTapeTerm.Insts.CoreOpsBitBitOrMultiTapeProductMultiTapeExpression.bitor
@@ -26764,7 +29308,7 @@ def
   automata.terms_multitape.MultiTapeExpression.new ret1
 
 /-- Trait implementation: [automata_builder::automata::terms_multitape::{impl core::ops::bit::BitOr<automata_builder::automata::terms_multitape::MultiTapeProduct, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeTerm}]
-    Source: 'src/automata/terms_multitape.rs', lines 210:0-218:1 -/
+    Source: 'src/automata/terms_multitape.rs', lines 227:0-235:1 -/
 @[reducible]
 def
   automata.terms_multitape.MultiTapeTerm.Insts.CoreOpsBitBitOrMultiTapeProductMultiTapeExpression
@@ -26776,7 +29320,7 @@ def
 }
 
 /-- [automata_builder::automata::terms_multitape::{impl core::ops::bit::BitOr<automata_builder::automata::terms_multitape::MultiTapeExpression, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeTerm}::bitor]:
-    Source: 'src/automata/terms_multitape.rs', lines 222:4-228:5
+    Source: 'src/automata/terms_multitape.rs', lines 239:4-245:5
     Visibility: public -/
 def
   automata.terms_multitape.MultiTapeTerm.Insts.CoreOpsBitBitOrMultiTapeExpressionMultiTapeExpression.bitor
@@ -26800,7 +29344,7 @@ def
   automata.terms_multitape.MultiTapeExpression.new ret2
 
 /-- Trait implementation: [automata_builder::automata::terms_multitape::{impl core::ops::bit::BitOr<automata_builder::automata::terms_multitape::MultiTapeExpression, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeTerm}]
-    Source: 'src/automata/terms_multitape.rs', lines 219:0-229:1 -/
+    Source: 'src/automata/terms_multitape.rs', lines 236:0-246:1 -/
 @[reducible]
 def
   automata.terms_multitape.MultiTapeTerm.Insts.CoreOpsBitBitOrMultiTapeExpressionMultiTapeExpression
@@ -26812,7 +29356,7 @@ def
 }
 
 /-- [automata_builder::automata::terms_multitape::{impl automata_builder::automata::terms_multitape::AbstractMultiTapeExpression<automata_builder::automata::terms_multitape::MultiTapeProduct, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeTerm}::_assign_indexes_as_base]:
-    Source: 'src/automata/terms_multitape.rs', lines 287:4-291:5
+    Source: 'src/automata/terms_multitape.rs', lines 304:4-308:5
     Visibility: public -/
 def
   automata.terms_multitape.MultiTapeTerm.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeProductMultiTapeExpression._assign_indexes_as_base
@@ -26822,7 +29366,7 @@ def
   automata.terms_multitape.MultiTapeTerm._assign_expr_position self 0#u64 0#u64
 
 /-- [automata_builder::automata::terms_multitape::{impl automata_builder::automata::terms_multitape::AbstractMultiTapeExpression<automata_builder::automata::terms_multitape::MultiTapeProduct, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeTerm}::_get_num_terms]:
-    Source: 'src/automata/terms_multitape.rs', lines 283:4-285:5
+    Source: 'src/automata/terms_multitape.rs', lines 300:4-302:5
     Visibility: public -/
 def
   automata.terms_multitape.MultiTapeTerm.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeProductMultiTapeExpression._get_num_terms
@@ -26830,7 +29374,7 @@ def
   ok 1#usize
 
 /-- [automata_builder::automata::terms_multitape::{impl automata_builder::automata::terms_multitape::AbstractMultiTapeExpression<automata_builder::automata::terms_multitape::MultiTapeProduct, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeTerm}::to_expression]:
-    Source: 'src/automata/terms_multitape.rs', lines 274:4-278:5
+    Source: 'src/automata/terms_multitape.rs', lines 291:4-295:5
     Visibility: public -/
 def
   automata.terms_multitape.MultiTapeTerm.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeProductMultiTapeExpression.to_expression
@@ -26851,1165 +29395,8 @@ def
   let ret1 := alloc.slice.Slice.into_vec y1
   automata.terms_multitape.MultiTapeExpression.new ret1
 
-/-- [automata_builder::automata::terms_multitape::{impl core::ops::bit::BitOr<automata_builder::automata::terms_multitape::MultiTapeExpression, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeExpression}::bitor]: loop 0:
-    Source: 'src/automata/terms_multitape.rs', lines 816:8-818:9
-    Visibility: public -/
-@[rust_loop]
-def
-  automata.terms_multitape.MultiTapeExpression.Insts.CoreOpsBitBitOrMultiTapeExpressionMultiTapeExpression.bitor_loop0
-  (iter : core.slice.iter.Iter automata.terms_multitape.MultiTapeProduct)
-  (new_products : alloc.vec.Vec automata.terms_multitape.MultiTapeProduct) :
-  Result (alloc.vec.Vec automata.terms_multitape.MultiTapeProduct)
-  := do
-  let (o, iter1) ← core.slice.iter.IteratorSliceIter.next iter
-  match o with
-  | none => ok new_products
-  | some product =>
-    let mtp ←
-      automata.terms_multitape.MultiTapeProduct.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeProductMultiTapeExpression.copy
-        product
-    let new_products1 ← alloc.vec.Vec.push new_products mtp
-    automata.terms_multitape.MultiTapeExpression.Insts.CoreOpsBitBitOrMultiTapeExpressionMultiTapeExpression.bitor_loop0
-      iter1 new_products1
-partial_fixpoint
-
-/-- [automata_builder::automata::terms_multitape::{impl core::ops::bit::BitOr<automata_builder::automata::terms_multitape::MultiTapeExpression, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeExpression}::bitor]: loop 1:
-    Source: 'src/automata/terms_multitape.rs', lines 819:8-821:9
-    Visibility: public -/
-@[rust_loop]
-def
-  automata.terms_multitape.MultiTapeExpression.Insts.CoreOpsBitBitOrMultiTapeExpressionMultiTapeExpression.bitor_loop1
-  (iter : core.slice.iter.Iter automata.terms_multitape.MultiTapeProduct)
-  (new_products : alloc.vec.Vec automata.terms_multitape.MultiTapeProduct) :
-  Result (alloc.vec.Vec automata.terms_multitape.MultiTapeProduct)
-  := do
-  let (o, iter1) ← core.slice.iter.IteratorSliceIter.next iter
-  match o with
-  | none => ok new_products
-  | some product =>
-    let mtp ←
-      automata.terms_multitape.MultiTapeProduct.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeProductMultiTapeExpression.copy
-        product
-    let new_products1 ← alloc.vec.Vec.push new_products mtp
-    automata.terms_multitape.MultiTapeExpression.Insts.CoreOpsBitBitOrMultiTapeExpressionMultiTapeExpression.bitor_loop1
-      iter1 new_products1
-partial_fixpoint
-
-/-- [automata_builder::automata::terms_multitape::{impl core::ops::bit::BitOr<automata_builder::automata::terms_multitape::MultiTapeExpression, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeExpression}::bitor]:
-    Source: 'src/automata/terms_multitape.rs', lines 814:4-823:5
-    Visibility: public -/
-def
-  automata.terms_multitape.MultiTapeExpression.Insts.CoreOpsBitBitOrMultiTapeExpressionMultiTapeExpression.bitor
-  (self : automata.terms_multitape.MultiTapeExpression)
-  (rhs : automata.terms_multitape.MultiTapeExpression) :
-  Result automata.terms_multitape.MultiTapeExpression
-  := do
-  let s := alloc.vec.Vec.deref self.products
-  let iter ← core.slice.Slice.iter s
-  let new_products ←
-    automata.terms_multitape.MultiTapeExpression.Insts.CoreOpsBitBitOrMultiTapeExpressionMultiTapeExpression.bitor_loop0
-      iter (alloc.vec.Vec.new automata.terms_multitape.MultiTapeProduct)
-  let s1 := alloc.vec.Vec.deref rhs.products
-  let iter1 ← core.slice.Slice.iter s1
-  let new_products1 ←
-    automata.terms_multitape.MultiTapeExpression.Insts.CoreOpsBitBitOrMultiTapeExpressionMultiTapeExpression.bitor_loop1
-      iter1 new_products
-  automata.terms_multitape.MultiTapeExpression.new new_products1
-
-/-- [automata_builder::automata::terms_multitape::{impl automata_builder::automata::terms_multitape::AbstractMultiTapeExpression<automata_builder::automata::terms_multitape::MultiTapeExpression, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeExpression}::_expand::{impl core::ops::function::Fn<(automata_builder::automata::terms_multitape::MultiTapeExpression, automata_builder::automata::terms_multitape::MultiTapeExpression), automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::{impl automata_builder::automata::terms_multitape::AbstractMultiTapeExpression<automata_builder::automata::terms_multitape::MultiTapeExpression, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeExpression}::_expand::{closure#2}}::call]:
-    Source: 'src/automata/terms_multitape.rs', lines 894:12-894:28 -/
-def
-  automata.terms_multitape.AbstractMultiTapeExpressionMultiTapeExpressionMultiTapeExpressionMultiTapeExpression._expand.closure_2.Insts.CoreOpsFunctionFnPairMultiTapeExpressionMultiTapeExpressionMultiTapeExpression.call
-  (c :
-  automata.terms_multitape.AbstractMultiTapeExpressionMultiTapeExpressionMultiTapeExpressionMultiTapeExpression._expand.closure_2)
-  (tupled_args : (automata.terms_multitape.MultiTapeExpression ×
-  automata.terms_multitape.MultiTapeExpression)) :
-  Result automata.terms_multitape.MultiTapeExpression
-  := do
-  let (a, b) := tupled_args
-  automata.terms_multitape.MultiTapeExpression.Insts.CoreOpsBitBitOrMultiTapeExpressionMultiTapeExpression.bitor
-    a b
-
-/-- [automata_builder::automata::terms_multitape::{impl automata_builder::automata::terms_multitape::AbstractMultiTapeExpression<automata_builder::automata::terms_multitape::MultiTapeExpression, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeExpression}::_expand::{impl core::ops::function::FnMut<(automata_builder::automata::terms_multitape::MultiTapeExpression, automata_builder::automata::terms_multitape::MultiTapeExpression), automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::{impl automata_builder::automata::terms_multitape::AbstractMultiTapeExpression<automata_builder::automata::terms_multitape::MultiTapeExpression, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeExpression}::_expand::{closure#2}}::call_mut]:
-    Source: 'src/automata/terms_multitape.rs', lines 894:12-894:28 -/
-def
-  automata.terms_multitape.AbstractMultiTapeExpressionMultiTapeExpressionMultiTapeExpressionMultiTapeExpression._expand.closure_2.Insts.CoreOpsFunctionFnMutPairMultiTapeExpressionMultiTapeExpressionMultiTapeExpression.call_mut
-  (state :
-  automata.terms_multitape.AbstractMultiTapeExpressionMultiTapeExpressionMultiTapeExpressionMultiTapeExpression._expand.closure_2)
-  (args : (automata.terms_multitape.MultiTapeExpression ×
-  automata.terms_multitape.MultiTapeExpression)) :
-  Result (automata.terms_multitape.MultiTapeExpression ×
-    automata.terms_multitape.AbstractMultiTapeExpressionMultiTapeExpressionMultiTapeExpressionMultiTapeExpression._expand.closure_2)
-  := do
-  let mte ←
-    automata.terms_multitape.AbstractMultiTapeExpressionMultiTapeExpressionMultiTapeExpressionMultiTapeExpression._expand.closure_2.Insts.CoreOpsFunctionFnPairMultiTapeExpressionMultiTapeExpressionMultiTapeExpression.call
-      state args
-  ok (mte, state)
-
-/-- [automata_builder::automata::terms_multitape::{impl automata_builder::automata::terms_multitape::AbstractMultiTapeExpression<automata_builder::automata::terms_multitape::MultiTapeExpression, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeExpression}::_expand::{impl core::ops::function::FnOnce<(automata_builder::automata::terms_multitape::MultiTapeExpression, automata_builder::automata::terms_multitape::MultiTapeExpression), automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::{impl automata_builder::automata::terms_multitape::AbstractMultiTapeExpression<automata_builder::automata::terms_multitape::MultiTapeExpression, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeExpression}::_expand::{closure#2}}::call_once]:
-    Source: 'src/automata/terms_multitape.rs', lines 894:12-894:28 -/
-def
-  automata.terms_multitape.AbstractMultiTapeExpressionMultiTapeExpressionMultiTapeExpressionMultiTapeExpression._expand.closure_2.Insts.CoreOpsFunctionFnOncePairMultiTapeExpressionMultiTapeExpressionMultiTapeExpression.call_once
-  (c :
-  automata.terms_multitape.AbstractMultiTapeExpressionMultiTapeExpressionMultiTapeExpressionMultiTapeExpression._expand.closure_2)
-  (p : (automata.terms_multitape.MultiTapeExpression ×
-  automata.terms_multitape.MultiTapeExpression)) :
-  Result automata.terms_multitape.MultiTapeExpression
-  := do
-  let (mte, _) ←
-    automata.terms_multitape.AbstractMultiTapeExpressionMultiTapeExpressionMultiTapeExpressionMultiTapeExpression._expand.closure_2.Insts.CoreOpsFunctionFnMutPairMultiTapeExpressionMultiTapeExpressionMultiTapeExpression.call_mut
-      c p
-  ok mte
-
-/-- Trait implementation: [automata_builder::automata::terms_multitape::{impl automata_builder::automata::terms_multitape::AbstractMultiTapeExpression<automata_builder::automata::terms_multitape::MultiTapeExpression, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeExpression}::_expand::{impl core::ops::function::FnOnce<(automata_builder::automata::terms_multitape::MultiTapeExpression, automata_builder::automata::terms_multitape::MultiTapeExpression), automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::{impl automata_builder::automata::terms_multitape::AbstractMultiTapeExpression<automata_builder::automata::terms_multitape::MultiTapeExpression, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeExpression}::_expand::{closure#2}}]
-    Source: 'src/automata/terms_multitape.rs', lines 894:12-894:28 -/
-@[reducible]
-def
-  automata.terms_multitape.AbstractMultiTapeExpressionMultiTapeExpressionMultiTapeExpressionMultiTapeExpression._expand.closure_2.Insts.CoreOpsFunctionFnOncePairMultiTapeExpressionMultiTapeExpressionMultiTapeExpression
-  : core.ops.function.FnOnce
-  automata.terms_multitape.AbstractMultiTapeExpressionMultiTapeExpressionMultiTapeExpressionMultiTapeExpression._expand.closure_2
-  (automata.terms_multitape.MultiTapeExpression ×
-  automata.terms_multitape.MultiTapeExpression)
-  automata.terms_multitape.MultiTapeExpression := {
-  call_once :=
-    automata.terms_multitape.AbstractMultiTapeExpressionMultiTapeExpressionMultiTapeExpressionMultiTapeExpression._expand.closure_2.Insts.CoreOpsFunctionFnOncePairMultiTapeExpressionMultiTapeExpressionMultiTapeExpression.call_once
-}
-
-/-- Trait implementation: [automata_builder::automata::terms_multitape::{impl automata_builder::automata::terms_multitape::AbstractMultiTapeExpression<automata_builder::automata::terms_multitape::MultiTapeExpression, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeExpression}::_expand::{impl core::ops::function::FnMut<(automata_builder::automata::terms_multitape::MultiTapeExpression, automata_builder::automata::terms_multitape::MultiTapeExpression), automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::{impl automata_builder::automata::terms_multitape::AbstractMultiTapeExpression<automata_builder::automata::terms_multitape::MultiTapeExpression, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeExpression}::_expand::{closure#2}}]
-    Source: 'src/automata/terms_multitape.rs', lines 894:12-894:28 -/
-@[reducible]
-def
-  automata.terms_multitape.AbstractMultiTapeExpressionMultiTapeExpressionMultiTapeExpressionMultiTapeExpression._expand.closure_2.Insts.CoreOpsFunctionFnMutPairMultiTapeExpressionMultiTapeExpressionMultiTapeExpression
-  : core.ops.function.FnMut
-  automata.terms_multitape.AbstractMultiTapeExpressionMultiTapeExpressionMultiTapeExpressionMultiTapeExpression._expand.closure_2
-  (automata.terms_multitape.MultiTapeExpression ×
-  automata.terms_multitape.MultiTapeExpression)
-  automata.terms_multitape.MultiTapeExpression := {
-  FnOnceInst :=
-    automata.terms_multitape.AbstractMultiTapeExpressionMultiTapeExpressionMultiTapeExpressionMultiTapeExpression._expand.closure_2.Insts.CoreOpsFunctionFnOncePairMultiTapeExpressionMultiTapeExpressionMultiTapeExpression
-  call_mut :=
-    automata.terms_multitape.AbstractMultiTapeExpressionMultiTapeExpressionMultiTapeExpressionMultiTapeExpression._expand.closure_2.Insts.CoreOpsFunctionFnMutPairMultiTapeExpressionMultiTapeExpressionMultiTapeExpression.call_mut
-}
-
-/-- Trait implementation: [automata_builder::automata::terms_multitape::{impl automata_builder::automata::terms_multitape::AbstractMultiTapeExpression<automata_builder::automata::terms_multitape::MultiTapeExpression, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeExpression}::_expand::{impl core::ops::function::Fn<(automata_builder::automata::terms_multitape::MultiTapeExpression, automata_builder::automata::terms_multitape::MultiTapeExpression), automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::{impl automata_builder::automata::terms_multitape::AbstractMultiTapeExpression<automata_builder::automata::terms_multitape::MultiTapeExpression, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeExpression}::_expand::{closure#2}}]
-    Source: 'src/automata/terms_multitape.rs', lines 894:12-894:28 -/
-@[reducible]
-def
-  automata.terms_multitape.AbstractMultiTapeExpressionMultiTapeExpressionMultiTapeExpressionMultiTapeExpression._expand.closure_2.Insts.CoreOpsFunctionFnPairMultiTapeExpressionMultiTapeExpressionMultiTapeExpression
-  : core.ops.function.Fn
-  automata.terms_multitape.AbstractMultiTapeExpressionMultiTapeExpressionMultiTapeExpressionMultiTapeExpression._expand.closure_2
-  (automata.terms_multitape.MultiTapeExpression ×
-  automata.terms_multitape.MultiTapeExpression)
-  automata.terms_multitape.MultiTapeExpression := {
-  FnMutInst :=
-    automata.terms_multitape.AbstractMultiTapeExpressionMultiTapeExpressionMultiTapeExpressionMultiTapeExpression._expand.closure_2.Insts.CoreOpsFunctionFnMutPairMultiTapeExpressionMultiTapeExpressionMultiTapeExpression
-  call :=
-    automata.terms_multitape.AbstractMultiTapeExpressionMultiTapeExpressionMultiTapeExpressionMultiTapeExpression._expand.closure_2.Insts.CoreOpsFunctionFnPairMultiTapeExpressionMultiTapeExpressionMultiTapeExpression.call
-}
-
-/-- [automata_builder::automata::terms_multitape::{impl automata_builder::automata::terms_multitape::AbstractMultiTapeExpression<automata_builder::automata::terms_multitape::MultiTapeExpression, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeExpression}::_expand::{impl core::ops::function::Fn<(), automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::{impl automata_builder::automata::terms_multitape::AbstractMultiTapeExpression<automata_builder::automata::terms_multitape::MultiTapeExpression, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeExpression}::_expand::{closure#1}}::call]:
-    Source: 'src/automata/terms_multitape.rs', lines 893:12-893:47 -/
-def
-  automata.terms_multitape.AbstractMultiTapeExpressionMultiTapeExpressionMultiTapeExpressionMultiTapeExpression._expand.closure_1.Insts.CoreOpsFunctionFnTupleMultiTapeExpression.call
-  (c :
-  automata.terms_multitape.AbstractMultiTapeExpressionMultiTapeExpressionMultiTapeExpressionMultiTapeExpression._expand.closure_1)
-  (_ : Unit) :
-  Result automata.terms_multitape.MultiTapeExpression
-  := do
-  automata.terms_multitape.MultiTapeExpression.new (alloc.vec.Vec.new
-    automata.terms_multitape.MultiTapeProduct)
-
-/-- [automata_builder::automata::terms_multitape::{impl automata_builder::automata::terms_multitape::AbstractMultiTapeExpression<automata_builder::automata::terms_multitape::MultiTapeExpression, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeExpression}::_expand::{impl core::ops::function::FnMut<(), automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::{impl automata_builder::automata::terms_multitape::AbstractMultiTapeExpression<automata_builder::automata::terms_multitape::MultiTapeExpression, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeExpression}::_expand::{closure#1}}::call_mut]:
-    Source: 'src/automata/terms_multitape.rs', lines 893:12-893:47 -/
-def
-  automata.terms_multitape.AbstractMultiTapeExpressionMultiTapeExpressionMultiTapeExpressionMultiTapeExpression._expand.closure_1.Insts.CoreOpsFunctionFnMutTupleMultiTapeExpression.call_mut
-  (state :
-  automata.terms_multitape.AbstractMultiTapeExpressionMultiTapeExpressionMultiTapeExpressionMultiTapeExpression._expand.closure_1)
-  (_ : Unit) :
-  Result (automata.terms_multitape.MultiTapeExpression ×
-    automata.terms_multitape.AbstractMultiTapeExpressionMultiTapeExpressionMultiTapeExpressionMultiTapeExpression._expand.closure_1)
-  := do
-  let mte ←
-    automata.terms_multitape.AbstractMultiTapeExpressionMultiTapeExpressionMultiTapeExpressionMultiTapeExpression._expand.closure_1.Insts.CoreOpsFunctionFnTupleMultiTapeExpression.call
-      state ()
-  ok (mte, state)
-
-/-- [automata_builder::automata::terms_multitape::{impl automata_builder::automata::terms_multitape::AbstractMultiTapeExpression<automata_builder::automata::terms_multitape::MultiTapeExpression, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeExpression}::_expand::{impl core::ops::function::FnOnce<(), automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::{impl automata_builder::automata::terms_multitape::AbstractMultiTapeExpression<automata_builder::automata::terms_multitape::MultiTapeExpression, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeExpression}::_expand::{closure#1}}::call_once]:
-    Source: 'src/automata/terms_multitape.rs', lines 893:12-893:47 -/
-def
-  automata.terms_multitape.AbstractMultiTapeExpressionMultiTapeExpressionMultiTapeExpressionMultiTapeExpression._expand.closure_1.Insts.CoreOpsFunctionFnOnceTupleMultiTapeExpression.call_once
-  (c :
-  automata.terms_multitape.AbstractMultiTapeExpressionMultiTapeExpressionMultiTapeExpressionMultiTapeExpression._expand.closure_1)
-  (_ : Unit) :
-  Result automata.terms_multitape.MultiTapeExpression
-  := do
-  let (mte, _) ←
-    automata.terms_multitape.AbstractMultiTapeExpressionMultiTapeExpressionMultiTapeExpressionMultiTapeExpression._expand.closure_1.Insts.CoreOpsFunctionFnMutTupleMultiTapeExpression.call_mut
-      c ()
-  ok mte
-
-/-- Trait implementation: [automata_builder::automata::terms_multitape::{impl automata_builder::automata::terms_multitape::AbstractMultiTapeExpression<automata_builder::automata::terms_multitape::MultiTapeExpression, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeExpression}::_expand::{impl core::ops::function::FnOnce<(), automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::{impl automata_builder::automata::terms_multitape::AbstractMultiTapeExpression<automata_builder::automata::terms_multitape::MultiTapeExpression, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeExpression}::_expand::{closure#1}}]
-    Source: 'src/automata/terms_multitape.rs', lines 893:12-893:47 -/
-@[reducible]
-def
-  automata.terms_multitape.AbstractMultiTapeExpressionMultiTapeExpressionMultiTapeExpressionMultiTapeExpression._expand.closure_1.Insts.CoreOpsFunctionFnOnceTupleMultiTapeExpression
-  : core.ops.function.FnOnce
-  automata.terms_multitape.AbstractMultiTapeExpressionMultiTapeExpressionMultiTapeExpressionMultiTapeExpression._expand.closure_1
-  Unit automata.terms_multitape.MultiTapeExpression := {
-  call_once :=
-    automata.terms_multitape.AbstractMultiTapeExpressionMultiTapeExpressionMultiTapeExpressionMultiTapeExpression._expand.closure_1.Insts.CoreOpsFunctionFnOnceTupleMultiTapeExpression.call_once
-}
-
-/-- Trait implementation: [automata_builder::automata::terms_multitape::{impl automata_builder::automata::terms_multitape::AbstractMultiTapeExpression<automata_builder::automata::terms_multitape::MultiTapeExpression, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeExpression}::_expand::{impl core::ops::function::FnMut<(), automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::{impl automata_builder::automata::terms_multitape::AbstractMultiTapeExpression<automata_builder::automata::terms_multitape::MultiTapeExpression, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeExpression}::_expand::{closure#1}}]
-    Source: 'src/automata/terms_multitape.rs', lines 893:12-893:47 -/
-@[reducible]
-def
-  automata.terms_multitape.AbstractMultiTapeExpressionMultiTapeExpressionMultiTapeExpressionMultiTapeExpression._expand.closure_1.Insts.CoreOpsFunctionFnMutTupleMultiTapeExpression
-  : core.ops.function.FnMut
-  automata.terms_multitape.AbstractMultiTapeExpressionMultiTapeExpressionMultiTapeExpressionMultiTapeExpression._expand.closure_1
-  Unit automata.terms_multitape.MultiTapeExpression := {
-  FnOnceInst :=
-    automata.terms_multitape.AbstractMultiTapeExpressionMultiTapeExpressionMultiTapeExpressionMultiTapeExpression._expand.closure_1.Insts.CoreOpsFunctionFnOnceTupleMultiTapeExpression
-  call_mut :=
-    automata.terms_multitape.AbstractMultiTapeExpressionMultiTapeExpressionMultiTapeExpressionMultiTapeExpression._expand.closure_1.Insts.CoreOpsFunctionFnMutTupleMultiTapeExpression.call_mut
-}
-
-/-- Trait implementation: [automata_builder::automata::terms_multitape::{impl automata_builder::automata::terms_multitape::AbstractMultiTapeExpression<automata_builder::automata::terms_multitape::MultiTapeExpression, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeExpression}::_expand::{impl core::ops::function::Fn<(), automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::{impl automata_builder::automata::terms_multitape::AbstractMultiTapeExpression<automata_builder::automata::terms_multitape::MultiTapeExpression, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeExpression}::_expand::{closure#1}}]
-    Source: 'src/automata/terms_multitape.rs', lines 893:12-893:47 -/
-@[reducible]
-def
-  automata.terms_multitape.AbstractMultiTapeExpressionMultiTapeExpressionMultiTapeExpressionMultiTapeExpression._expand.closure_1.Insts.CoreOpsFunctionFnTupleMultiTapeExpression
-  : core.ops.function.Fn
-  automata.terms_multitape.AbstractMultiTapeExpressionMultiTapeExpressionMultiTapeExpressionMultiTapeExpression._expand.closure_1
-  Unit automata.terms_multitape.MultiTapeExpression := {
-  FnMutInst :=
-    automata.terms_multitape.AbstractMultiTapeExpressionMultiTapeExpressionMultiTapeExpressionMultiTapeExpression._expand.closure_1.Insts.CoreOpsFunctionFnMutTupleMultiTapeExpression
-  call :=
-    automata.terms_multitape.AbstractMultiTapeExpressionMultiTapeExpressionMultiTapeExpressionMultiTapeExpression._expand.closure_1.Insts.CoreOpsFunctionFnTupleMultiTapeExpression.call
-}
-
-/-- [automata_builder::automata::terms_multitape::{impl core::ops::arith::Mul<automata_builder::automata::terms_multitape::MultiTapeProduct, automata_builder::automata::terms_multitape::MultiTapeProduct> for automata_builder::automata::terms_multitape::MultiTapeProduct}::mul]: loop 0:
-    Source: 'src/automata/terms_multitape.rs', lines 485:8-487:9
-    Visibility: public -/
-@[rust_loop]
-def
-  automata.terms_multitape.MultiTapeProduct.Insts.CoreOpsArithMulMultiTapeProductMultiTapeProduct.mul_loop0
-  (iter : core.slice.iter.Iter automata.terms_multitape.MultiTapeTerm)
-  (new_terms : alloc.vec.Vec automata.terms_multitape.MultiTapeTerm) :
-  Result (alloc.vec.Vec automata.terms_multitape.MultiTapeTerm)
-  := do
-  let (o, iter1) ← core.slice.iter.IteratorSliceIter.next iter
-  match o with
-  | none => ok new_terms
-  | some term =>
-    let mtt ←
-      automata.terms_multitape.MultiTapeTerm.Insts.CoreCloneClone.clone term
-    let new_terms1 ← alloc.vec.Vec.push new_terms mtt
-    automata.terms_multitape.MultiTapeProduct.Insts.CoreOpsArithMulMultiTapeProductMultiTapeProduct.mul_loop0
-      iter1 new_terms1
-partial_fixpoint
-
-/-- [automata_builder::automata::terms_multitape::{impl core::ops::arith::Mul<automata_builder::automata::terms_multitape::MultiTapeProduct, automata_builder::automata::terms_multitape::MultiTapeProduct> for automata_builder::automata::terms_multitape::MultiTapeProduct}::mul]: loop 1:
-    Source: 'src/automata/terms_multitape.rs', lines 488:8-490:9
-    Visibility: public -/
-@[rust_loop]
-def
-  automata.terms_multitape.MultiTapeProduct.Insts.CoreOpsArithMulMultiTapeProductMultiTapeProduct.mul_loop1
-  (iter : core.slice.iter.Iter automata.terms_multitape.MultiTapeTerm)
-  (new_terms : alloc.vec.Vec automata.terms_multitape.MultiTapeTerm) :
-  Result (alloc.vec.Vec automata.terms_multitape.MultiTapeTerm)
-  := do
-  let (o, iter1) ← core.slice.iter.IteratorSliceIter.next iter
-  match o with
-  | none => ok new_terms
-  | some term =>
-    let mtt ←
-      automata.terms_multitape.MultiTapeTerm.Insts.CoreCloneClone.clone term
-    let new_terms1 ← alloc.vec.Vec.push new_terms mtt
-    automata.terms_multitape.MultiTapeProduct.Insts.CoreOpsArithMulMultiTapeProductMultiTapeProduct.mul_loop1
-      iter1 new_terms1
-partial_fixpoint
-
-/-- [automata_builder::automata::terms_multitape::{impl core::ops::arith::Mul<automata_builder::automata::terms_multitape::MultiTapeProduct, automata_builder::automata::terms_multitape::MultiTapeProduct> for automata_builder::automata::terms_multitape::MultiTapeProduct}::mul]:
-    Source: 'src/automata/terms_multitape.rs', lines 483:4-495:5
-    Visibility: public -/
-def
-  automata.terms_multitape.MultiTapeProduct.Insts.CoreOpsArithMulMultiTapeProductMultiTapeProduct.mul
-  (self : automata.terms_multitape.MultiTapeProduct)
-  (rhs : automata.terms_multitape.MultiTapeProduct) :
-  Result automata.terms_multitape.MultiTapeProduct
-  := do
-  let s := alloc.vec.Vec.deref self._terms
-  let iter ← core.slice.Slice.iter s
-  let new_terms ←
-    automata.terms_multitape.MultiTapeProduct.Insts.CoreOpsArithMulMultiTapeProductMultiTapeProduct.mul_loop0
-      iter (alloc.vec.Vec.new automata.terms_multitape.MultiTapeTerm)
-  let s1 := alloc.vec.Vec.deref rhs._terms
-  let iter1 ← core.slice.Slice.iter s1
-  let new_terms1 ←
-    automata.terms_multitape.MultiTapeProduct.Insts.CoreOpsArithMulMultiTapeProductMultiTapeProduct.mul_loop1
-      iter1 new_terms
-  let mtpf ← automata.terms_multitape.MultiTapeProductFactory.new new_terms1
-  if self._optimized
-  then
-    let (mtpf1, _) ←
-      automata.terms_multitape.MultiTapeProductFactory.with_optimized mtpf
-        rhs._optimized
-    automata.terms_multitape.MultiTapeProductFactory.to_product mtpf1
-  else
-    let (mtpf1, _) ←
-      automata.terms_multitape.MultiTapeProductFactory.with_optimized mtpf
-        false
-    automata.terms_multitape.MultiTapeProductFactory.to_product mtpf1
-
-/-- [automata_builder::automata::terms_multitape::{impl core::ops::arith::Mul<automata_builder::automata::terms_multitape::MultiTapeExpression, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeExpression}::mul]: loop 1:
-    Source: 'src/automata/terms_multitape.rs', lines 779:12-782:13
-    Visibility: public -/
-@[rust_loop]
-def
-  automata.terms_multitape.MultiTapeExpression.Insts.CoreOpsArithMulMultiTapeExpressionMultiTapeExpression.mul_loop0_loop0
-  (iter : core.slice.iter.Iter automata.terms_multitape.MultiTapeProduct)
-  (multiplied_products : alloc.vec.Vec
-  automata.terms_multitape.MultiTapeProduct)
-  (product : automata.terms_multitape.MultiTapeProduct) :
-  Result (alloc.vec.Vec automata.terms_multitape.MultiTapeProduct)
-  := do
-  let (o, iter1) ← core.slice.iter.IteratorSliceIter.next iter
-  match o with
-  | none => ok multiplied_products
-  | some rhs_product =>
-    let mtp ←
-      automata.terms_multitape.MultiTapeProduct.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeProductMultiTapeExpression.copy
-        product
-    let mtp1 ←
-      automata.terms_multitape.MultiTapeProduct.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeProductMultiTapeExpression.copy
-        rhs_product
-    let new_product ←
-      automata.terms_multitape.MultiTapeProduct.Insts.CoreOpsArithMulMultiTapeProductMultiTapeProduct.mul
-        mtp mtp1
-    let multiplied_products1 ←
-      alloc.vec.Vec.push multiplied_products new_product
-    automata.terms_multitape.MultiTapeExpression.Insts.CoreOpsArithMulMultiTapeExpressionMultiTapeExpression.mul_loop0_loop0
-      iter1 multiplied_products1 product
-partial_fixpoint
-
-/-- [automata_builder::automata::terms_multitape::{impl core::ops::arith::Mul<automata_builder::automata::terms_multitape::MultiTapeExpression, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeExpression}::mul]: loop 0:
-    Source: 'src/automata/terms_multitape.rs', lines 778:8-783:9
-    Visibility: public -/
-@[rust_loop]
-def
-  automata.terms_multitape.MultiTapeExpression.Insts.CoreOpsArithMulMultiTapeExpressionMultiTapeExpression.mul_loop0
-  (iter : core.slice.iter.Iter automata.terms_multitape.MultiTapeProduct)
-  (rhs : automata.terms_multitape.MultiTapeExpression)
-  (multiplied_products : alloc.vec.Vec
-  automata.terms_multitape.MultiTapeProduct) :
-  Result (alloc.vec.Vec automata.terms_multitape.MultiTapeProduct)
-  := do
-  let (o, iter1) ← core.slice.iter.IteratorSliceIter.next iter
-  match o with
-  | none => ok multiplied_products
-  | some product =>
-    let s := alloc.vec.Vec.deref rhs.products
-    let iter2 ← core.slice.Slice.iter s
-    let multiplied_products1 ←
-      automata.terms_multitape.MultiTapeExpression.Insts.CoreOpsArithMulMultiTapeExpressionMultiTapeExpression.mul_loop0_loop0
-        iter2 multiplied_products product
-    automata.terms_multitape.MultiTapeExpression.Insts.CoreOpsArithMulMultiTapeExpressionMultiTapeExpression.mul_loop0
-      iter1 rhs multiplied_products1
-partial_fixpoint
-
-/-- [automata_builder::automata::terms_multitape::{impl core::ops::arith::Mul<automata_builder::automata::terms_multitape::MultiTapeExpression, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeExpression}::mul]:
-    Source: 'src/automata/terms_multitape.rs', lines 776:4-785:5
-    Visibility: public -/
-def
-  automata.terms_multitape.MultiTapeExpression.Insts.CoreOpsArithMulMultiTapeExpressionMultiTapeExpression.mul
-  (self : automata.terms_multitape.MultiTapeExpression)
-  (rhs : automata.terms_multitape.MultiTapeExpression) :
-  Result automata.terms_multitape.MultiTapeExpression
-  := do
-  let s := alloc.vec.Vec.deref self.products
-  let iter ← core.slice.Slice.iter s
-  let multiplied_products ←
-    automata.terms_multitape.MultiTapeExpression.Insts.CoreOpsArithMulMultiTapeExpressionMultiTapeExpression.mul_loop0
-      iter rhs (alloc.vec.Vec.new automata.terms_multitape.MultiTapeProduct)
-  automata.terms_multitape.MultiTapeExpression.new multiplied_products
-
-/-- [automata_builder::automata::terms_multitape::{automata_builder::automata::terms_multitape::MultiTapeProduct}::_assign_base_indexes]: loop 0:
-    Source: 'src/automata/terms_multitape.rs', lines 390:8-393:9 -/
-@[rust_loop]
-def automata.terms_multitape.MultiTapeProduct._assign_base_indexes_loop
-  (iter : core.iter.adapters.enumerate.Enumerate (core.slice.iter.IterMut
-  automata.terms_multitape.MultiTapeTerm))
-  (back : core.iter.adapters.enumerate.Enumerate (core.slice.iter.IterMut
-  automata.terms_multitape.MultiTapeTerm) →
-  core.iter.adapters.enumerate.Enumerate (core.slice.iter.IterMut
-  automata.terms_multitape.MultiTapeTerm)) (product_idx : Std.U64) :
-  Result (core.iter.adapters.enumerate.Enumerate (core.slice.iter.IterMut
-    automata.terms_multitape.MultiTapeTerm))
-  := do
-  let (o, iter1, next_back) ←
-    core.iter.adapters.enumerate.IteratorEnumerate.next
-      (core.slice.iter.IterMut.Insts.CoreIterTraitsIteratorIteratorMutAT
-      automata.terms_multitape.MultiTapeTerm) iter
-  match o with
-  | none => ok (let e := next_back iter1 none
-                back e)
-  | some p =>
-    let (index, term) := p
-    let i ← lift (UScalar.cast .U64 index)
-    let term1 ←
-      automata.terms_multitape.MultiTapeTerm.insert_expr_position term
-        { product_idx, term_idx := i } false
-    automata.terms_multitape.MultiTapeProduct._assign_base_indexes_loop iter1
-      (fun e => let e1 := next_back e (some (index, term1))
-                back e1) product_idx
-partial_fixpoint
-
-/-- [automata_builder::automata::terms_multitape::{automata_builder::automata::terms_multitape::MultiTapeProduct}::_assign_base_indexes]:
-    Source: 'src/automata/terms_multitape.rs', lines 389:4-394:5 -/
-def automata.terms_multitape.MultiTapeProduct._assign_base_indexes
-  (self : automata.terms_multitape.MultiTapeProduct) (product_idx : Std.U64) :
-  Result automata.terms_multitape.MultiTapeProduct
-  := do
-  let (s, deref_mut_back) ← lift (alloc.vec.Vec.deref_mut self._terms)
-  let (im, iter_mut_back) ← core.slice.Slice.iter_mut s
-  let (iter, trait_default_back) ←
-    core.iter.traits.iterator.Iterator.enumerate.trait_default
-      (core.slice.iter.IterMut.Insts.CoreIterTraitsIteratorIteratorMutAT
-      automata.terms_multitape.MultiTapeTerm) im
-  let back ←
-    automata.terms_multitape.MultiTapeProduct._assign_base_indexes_loop iter
-      (fun e => e) product_idx
-  let im1 := trait_default_back back
-  let s1 := iter_mut_back im1
-  let v := deref_mut_back s1
-  ok { self with _terms := v }
-
-/-- [automata_builder::automata::terms_multitape::{automata_builder::automata::terms_multitape::MultiTapeExpression}::_assign_expr_positions]: loop 0:
-    Source: 'src/automata/terms_multitape.rs', lines 707:8-709:9
-    Visibility: public -/
-@[rust_loop]
-def automata.terms_multitape.MultiTapeExpression._assign_expr_positions_loop
-  (iter : core.iter.adapters.enumerate.Enumerate (core.slice.iter.IterMut
-  automata.terms_multitape.MultiTapeProduct))
-  (back : core.iter.adapters.enumerate.Enumerate (core.slice.iter.IterMut
-  automata.terms_multitape.MultiTapeProduct) →
-  core.iter.adapters.enumerate.Enumerate (core.slice.iter.IterMut
-  automata.terms_multitape.MultiTapeProduct)) :
-  Result (core.iter.adapters.enumerate.Enumerate (core.slice.iter.IterMut
-    automata.terms_multitape.MultiTapeProduct))
-  := do
-  let (o, iter1, next_back) ←
-    core.iter.adapters.enumerate.IteratorEnumerate.next
-      (core.slice.iter.IterMut.Insts.CoreIterTraitsIteratorIteratorMutAT
-      automata.terms_multitape.MultiTapeProduct) iter
-  match o with
-  | none => ok (let e := next_back iter1 none
-                back e)
-  | some p =>
-    let (product_index, product) := p
-    let i ← lift (UScalar.cast .U64 product_index)
-    let product1 ←
-      automata.terms_multitape.MultiTapeProduct._assign_base_indexes product i
-    automata.terms_multitape.MultiTapeExpression._assign_expr_positions_loop
-      iter1
-      (fun e => let e1 := next_back e (some (product_index, product1))
-                back e1)
-partial_fixpoint
-
-/-- [automata_builder::automata::terms_multitape::{automata_builder::automata::terms_multitape::MultiTapeExpression}::_assign_expr_positions]:
-    Source: 'src/automata/terms_multitape.rs', lines 706:4-710:5
-    Visibility: public -/
-def automata.terms_multitape.MultiTapeExpression._assign_expr_positions
-  (self : automata.terms_multitape.MultiTapeExpression) :
-  Result automata.terms_multitape.MultiTapeExpression
-  := do
-  let (s, deref_mut_back) ← lift (alloc.vec.Vec.deref_mut self.products)
-  let (im, iter_mut_back) ← core.slice.Slice.iter_mut s
-  let (iter, trait_default_back) ←
-    core.iter.traits.iterator.Iterator.enumerate.trait_default
-      (core.slice.iter.IterMut.Insts.CoreIterTraitsIteratorIteratorMutAT
-      automata.terms_multitape.MultiTapeProduct) im
-  let back ←
-    automata.terms_multitape.MultiTapeExpression._assign_expr_positions_loop
-      iter (fun e => e)
-  let im1 := trait_default_back back
-  let s1 := iter_mut_back im1
-  let v := deref_mut_back s1
-  ok { self with products := v }
-
-/-- [automata_builder::automata::terms_multitape::{impl automata_builder::automata::terms_multitape::AbstractMultiTapeExpression<automata_builder::automata::terms_multitape::MultiTapeProduct, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeTerm}::offset]:
-    Source: 'src/automata/terms_multitape.rs', lines 243:4-245:5
-    Visibility: public -/
-def
-  automata.terms_multitape.MultiTapeTerm.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeProductMultiTapeExpression.offset
-  (self : automata.terms_multitape.MultiTapeTerm) (offset : Std.I64) :
-  Result automata.terms_multitape.MultiTapeTerm
-  := do
-  let i ← self.position + offset
-  automata.terms_multitape.MultiTapeTerm.new i self.state self._optimized
-
-/-- [automata_builder::automata::terms_multitape::{impl automata_builder::automata::terms_multitape::AbstractMultiTapeExpression<automata_builder::automata::terms_multitape::MultiTapeProduct, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeProduct}::offset]: loop 0:
-    Source: 'src/automata/terms_multitape.rs', lines 589:8-591:9
-    Visibility: public -/
-@[rust_loop]
-def
-  automata.terms_multitape.MultiTapeProduct.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeProductMultiTapeExpression.offset_loop
-  (iter : core.slice.iter.Iter automata.terms_multitape.MultiTapeTerm)
-  (offset : Std.I64)
-  (new_terms : alloc.vec.Vec automata.terms_multitape.MultiTapeTerm) :
-  Result (alloc.vec.Vec automata.terms_multitape.MultiTapeTerm)
-  := do
-  let (o, iter1) ← core.slice.iter.IteratorSliceIter.next iter
-  match o with
-  | none => ok new_terms
-  | some term =>
-    let mtt ←
-      automata.terms_multitape.MultiTapeTerm.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeProductMultiTapeExpression.offset
-        term offset
-    let new_terms1 ← alloc.vec.Vec.push new_terms mtt
-    automata.terms_multitape.MultiTapeProduct.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeProductMultiTapeExpression.offset_loop
-      iter1 offset new_terms1
-partial_fixpoint
-
-/-- [automata_builder::automata::terms_multitape::{impl automata_builder::automata::terms_multitape::AbstractMultiTapeExpression<automata_builder::automata::terms_multitape::MultiTapeProduct, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeProduct}::offset]:
-    Source: 'src/automata/terms_multitape.rs', lines 587:4-593:5
-    Visibility: public -/
-def
-  automata.terms_multitape.MultiTapeProduct.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeProductMultiTapeExpression.offset
-  (self : automata.terms_multitape.MultiTapeProduct) (offset : Std.I64) :
-  Result automata.terms_multitape.MultiTapeProduct
-  := do
-  let s := alloc.vec.Vec.deref self._terms
-  let iter ← core.slice.Slice.iter s
-  let new_terms ←
-    automata.terms_multitape.MultiTapeProduct.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeProductMultiTapeExpression.offset_loop
-      iter offset (alloc.vec.Vec.new automata.terms_multitape.MultiTapeTerm)
-  automata.terms_multitape.MultiTapeProduct.new new_terms
-
-/-- [automata_builder::automata::terms_multitape::{impl automata_builder::automata::terms_multitape::AbstractMultiTapeExpression<automata_builder::automata::terms_multitape::MultiTapeExpression, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeExpression}::offset]: loop 0:
-    Source: 'src/automata/terms_multitape.rs', lines 871:8-873:9
-    Visibility: public -/
-@[rust_loop]
-def
-  automata.terms_multitape.MultiTapeExpression.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeExpressionMultiTapeExpression.offset_loop
-  (iter : core.slice.iter.Iter automata.terms_multitape.MultiTapeProduct)
-  (offset : Std.I64)
-  (products : alloc.vec.Vec automata.terms_multitape.MultiTapeProduct) :
-  Result (alloc.vec.Vec automata.terms_multitape.MultiTapeProduct)
-  := do
-  let (o, iter1) ← core.slice.iter.IteratorSliceIter.next iter
-  match o with
-  | none => ok products
-  | some product =>
-    let mtp ←
-      automata.terms_multitape.MultiTapeProduct.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeProductMultiTapeExpression.offset
-        product offset
-    let products1 ← alloc.vec.Vec.push products mtp
-    automata.terms_multitape.MultiTapeExpression.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeExpressionMultiTapeExpression.offset_loop
-      iter1 offset products1
-partial_fixpoint
-
-/-- [automata_builder::automata::terms_multitape::{impl automata_builder::automata::terms_multitape::AbstractMultiTapeExpression<automata_builder::automata::terms_multitape::MultiTapeExpression, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeExpression}::offset]:
-    Source: 'src/automata/terms_multitape.rs', lines 869:4-875:5
-    Visibility: public -/
-def
-  automata.terms_multitape.MultiTapeExpression.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeExpressionMultiTapeExpression.offset
-  (self : automata.terms_multitape.MultiTapeExpression) (offset : Std.I64) :
-  Result automata.terms_multitape.MultiTapeExpression
-  := do
-  let s := alloc.vec.Vec.deref self.products
-  let iter ← core.slice.Slice.iter s
-  let products ←
-    automata.terms_multitape.MultiTapeExpression.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeExpressionMultiTapeExpression.offset_loop
-      iter offset (alloc.vec.Vec.new automata.terms_multitape.MultiTapeProduct)
-  automata.terms_multitape.MultiTapeExpression.new products
-
-/-- [automata_builder::automata::terms_multitape::{automata_builder::automata::terms_multitape::MultiTapeProduct}::to_normalized_vec]: loop 0:
-    Source: 'src/automata/terms_multitape.rs', lines 419:8-423:9
-    Visibility: public -/
-@[rust_loop]
-def automata.terms_multitape.MultiTapeProduct.to_normalized_vec_loop
-  (iter : core.slice.iter.Iter automata.terms_multitape.MultiTapeTerm)
-  (unique_terms_set : std.collections.hash.set.HashSet
-  automata.terms_multitape.MultiTapeTerm std.hash.random.RandomState
-  alloc.alloc.Global)
-  (unique_terms : alloc.vec.Vec automata.terms_multitape.MultiTapeTerm) :
-  Result (alloc.vec.Vec automata.terms_multitape.MultiTapeTerm)
-  := do
-  let (o, iter1) ← core.slice.iter.IteratorSliceIter.next iter
-  match o with
-  | none => ok unique_terms
-  | some term =>
-    let b ←
-      std.collections.hash.set.HashSet.contains (Shared0A.Insts.CoreCmpEq
-        automata.terms_multitape.MultiTapeTerm.Insts.CoreCmpEq)
-        (Shared0T.Insts.CoreHashHash
-        automata.terms_multitape.MultiTapeTerm.Insts.CoreHashHash)
-        std.hash.random.RandomState.Insts.CoreHashBuildHasherDefaultHasher
-        (Shared0T.Insts.CoreBorrowBorrow
-        automata.terms_multitape.MultiTapeTerm)
-        automata.terms_multitape.MultiTapeTerm.Insts.CoreHashHash
-        automata.terms_multitape.MultiTapeTerm.Insts.CoreCmpEq unique_terms_set
-        term
-    if b
-    then
-      automata.terms_multitape.MultiTapeProduct.to_normalized_vec_loop iter1
-        unique_terms_set unique_terms
-    else
-      let (_, unique_terms_set1) ←
-        std.collections.hash.set.HashSet.insert (Shared0A.Insts.CoreCmpEq
-          automata.terms_multitape.MultiTapeTerm.Insts.CoreCmpEq)
-          (Shared0T.Insts.CoreHashHash
-          automata.terms_multitape.MultiTapeTerm.Insts.CoreHashHash)
-          std.hash.random.RandomState.Insts.CoreHashBuildHasherDefaultHasher
-          unique_terms_set term
-      let mtt ←
-        automata.terms_multitape.MultiTapeTerm.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeProductMultiTapeExpression.copy
-          term
-      let unique_terms1 ← alloc.vec.Vec.push unique_terms mtt
-      automata.terms_multitape.MultiTapeProduct.to_normalized_vec_loop iter1
-        unique_terms_set1 unique_terms1
-partial_fixpoint
-
-/-- [automata_builder::automata::terms_multitape::{automata_builder::automata::terms_multitape::MultiTapeProduct}::to_normalized_vec]:
-    Source: 'src/automata/terms_multitape.rs', lines 411:4-426:5
-    Visibility: public -/
-def automata.terms_multitape.MultiTapeProduct.to_normalized_vec
-  (self : automata.terms_multitape.MultiTapeProduct) (sort : Bool) :
-  Result (alloc.vec.Vec automata.terms_multitape.MultiTapeTerm)
-  := do
-  let unique_terms_set ←
-    std.collections.hash.set.HashSetTRandomStateGlobal.new
-      automata.terms_multitape.MultiTapeTerm
-  let s := alloc.vec.Vec.deref self._terms
-  let iter ← core.slice.Slice.iter s
-  let unique_terms ←
-    automata.terms_multitape.MultiTapeProduct.to_normalized_vec_loop iter
-      unique_terms_set (alloc.vec.Vec.new
-      automata.terms_multitape.MultiTapeTerm)
-  if sort
-  then
-    let (s1, deref_mut_back) ← lift (alloc.vec.Vec.deref_mut unique_terms)
-    let s2 ←
-      alloc.slice.Slice.sort
-        automata.terms_multitape.MultiTapeTerm.Insts.CoreCmpOrd s1
-    ok (deref_mut_back s2)
-  else ok unique_terms
-
-/-- [automata_builder::automata::terms_multitape::{automata_builder::automata::terms_multitape::MultiTapeProduct}::to_normalized]:
-    Source: 'src/automata/terms_multitape.rs', lines 427:4-431:5
-    Visibility: public -/
-def automata.terms_multitape.MultiTapeProduct.to_normalized
-  (self : automata.terms_multitape.MultiTapeProduct) :
-  Result automata.terms_multitape.MultiTapeProduct
-  := do
-  let norm_terms ←
-    automata.terms_multitape.MultiTapeProduct.to_normalized_vec self true
-  automata.terms_multitape.MultiTapeProduct.new norm_terms
-
-/-- [automata_builder::automata::terms_multitape::{automata_builder::automata::terms_multitape::MultiTapeExpression}::to_normalized_vec]: loop 0:
-    Source: 'src/automata/terms_multitape.rs', lines 740:8-745:9
-    Visibility: public -/
-@[rust_loop]
-def automata.terms_multitape.MultiTapeExpression.to_normalized_vec_loop
-  (iter : core.slice.iter.Iter automata.terms_multitape.MultiTapeProduct)
-  (unique_products_set : std.collections.hash.set.HashSet
-  automata.terms_multitape.MultiTapeProduct std.hash.random.RandomState
-  alloc.alloc.Global)
-  (unique_products : alloc.vec.Vec automata.terms_multitape.MultiTapeProduct) :
-  Result (alloc.vec.Vec automata.terms_multitape.MultiTapeProduct)
-  := do
-  let (o, iter1) ← core.slice.iter.IteratorSliceIter.next iter
-  match o with
-  | none => ok unique_products
-  | some un_normalized_product =>
-    let product ←
-      automata.terms_multitape.MultiTapeProduct.to_normalized
-        un_normalized_product
-    let b ←
-      std.collections.hash.set.HashSet.contains
-        automata.terms_multitape.MultiTapeProduct.Insts.CoreCmpEq
-        automata.terms_multitape.MultiTapeProduct.Insts.CoreHashHash
-        std.hash.random.RandomState.Insts.CoreHashBuildHasherDefaultHasher
-        (core.borrow.Borrow.Blanket automata.terms_multitape.MultiTapeProduct)
-        automata.terms_multitape.MultiTapeProduct.Insts.CoreHashHash
-        automata.terms_multitape.MultiTapeProduct.Insts.CoreCmpEq
-        unique_products_set product
-    if b
-    then
-      automata.terms_multitape.MultiTapeExpression.to_normalized_vec_loop iter1
-        unique_products_set unique_products
-    else
-      let mtp ←
-        automata.terms_multitape.MultiTapeProduct.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeProductMultiTapeExpression.copy
-          product
-      let (_, unique_products_set1) ←
-        std.collections.hash.set.HashSet.insert
-          automata.terms_multitape.MultiTapeProduct.Insts.CoreCmpEq
-          automata.terms_multitape.MultiTapeProduct.Insts.CoreHashHash
-          std.hash.random.RandomState.Insts.CoreHashBuildHasherDefaultHasher
-          unique_products_set mtp
-      let unique_products1 ← alloc.vec.Vec.push unique_products mtp
-      automata.terms_multitape.MultiTapeExpression.to_normalized_vec_loop iter1
-        unique_products_set1 unique_products1
-partial_fixpoint
-
-/-- [automata_builder::automata::terms_multitape::{automata_builder::automata::terms_multitape::MultiTapeExpression}::to_normalized_vec]:
-    Source: 'src/automata/terms_multitape.rs', lines 732:4-748:5
-    Visibility: public -/
-def automata.terms_multitape.MultiTapeExpression.to_normalized_vec
-  (self : automata.terms_multitape.MultiTapeExpression) (sort : Bool) :
-  Result (alloc.vec.Vec automata.terms_multitape.MultiTapeProduct)
-  := do
-  let unique_products_set ←
-    std.collections.hash.set.HashSetTRandomStateGlobal.new
-      automata.terms_multitape.MultiTapeProduct
-  let s := alloc.vec.Vec.deref self.products
-  let iter ← core.slice.Slice.iter s
-  let unique_products ←
-    automata.terms_multitape.MultiTapeExpression.to_normalized_vec_loop iter
-      unique_products_set (alloc.vec.Vec.new
-      automata.terms_multitape.MultiTapeProduct)
-  if sort
-  then
-    let (s1, deref_mut_back) ← lift (alloc.vec.Vec.deref_mut unique_products)
-    let s2 ←
-      alloc.slice.Slice.sort
-        automata.terms_multitape.MultiTapeProduct.Insts.CoreCmpOrd s1
-    ok (deref_mut_back s2)
-  else ok unique_products
-
-/-- [automata_builder::automata::terms_multitape::{automata_builder::automata::terms_multitape::MultiTapeExpression}::to_normalized]:
-    Source: 'src/automata/terms_multitape.rs', lines 749:4-752:5
-    Visibility: public -/
-def automata.terms_multitape.MultiTapeExpression.to_normalized
-  (self : automata.terms_multitape.MultiTapeExpression) (sort : Bool) :
-  Result automata.terms_multitape.MultiTapeExpression
-  := do
-  let norm_products ←
-    automata.terms_multitape.MultiTapeExpression.to_normalized_vec self sort
-  automata.terms_multitape.MultiTapeExpression.new norm_products
-
-/-- [automata_builder::automata::terms_multitape::{automata_builder::automata::terms_multitape::MultiTapeExpression}::_assign_base_expansion_indexes::{impl core::ops::function::FnMut<(&'_0 mut automata_builder::automata::terms_multitape::MultiTapeTerm,), ()> for automata_builder::automata::terms_multitape::{automata_builder::automata::terms_multitape::MultiTapeExpression}::_assign_base_expansion_indexes::{closure}<'_0, '_1>}::call_mut]:
-    Source: 'src/automata/terms_multitape.rs', lines 700:47-703:13 -/
-def
-  automata.terms_multitape.MultiTapeExpression._assign_base_expansion_indexes.closure.Insts.CoreOpsFunctionFnMutTupleMut0MultiTapeTermTuple.call_mut
-  (c :
-  automata.terms_multitape.MultiTapeExpression._assign_base_expansion_indexes.closure)
-  (tupled_args : automata.terms_multitape.MultiTapeTerm) :
-  Result
-    (automata.terms_multitape.MultiTapeExpression._assign_base_expansion_indexes.closure
-    × automata.terms_multitape.MultiTapeTerm ×
-    (automata.terms_multitape.MultiTapeExpression._assign_base_expansion_indexes.closure
-    →
-    automata.terms_multitape.MultiTapeExpression._assign_base_expansion_indexes.closure))
-  := do
-  let i ← lift (UScalar.cast .U16 c)
-  let i1 ← c + 1#usize
-  let back := fun c1 => c1
-  ok (i1,
-    {
-      tupled_args
-        with
-        _debug_info := { tupled_args._debug_info with expansion_index := i }
-    }, back)
-
-/-- [automata_builder::automata::terms_multitape::{automata_builder::automata::terms_multitape::MultiTapeExpression}::_assign_base_expansion_indexes::{impl core::ops::function::FnOnce<(&'_0 mut automata_builder::automata::terms_multitape::MultiTapeTerm,), ()> for automata_builder::automata::terms_multitape::{automata_builder::automata::terms_multitape::MultiTapeExpression}::_assign_base_expansion_indexes::{closure}<'_0, '_1>}::call_once]:
-    Source: 'src/automata/terms_multitape.rs', lines 700:47-703:13 -/
-def
-  automata.terms_multitape.MultiTapeExpression._assign_base_expansion_indexes.closure.Insts.CoreOpsFunctionFnOnceTupleMut0MultiTapeTermTuple.call_once
-  (c :
-  automata.terms_multitape.MultiTapeExpression._assign_base_expansion_indexes.closure)
-  (mtt : automata.terms_multitape.MultiTapeTerm) :
-  Result (automata.terms_multitape.MultiTapeTerm ×
-    automata.terms_multitape.MultiTapeExpression._assign_base_expansion_indexes.closure)
-  := do
-  let (c1, mtt1, call_mut_back) ←
-    automata.terms_multitape.MultiTapeExpression._assign_base_expansion_indexes.closure.Insts.CoreOpsFunctionFnMutTupleMut0MultiTapeTermTuple.call_mut
-      c mtt
-  ok (mtt1, call_mut_back c1)
-
-/-- Trait implementation: [automata_builder::automata::terms_multitape::{automata_builder::automata::terms_multitape::MultiTapeExpression}::_assign_base_expansion_indexes::{impl core::ops::function::FnOnce<(&'_0 mut automata_builder::automata::terms_multitape::MultiTapeTerm,), ()> for automata_builder::automata::terms_multitape::{automata_builder::automata::terms_multitape::MultiTapeExpression}::_assign_base_expansion_indexes::{closure}<'_0, '_1>}]
-    Source: 'src/automata/terms_multitape.rs', lines 700:47-703:13 -/
-@[reducible]
-def
-  automata.terms_multitape.MultiTapeExpression._assign_base_expansion_indexes.closure.Insts.CoreOpsFunctionFnOnceTupleMut0MultiTapeTermTuple
-  : core.ops.function.FnOnce
-  automata.terms_multitape.MultiTapeExpression._assign_base_expansion_indexes.closure
-  automata.terms_multitape.MultiTapeTerm Unit := {
-  call_once :=
-    automata.terms_multitape.MultiTapeExpression._assign_base_expansion_indexes.closure.Insts.CoreOpsFunctionFnOnceTupleMut0MultiTapeTermTuple.call_once
-}
-
-/-- Trait implementation: [automata_builder::automata::terms_multitape::{automata_builder::automata::terms_multitape::MultiTapeExpression}::_assign_base_expansion_indexes::{impl core::ops::function::FnMut<(&'_0 mut automata_builder::automata::terms_multitape::MultiTapeTerm,), ()> for automata_builder::automata::terms_multitape::{automata_builder::automata::terms_multitape::MultiTapeExpression}::_assign_base_expansion_indexes::{closure}<'_0, '_1>}]
-    Source: 'src/automata/terms_multitape.rs', lines 700:47-703:13 -/
-@[reducible]
-def
-  automata.terms_multitape.MultiTapeExpression._assign_base_expansion_indexes.closure.Insts.CoreOpsFunctionFnMutTupleMut0MultiTapeTermTuple
-  : core.ops.function.FnMut
-  automata.terms_multitape.MultiTapeExpression._assign_base_expansion_indexes.closure
-  automata.terms_multitape.MultiTapeTerm Unit := {
-  FnOnceInst :=
-    automata.terms_multitape.MultiTapeExpression._assign_base_expansion_indexes.closure.Insts.CoreOpsFunctionFnOnceTupleMut0MultiTapeTermTuple
-  call_mut :=
-    automata.terms_multitape.MultiTapeExpression._assign_base_expansion_indexes.closure.Insts.CoreOpsFunctionFnMutTupleMut0MultiTapeTermTuple.call_mut
-}
-
-/-- [automata_builder::automata::terms_multitape::{automata_builder::automata::terms_multitape::MultiTapeExpression}::_assign_base_expansion_indexes]: loop 0:
-    Source: 'src/automata/terms_multitape.rs', lines 699:8-704:9 -/
-@[rust_loop]
-def
-  automata.terms_multitape.MultiTapeExpression._assign_base_expansion_indexes_loop
-  (iter : core.slice.iter.IterMut automata.terms_multitape.MultiTapeProduct)
-  (back : core.slice.iter.IterMut automata.terms_multitape.MultiTapeProduct →
-  core.slice.iter.IterMut automata.terms_multitape.MultiTapeProduct)
-  (expansion_index : Std.Usize) :
-  Result (core.slice.iter.IterMut automata.terms_multitape.MultiTapeProduct)
-  := do
-  let (o, iter1, next_back) ← core.slice.iter.IteratorIterMut.next iter
-  match o with
-  | none => ok (let im := next_back iter1 none
-                back im)
-  | some product =>
-    let (s, deref_mut_back) ← lift (alloc.vec.Vec.deref_mut product._terms)
-    let (im, iter_mut_back) ← core.slice.Slice.iter_mut s
-    let (im1, c) ←
-      core.slice.iter.IterMut.Insts.CoreIterTraitsIteratorIteratorMutAT.for_each
-        automata.terms_multitape.MultiTapeExpression._assign_base_expansion_indexes.closure.Insts.CoreOpsFunctionFnMutTupleMut0MultiTapeTermTuple
-        im expansion_index
-    let s1 := iter_mut_back im1
-    let v := deref_mut_back s1
-    automata.terms_multitape.MultiTapeExpression._assign_base_expansion_indexes_loop
-      iter1
-      (fun im2 =>
-        let im3 := next_back im2 (some { product with _terms := v })
-        back im3) c
-partial_fixpoint
-
-/-- [automata_builder::automata::terms_multitape::{automata_builder::automata::terms_multitape::MultiTapeExpression}::_assign_base_expansion_indexes]:
-    Source: 'src/automata/terms_multitape.rs', lines 694:4-705:5 -/
-def automata.terms_multitape.MultiTapeExpression._assign_base_expansion_indexes
-  (self : automata.terms_multitape.MultiTapeExpression) :
-  Result automata.terms_multitape.MultiTapeExpression
-  := do
-  let (s, deref_mut_back) ← lift (alloc.vec.Vec.deref_mut self.products)
-  let (iter, iter_mut_back) ← core.slice.Slice.iter_mut s
-  let back ←
-    automata.terms_multitape.MultiTapeExpression._assign_base_expansion_indexes_loop
-      iter (fun im => im) 0#usize
-  let s1 := iter_mut_back back
-  let v := deref_mut_back s1
-  ok { self with products := v }
-
-/-- [automata_builder::automata::terms_multitape::{automata_builder::automata::terms_multitape::MultiTapeExpression}::_assign_parent_debug_info::{impl core::ops::function::FnMut<(&'_0 mut automata_builder::automata::terms_multitape::MultiTapeTerm,), ()> for automata_builder::automata::terms_multitape::{automata_builder::automata::terms_multitape::MultiTapeExpression}::_assign_parent_debug_info::{closure}<'_0, '_1>}::call_mut]:
-    Source: 'src/automata/terms_multitape.rs', lines 688:47-691:13 -/
-def
-  automata.terms_multitape.MultiTapeExpression._assign_parent_debug_info.closure.Insts.CoreOpsFunctionFnMutTupleMut0MultiTapeTermTuple.call_mut
-  (c :
-  automata.terms_multitape.MultiTapeExpression._assign_parent_debug_info.closure)
-  (tupled_args : automata.terms_multitape.MultiTapeTerm) :
-  Result
-    (automata.terms_multitape.MultiTapeExpression._assign_parent_debug_info.closure
-    × automata.terms_multitape.MultiTapeTerm)
-  := do
-  let o ←
-    core.option.Option.Insts.CoreCloneClone.clone
-      automata.terms.ExprPosition.Insts.CoreCloneClone c.position_info
-  ok (c,
-    {
-      tupled_args
-        with
-        _debug_info :=
-          { tupled_args._debug_info with parent_position_info := o }
-    })
-
-/-- [automata_builder::automata::terms_multitape::{automata_builder::automata::terms_multitape::MultiTapeExpression}::_assign_parent_debug_info::{impl core::ops::function::FnOnce<(&'_0 mut automata_builder::automata::terms_multitape::MultiTapeTerm,), ()> for automata_builder::automata::terms_multitape::{automata_builder::automata::terms_multitape::MultiTapeExpression}::_assign_parent_debug_info::{closure}<'_0, '_1>}::call_once]:
-    Source: 'src/automata/terms_multitape.rs', lines 688:47-691:13 -/
-def
-  automata.terms_multitape.MultiTapeExpression._assign_parent_debug_info.closure.Insts.CoreOpsFunctionFnOnceTupleMut0MultiTapeTermTuple.call_once
-  (c :
-  automata.terms_multitape.MultiTapeExpression._assign_parent_debug_info.closure)
-  (mtt : automata.terms_multitape.MultiTapeTerm) :
-  Result automata.terms_multitape.MultiTapeTerm
-  := do
-  let (_, mtt1) ←
-    automata.terms_multitape.MultiTapeExpression._assign_parent_debug_info.closure.Insts.CoreOpsFunctionFnMutTupleMut0MultiTapeTermTuple.call_mut
-      c mtt
-  ok mtt1
-
-/-- Trait implementation: [automata_builder::automata::terms_multitape::{automata_builder::automata::terms_multitape::MultiTapeExpression}::_assign_parent_debug_info::{impl core::ops::function::FnOnce<(&'_0 mut automata_builder::automata::terms_multitape::MultiTapeTerm,), ()> for automata_builder::automata::terms_multitape::{automata_builder::automata::terms_multitape::MultiTapeExpression}::_assign_parent_debug_info::{closure}<'_0, '_1>}]
-    Source: 'src/automata/terms_multitape.rs', lines 688:47-691:13 -/
-@[reducible]
-def
-  automata.terms_multitape.MultiTapeExpression._assign_parent_debug_info.closure.Insts.CoreOpsFunctionFnOnceTupleMut0MultiTapeTermTuple
-  : core.ops.function.FnOnce
-  automata.terms_multitape.MultiTapeExpression._assign_parent_debug_info.closure
-  automata.terms_multitape.MultiTapeTerm Unit := {
-  call_once :=
-    automata.terms_multitape.MultiTapeExpression._assign_parent_debug_info.closure.Insts.CoreOpsFunctionFnOnceTupleMut0MultiTapeTermTuple.call_once
-}
-
-/-- Trait implementation: [automata_builder::automata::terms_multitape::{automata_builder::automata::terms_multitape::MultiTapeExpression}::_assign_parent_debug_info::{impl core::ops::function::FnMut<(&'_0 mut automata_builder::automata::terms_multitape::MultiTapeTerm,), ()> for automata_builder::automata::terms_multitape::{automata_builder::automata::terms_multitape::MultiTapeExpression}::_assign_parent_debug_info::{closure}<'_0, '_1>}]
-    Source: 'src/automata/terms_multitape.rs', lines 688:47-691:13 -/
-@[reducible]
-def
-  automata.terms_multitape.MultiTapeExpression._assign_parent_debug_info.closure.Insts.CoreOpsFunctionFnMutTupleMut0MultiTapeTermTuple
-  : core.ops.function.FnMut
-  automata.terms_multitape.MultiTapeExpression._assign_parent_debug_info.closure
-  automata.terms_multitape.MultiTapeTerm Unit := {
-  FnOnceInst :=
-    automata.terms_multitape.MultiTapeExpression._assign_parent_debug_info.closure.Insts.CoreOpsFunctionFnOnceTupleMut0MultiTapeTermTuple
-  call_mut :=
-    automata.terms_multitape.MultiTapeExpression._assign_parent_debug_info.closure.Insts.CoreOpsFunctionFnMutTupleMut0MultiTapeTermTuple.call_mut
-}
-
-/-- [automata_builder::automata::terms_multitape::{automata_builder::automata::terms_multitape::MultiTapeExpression}::_assign_parent_debug_info]: loop 0:
-    Source: 'src/automata/terms_multitape.rs', lines 687:8-692:9
-    Visibility: public -/
-@[rust_loop]
-def automata.terms_multitape.MultiTapeExpression._assign_parent_debug_info_loop
-  (iter : core.slice.iter.IterMut automata.terms_multitape.MultiTapeProduct)
-  (back : core.slice.iter.IterMut automata.terms_multitape.MultiTapeProduct →
-  core.slice.iter.IterMut automata.terms_multitape.MultiTapeProduct)
-  (parent_debug_info : automata.terms.ExprDebugInfo) :
-  Result (core.slice.iter.IterMut automata.terms_multitape.MultiTapeProduct)
-  := do
-  let (o, iter1, next_back) ← core.slice.iter.IteratorIterMut.next iter
-  match o with
-  | none => ok (let im := next_back iter1 none
-                back im)
-  | some product =>
-    let (s, deref_mut_back) ← lift (alloc.vec.Vec.deref_mut product._terms)
-    let (im, iter_mut_back) ← core.slice.Slice.iter_mut s
-    let im1 ←
-      core.slice.iter.IterMut.Insts.CoreIterTraitsIteratorIteratorMutAT.for_each
-        automata.terms_multitape.MultiTapeExpression._assign_parent_debug_info.closure.Insts.CoreOpsFunctionFnMutTupleMut0MultiTapeTermTuple
-        im parent_debug_info
-    let s1 := iter_mut_back im1
-    let v := deref_mut_back s1
-    automata.terms_multitape.MultiTapeExpression._assign_parent_debug_info_loop
-      iter1
-      (fun im2 =>
-        let im3 := next_back im2 (some { product with _terms := v })
-        back im3) parent_debug_info
-partial_fixpoint
-
-/-- [automata_builder::automata::terms_multitape::{automata_builder::automata::terms_multitape::MultiTapeExpression}::_assign_parent_debug_info]:
-    Source: 'src/automata/terms_multitape.rs', lines 684:4-693:5
-    Visibility: public -/
-def automata.terms_multitape.MultiTapeExpression._assign_parent_debug_info
-  (self : automata.terms_multitape.MultiTapeExpression)
-  (parent_debug_info : automata.terms.ExprDebugInfo) :
-  Result automata.terms_multitape.MultiTapeExpression
-  := do
-  let (s, deref_mut_back) ← lift (alloc.vec.Vec.deref_mut self.products)
-  let (iter, iter_mut_back) ← core.slice.Slice.iter_mut s
-  let back ←
-    automata.terms_multitape.MultiTapeExpression._assign_parent_debug_info_loop
-      iter (fun im => im) parent_debug_info
-  let s1 := iter_mut_back back
-  let v := deref_mut_back s1
-  ok { self with products := v }
-
-/-- [automata_builder::automata::terms_multitape::{impl automata_builder::automata::terms_multitape::AbstractMultiTapeExpression<automata_builder::automata::terms_multitape::MultiTapeProduct, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeTerm}::_expand]:
-    Source: 'src/automata/terms_multitape.rs', lines 247:4-261:5
-    Visibility: public -/
-def
-  automata.terms_multitape.MultiTapeTerm.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeProductMultiTapeExpression._expand
-  (self : automata.terms_multitape.MultiTapeTerm)
-  (expansion_mapping : std.collections.hash.map.HashMap (Std.U16 × Std.U32)
-  automata.terms_multitape.MultiTapeExpression std.hash.random.RandomState
-  alloc.alloc.Global) (include_debug_info : Bool) (fold : Bool) :
-  Result automata.terms_multitape.MultiTapeExpression
-  := do
-  let mte ←
-    std.collections.hash.map.HashMap.Insts.CoreOpsIndexIndexShared0QV.index
-      (Pair.Insts.CoreCmpEq core.cmp.EqU16 core.cmp.EqU32)
-      (Pair.Insts.CoreHashHash U16.Insts.CoreHashHash U32.Insts.CoreHashHash)
-      (core.borrow.Borrow.Blanket (Std.U16 × Std.U32)) (Pair.Insts.CoreCmpEq
-      core.cmp.EqU16 core.cmp.EqU32) (Pair.Insts.CoreHashHash
-      U16.Insts.CoreHashHash U32.Insts.CoreHashHash)
-      std.hash.random.RandomState.Insts.CoreHashBuildHasherDefaultHasher
-      expansion_mapping self.state
-  let expanded_expr ←
-    automata.terms_multitape.MultiTapeExpression.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeExpressionMultiTapeExpression.offset
-      mte self.position
-  let expanded_expr1 ←
-    if include_debug_info
-    then
-      do
-      let expanded_expr2 ←
-        automata.terms_multitape.MultiTapeExpression._assign_parent_debug_info
-          expanded_expr self._debug_info
-      automata.terms_multitape.MultiTapeExpression._assign_base_expansion_indexes
-        expanded_expr2
-    else ok expanded_expr
-  if fold
-  then
-    automata.terms_multitape.MultiTapeExpression.to_normalized expanded_expr1
-      true
-  else ok expanded_expr1
-
-/-- [automata_builder::automata::terms_multitape::{impl automata_builder::automata::terms_multitape::AbstractMultiTapeExpression<automata_builder::automata::terms_multitape::MultiTapeProduct, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeProduct}::_expand]: loop 0:
-    Source: 'src/automata/terms_multitape.rs', lines 609:8-613:9
-    Visibility: public -/
-@[rust_loop]
-def
-  automata.terms_multitape.MultiTapeProduct.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeProductMultiTapeExpression._expand_loop
-  (iter : core.iter.adapters.skip.Skip (core.slice.iter.Iter
-  automata.terms_multitape.MultiTapeTerm))
-  (expansion_mapping : std.collections.hash.map.HashMap (Std.U16 × Std.U32)
-  automata.terms_multitape.MultiTapeExpression std.hash.random.RandomState
-  alloc.alloc.Global) (include_debug_info : Bool) (fold : Bool)
-  (result : automata.terms_multitape.MultiTapeExpression) :
-  Result automata.terms_multitape.MultiTapeExpression
-  := do
-  let (o, iter1) ←
-    core.iter.adapters.skip.Skip.Insts.CoreIterTraitsIteratorIterator.next
-      (core.iter.traits.iterator.IteratorSliceIter
-      automata.terms_multitape.MultiTapeTerm) iter
-  match o with
-  | none => ok result
-  | some term =>
-    let mte ←
-      automata.terms_multitape.MultiTapeTerm.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeProductMultiTapeExpression._expand
-        term expansion_mapping include_debug_info fold
-    let result1 ←
-      automata.terms_multitape.MultiTapeExpression.Insts.CoreOpsArithMulMultiTapeExpressionMultiTapeExpression.mul
-        result mte
-    automata.terms_multitape.MultiTapeProduct.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeProductMultiTapeExpression._expand_loop
-      iter1 expansion_mapping include_debug_info fold result1
-partial_fixpoint
-
-/-- [automata_builder::automata::terms_multitape::{impl automata_builder::automata::terms_multitape::AbstractMultiTapeExpression<automata_builder::automata::terms_multitape::MultiTapeProduct, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeProduct}::_expand]:
-    Source: 'src/automata/terms_multitape.rs', lines 594:4-616:5
-    Visibility: public -/
-def
-  automata.terms_multitape.MultiTapeProduct.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeProductMultiTapeExpression._expand
-  (self : automata.terms_multitape.MultiTapeProduct)
-  (expansion_mapping : std.collections.hash.map.HashMap (Std.U16 × Std.U32)
-  automata.terms_multitape.MultiTapeExpression std.hash.random.RandomState
-  alloc.alloc.Global) (include_debug_info : Bool) (fold : Bool) :
-  Result automata.terms_multitape.MultiTapeExpression
-  := do
-  let i := alloc.vec.Vec.len self._terms
-  if i = 0#usize
-  then
-    automata.terms_multitape.MultiTapeExpression.new (alloc.vec.Vec.new
-      automata.terms_multitape.MultiTapeProduct)
-  else
-    let s := alloc.vec.Vec.deref self._terms
-    let first_term_opt ←
-      core.slice.Slice.get (core.slice.index.SliceIndexUsizeSlice
-        automata.terms_multitape.MultiTapeTerm) s 0#usize
-    match first_term_opt with
-    | none =>
-      automata.terms_multitape.MultiTapeExpression.new (alloc.vec.Vec.new
-        automata.terms_multitape.MultiTapeProduct)
-    | some term =>
-      let result ←
-        automata.terms_multitape.MultiTapeTerm.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeProductMultiTapeExpression._expand
-          term expansion_mapping include_debug_info fold
-      let s1 := alloc.vec.Vec.deref self._terms
-      let i1 ← core.slice.Slice.iter s1
-      let iter ←
-        core.iter.traits.iterator.Iterator.skip.default
-          (core.iter.traits.iterator.IteratorSliceIter
-          automata.terms_multitape.MultiTapeTerm) i1 1#usize
-      let result1 ←
-        automata.terms_multitape.MultiTapeProduct.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeProductMultiTapeExpression._expand_loop
-          iter expansion_mapping include_debug_info fold result
-      automata.terms_multitape.MultiTapeExpression._assign_expr_positions
-        result1
-
-/-- [automata_builder::automata::terms_multitape::{impl automata_builder::automata::terms_multitape::AbstractMultiTapeExpression<automata_builder::automata::terms_multitape::MultiTapeExpression, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeExpression}::_expand::{impl core::ops::function::Fn<(&'_0 automata_builder::automata::terms_multitape::MultiTapeProduct,), automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::{impl automata_builder::automata::terms_multitape::AbstractMultiTapeExpression<automata_builder::automata::terms_multitape::MultiTapeExpression, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeExpression}::_expand::{closure}<'_0, '_1, '_2, '_3>}::call]:
-    Source: 'src/automata/terms_multitape.rs', lines 889:17-890:76 -/
-def
-  automata.terms_multitape.AbstractMultiTapeExpressionMultiTapeExpressionMultiTapeExpressionMultiTapeExpression._expand.closure.Insts.CoreOpsFunctionFnTupleShared0MultiTapeProductMultiTapeExpression.call
-  (c :
-  automata.terms_multitape.AbstractMultiTapeExpressionMultiTapeExpressionMultiTapeExpressionMultiTapeExpression._expand.closure)
-  (tupled_args : automata.terms_multitape.MultiTapeProduct) :
-  Result automata.terms_multitape.MultiTapeExpression
-  := do
-  let (hm, b, b1) := c
-  automata.terms_multitape.MultiTapeProduct.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeProductMultiTapeExpression._expand
-    tupled_args hm b b1
-
-/-- [automata_builder::automata::terms_multitape::{impl automata_builder::automata::terms_multitape::AbstractMultiTapeExpression<automata_builder::automata::terms_multitape::MultiTapeExpression, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeExpression}::_expand::{impl core::ops::function::FnMut<(&'_0 automata_builder::automata::terms_multitape::MultiTapeProduct,), automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::{impl automata_builder::automata::terms_multitape::AbstractMultiTapeExpression<automata_builder::automata::terms_multitape::MultiTapeExpression, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeExpression}::_expand::{closure}<'_0, '_1, '_2, '_3>}::call_mut]:
-    Source: 'src/automata/terms_multitape.rs', lines 889:17-890:76 -/
-def
-  automata.terms_multitape.AbstractMultiTapeExpressionMultiTapeExpressionMultiTapeExpressionMultiTapeExpression._expand.closure.Insts.CoreOpsFunctionFnMutTupleShared0MultiTapeProductMultiTapeExpression.call_mut
-  (state :
-  automata.terms_multitape.AbstractMultiTapeExpressionMultiTapeExpressionMultiTapeExpressionMultiTapeExpression._expand.closure)
-  (args : automata.terms_multitape.MultiTapeProduct) :
-  Result (automata.terms_multitape.MultiTapeExpression ×
-    automata.terms_multitape.AbstractMultiTapeExpressionMultiTapeExpressionMultiTapeExpressionMultiTapeExpression._expand.closure)
-  := do
-  let mte ←
-    automata.terms_multitape.AbstractMultiTapeExpressionMultiTapeExpressionMultiTapeExpressionMultiTapeExpression._expand.closure.Insts.CoreOpsFunctionFnTupleShared0MultiTapeProductMultiTapeExpression.call
-      state args
-  ok (mte, state)
-
-/-- [automata_builder::automata::terms_multitape::{impl automata_builder::automata::terms_multitape::AbstractMultiTapeExpression<automata_builder::automata::terms_multitape::MultiTapeExpression, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeExpression}::_expand::{impl core::ops::function::FnOnce<(&'_0 automata_builder::automata::terms_multitape::MultiTapeProduct,), automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::{impl automata_builder::automata::terms_multitape::AbstractMultiTapeExpression<automata_builder::automata::terms_multitape::MultiTapeExpression, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeExpression}::_expand::{closure}<'_0, '_1, '_2, '_3>}::call_once]:
-    Source: 'src/automata/terms_multitape.rs', lines 889:17-890:76 -/
-def
-  automata.terms_multitape.AbstractMultiTapeExpressionMultiTapeExpressionMultiTapeExpressionMultiTapeExpression._expand.closure.Insts.CoreOpsFunctionFnOnceTupleShared0MultiTapeProductMultiTapeExpression.call_once
-  (c :
-  automata.terms_multitape.AbstractMultiTapeExpressionMultiTapeExpressionMultiTapeExpressionMultiTapeExpression._expand.closure)
-  (mtp : automata.terms_multitape.MultiTapeProduct) :
-  Result automata.terms_multitape.MultiTapeExpression
-  := do
-  let (mte, _) ←
-    automata.terms_multitape.AbstractMultiTapeExpressionMultiTapeExpressionMultiTapeExpressionMultiTapeExpression._expand.closure.Insts.CoreOpsFunctionFnMutTupleShared0MultiTapeProductMultiTapeExpression.call_mut
-      c mtp
-  ok mte
-
-/-- Trait implementation: [automata_builder::automata::terms_multitape::{impl automata_builder::automata::terms_multitape::AbstractMultiTapeExpression<automata_builder::automata::terms_multitape::MultiTapeExpression, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeExpression}::_expand::{impl core::ops::function::FnOnce<(&'_0 automata_builder::automata::terms_multitape::MultiTapeProduct,), automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::{impl automata_builder::automata::terms_multitape::AbstractMultiTapeExpression<automata_builder::automata::terms_multitape::MultiTapeExpression, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeExpression}::_expand::{closure}<'_0, '_1, '_2, '_3>}]
-    Source: 'src/automata/terms_multitape.rs', lines 889:17-890:76 -/
-@[reducible]
-def
-  automata.terms_multitape.AbstractMultiTapeExpressionMultiTapeExpressionMultiTapeExpressionMultiTapeExpression._expand.closure.Insts.CoreOpsFunctionFnOnceTupleShared0MultiTapeProductMultiTapeExpression
-  : core.ops.function.FnOnce
-  automata.terms_multitape.AbstractMultiTapeExpressionMultiTapeExpressionMultiTapeExpressionMultiTapeExpression._expand.closure
-  automata.terms_multitape.MultiTapeProduct
-  automata.terms_multitape.MultiTapeExpression := {
-  call_once :=
-    automata.terms_multitape.AbstractMultiTapeExpressionMultiTapeExpressionMultiTapeExpressionMultiTapeExpression._expand.closure.Insts.CoreOpsFunctionFnOnceTupleShared0MultiTapeProductMultiTapeExpression.call_once
-}
-
-/-- Trait implementation: [automata_builder::automata::terms_multitape::{impl automata_builder::automata::terms_multitape::AbstractMultiTapeExpression<automata_builder::automata::terms_multitape::MultiTapeExpression, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeExpression}::_expand::{impl core::ops::function::FnMut<(&'_0 automata_builder::automata::terms_multitape::MultiTapeProduct,), automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::{impl automata_builder::automata::terms_multitape::AbstractMultiTapeExpression<automata_builder::automata::terms_multitape::MultiTapeExpression, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeExpression}::_expand::{closure}<'_0, '_1, '_2, '_3>}]
-    Source: 'src/automata/terms_multitape.rs', lines 889:17-890:76 -/
-@[reducible]
-def
-  automata.terms_multitape.AbstractMultiTapeExpressionMultiTapeExpressionMultiTapeExpressionMultiTapeExpression._expand.closure.Insts.CoreOpsFunctionFnMutTupleShared0MultiTapeProductMultiTapeExpression
-  : core.ops.function.FnMut
-  automata.terms_multitape.AbstractMultiTapeExpressionMultiTapeExpressionMultiTapeExpressionMultiTapeExpression._expand.closure
-  automata.terms_multitape.MultiTapeProduct
-  automata.terms_multitape.MultiTapeExpression := {
-  FnOnceInst :=
-    automata.terms_multitape.AbstractMultiTapeExpressionMultiTapeExpressionMultiTapeExpressionMultiTapeExpression._expand.closure.Insts.CoreOpsFunctionFnOnceTupleShared0MultiTapeProductMultiTapeExpression
-  call_mut :=
-    automata.terms_multitape.AbstractMultiTapeExpressionMultiTapeExpressionMultiTapeExpressionMultiTapeExpression._expand.closure.Insts.CoreOpsFunctionFnMutTupleShared0MultiTapeProductMultiTapeExpression.call_mut
-}
-
-/-- Trait implementation: [automata_builder::automata::terms_multitape::{impl automata_builder::automata::terms_multitape::AbstractMultiTapeExpression<automata_builder::automata::terms_multitape::MultiTapeExpression, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeExpression}::_expand::{impl core::ops::function::Fn<(&'_0 automata_builder::automata::terms_multitape::MultiTapeProduct,), automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::{impl automata_builder::automata::terms_multitape::AbstractMultiTapeExpression<automata_builder::automata::terms_multitape::MultiTapeExpression, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeExpression}::_expand::{closure}<'_0, '_1, '_2, '_3>}]
-    Source: 'src/automata/terms_multitape.rs', lines 889:17-890:76 -/
-@[reducible]
-def
-  automata.terms_multitape.AbstractMultiTapeExpressionMultiTapeExpressionMultiTapeExpressionMultiTapeExpression._expand.closure.Insts.CoreOpsFunctionFnTupleShared0MultiTapeProductMultiTapeExpression
-  : core.ops.function.Fn
-  automata.terms_multitape.AbstractMultiTapeExpressionMultiTapeExpressionMultiTapeExpressionMultiTapeExpression._expand.closure
-  automata.terms_multitape.MultiTapeProduct
-  automata.terms_multitape.MultiTapeExpression := {
-  FnMutInst :=
-    automata.terms_multitape.AbstractMultiTapeExpressionMultiTapeExpressionMultiTapeExpressionMultiTapeExpression._expand.closure.Insts.CoreOpsFunctionFnMutTupleShared0MultiTapeProductMultiTapeExpression
-  call :=
-    automata.terms_multitape.AbstractMultiTapeExpressionMultiTapeExpressionMultiTapeExpressionMultiTapeExpression._expand.closure.Insts.CoreOpsFunctionFnTupleShared0MultiTapeProductMultiTapeExpression.call
-}
-
 /-- [automata_builder::automata::terms_multitape::{impl automata_builder::automata::terms_multitape::AbstractMultiTapeExpression<automata_builder::automata::terms_multitape::MultiTapeExpression, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeExpression}::copy]: loop 0:
-    Source: 'src/automata/terms_multitape.rs', lines 853:8-855:9
+    Source: 'src/automata/terms_multitape.rs', lines 872:8-874:9
     Visibility: public -/
 @[rust_loop]
 def
@@ -28031,7 +29418,7 @@ def
 partial_fixpoint
 
 /-- [automata_builder::automata::terms_multitape::{impl automata_builder::automata::terms_multitape::AbstractMultiTapeExpression<automata_builder::automata::terms_multitape::MultiTapeExpression, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeExpression}::copy]:
-    Source: 'src/automata/terms_multitape.rs', lines 851:4-857:5
+    Source: 'src/automata/terms_multitape.rs', lines 870:4-876:5
     Visibility: public -/
 def
   automata.terms_multitape.MultiTapeExpression.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeExpressionMultiTapeExpression.copy
@@ -28046,7 +29433,7 @@ def
   ok { self with products }
 
 /-- [automata_builder::automata::terms_multitape::{automata_builder::automata::terms_multitape::MultiTapeExpression}::_assign_base_indexes]: loop 0:
-    Source: 'src/automata/terms_multitape.rs', lines 671:8-673:9
+    Source: 'src/automata/terms_multitape.rs', lines 690:8-692:9
     Visibility: public -/
 @[rust_loop]
 def automata.terms_multitape.MultiTapeExpression._assign_base_indexes_loop
@@ -28077,7 +29464,7 @@ def automata.terms_multitape.MultiTapeExpression._assign_base_indexes_loop
 partial_fixpoint
 
 /-- [automata_builder::automata::terms_multitape::{automata_builder::automata::terms_multitape::MultiTapeExpression}::_assign_base_indexes]:
-    Source: 'src/automata/terms_multitape.rs', lines 670:4-674:5
+    Source: 'src/automata/terms_multitape.rs', lines 689:4-693:5
     Visibility: public -/
 def automata.terms_multitape.MultiTapeExpression._assign_base_indexes
   (self : automata.terms_multitape.MultiTapeExpression) :
@@ -28098,7 +29485,7 @@ def automata.terms_multitape.MultiTapeExpression._assign_base_indexes
   ok { self with products := v }
 
 /-- [automata_builder::automata::terms_multitape::{impl automata_builder::automata::terms_multitape::AbstractMultiTapeExpression<automata_builder::automata::terms_multitape::MultiTapeExpression, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeExpression}::_expand_steps]: loop 0:
-    Source: 'src/automata/terms_multitape.rs', lines 906:8-910:9
+    Source: 'src/automata/terms_multitape.rs', lines 925:8-929:9
     Visibility: public -/
 @[rust_loop]
 def
@@ -28123,7 +29510,7 @@ def
 partial_fixpoint
 
 /-- [automata_builder::automata::terms_multitape::{impl automata_builder::automata::terms_multitape::AbstractMultiTapeExpression<automata_builder::automata::terms_multitape::MultiTapeExpression, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeExpression}::_expand_steps]:
-    Source: 'src/automata/terms_multitape.rs', lines 900:4-912:5
+    Source: 'src/automata/terms_multitape.rs', lines 919:4-931:5
     Visibility: public -/
 def
   automata.terms_multitape.MultiTapeExpression.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeExpressionMultiTapeExpression._expand_steps
@@ -28144,7 +29531,7 @@ def
     fold result1
 
 /-- [automata_builder::automata::terms_multitape::{impl automata_builder::automata::terms_multitape::AbstractMultiTapeExpression<automata_builder::automata::terms_multitape::MultiTapeProduct, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeTerm}::_expand_steps]:
-    Source: 'src/automata/terms_multitape.rs', lines 263:4-272:5
+    Source: 'src/automata/terms_multitape.rs', lines 280:4-289:5
     Visibility: public -/
 def
   automata.terms_multitape.MultiTapeTerm.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeProductMultiTapeExpression._expand_steps
@@ -28163,30 +29550,10 @@ def
   automata.terms_multitape.MultiTapeExpression.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeExpressionMultiTapeExpression._expand_steps
     expr1 expansion_mapping steps include_debug_info fold
 
-/-- [automata_builder::automata::terms_multitape::{impl automata_builder::automata::terms_multitape::AbstractMultiTapeExpression<automata_builder::automata::terms_multitape::MultiTapeProduct, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeTerm}::_sub]:
-    Source: 'src/automata/terms_multitape.rs', lines 236:4-241:5
-    Visibility: public -/
-def
-  automata.terms_multitape.MultiTapeTerm.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeProductMultiTapeExpression._sub
-  (self : automata.terms_multitape.MultiTapeTerm)
-  (substitutions : std.collections.hash.map.HashMap Std.I64 (Std.U16 ×
-  Std.U32) std.hash.random.RandomState alloc.alloc.Global)
-  (default : (Std.U16 × Std.U32)) :
-  Result Bool
-  := do
-  let o ←
-    std.collections.hash.map.HashMap.get core.cmp.EqI64 I64.Insts.CoreHashHash
-      std.hash.random.RandomState.Insts.CoreHashBuildHasherDefaultHasher
-      (core.borrow.Borrow.Blanket Std.I64) I64.Insts.CoreHashHash
-      core.cmp.EqI64 substitutions self.position
-  let p ← lift (core.option.Option.unwrap_or o default)
-  Pair.Insts.CoreCmpPartialEqPair.eq core.cmp.PartialEqU16
-    core.cmp.PartialEqU32 p self.state
-
 /-- Trait implementation: [automata_builder::automata::terms_multitape::{impl automata_builder::automata::terms_multitape::AbstractMultiTapeExpression<automata_builder::automata::terms_multitape::MultiTapeProduct, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeTerm}]
-    Source: 'src/automata/terms_multitape.rs', lines 231:0-292:1 -/
+    Source: 'src/automata/terms_multitape.rs', lines 248:0-309:1 -/
 @[reducible]
-def
+impl_def
   automata.terms_multitape.MultiTapeTerm.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeProductMultiTapeExpression
   : automata.terms_multitape.AbstractMultiTapeExpression
   automata.terms_multitape.MultiTapeTerm
@@ -28211,6 +29578,9 @@ def
     automata.terms_multitape.MultiTapeTerm.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeProductMultiTapeExpression.to_expression
   _to_string :=
     automata.terms_multitape.MultiTapeTerm.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeProductMultiTapeExpression._to_string
+  _to_short_string :=
+    automata.terms_multitape.AbstractMultiTapeExpression._to_short_string.default
+    automata.terms_multitape.MultiTapeTerm.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeProductMultiTapeExpression
   _get_num_terms :=
     automata.terms_multitape.MultiTapeTerm.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeProductMultiTapeExpression._get_num_terms
   _assign_indexes_as_base :=
@@ -28218,7 +29588,7 @@ def
 }
 
 /-- Trait implementation: [automata_builder::automata::terms_multitape::{impl core::clone::Clone for automata_builder::automata::terms_multitape::MultiTapeProductFactory}]
-    Source: 'src/automata/terms_multitape.rs', lines 294:9-294:14 -/
+    Source: 'src/automata/terms_multitape.rs', lines 311:9-311:14 -/
 @[reducible]
 def automata.terms_multitape.MultiTapeProductFactory.Insts.CoreCloneClone :
   core.clone.Clone automata.terms_multitape.MultiTapeProductFactory := {
@@ -28227,7 +29597,7 @@ def automata.terms_multitape.MultiTapeProductFactory.Insts.CoreCloneClone :
 }
 
 /-- [automata_builder::automata::terms_multitape::{impl core::fmt::Debug for automata_builder::automata::terms_multitape::MultiTapeProductFactory}::fmt]:
-    Source: 'src/automata/terms_multitape.rs', lines 294:16-294:21
+    Source: 'src/automata/terms_multitape.rs', lines 311:16-311:21
     Visibility: public -/
 def automata.terms_multitape.MultiTapeProductFactory.Insts.CoreFmtDebug.fmt
   (self : automata.terms_multitape.MultiTapeProductFactory)
@@ -28246,7 +29616,7 @@ def automata.terms_multitape.MultiTapeProductFactory.Insts.CoreFmtDebug.fmt
     (toStr "_annotation") dyn2
 
 /-- Trait implementation: [automata_builder::automata::terms_multitape::{impl core::fmt::Debug for automata_builder::automata::terms_multitape::MultiTapeProductFactory}]
-    Source: 'src/automata/terms_multitape.rs', lines 294:16-294:21 -/
+    Source: 'src/automata/terms_multitape.rs', lines 311:16-311:21 -/
 @[reducible]
 def automata.terms_multitape.MultiTapeProductFactory.Insts.CoreFmtDebug :
   core.fmt.Debug automata.terms_multitape.MultiTapeProductFactory := {
@@ -28255,7 +29625,7 @@ def automata.terms_multitape.MultiTapeProductFactory.Insts.CoreFmtDebug :
 }
 
 /-- [automata_builder::automata::terms_multitape::{automata_builder::automata::terms_multitape::MultiTapeProduct}::_get_term]:
-    Source: 'src/automata/terms_multitape.rs', lines 360:4-362:5 -/
+    Source: 'src/automata/terms_multitape.rs', lines 377:4-379:5 -/
 def automata.terms_multitape.MultiTapeProduct._get_term
   (self : automata.terms_multitape.MultiTapeProduct) (index : Std.Usize) :
   Result (Option automata.terms_multitape.MultiTapeTerm)
@@ -28265,7 +29635,7 @@ def automata.terms_multitape.MultiTapeProduct._get_term
     automata.terms_multitape.MultiTapeTerm) s index
 
 /-- [automata_builder::automata::terms_multitape::{automata_builder::automata::terms_multitape::MultiTapeProduct}::pad_terms]: loop 0:
-    Source: 'src/automata/terms_multitape.rs', lines 383:12-383:73 -/
+    Source: 'src/automata/terms_multitape.rs', lines 400:12-400:73 -/
 @[rust_loop]
 def automata.terms_multitape.MultiTapeProduct.pad_terms_loop
   (iter : core.ops.range.Range Std.Usize)
@@ -28287,7 +29657,7 @@ def automata.terms_multitape.MultiTapeProduct.pad_terms_loop
 partial_fixpoint
 
 /-- [automata_builder::automata::terms_multitape::{automata_builder::automata::terms_multitape::MultiTapeProduct}::pad_terms]:
-    Source: 'src/automata/terms_multitape.rs', lines 376:4-388:5 -/
+    Source: 'src/automata/terms_multitape.rs', lines 393:4-405:5 -/
 def automata.terms_multitape.MultiTapeProduct.pad_terms
   (self : automata.terms_multitape.MultiTapeProduct) (length : Std.Usize) :
   Result (Option automata.terms_multitape.MultiTapeProduct)
@@ -28311,7 +29681,7 @@ def automata.terms_multitape.MultiTapeProduct.pad_terms
   else ok none
 
 /-- [automata_builder::automata::terms_multitape::{automata_builder::automata::terms_multitape::MultiTapeProduct}::reduce]: loop 0:
-    Source: 'src/automata/terms_multitape.rs', lines 398:8-400:9
+    Source: 'src/automata/terms_multitape.rs', lines 415:8-417:9
     Visibility: public -/
 @[rust_loop]
 def automata.terms_multitape.MultiTapeProduct.reduce_loop
@@ -28338,7 +29708,7 @@ def automata.terms_multitape.MultiTapeProduct.reduce_loop
 partial_fixpoint
 
 /-- [automata_builder::automata::terms_multitape::{automata_builder::automata::terms_multitape::MultiTapeProduct}::reduce]:
-    Source: 'src/automata/terms_multitape.rs', lines 395:4-404:5
+    Source: 'src/automata/terms_multitape.rs', lines 412:4-421:5
     Visibility: public -/
 def automata.terms_multitape.MultiTapeProduct.reduce
   (self : automata.terms_multitape.MultiTapeProduct) :
@@ -28366,7 +29736,7 @@ def automata.terms_multitape.MultiTapeProduct.reduce
   automata.terms_multitape.MultiTapeProduct.new reduced_terms1
 
 /-- [automata_builder::automata::terms_multitape::{automata_builder::automata::terms_multitape::MultiTapeProduct}::push_term]:
-    Source: 'src/automata/terms_multitape.rs', lines 405:4-407:5
+    Source: 'src/automata/terms_multitape.rs', lines 422:4-424:5
     Visibility: public -/
 def automata.terms_multitape.MultiTapeProduct.push_term
   (self : automata.terms_multitape.MultiTapeProduct)
@@ -28377,7 +29747,7 @@ def automata.terms_multitape.MultiTapeProduct.push_term
   ok { self with _terms := v }
 
 /-- [automata_builder::automata::terms_multitape::{automata_builder::automata::terms_multitape::MultiTapeProduct}::to_hashset]:
-    Source: 'src/automata/terms_multitape.rs', lines 408:4-410:5
+    Source: 'src/automata/terms_multitape.rs', lines 425:4-427:5
     Visibility: public -/
 def automata.terms_multitape.MultiTapeProduct.to_hashset
   (self : automata.terms_multitape.MultiTapeProduct) :
@@ -28398,99 +29768,8 @@ def automata.terms_multitape.MultiTapeProduct.to_hashset
     (core.iter.traits.iterator.IteratorSliceIter
     automata.terms_multitape.MultiTapeTerm)) i
 
-/-- [automata_builder::automata::terms_multitape::{automata_builder::automata::terms_multitape::MultiTapeProduct}::is_satisfiable_with]: loop 0:
-    Source: 'src/automata/terms_multitape.rs', lines 437:8-441:9
-    Visibility: public -/
-@[rust_loop]
-def automata.terms_multitape.MultiTapeProduct.is_satisfiable_with_loop0
-  (iter : core.slice.iter.Iter automata.terms_multitape.MultiTapeTerm)
-  (allocations : std.collections.hash.map.HashMap (Std.I64 × Std.U16) Std.U32
-  std.hash.random.RandomState alloc.alloc.Global) :
-  Result (std.collections.hash.map.HashMap (Std.I64 × Std.U16) Std.U32
-    std.hash.random.RandomState alloc.alloc.Global)
-  := do
-  let (o, iter1) ← core.slice.iter.IteratorSliceIter.next iter
-  match o with
-  | none => ok allocations
-  | some term =>
-    let (tape_no, cell_state) := term.state
-    let (_, allocations1) ←
-      std.collections.hash.map.HashMap.insert (Pair.Insts.CoreCmpEq
-        core.cmp.EqI64 core.cmp.EqU16) (Pair.Insts.CoreHashHash
-        I64.Insts.CoreHashHash U16.Insts.CoreHashHash)
-        std.hash.random.RandomState.Insts.CoreHashBuildHasherDefaultHasher
-        allocations (term.position, tape_no) cell_state
-    automata.terms_multitape.MultiTapeProduct.is_satisfiable_with_loop0 iter1
-      allocations1
-partial_fixpoint
-
-/-- [automata_builder::automata::terms_multitape::{automata_builder::automata::terms_multitape::MultiTapeProduct}::is_satisfiable_with]: loop 1:
-    Source: 'src/automata/terms_multitape.rs', lines 442:8-455:5
-    Visibility: public -/
-@[rust_loop]
-def automata.terms_multitape.MultiTapeProduct.is_satisfiable_with_loop1
-  (iter : core.slice.iter.Iter automata.terms_multitape.MultiTapeTerm)
-  (allocations : std.collections.hash.map.HashMap (Std.I64 × Std.U16) Std.U32
-  std.hash.random.RandomState alloc.alloc.Global) :
-  Result Bool
-  := do
-  let (o, iter1) ← core.slice.iter.IteratorSliceIter.next iter
-  match o with
-  | none => ok true
-  | some other_term =>
-    let (tape_no, cell_state) := other_term.state
-    let o1 ←
-      std.collections.hash.map.HashMap.get (Pair.Insts.CoreCmpEq core.cmp.EqI64
-        core.cmp.EqU16) (Pair.Insts.CoreHashHash I64.Insts.CoreHashHash
-        U16.Insts.CoreHashHash)
-        std.hash.random.RandomState.Insts.CoreHashBuildHasherDefaultHasher
-        (core.borrow.Borrow.Blanket (Std.I64 × Std.U16))
-        (Pair.Insts.CoreHashHash I64.Insts.CoreHashHash U16.Insts.CoreHashHash)
-        (Pair.Insts.CoreCmpEq core.cmp.EqI64 core.cmp.EqU16) allocations
-        (other_term.position, tape_no)
-    let existing_write ← lift (core.option.Option.unwrap_or o1 cell_state)
-    if existing_write != cell_state
-    then ok false
-    else
-      automata.terms_multitape.MultiTapeProduct.is_satisfiable_with_loop1 iter1
-        allocations
-partial_fixpoint
-
-/-- [automata_builder::automata::terms_multitape::{automata_builder::automata::terms_multitape::MultiTapeProduct}::is_satisfiable_with]:
-    Source: 'src/automata/terms_multitape.rs', lines 433:4-455:5
-    Visibility: public -/
-def automata.terms_multitape.MultiTapeProduct.is_satisfiable_with
-  (self : automata.terms_multitape.MultiTapeProduct)
-  (other : automata.terms_multitape.MultiTapeProduct) :
-  Result Bool
-  := do
-  let other_terms ←
-    automata.terms_multitape.MultiTapeProduct.to_flat_terms other
-  let allocations ←
-    std.collections.hash.map.HashMapKVRandomStateGlobal.new (Std.I64 ×
-      Std.U16) Std.U32
-  let s := alloc.vec.Vec.deref self._terms
-  let iter ← core.slice.Slice.iter s
-  let allocations1 ←
-    automata.terms_multitape.MultiTapeProduct.is_satisfiable_with_loop0 iter
-      allocations
-  let s1 := alloc.vec.Vec.deref other_terms
-  let iter1 ← core.slice.Slice.iter s1
-  automata.terms_multitape.MultiTapeProduct.is_satisfiable_with_loop1 iter1
-    allocations1
-
-/-- [automata_builder::automata::terms_multitape::{automata_builder::automata::terms_multitape::MultiTapeProduct}::to_string]:
-    Source: 'src/automata/terms_multitape.rs', lines 456:4-458:5
-    Visibility: public -/
-def automata.terms_multitape.MultiTapeProduct.to_string
-  (self : automata.terms_multitape.MultiTapeProduct) : Result String := do
-  let s ← automata.terms_multitape.MultiTapeTerm._get_name
-  let s1 ← alloc.string.String.Insts.CoreOpsDerefDerefStr.deref s
-  automata.terms_multitape.MultiTapeProduct.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeProductMultiTapeExpression._to_string
-    self s1
-
 /-- [automata_builder::automata::terms_multitape::{impl core::cmp::PartialEq<automata_builder::automata::terms_multitape::MultiTapeProduct> for &'_0 automata_builder::automata::terms_multitape::MultiTapeProduct}::eq]:
-    Source: 'src/automata/terms_multitape.rs', lines 475:4-477:5
+    Source: 'src/automata/terms_multitape.rs', lines 494:4-496:5
     Visibility: public -/
 def Shared0MultiTapeProduct.Insts.CoreCmpPartialEqMultiTapeProduct.eq
   (self : automata.terms_multitape.MultiTapeProduct)
@@ -28502,7 +29781,7 @@ def Shared0MultiTapeProduct.Insts.CoreCmpPartialEqMultiTapeProduct.eq
     self._terms other._terms
 
 /-- Trait implementation: [automata_builder::automata::terms_multitape::{impl core::cmp::PartialEq<automata_builder::automata::terms_multitape::MultiTapeProduct> for &'_0 automata_builder::automata::terms_multitape::MultiTapeProduct}]
-    Source: 'src/automata/terms_multitape.rs', lines 474:0-478:1 -/
+    Source: 'src/automata/terms_multitape.rs', lines 493:0-497:1 -/
 @[reducible]
 impl_def Shared0MultiTapeProduct.Insts.CoreCmpPartialEqMultiTapeProduct :
   core.cmp.PartialEq automata.terms_multitape.MultiTapeProduct
@@ -28512,20 +29791,8 @@ impl_def Shared0MultiTapeProduct.Insts.CoreCmpPartialEqMultiTapeProduct :
     Shared0MultiTapeProduct.Insts.CoreCmpPartialEqMultiTapeProduct
 }
 
-/-- Trait implementation: [automata_builder::automata::terms_multitape::{impl core::ops::arith::Mul<automata_builder::automata::terms_multitape::MultiTapeProduct, automata_builder::automata::terms_multitape::MultiTapeProduct> for automata_builder::automata::terms_multitape::MultiTapeProduct}]
-    Source: 'src/automata/terms_multitape.rs', lines 480:0-496:1 -/
-@[reducible]
-def
-  automata.terms_multitape.MultiTapeProduct.Insts.CoreOpsArithMulMultiTapeProductMultiTapeProduct
-  : core.ops.arith.Mul automata.terms_multitape.MultiTapeProduct
-  automata.terms_multitape.MultiTapeProduct
-  automata.terms_multitape.MultiTapeProduct := {
-  mul :=
-    automata.terms_multitape.MultiTapeProduct.Insts.CoreOpsArithMulMultiTapeProductMultiTapeProduct.mul
-}
-
 /-- [automata_builder::automata::terms_multitape::{impl core::ops::arith::Mul<automata_builder::automata::terms_multitape::MultiTapeTerm, automata_builder::automata::terms_multitape::MultiTapeProduct> for &'_0 automata_builder::automata::terms_multitape::MultiTapeProduct}::mul]:
-    Source: 'src/automata/terms_multitape.rs', lines 500:4-507:5
+    Source: 'src/automata/terms_multitape.rs', lines 519:4-526:5
     Visibility: public -/
 def
   Shared0MultiTapeProduct.Insts.CoreOpsArithMulMultiTapeTermMultiTapeProduct.mul
@@ -28551,7 +29818,7 @@ def
     automata.terms_multitape.MultiTapeProductFactory.to_product mtpf1
 
 /-- Trait implementation: [automata_builder::automata::terms_multitape::{impl core::ops::arith::Mul<automata_builder::automata::terms_multitape::MultiTapeTerm, automata_builder::automata::terms_multitape::MultiTapeProduct> for &'_0 automata_builder::automata::terms_multitape::MultiTapeProduct}]
-    Source: 'src/automata/terms_multitape.rs', lines 497:0-508:1 -/
+    Source: 'src/automata/terms_multitape.rs', lines 516:0-527:1 -/
 @[reducible]
 def Shared0MultiTapeProduct.Insts.CoreOpsArithMulMultiTapeTermMultiTapeProduct
   : core.ops.arith.Mul automata.terms_multitape.MultiTapeProduct
@@ -28562,7 +29829,7 @@ def Shared0MultiTapeProduct.Insts.CoreOpsArithMulMultiTapeTermMultiTapeProduct
 }
 
 /-- [automata_builder::automata::terms_multitape::{impl core::ops::arith::Mul<automata_builder::automata::terms_multitape::MultiTapeTerm, automata_builder::automata::terms_multitape::MultiTapeProduct> for automata_builder::automata::terms_multitape::MultiTapeProduct}::mul]:
-    Source: 'src/automata/terms_multitape.rs', lines 512:4-518:5
+    Source: 'src/automata/terms_multitape.rs', lines 531:4-537:5
     Visibility: public -/
 def
   automata.terms_multitape.MultiTapeProduct.Insts.CoreOpsArithMulMultiTapeTermMultiTapeProduct.mul
@@ -28591,7 +29858,7 @@ def
     automata.terms_multitape.MultiTapeProductFactory.to_product mtpf1
 
 /-- Trait implementation: [automata_builder::automata::terms_multitape::{impl core::ops::arith::Mul<automata_builder::automata::terms_multitape::MultiTapeTerm, automata_builder::automata::terms_multitape::MultiTapeProduct> for automata_builder::automata::terms_multitape::MultiTapeProduct}]
-    Source: 'src/automata/terms_multitape.rs', lines 509:0-519:1 -/
+    Source: 'src/automata/terms_multitape.rs', lines 528:0-538:1 -/
 @[reducible]
 def
   automata.terms_multitape.MultiTapeProduct.Insts.CoreOpsArithMulMultiTapeTermMultiTapeProduct
@@ -28603,7 +29870,7 @@ def
 }
 
 /-- [automata_builder::automata::terms_multitape::{impl core::ops::arith::Mul<automata_builder::automata::terms_multitape::MultiTapeExpression, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeProduct}::mul]: loop 0:
-    Source: 'src/automata/terms_multitape.rs', lines 525:8-527:9
+    Source: 'src/automata/terms_multitape.rs', lines 544:8-546:9
     Visibility: public -/
 @[rust_loop]
 def
@@ -28632,7 +29899,7 @@ def
 partial_fixpoint
 
 /-- [automata_builder::automata::terms_multitape::{impl core::ops::arith::Mul<automata_builder::automata::terms_multitape::MultiTapeExpression, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeProduct}::mul]:
-    Source: 'src/automata/terms_multitape.rs', lines 523:4-529:5
+    Source: 'src/automata/terms_multitape.rs', lines 542:4-548:5
     Visibility: public -/
 def
   automata.terms_multitape.MultiTapeProduct.Insts.CoreOpsArithMulMultiTapeExpressionMultiTapeExpression.mul
@@ -28648,7 +29915,7 @@ def
   automata.terms_multitape.MultiTapeExpression.new new_products
 
 /-- Trait implementation: [automata_builder::automata::terms_multitape::{impl core::ops::arith::Mul<automata_builder::automata::terms_multitape::MultiTapeExpression, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeProduct}]
-    Source: 'src/automata/terms_multitape.rs', lines 520:0-530:1 -/
+    Source: 'src/automata/terms_multitape.rs', lines 539:0-549:1 -/
 @[reducible]
 def
   automata.terms_multitape.MultiTapeProduct.Insts.CoreOpsArithMulMultiTapeExpressionMultiTapeExpression
@@ -28659,35 +29926,8 @@ def
     automata.terms_multitape.MultiTapeProduct.Insts.CoreOpsArithMulMultiTapeExpressionMultiTapeExpression.mul
 }
 
-/-- [automata_builder::automata::terms_multitape::{impl core::ops::bit::BitOr<automata_builder::automata::terms_multitape::MultiTapeProduct, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeProduct}::bitor]:
-    Source: 'src/automata/terms_multitape.rs', lines 534:4-538:5
-    Visibility: public -/
-def
-  automata.terms_multitape.MultiTapeProduct.Insts.CoreOpsBitBitOrMultiTapeProductMultiTapeExpression.bitor
-  (self : automata.terms_multitape.MultiTapeProduct)
-  (rhs : automata.terms_multitape.MultiTapeProduct) :
-  Result automata.terms_multitape.MultiTapeExpression
-  := do
-  let y ←
-    lift (Std.Array.to_slice (Array.make 2#usize [ self, rhs ] : Array
-      automata.terms_multitape.MultiTapeProduct 2#usize))
-  let ret := alloc.slice.Slice.into_vec y
-  automata.terms_multitape.MultiTapeExpression.new ret
-
-/-- Trait implementation: [automata_builder::automata::terms_multitape::{impl core::ops::bit::BitOr<automata_builder::automata::terms_multitape::MultiTapeProduct, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeProduct}]
-    Source: 'src/automata/terms_multitape.rs', lines 531:0-539:1 -/
-@[reducible]
-def
-  automata.terms_multitape.MultiTapeProduct.Insts.CoreOpsBitBitOrMultiTapeProductMultiTapeExpression
-  : core.ops.bit.BitOr automata.terms_multitape.MultiTapeProduct
-  automata.terms_multitape.MultiTapeProduct
-  automata.terms_multitape.MultiTapeExpression := {
-  bitor :=
-    automata.terms_multitape.MultiTapeProduct.Insts.CoreOpsBitBitOrMultiTapeProductMultiTapeExpression.bitor
-}
-
 /-- [automata_builder::automata::terms_multitape::{impl core::ops::bit::BitOr<automata_builder::automata::terms_multitape::MultiTapeTerm, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeProduct}::bitor]:
-    Source: 'src/automata/terms_multitape.rs', lines 543:4-547:5
+    Source: 'src/automata/terms_multitape.rs', lines 562:4-566:5
     Visibility: public -/
 def
   automata.terms_multitape.MultiTapeProduct.Insts.CoreOpsBitBitOrMultiTapeTermMultiTapeExpression.bitor
@@ -28707,7 +29947,7 @@ def
   automata.terms_multitape.MultiTapeExpression.new ret1
 
 /-- Trait implementation: [automata_builder::automata::terms_multitape::{impl core::ops::bit::BitOr<automata_builder::automata::terms_multitape::MultiTapeTerm, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeProduct}]
-    Source: 'src/automata/terms_multitape.rs', lines 540:0-548:1 -/
+    Source: 'src/automata/terms_multitape.rs', lines 559:0-567:1 -/
 @[reducible]
 def
   automata.terms_multitape.MultiTapeProduct.Insts.CoreOpsBitBitOrMultiTapeTermMultiTapeExpression
@@ -28719,7 +29959,7 @@ def
 }
 
 /-- [automata_builder::automata::terms_multitape::{impl core::ops::bit::BitOr<automata_builder::automata::terms_multitape::MultiTapeExpression, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeProduct}::bitor]:
-    Source: 'src/automata/terms_multitape.rs', lines 552:4-556:5
+    Source: 'src/automata/terms_multitape.rs', lines 571:4-575:5
     Visibility: public -/
 def
   automata.terms_multitape.MultiTapeProduct.Insts.CoreOpsBitBitOrMultiTapeExpressionMultiTapeExpression.bitor
@@ -28738,7 +29978,7 @@ def
   automata.terms_multitape.MultiTapeExpression.new ret1
 
 /-- Trait implementation: [automata_builder::automata::terms_multitape::{impl core::ops::bit::BitOr<automata_builder::automata::terms_multitape::MultiTapeExpression, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeProduct}]
-    Source: 'src/automata/terms_multitape.rs', lines 549:0-557:1 -/
+    Source: 'src/automata/terms_multitape.rs', lines 568:0-576:1 -/
 @[reducible]
 def
   automata.terms_multitape.MultiTapeProduct.Insts.CoreOpsBitBitOrMultiTapeExpressionMultiTapeExpression
@@ -28749,161 +29989,8 @@ def
     automata.terms_multitape.MultiTapeProduct.Insts.CoreOpsBitBitOrMultiTapeExpressionMultiTapeExpression.bitor
 }
 
-/-- [automata_builder::automata::terms_multitape::{impl automata_builder::automata::terms_multitape::AbstractMultiTapeExpression<automata_builder::automata::terms_multitape::MultiTapeProduct, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeProduct}::_assign_indexes_as_base]:
-    Source: 'src/automata/terms_multitape.rs', lines 647:4-649:5
-    Visibility: public -/
-def
-  automata.terms_multitape.MultiTapeProduct.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeProductMultiTapeExpression._assign_indexes_as_base
-  (self : automata.terms_multitape.MultiTapeProduct) :
-  Result automata.terms_multitape.MultiTapeProduct
-  := do
-  automata.terms_multitape.MultiTapeProduct._assign_base_indexes self 0#u64
-
-/-- [automata_builder::automata::terms_multitape::{impl automata_builder::automata::terms_multitape::AbstractMultiTapeExpression<automata_builder::automata::terms_multitape::MultiTapeProduct, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeProduct}::to_expression]:
-    Source: 'src/automata/terms_multitape.rs', lines 633:4-635:5
-    Visibility: public -/
-def
-  automata.terms_multitape.MultiTapeProduct.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeProductMultiTapeExpression.to_expression
-  (self : automata.terms_multitape.MultiTapeProduct) :
-  Result automata.terms_multitape.MultiTapeExpression
-  := do
-  let mtp ←
-    automata.terms_multitape.MultiTapeProduct.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeProductMultiTapeExpression.copy
-      self
-  let y ←
-    lift (Std.Array.to_slice (Array.make 1#usize [ mtp ] : Array
-      automata.terms_multitape.MultiTapeProduct 1#usize))
-  let ret := alloc.slice.Slice.into_vec y
-  automata.terms_multitape.MultiTapeExpression.new ret
-
-/-- [automata_builder::automata::terms_multitape::{impl automata_builder::automata::terms_multitape::AbstractMultiTapeExpression<automata_builder::automata::terms_multitape::MultiTapeProduct, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeProduct}::_expand_steps]: loop 0:
-    Source: 'src/automata/terms_multitape.rs', lines 626:8-630:9
-    Visibility: public -/
-@[rust_loop]
-def
-  automata.terms_multitape.MultiTapeProduct.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeProductMultiTapeExpression._expand_steps_loop
-  (iter : core.ops.range.Range Std.U64)
-  (expansion_mapping : std.collections.hash.map.HashMap (Std.U16 × Std.U32)
-  automata.terms_multitape.MultiTapeExpression std.hash.random.RandomState
-  alloc.alloc.Global) (include_debug_info : Bool) (fold : Bool)
-  (result : automata.terms_multitape.MultiTapeExpression) :
-  Result automata.terms_multitape.MultiTapeExpression
-  := do
-  let (o, iter1) ←
-    core.iter.range.IteratorRange.next core.iter.range.StepU64 iter
-  match o with
-  | none => ok result
-  | some _ =>
-    let result1 ←
-      automata.terms_multitape.MultiTapeExpression.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeExpressionMultiTapeExpression._expand
-        result expansion_mapping include_debug_info fold
-    automata.terms_multitape.MultiTapeProduct.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeProductMultiTapeExpression._expand_steps_loop
-      iter1 expansion_mapping include_debug_info fold result1
-partial_fixpoint
-
-/-- [automata_builder::automata::terms_multitape::{impl automata_builder::automata::terms_multitape::AbstractMultiTapeExpression<automata_builder::automata::terms_multitape::MultiTapeProduct, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeProduct}::_expand_steps]:
-    Source: 'src/automata/terms_multitape.rs', lines 617:4-632:5
-    Visibility: public -/
-def
-  automata.terms_multitape.MultiTapeProduct.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeProductMultiTapeExpression._expand_steps
-  (self : automata.terms_multitape.MultiTapeProduct)
-  (expansion_mapping : std.collections.hash.map.HashMap (Std.U16 × Std.U32)
-  automata.terms_multitape.MultiTapeExpression std.hash.random.RandomState
-  alloc.alloc.Global) (steps : Std.U64) (include_debug_info : Bool)
-  (fold : Bool) :
-  Result automata.terms_multitape.MultiTapeExpression
-  := do
-  let copy ←
-    automata.terms_multitape.MultiTapeProduct.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeProductMultiTapeExpression.copy
-      self
-  let copy1 ←
-    automata.terms_multitape.MultiTapeProduct.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeProductMultiTapeExpression._assign_indexes_as_base
-      copy
-  let result ←
-    automata.terms_multitape.MultiTapeProduct.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeProductMultiTapeExpression._expand
-      copy1 expansion_mapping include_debug_info fold
-  automata.terms_multitape.MultiTapeProduct.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeProductMultiTapeExpression._expand_steps_loop
-    { start := 1#u64, «end» := steps } expansion_mapping include_debug_info
-    fold result
-
-/-- [automata_builder::automata::terms_multitape::{impl automata_builder::automata::terms_multitape::AbstractMultiTapeExpression<automata_builder::automata::terms_multitape::MultiTapeProduct, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeProduct}::_sub]: loop 0:
-    Source: 'src/automata/terms_multitape.rs', lines 580:8-586:5
-    Visibility: public -/
-@[rust_loop]
-def
-  automata.terms_multitape.MultiTapeProduct.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeProductMultiTapeExpression._sub_loop
-  (iter : core.slice.iter.Iter automata.terms_multitape.MultiTapeTerm)
-  (substitutions : std.collections.hash.map.HashMap Std.I64 (Std.U16 ×
-  Std.U32) std.hash.random.RandomState alloc.alloc.Global)
-  (default : (Std.U16 × Std.U32)) :
-  Result Bool
-  := do
-  let (o, iter1) ← core.slice.iter.IteratorSliceIter.next iter
-  match o with
-  | none => ok true
-  | some term =>
-    let b ←
-      automata.terms_multitape.MultiTapeTerm.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeProductMultiTapeExpression._sub
-        term substitutions default
-    if b
-    then
-      automata.terms_multitape.MultiTapeProduct.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeProductMultiTapeExpression._sub_loop
-        iter1 substitutions default
-    else ok false
-partial_fixpoint
-
-/-- [automata_builder::automata::terms_multitape::{impl automata_builder::automata::terms_multitape::AbstractMultiTapeExpression<automata_builder::automata::terms_multitape::MultiTapeProduct, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeProduct}::_sub]:
-    Source: 'src/automata/terms_multitape.rs', lines 576:4-586:5
-    Visibility: public -/
-def
-  automata.terms_multitape.MultiTapeProduct.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeProductMultiTapeExpression._sub
-  (self : automata.terms_multitape.MultiTapeProduct)
-  (substitutions : std.collections.hash.map.HashMap Std.I64 (Std.U16 ×
-  Std.U32) std.hash.random.RandomState alloc.alloc.Global)
-  (default : (Std.U16 × Std.U32)) :
-  Result Bool
-  := do
-  let s := alloc.vec.Vec.deref self._terms
-  let iter ← core.slice.Slice.iter s
-  automata.terms_multitape.MultiTapeProduct.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeProductMultiTapeExpression._sub_loop
-    iter substitutions default
-
-/-- Trait implementation: [automata_builder::automata::terms_multitape::{impl automata_builder::automata::terms_multitape::AbstractMultiTapeExpression<automata_builder::automata::terms_multitape::MultiTapeProduct, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeProduct}]
-    Source: 'src/automata/terms_multitape.rs', lines 569:0-650:1 -/
-@[reducible]
-def
-  automata.terms_multitape.MultiTapeProduct.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeProductMultiTapeExpression
-  : automata.terms_multitape.AbstractMultiTapeExpression
-  automata.terms_multitape.MultiTapeProduct
-  automata.terms_multitape.MultiTapeProduct
-  automata.terms_multitape.MultiTapeExpression := {
-  coreopsarithMulInst :=
-    automata.terms_multitape.MultiTapeProduct.Insts.CoreOpsArithMulMultiTapeProductMultiTapeProduct
-  coreopsbitBitOrInst :=
-    automata.terms_multitape.MultiTapeProduct.Insts.CoreOpsBitBitOrMultiTapeProductMultiTapeExpression
-  corecmpEqInst := automata.terms_multitape.MultiTapeProduct.Insts.CoreCmpEq
-  copy :=
-    automata.terms_multitape.MultiTapeProduct.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeProductMultiTapeExpression.copy
-  _sub :=
-    automata.terms_multitape.MultiTapeProduct.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeProductMultiTapeExpression._sub
-  offset :=
-    automata.terms_multitape.MultiTapeProduct.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeProductMultiTapeExpression.offset
-  _expand :=
-    automata.terms_multitape.MultiTapeProduct.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeProductMultiTapeExpression._expand
-  _expand_steps :=
-    automata.terms_multitape.MultiTapeProduct.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeProductMultiTapeExpression._expand_steps
-  to_expression :=
-    automata.terms_multitape.MultiTapeProduct.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeProductMultiTapeExpression.to_expression
-  _to_string :=
-    automata.terms_multitape.MultiTapeProduct.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeProductMultiTapeExpression._to_string
-  _get_num_terms :=
-    automata.terms_multitape.MultiTapeProduct.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeProductMultiTapeExpression._get_num_terms
-  _assign_indexes_as_base :=
-    automata.terms_multitape.MultiTapeProduct.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeProductMultiTapeExpression._assign_indexes_as_base
-}
-
 /-- [automata_builder::automata::terms_multitape::{impl core::fmt::Debug for automata_builder::automata::terms_multitape::MultiTapeExpression}::fmt]:
-    Source: 'src/automata/terms_multitape.rs', lines 652:16-652:21
+    Source: 'src/automata/terms_multitape.rs', lines 671:16-671:21
     Visibility: public -/
 def automata.terms_multitape.MultiTapeExpression.Insts.CoreFmtDebug.fmt
   (self : automata.terms_multitape.MultiTapeExpression)
@@ -28920,7 +30007,7 @@ def automata.terms_multitape.MultiTapeExpression.Insts.CoreFmtDebug.fmt
     (toStr "products") dyn (toStr "_optimized") dyn1
 
 /-- Trait implementation: [automata_builder::automata::terms_multitape::{impl core::fmt::Debug for automata_builder::automata::terms_multitape::MultiTapeExpression}]
-    Source: 'src/automata/terms_multitape.rs', lines 652:16-652:21 -/
+    Source: 'src/automata/terms_multitape.rs', lines 671:16-671:21 -/
 @[reducible]
 def automata.terms_multitape.MultiTapeExpression.Insts.CoreFmtDebug :
   core.fmt.Debug automata.terms_multitape.MultiTapeExpression := {
@@ -28928,7 +30015,7 @@ def automata.terms_multitape.MultiTapeExpression.Insts.CoreFmtDebug :
 }
 
 /-- [automata_builder::automata::terms_multitape::{impl core::default::Default for automata_builder::automata::terms_multitape::MultiTapeExpression}::default]:
-    Source: 'src/automata/terms_multitape.rs', lines 652:23-652:30
+    Source: 'src/automata/terms_multitape.rs', lines 671:23-671:30
     Visibility: public -/
 def
   automata.terms_multitape.MultiTapeExpression.Insts.CoreDefaultDefault.default
@@ -28940,7 +30027,7 @@ def
   ok { products := v, _optimized := b }
 
 /-- Trait implementation: [automata_builder::automata::terms_multitape::{impl core::default::Default for automata_builder::automata::terms_multitape::MultiTapeExpression}]
-    Source: 'src/automata/terms_multitape.rs', lines 652:23-652:30 -/
+    Source: 'src/automata/terms_multitape.rs', lines 671:23-671:30 -/
 @[reducible]
 def automata.terms_multitape.MultiTapeExpression.Insts.CoreDefaultDefault :
   core.default.Default automata.terms_multitape.MultiTapeExpression := {
@@ -28949,7 +30036,7 @@ def automata.terms_multitape.MultiTapeExpression.Insts.CoreDefaultDefault :
 }
 
 /-- [automata_builder::automata::terms_multitape::{automata_builder::automata::terms_multitape::MultiTapeExpression}::_get_num_products]:
-    Source: 'src/automata/terms_multitape.rs', lines 663:4-665:5
+    Source: 'src/automata/terms_multitape.rs', lines 682:4-684:5
     Visibility: public -/
 def automata.terms_multitape.MultiTapeExpression._get_num_products
   (self : automata.terms_multitape.MultiTapeExpression) :
@@ -28958,7 +30045,7 @@ def automata.terms_multitape.MultiTapeExpression._get_num_products
   ok (alloc.vec.Vec.len self.products)
 
 /-- [automata_builder::automata::terms_multitape::{automata_builder::automata::terms_multitape::MultiTapeExpression}::_get_product]:
-    Source: 'src/automata/terms_multitape.rs', lines 667:4-669:5
+    Source: 'src/automata/terms_multitape.rs', lines 686:4-688:5
     Visibility: public -/
 def automata.terms_multitape.MultiTapeExpression._get_product
   (self : automata.terms_multitape.MultiTapeExpression) (index : Std.Usize) :
@@ -28969,7 +30056,7 @@ def automata.terms_multitape.MultiTapeExpression._get_product
     automata.terms_multitape.MultiTapeProduct) s index
 
 /-- [automata_builder::automata::terms_multitape::{automata_builder::automata::terms_multitape::MultiTapeExpression}::_to_flat_terms]: loop 1:
-    Source: 'src/automata/terms_multitape.rs', lines 678:12-680:13
+    Source: 'src/automata/terms_multitape.rs', lines 697:12-699:13
     Visibility: public -/
 @[rust_loop]
 def automata.terms_multitape.MultiTapeExpression._to_flat_terms_loop0_loop0
@@ -28990,7 +30077,7 @@ def automata.terms_multitape.MultiTapeExpression._to_flat_terms_loop0_loop0
 partial_fixpoint
 
 /-- [automata_builder::automata::terms_multitape::{automata_builder::automata::terms_multitape::MultiTapeExpression}::_to_flat_terms]: loop 0:
-    Source: 'src/automata/terms_multitape.rs', lines 677:8-681:9
+    Source: 'src/automata/terms_multitape.rs', lines 696:8-700:9
     Visibility: public -/
 @[rust_loop]
 def automata.terms_multitape.MultiTapeExpression._to_flat_terms_loop0
@@ -29012,7 +30099,7 @@ def automata.terms_multitape.MultiTapeExpression._to_flat_terms_loop0
 partial_fixpoint
 
 /-- [automata_builder::automata::terms_multitape::{automata_builder::automata::terms_multitape::MultiTapeExpression}::_to_flat_terms]:
-    Source: 'src/automata/terms_multitape.rs', lines 675:4-683:5
+    Source: 'src/automata/terms_multitape.rs', lines 694:4-702:5
     Visibility: public -/
 def automata.terms_multitape.MultiTapeExpression._to_flat_terms
   (self : automata.terms_multitape.MultiTapeExpression) :
@@ -29024,7 +30111,7 @@ def automata.terms_multitape.MultiTapeExpression._to_flat_terms
     (alloc.vec.Vec.new automata.terms_multitape.MultiTapeTerm)
 
 /-- [automata_builder::automata::terms_multitape::{automata_builder::automata::terms_multitape::MultiTapeExpression}::pad_products]: loop 0:
-    Source: 'src/automata/terms_multitape.rs', lines 715:8-717:9
+    Source: 'src/automata/terms_multitape.rs', lines 734:8-736:9
     Visibility: public -/
 @[rust_loop]
 def automata.terms_multitape.MultiTapeExpression.pad_products_loop
@@ -29046,7 +30133,7 @@ def automata.terms_multitape.MultiTapeExpression.pad_products_loop
 partial_fixpoint
 
 /-- [automata_builder::automata::terms_multitape::{automata_builder::automata::terms_multitape::MultiTapeExpression}::pad_products]:
-    Source: 'src/automata/terms_multitape.rs', lines 711:4-719:5
+    Source: 'src/automata/terms_multitape.rs', lines 730:4-738:5
     Visibility: public -/
 def automata.terms_multitape.MultiTapeExpression.pad_products
   (self : automata.terms_multitape.MultiTapeExpression)
@@ -29067,7 +30154,7 @@ def automata.terms_multitape.MultiTapeExpression.pad_products
   ok (some mte)
 
 /-- [automata_builder::automata::terms_multitape::{automata_builder::automata::terms_multitape::MultiTapeExpression}::reduce]: loop 0:
-    Source: 'src/automata/terms_multitape.rs', lines 722:8-724:9
+    Source: 'src/automata/terms_multitape.rs', lines 741:8-743:9
     Visibility: public -/
 @[rust_loop]
 def automata.terms_multitape.MultiTapeExpression.reduce_loop
@@ -29093,7 +30180,7 @@ def automata.terms_multitape.MultiTapeExpression.reduce_loop
 partial_fixpoint
 
 /-- [automata_builder::automata::terms_multitape::{automata_builder::automata::terms_multitape::MultiTapeExpression}::reduce]:
-    Source: 'src/automata/terms_multitape.rs', lines 720:4-728:5
+    Source: 'src/automata/terms_multitape.rs', lines 739:4-747:5
     Visibility: public -/
 def automata.terms_multitape.MultiTapeExpression.reduce
   (self : automata.terms_multitape.MultiTapeExpression) :
@@ -29121,7 +30208,7 @@ def automata.terms_multitape.MultiTapeExpression.reduce
   automata.terms_multitape.MultiTapeExpression.new reduced_products1
 
 /-- [automata_builder::automata::terms_multitape::{automata_builder::automata::terms_multitape::MultiTapeExpression}::push_product]:
-    Source: 'src/automata/terms_multitape.rs', lines 729:4-731:5
+    Source: 'src/automata/terms_multitape.rs', lines 748:4-750:5
     Visibility: public -/
 def automata.terms_multitape.MultiTapeExpression.push_product
   (self : automata.terms_multitape.MultiTapeExpression)
@@ -29132,7 +30219,7 @@ def automata.terms_multitape.MultiTapeExpression.push_product
   ok { self with products := v }
 
 /-- [automata_builder::automata::terms_multitape::{impl core::cmp::PartialEq<automata_builder::automata::terms_multitape::MultiTapeExpression> for &'_0 automata_builder::automata::terms_multitape::MultiTapeExpression}::eq]:
-    Source: 'src/automata/terms_multitape.rs', lines 755:4-757:5
+    Source: 'src/automata/terms_multitape.rs', lines 774:4-776:5
     Visibility: public -/
 def Shared0MultiTapeExpression.Insts.CoreCmpPartialEqMultiTapeExpression.eq
   (self : automata.terms_multitape.MultiTapeExpression)
@@ -29144,7 +30231,7 @@ def Shared0MultiTapeExpression.Insts.CoreCmpPartialEqMultiTapeExpression.eq
     self.products other.products
 
 /-- Trait implementation: [automata_builder::automata::terms_multitape::{impl core::cmp::PartialEq<automata_builder::automata::terms_multitape::MultiTapeExpression> for &'_0 automata_builder::automata::terms_multitape::MultiTapeExpression}]
-    Source: 'src/automata/terms_multitape.rs', lines 754:0-758:1 -/
+    Source: 'src/automata/terms_multitape.rs', lines 773:0-777:1 -/
 @[reducible]
 impl_def Shared0MultiTapeExpression.Insts.CoreCmpPartialEqMultiTapeExpression :
   core.cmp.PartialEq automata.terms_multitape.MultiTapeExpression
@@ -29155,7 +30242,7 @@ impl_def Shared0MultiTapeExpression.Insts.CoreCmpPartialEqMultiTapeExpression :
 }
 
 /-- [automata_builder::automata::terms_multitape::{impl core::hash::Hash for automata_builder::automata::terms_multitape::MultiTapeExpression}::hash]: loop 0:
-    Source: 'src/automata/terms_multitape.rs', lines 761:8-763:9
+    Source: 'src/automata/terms_multitape.rs', lines 780:8-782:9
     Visibility: public -/
 @[rust_loop]
 def automata.terms_multitape.MultiTapeExpression.Insts.CoreHashHash.hash_loop
@@ -29176,7 +30263,7 @@ def automata.terms_multitape.MultiTapeExpression.Insts.CoreHashHash.hash_loop
 partial_fixpoint
 
 /-- [automata_builder::automata::terms_multitape::{impl core::hash::Hash for automata_builder::automata::terms_multitape::MultiTapeExpression}::hash]:
-    Source: 'src/automata/terms_multitape.rs', lines 760:4-764:5
+    Source: 'src/automata/terms_multitape.rs', lines 779:4-783:5
     Visibility: public -/
 def automata.terms_multitape.MultiTapeExpression.Insts.CoreHashHash.hash
   {H : Type _} (corehashHasherInst : core.hash.Hasher H)
@@ -29190,7 +30277,7 @@ def automata.terms_multitape.MultiTapeExpression.Insts.CoreHashHash.hash
     corehashHasherInst iter state
 
 /-- Trait implementation: [automata_builder::automata::terms_multitape::{impl core::hash::Hash for automata_builder::automata::terms_multitape::MultiTapeExpression}]
-    Source: 'src/automata/terms_multitape.rs', lines 759:0-765:1 -/
+    Source: 'src/automata/terms_multitape.rs', lines 778:0-784:1 -/
 @[reducible]
 def automata.terms_multitape.MultiTapeExpression.Insts.CoreHashHash :
   core.hash.Hash automata.terms_multitape.MultiTapeExpression := {
@@ -29200,7 +30287,7 @@ def automata.terms_multitape.MultiTapeExpression.Insts.CoreHashHash :
 }
 
 /-- [automata_builder::automata::terms_multitape::{impl core::cmp::PartialEq<automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeExpression}::eq]:
-    Source: 'src/automata/terms_multitape.rs', lines 768:4-770:5
+    Source: 'src/automata/terms_multitape.rs', lines 787:4-789:5
     Visibility: public -/
 def
   automata.terms_multitape.MultiTapeExpression.Insts.CoreCmpPartialEqMultiTapeExpression.eq
@@ -29213,7 +30300,7 @@ def
     self.products other.products
 
 /-- Trait implementation: [automata_builder::automata::terms_multitape::{impl core::cmp::PartialEq<automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeExpression}]
-    Source: 'src/automata/terms_multitape.rs', lines 767:0-771:1 -/
+    Source: 'src/automata/terms_multitape.rs', lines 786:0-790:1 -/
 @[reducible]
 impl_def
   automata.terms_multitape.MultiTapeExpression.Insts.CoreCmpPartialEqMultiTapeExpression
@@ -29226,7 +30313,7 @@ impl_def
 }
 
 /-- Trait implementation: [automata_builder::automata::terms_multitape::{impl core::cmp::Eq for automata_builder::automata::terms_multitape::MultiTapeExpression}]
-    Source: 'src/automata/terms_multitape.rs', lines 766:0-766:34 -/
+    Source: 'src/automata/terms_multitape.rs', lines 785:0-785:34 -/
 @[reducible]
 impl_def automata.terms_multitape.MultiTapeExpression.Insts.CoreCmpEq :
   core.cmp.Eq automata.terms_multitape.MultiTapeExpression := {
@@ -29237,7 +30324,7 @@ impl_def automata.terms_multitape.MultiTapeExpression.Insts.CoreCmpEq :
 }
 
 /-- Trait implementation: [automata_builder::automata::terms_multitape::{impl core::ops::arith::Mul<automata_builder::automata::terms_multitape::MultiTapeExpression, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeExpression}]
-    Source: 'src/automata/terms_multitape.rs', lines 773:0-786:1 -/
+    Source: 'src/automata/terms_multitape.rs', lines 792:0-805:1 -/
 @[reducible]
 def
   automata.terms_multitape.MultiTapeExpression.Insts.CoreOpsArithMulMultiTapeExpressionMultiTapeExpression
@@ -29249,7 +30336,7 @@ def
 }
 
 /-- [automata_builder::automata::terms_multitape::{impl core::ops::arith::Mul<automata_builder::automata::terms_multitape::MultiTapeTerm, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeExpression}::mul]: loop 0:
-    Source: 'src/automata/terms_multitape.rs', lines 793:8-796:9
+    Source: 'src/automata/terms_multitape.rs', lines 812:8-815:9
     Visibility: public -/
 @[rust_loop]
 def
@@ -29275,7 +30362,7 @@ def
 partial_fixpoint
 
 /-- [automata_builder::automata::terms_multitape::{impl core::ops::arith::Mul<automata_builder::automata::terms_multitape::MultiTapeTerm, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeExpression}::mul]:
-    Source: 'src/automata/terms_multitape.rs', lines 790:4-798:5
+    Source: 'src/automata/terms_multitape.rs', lines 809:4-817:5
     Visibility: public -/
 def
   automata.terms_multitape.MultiTapeExpression.Insts.CoreOpsArithMulMultiTapeTermMultiTapeExpression.mul
@@ -29291,7 +30378,7 @@ def
   automata.terms_multitape.MultiTapeExpression.new new_products
 
 /-- Trait implementation: [automata_builder::automata::terms_multitape::{impl core::ops::arith::Mul<automata_builder::automata::terms_multitape::MultiTapeTerm, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeExpression}]
-    Source: 'src/automata/terms_multitape.rs', lines 787:0-799:1 -/
+    Source: 'src/automata/terms_multitape.rs', lines 806:0-818:1 -/
 @[reducible]
 def
   automata.terms_multitape.MultiTapeExpression.Insts.CoreOpsArithMulMultiTapeTermMultiTapeExpression
@@ -29303,7 +30390,7 @@ def
 }
 
 /-- [automata_builder::automata::terms_multitape::{impl core::ops::arith::Mul<automata_builder::automata::terms_multitape::MultiTapeProduct, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeExpression}::mul]: loop 0:
-    Source: 'src/automata/terms_multitape.rs', lines 805:8-807:9
+    Source: 'src/automata/terms_multitape.rs', lines 824:8-826:9
     Visibility: public -/
 @[rust_loop]
 def
@@ -29332,7 +30419,7 @@ def
 partial_fixpoint
 
 /-- [automata_builder::automata::terms_multitape::{impl core::ops::arith::Mul<automata_builder::automata::terms_multitape::MultiTapeProduct, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeExpression}::mul]:
-    Source: 'src/automata/terms_multitape.rs', lines 803:4-809:5
+    Source: 'src/automata/terms_multitape.rs', lines 822:4-828:5
     Visibility: public -/
 def
   automata.terms_multitape.MultiTapeExpression.Insts.CoreOpsArithMulMultiTapeProductMultiTapeExpression.mul
@@ -29348,7 +30435,7 @@ def
   automata.terms_multitape.MultiTapeExpression.new new_products
 
 /-- Trait implementation: [automata_builder::automata::terms_multitape::{impl core::ops::arith::Mul<automata_builder::automata::terms_multitape::MultiTapeProduct, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeExpression}]
-    Source: 'src/automata/terms_multitape.rs', lines 800:0-810:1 -/
+    Source: 'src/automata/terms_multitape.rs', lines 819:0-829:1 -/
 @[reducible]
 def
   automata.terms_multitape.MultiTapeExpression.Insts.CoreOpsArithMulMultiTapeProductMultiTapeExpression
@@ -29360,7 +30447,7 @@ def
 }
 
 /-- Trait implementation: [automata_builder::automata::terms_multitape::{impl core::ops::bit::BitOr<automata_builder::automata::terms_multitape::MultiTapeExpression, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeExpression}]
-    Source: 'src/automata/terms_multitape.rs', lines 811:0-824:1 -/
+    Source: 'src/automata/terms_multitape.rs', lines 830:0-843:1 -/
 @[reducible]
 def
   automata.terms_multitape.MultiTapeExpression.Insts.CoreOpsBitBitOrMultiTapeExpressionMultiTapeExpression
@@ -29372,7 +30459,7 @@ def
 }
 
 /-- [automata_builder::automata::terms_multitape::{impl core::ops::bit::BitOr<automata_builder::automata::terms_multitape::MultiTapeTerm, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeExpression}::bitor]: loop 0:
-    Source: 'src/automata/terms_multitape.rs', lines 830:8-832:9
+    Source: 'src/automata/terms_multitape.rs', lines 849:8-851:9
     Visibility: public -/
 @[rust_loop]
 def
@@ -29394,7 +30481,7 @@ def
 partial_fixpoint
 
 /-- [automata_builder::automata::terms_multitape::{impl core::ops::bit::BitOr<automata_builder::automata::terms_multitape::MultiTapeTerm, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeExpression}::bitor]:
-    Source: 'src/automata/terms_multitape.rs', lines 828:4-835:5
+    Source: 'src/automata/terms_multitape.rs', lines 847:4-854:5
     Visibility: public -/
 def
   automata.terms_multitape.MultiTapeExpression.Insts.CoreOpsBitBitOrMultiTapeTermMultiTapeExpression.bitor
@@ -29412,7 +30499,7 @@ def
   automata.terms_multitape.MultiTapeExpression.new new_products1
 
 /-- Trait implementation: [automata_builder::automata::terms_multitape::{impl core::ops::bit::BitOr<automata_builder::automata::terms_multitape::MultiTapeTerm, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeExpression}]
-    Source: 'src/automata/terms_multitape.rs', lines 825:0-836:1 -/
+    Source: 'src/automata/terms_multitape.rs', lines 844:0-855:1 -/
 @[reducible]
 def
   automata.terms_multitape.MultiTapeExpression.Insts.CoreOpsBitBitOrMultiTapeTermMultiTapeExpression
@@ -29424,7 +30511,7 @@ def
 }
 
 /-- [automata_builder::automata::terms_multitape::{impl core::ops::bit::BitOr<automata_builder::automata::terms_multitape::MultiTapeProduct, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeExpression}::bitor]: loop 0:
-    Source: 'src/automata/terms_multitape.rs', lines 842:8-844:9
+    Source: 'src/automata/terms_multitape.rs', lines 861:8-863:9
     Visibility: public -/
 @[rust_loop]
 def
@@ -29446,7 +30533,7 @@ def
 partial_fixpoint
 
 /-- [automata_builder::automata::terms_multitape::{impl core::ops::bit::BitOr<automata_builder::automata::terms_multitape::MultiTapeProduct, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeExpression}::bitor]:
-    Source: 'src/automata/terms_multitape.rs', lines 840:4-847:5
+    Source: 'src/automata/terms_multitape.rs', lines 859:4-866:5
     Visibility: public -/
 def
   automata.terms_multitape.MultiTapeExpression.Insts.CoreOpsBitBitOrMultiTapeProductMultiTapeExpression.bitor
@@ -29463,7 +30550,7 @@ def
   automata.terms_multitape.MultiTapeExpression.new new_products1
 
 /-- Trait implementation: [automata_builder::automata::terms_multitape::{impl core::ops::bit::BitOr<automata_builder::automata::terms_multitape::MultiTapeProduct, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeExpression}]
-    Source: 'src/automata/terms_multitape.rs', lines 837:0-848:1 -/
+    Source: 'src/automata/terms_multitape.rs', lines 856:0-867:1 -/
 @[reducible]
 def
   automata.terms_multitape.MultiTapeExpression.Insts.CoreOpsBitBitOrMultiTapeProductMultiTapeExpression
@@ -29475,7 +30562,7 @@ def
 }
 
 /-- [automata_builder::automata::terms_multitape::{impl automata_builder::automata::terms_multitape::AbstractMultiTapeExpression<automata_builder::automata::terms_multitape::MultiTapeExpression, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeExpression}::_assign_indexes_as_base]:
-    Source: 'src/automata/terms_multitape.rs', lines 927:4-929:5
+    Source: 'src/automata/terms_multitape.rs', lines 946:4-948:5
     Visibility: public -/
 def
   automata.terms_multitape.MultiTapeExpression.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeExpressionMultiTapeExpression._assign_indexes_as_base
@@ -29485,7 +30572,7 @@ def
   automata.terms_multitape.MultiTapeExpression._assign_base_indexes self
 
 /-- [automata_builder::automata::terms_multitape::{impl automata_builder::automata::terms_multitape::AbstractMultiTapeExpression<automata_builder::automata::terms_multitape::MultiTapeExpression, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeExpression}::_get_num_terms::{impl core::ops::function::FnMut<(&'_0 automata_builder::automata::terms_multitape::MultiTapeProduct,), usize> for automata_builder::automata::terms_multitape::{impl automata_builder::automata::terms_multitape::AbstractMultiTapeExpression<automata_builder::automata::terms_multitape::MultiTapeExpression, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeExpression}::_get_num_terms::{closure}<'_0>}::call_mut]:
-    Source: 'src/automata/terms_multitape.rs', lines 924:33-924:67 -/
+    Source: 'src/automata/terms_multitape.rs', lines 943:33-943:67 -/
 def
   automata.terms_multitape.AbstractMultiTapeExpressionMultiTapeExpressionMultiTapeExpressionMultiTapeExpression._get_num_terms.closure.Insts.CoreOpsFunctionFnMutTupleShared0MultiTapeProductUsize.call_mut
   (c :
@@ -29500,7 +30587,7 @@ def
   ok (i, ())
 
 /-- [automata_builder::automata::terms_multitape::{impl automata_builder::automata::terms_multitape::AbstractMultiTapeExpression<automata_builder::automata::terms_multitape::MultiTapeExpression, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeExpression}::_get_num_terms::{impl core::ops::function::FnOnce<(&'_0 automata_builder::automata::terms_multitape::MultiTapeProduct,), usize> for automata_builder::automata::terms_multitape::{impl automata_builder::automata::terms_multitape::AbstractMultiTapeExpression<automata_builder::automata::terms_multitape::MultiTapeExpression, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeExpression}::_get_num_terms::{closure}<'_0>}::call_once]:
-    Source: 'src/automata/terms_multitape.rs', lines 924:33-924:67 -/
+    Source: 'src/automata/terms_multitape.rs', lines 943:33-943:67 -/
 def
   automata.terms_multitape.AbstractMultiTapeExpressionMultiTapeExpressionMultiTapeExpressionMultiTapeExpression._get_num_terms.closure.Insts.CoreOpsFunctionFnOnceTupleShared0MultiTapeProductUsize.call_once
   (c :
@@ -29514,7 +30601,7 @@ def
   ok i
 
 /-- Trait implementation: [automata_builder::automata::terms_multitape::{impl automata_builder::automata::terms_multitape::AbstractMultiTapeExpression<automata_builder::automata::terms_multitape::MultiTapeExpression, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeExpression}::_get_num_terms::{impl core::ops::function::FnOnce<(&'_0 automata_builder::automata::terms_multitape::MultiTapeProduct,), usize> for automata_builder::automata::terms_multitape::{impl automata_builder::automata::terms_multitape::AbstractMultiTapeExpression<automata_builder::automata::terms_multitape::MultiTapeExpression, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeExpression}::_get_num_terms::{closure}<'_0>}]
-    Source: 'src/automata/terms_multitape.rs', lines 924:33-924:67 -/
+    Source: 'src/automata/terms_multitape.rs', lines 943:33-943:67 -/
 @[reducible]
 def
   automata.terms_multitape.AbstractMultiTapeExpressionMultiTapeExpressionMultiTapeExpressionMultiTapeExpression._get_num_terms.closure.Insts.CoreOpsFunctionFnOnceTupleShared0MultiTapeProductUsize
@@ -29526,7 +30613,7 @@ def
 }
 
 /-- Trait implementation: [automata_builder::automata::terms_multitape::{impl automata_builder::automata::terms_multitape::AbstractMultiTapeExpression<automata_builder::automata::terms_multitape::MultiTapeExpression, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeExpression}::_get_num_terms::{impl core::ops::function::FnMut<(&'_0 automata_builder::automata::terms_multitape::MultiTapeProduct,), usize> for automata_builder::automata::terms_multitape::{impl automata_builder::automata::terms_multitape::AbstractMultiTapeExpression<automata_builder::automata::terms_multitape::MultiTapeExpression, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeExpression}::_get_num_terms::{closure}<'_0>}]
-    Source: 'src/automata/terms_multitape.rs', lines 924:33-924:67 -/
+    Source: 'src/automata/terms_multitape.rs', lines 943:33-943:67 -/
 @[reducible]
 def
   automata.terms_multitape.AbstractMultiTapeExpressionMultiTapeExpressionMultiTapeExpressionMultiTapeExpression._get_num_terms.closure.Insts.CoreOpsFunctionFnMutTupleShared0MultiTapeProductUsize
@@ -29540,7 +30627,7 @@ def
 }
 
 /-- [automata_builder::automata::terms_multitape::{impl automata_builder::automata::terms_multitape::AbstractMultiTapeExpression<automata_builder::automata::terms_multitape::MultiTapeExpression, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeExpression}::_get_num_terms]:
-    Source: 'src/automata/terms_multitape.rs', lines 923:4-925:5
+    Source: 'src/automata/terms_multitape.rs', lines 942:4-944:5
     Visibility: public -/
 def
   automata.terms_multitape.MultiTapeExpression.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeExpressionMultiTapeExpression._get_num_terms
@@ -29563,7 +30650,7 @@ def
     Usize.Insts.CoreIterTraitsAccumSumUsize m
 
 /-- [automata_builder::automata::terms_multitape::{impl automata_builder::automata::terms_multitape::AbstractMultiTapeExpression<automata_builder::automata::terms_multitape::MultiTapeExpression, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeExpression}::_to_string::{impl core::ops::function::FnMut<(&'_0 automata_builder::automata::terms_multitape::MultiTapeProduct,), alloc::string::String> for automata_builder::automata::terms_multitape::{impl automata_builder::automata::terms_multitape::AbstractMultiTapeExpression<automata_builder::automata::terms_multitape::MultiTapeExpression, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeExpression}::_to_string::{closure}<'_0, '_1>}::call_mut]:
-    Source: 'src/automata/terms_multitape.rs', lines 919:17-919:51 -/
+    Source: 'src/automata/terms_multitape.rs', lines 938:17-938:51 -/
 def
   automata.terms_multitape.AbstractMultiTapeExpressionMultiTapeExpressionMultiTapeExpressionMultiTapeExpression._to_string.closure.Insts.CoreOpsFunctionFnMutTupleShared0MultiTapeProductString.call_mut
   (c :
@@ -29578,7 +30665,7 @@ def
   ok (s, c)
 
 /-- [automata_builder::automata::terms_multitape::{impl automata_builder::automata::terms_multitape::AbstractMultiTapeExpression<automata_builder::automata::terms_multitape::MultiTapeExpression, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeExpression}::_to_string::{impl core::ops::function::FnOnce<(&'_0 automata_builder::automata::terms_multitape::MultiTapeProduct,), alloc::string::String> for automata_builder::automata::terms_multitape::{impl automata_builder::automata::terms_multitape::AbstractMultiTapeExpression<automata_builder::automata::terms_multitape::MultiTapeExpression, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeExpression}::_to_string::{closure}<'_0, '_1>}::call_once]:
-    Source: 'src/automata/terms_multitape.rs', lines 919:17-919:51 -/
+    Source: 'src/automata/terms_multitape.rs', lines 938:17-938:51 -/
 def
   automata.terms_multitape.AbstractMultiTapeExpressionMultiTapeExpressionMultiTapeExpressionMultiTapeExpression._to_string.closure.Insts.CoreOpsFunctionFnOnceTupleShared0MultiTapeProductString.call_once
   (c :
@@ -29592,7 +30679,7 @@ def
   ok s
 
 /-- Trait implementation: [automata_builder::automata::terms_multitape::{impl automata_builder::automata::terms_multitape::AbstractMultiTapeExpression<automata_builder::automata::terms_multitape::MultiTapeExpression, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeExpression}::_to_string::{impl core::ops::function::FnOnce<(&'_0 automata_builder::automata::terms_multitape::MultiTapeProduct,), alloc::string::String> for automata_builder::automata::terms_multitape::{impl automata_builder::automata::terms_multitape::AbstractMultiTapeExpression<automata_builder::automata::terms_multitape::MultiTapeExpression, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeExpression}::_to_string::{closure}<'_0, '_1>}]
-    Source: 'src/automata/terms_multitape.rs', lines 919:17-919:51 -/
+    Source: 'src/automata/terms_multitape.rs', lines 938:17-938:51 -/
 @[reducible]
 def
   automata.terms_multitape.AbstractMultiTapeExpressionMultiTapeExpressionMultiTapeExpressionMultiTapeExpression._to_string.closure.Insts.CoreOpsFunctionFnOnceTupleShared0MultiTapeProductString
@@ -29604,7 +30691,7 @@ def
 }
 
 /-- Trait implementation: [automata_builder::automata::terms_multitape::{impl automata_builder::automata::terms_multitape::AbstractMultiTapeExpression<automata_builder::automata::terms_multitape::MultiTapeExpression, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeExpression}::_to_string::{impl core::ops::function::FnMut<(&'_0 automata_builder::automata::terms_multitape::MultiTapeProduct,), alloc::string::String> for automata_builder::automata::terms_multitape::{impl automata_builder::automata::terms_multitape::AbstractMultiTapeExpression<automata_builder::automata::terms_multitape::MultiTapeExpression, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeExpression}::_to_string::{closure}<'_0, '_1>}]
-    Source: 'src/automata/terms_multitape.rs', lines 919:17-919:51 -/
+    Source: 'src/automata/terms_multitape.rs', lines 938:17-938:51 -/
 @[reducible]
 def
   automata.terms_multitape.AbstractMultiTapeExpressionMultiTapeExpressionMultiTapeExpressionMultiTapeExpression._to_string.closure.Insts.CoreOpsFunctionFnMutTupleShared0MultiTapeProductString
@@ -29618,7 +30705,7 @@ def
 }
 
 /-- [automata_builder::automata::terms_multitape::{impl automata_builder::automata::terms_multitape::AbstractMultiTapeExpression<automata_builder::automata::terms_multitape::MultiTapeExpression, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeExpression}::_to_string]:
-    Source: 'src/automata/terms_multitape.rs', lines 916:4-922:5
+    Source: 'src/automata/terms_multitape.rs', lines 935:4-941:5
     Visibility: public -/
 def
   automata.terms_multitape.MultiTapeExpression.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeExpressionMultiTapeExpression._to_string
@@ -29645,7 +30732,7 @@ def
     alloc.string.String.Insts.CoreBorrowBorrowStr) s1 (toStr " | ")
 
 /-- [automata_builder::automata::terms_multitape::{impl automata_builder::automata::terms_multitape::AbstractMultiTapeExpression<automata_builder::automata::terms_multitape::MultiTapeExpression, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeExpression}::to_expression]:
-    Source: 'src/automata/terms_multitape.rs', lines 913:4-915:5
+    Source: 'src/automata/terms_multitape.rs', lines 932:4-934:5
     Visibility: public -/
 def
   automata.terms_multitape.MultiTapeExpression.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeExpressionMultiTapeExpression.to_expression
@@ -29656,7 +30743,7 @@ def
     self
 
 /-- [automata_builder::automata::terms_multitape::{impl automata_builder::automata::terms_multitape::AbstractMultiTapeExpression<automata_builder::automata::terms_multitape::MultiTapeExpression, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeExpression}::_sub]: loop 0:
-    Source: 'src/automata/terms_multitape.rs', lines 862:8-868:5
+    Source: 'src/automata/terms_multitape.rs', lines 881:8-887:5
     Visibility: public -/
 @[rust_loop]
 def
@@ -29682,7 +30769,7 @@ def
 partial_fixpoint
 
 /-- [automata_builder::automata::terms_multitape::{impl automata_builder::automata::terms_multitape::AbstractMultiTapeExpression<automata_builder::automata::terms_multitape::MultiTapeExpression, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeExpression}::_sub]:
-    Source: 'src/automata/terms_multitape.rs', lines 858:4-868:5
+    Source: 'src/automata/terms_multitape.rs', lines 877:4-887:5
     Visibility: public -/
 def
   automata.terms_multitape.MultiTapeExpression.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeExpressionMultiTapeExpression._sub
@@ -29698,9 +30785,9 @@ def
     iter substitutions default
 
 /-- Trait implementation: [automata_builder::automata::terms_multitape::{impl automata_builder::automata::terms_multitape::AbstractMultiTapeExpression<automata_builder::automata::terms_multitape::MultiTapeExpression, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeExpression}]
-    Source: 'src/automata/terms_multitape.rs', lines 850:0-930:1 -/
+    Source: 'src/automata/terms_multitape.rs', lines 869:0-949:1 -/
 @[reducible]
-def
+impl_def
   automata.terms_multitape.MultiTapeExpression.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeExpressionMultiTapeExpression
   : automata.terms_multitape.AbstractMultiTapeExpression
   automata.terms_multitape.MultiTapeExpression
@@ -29725,6 +30812,9 @@ def
     automata.terms_multitape.MultiTapeExpression.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeExpressionMultiTapeExpression.to_expression
   _to_string :=
     automata.terms_multitape.MultiTapeExpression.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeExpressionMultiTapeExpression._to_string
+  _to_short_string :=
+    automata.terms_multitape.AbstractMultiTapeExpression._to_short_string.default
+    automata.terms_multitape.MultiTapeExpression.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeExpressionMultiTapeExpression
   _get_num_terms :=
     automata.terms_multitape.MultiTapeExpression.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeExpressionMultiTapeExpression._get_num_terms
   _assign_indexes_as_base :=
@@ -29732,7 +30822,7 @@ def
 }
 
 /-- [automata_builder::automata::terms_multitape::validate_debug_info_exists]: loop 1:
-    Source: 'src/automata/terms_multitape.rs', lines 934:8-941:9
+    Source: 'src/automata/terms_multitape.rs', lines 953:8-960:9
     Visibility: public -/
 @[rust_loop]
 def automata.terms_multitape.validate_debug_info_exists_loop0_loop0
@@ -29778,7 +30868,7 @@ def automata.terms_multitape.validate_debug_info_exists_loop0_loop0
 partial_fixpoint
 
 /-- [automata_builder::automata::terms_multitape::validate_debug_info_exists]: loop 0:
-    Source: 'src/automata/terms_multitape.rs', lines 933:4-942:5
+    Source: 'src/automata/terms_multitape.rs', lines 952:4-961:5
     Visibility: public -/
 @[rust_loop]
 def automata.terms_multitape.validate_debug_info_exists_loop0
@@ -29806,7 +30896,7 @@ def automata.terms_multitape.validate_debug_info_exists_loop0
 partial_fixpoint
 
 /-- [automata_builder::automata::terms_multitape::validate_debug_info_exists]:
-    Source: 'src/automata/terms_multitape.rs', lines 932:0-943:1
+    Source: 'src/automata/terms_multitape.rs', lines 951:0-962:1
     Visibility: public -/
 def automata.terms_multitape.validate_debug_info_exists
   (expr : automata.terms_multitape.MultiTapeExpression) : Result Unit := do

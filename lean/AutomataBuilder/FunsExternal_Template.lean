@@ -1056,6 +1056,24 @@ axiom Pair.Insts.CoreCmpOrd.cmp
   core.cmp.Ord T) :
   (U × T) → (U × T) → Result Ordering
 
+/-- [std::backtrace::{std::backtrace::Backtrace}::capture]:
+    Source: '/rustc/library/std/src/backtrace.rs', lines 292:4-292:33
+    Name pattern: [std::backtrace::{std::backtrace::Backtrace}::capture]
+    Visibility: public -/
+@[rust_fun "std::backtrace::{std::backtrace::Backtrace}::capture"]
+axiom std.backtrace.Backtrace.capture : Result std.backtrace.Backtrace
+
+/-- [std::backtrace::{impl core::fmt::Display for std::backtrace::Backtrace}::fmt]:
+    Source: '/rustc/library/std/src/backtrace.rs', lines 383:4-383:62
+    Name pattern: [std::backtrace::{core::fmt::Display<std::backtrace::Backtrace>}::fmt]
+    Visibility: public -/
+@[rust_fun
+  "std::backtrace::{core::fmt::Display<std::backtrace::Backtrace>}::fmt"]
+axiom std.backtrace.Backtrace.Insts.CoreFmtDisplay.fmt
+  :
+  std.backtrace.Backtrace → core.fmt.Formatter → Result
+    ((core.result.Result Unit core.fmt.Error) × core.fmt.Formatter)
+
 /-- [std::collections::hash::map::{std::collections::hash::map::HashMap<K, V, std::hash::random::RandomState, alloc::alloc::Global>}::new]:
     Source: '/rustc/library/std/src/collections/hash/map.rs', lines 269:4-269:46
     Name pattern: [std::collections::hash::map::{std::collections::hash::map::HashMap<@K, @V, std::hash::random::RandomState, alloc::alloc::Global>}::new]
@@ -1152,6 +1170,20 @@ axiom std.collections.hash.map.HashMap.Insts.CoreCloneClone.clone
   core.clone.Clone A) :
   std.collections.hash.map.HashMap K V S A → Result
     (std.collections.hash.map.HashMap K V S A)
+
+/-- [std::collections::hash::map::{impl core::cmp::PartialEq<std::collections::hash::map::HashMap<K, V, S, A>> for std::collections::hash::map::HashMap<K, V, S, A>}::eq]:
+    Source: '/rustc/library/std/src/collections/hash/map.rs', lines 1455:4-1455:53
+    Name pattern: [std::collections::hash::map::{core::cmp::PartialEq<std::collections::hash::map::HashMap<@K, @V, @S, @A>, std::collections::hash::map::HashMap<@K, @V, @S, @A>>}::eq]
+    Visibility: public -/
+@[rust_fun
+  "std::collections::hash::map::{core::cmp::PartialEq<std::collections::hash::map::HashMap<@K, @V, @S, @A>, std::collections::hash::map::HashMap<@K, @V, @S, @A>>}::eq"]
+axiom std.collections.hash.map.HashMap.Insts.CoreCmpPartialEqHashMap.eq
+  {K : Type _} {V : Type _} {S : Type _} {A : Type _} {Clause3_Hasher : Type _}
+  (corecmpEqInst : core.cmp.Eq K) (corehashHashInst : core.hash.Hash K)
+  (corecmpPartialEqInst : core.cmp.PartialEq V V) (corehashBuildHasherInst :
+  core.hash.BuildHasher S Clause3_Hasher) :
+  std.collections.hash.map.HashMap K V S A → std.collections.hash.map.HashMap
+    K V S A → Result Bool
 
 /-- [std::collections::hash::map::{impl core::fmt::Debug for std::collections::hash::map::HashMap<K, V, S, A>}::fmt]:
     Source: '/rustc/library/std/src/collections/hash/map.rs', lines 1481:4-1481:60
@@ -2585,6 +2617,14 @@ axiom indexmap.set.IndexSet.Insts.CoreFmtDebug.fmt
 axiom indexmap.set.IndexSetTRandomState.new
   (T : Type _) : Result (indexmap.set.IndexSet T std.hash.random.RandomState)
 
+/-- [indexmap::set::{indexmap::set::IndexSet<T, S>}::len]:
+    Source: '/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/indexmap-2.11.4/src/set.rs', lines 201:4-201:30
+    Name pattern: [indexmap::set::{indexmap::set::IndexSet<@T, @S>}::len]
+    Visibility: public -/
+@[rust_fun "indexmap::set::{indexmap::set::IndexSet<@T, @S>}::len"]
+axiom indexmap.set.IndexSet.len
+  {T : Type _} {S : Type _} : indexmap.set.IndexSet T S → Result Std.Usize
+
 /-- [indexmap::set::{indexmap::set::IndexSet<T, S>}::is_empty]:
     Source: '/cargo/registry/src/index.crates.io-1949cf8c6b5b557f/indexmap-2.11.4/src/set.rs', lines 208:4-208:34
     Name pattern: [indexmap::set::{indexmap::set::IndexSet<@T, @S>}::is_empty]
@@ -2757,7 +2797,7 @@ axiom num_traits.sign.abs
   T → Result T
 
 /-- [automata_builder::automata::multi_tape_transition::{automata_builder::automata::multi_tape_transition::MultiTapeTransitionsGroup}::generate_equations]:
-    Source: 'src/automata/multi_tape_transition.rs', lines 297:4-363:5
+    Source: 'src/automata/multi_tape_transition.rs', lines 307:4-373:5
     Visibility: public -/
 axiom
   automata.multi_tape_transition.MultiTapeTransitionsGroup.generate_equations
@@ -2769,7 +2809,7 @@ axiom
     automata.rule_generator_multitape.AutomataError)
 
 /-- [automata_builder::automata::multi_tape_automata::{automata_builder::automata::multi_tape_automata::MultiTapeAutomata}::reverse_state_eq_map]:
-    Source: 'src/automata/multi_tape_automata.rs', lines 176:4-213:5
+    Source: 'src/automata/multi_tape_automata.rs', lines 201:4-238:5
     Visibility: public -/
 axiom automata.multi_tape_automata.MultiTapeAutomata.reverse_state_eq_map
   :
@@ -2780,12 +2820,21 @@ axiom automata.multi_tape_automata.MultiTapeAutomata.reverse_state_eq_map
     automata.rule_generator_multitape.AutomataError)
 
 /-- [automata_builder::automata::rule_generator_multitape::{automata_builder::automata::rule_generator_multitape::BiDirectionalMultiTape}::get_tape_nos]:
-    Source: 'src/automata/rule_generator_multitape.rs', lines 80:4-82:5
+    Source: 'src/automata/rule_generator_multitape.rs', lines 81:4-83:5
     Visibility: public -/
 axiom automata.rule_generator_multitape.BiDirectionalMultiTape.get_tape_nos
   :
   automata.rule_generator_multitape.BiDirectionalMultiTape → Result
     (alloc.vec.Vec Std.U16)
+
+/-- [automata_builder::automata::multi_tape_automata::{automata_builder::automata::multi_tape_automata::MultiTapeAutomata}::init_tapes]:
+    Source: 'src/automata/multi_tape_automata.rs', lines 144:4-168:5
+    Visibility: public -/
+axiom automata.multi_tape_automata.MultiTapeAutomata.init_tapes
+  :
+  automata.multi_tape_automata.MultiTapeAutomata → Slice Std.U16 → Result
+    ((core.result.Result Unit automata.rule_generator_multitape.AutomataError)
+    × automata.multi_tape_automata.MultiTapeAutomata)
 
 /-- [automata_builder::automata::rule_generator::{automata_builder::automata::rule_generator::BidirectionalTape}::max_state]:
     Source: 'src/automata/rule_generator.rs', lines 288:4-295:5
@@ -2805,7 +2854,7 @@ axiom automata.renderer.RenderFrame.extend_down
     automata.renderer.RenderFrame))
 
 /-- [automata_builder::automata::multi_tape_automata::{automata_builder::automata::multi_tape_automata::MultiTapeAutomata}::process_step::{impl core::ops::function::FnOnce<(&'_0 alloc::collections::btree::set::BTreeSet<alloc::string::String, alloc::alloc::Global>,), alloc::vec::Vec<alloc::string::String>> for automata_builder::automata::multi_tape_automata::{automata_builder::automata::multi_tape_automata::MultiTapeAutomata}::process_step::{closure}<'_0>}::call_once]:
-    Source: 'src/automata/multi_tape_automata.rs', lines 278:33-280:29 -/
+    Source: 'src/automata/multi_tape_automata.rs', lines 303:33-305:29 -/
 axiom
   automata.multi_tape_automata.MultiTapeAutomata.process_step.closure.Insts.CoreOpsFunctionFnOnceTupleShared0BTreeSetStringGlobalVecString.call_once
   :
@@ -2814,7 +2863,7 @@ axiom
     (alloc.vec.Vec String)
 
 /-- [automata_builder::automata::multi_tape_automata::{automata_builder::automata::multi_tape_automata::MultiTapeAutomata}::process_step]:
-    Source: 'src/automata/multi_tape_automata.rs', lines 238:4-341:5
+    Source: 'src/automata/multi_tape_automata.rs', lines 263:4-366:5
     Visibility: public -/
 axiom automata.multi_tape_automata.MultiTapeAutomata.process_step
   :
@@ -2822,8 +2871,20 @@ axiom automata.multi_tape_automata.MultiTapeAutomata.process_step
     (core.result.Result automata.multi_tape_automata.ProcessStepResult
     automata.rule_generator_multitape.AutomataError)
 
+/-- [automata_builder::automata::terms_multitape::{impl automata_builder::automata::terms_multitape::AbstractMultiTapeExpression<automata_builder::automata::terms_multitape::MultiTapeExpression, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeExpression}::_expand]:
+    Source: 'src/automata/terms_multitape.rs', lines 895:4-918:5
+    Visibility: public -/
+axiom
+  automata.terms_multitape.MultiTapeExpression.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeExpressionMultiTapeExpression._expand
+  :
+  automata.terms_multitape.MultiTapeExpression →
+    std.collections.hash.map.HashMap (Std.U16 × Std.U32)
+    automata.terms_multitape.MultiTapeExpression std.hash.random.RandomState
+    alloc.alloc.Global → Bool → Bool → Result
+    automata.terms_multitape.MultiTapeExpression
+
 /-- [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeStatePathRemap}::get_all_state_paths]:
-    Source: 'src/automata/multi_tape_builder.rs', lines 262:4-268:5
+    Source: 'src/automata/multi_tape_builder.rs', lines 324:4-330:5
     Visibility: public -/
 axiom automata.multi_tape_builder.MultiTapeStatePathRemap.get_all_state_paths
   :
@@ -2832,7 +2893,7 @@ axiom automata.multi_tape_builder.MultiTapeStatePathRemap.get_all_state_paths
     automata.terms_multitape.MultiTapeState) alloc.alloc.Global)
 
 /-- [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeStatePathRemap}::get_all_remap_states]:
-    Source: 'src/automata/multi_tape_builder.rs', lines 271:4-281:5
+    Source: 'src/automata/multi_tape_builder.rs', lines 333:4-343:5
     Visibility: public -/
 axiom automata.multi_tape_builder.MultiTapeStatePathRemap.get_all_remap_states
   :
@@ -2840,14 +2901,14 @@ axiom automata.multi_tape_builder.MultiTapeStatePathRemap.get_all_remap_states
     (alloc.collections.btree.set.BTreeSet Std.U32 alloc.alloc.Global)
 
 /-- [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::RepresentabilityIndex<'a>}::is_representable]:
-    Source: 'src/automata/multi_tape_builder.rs', lines 393:4-411:5 -/
+    Source: 'src/automata/multi_tape_builder.rs', lines 455:4-473:5 -/
 axiom automata.multi_tape_builder.RepresentabilityIndex.is_representable
   :
   automata.multi_tape_builder.RepresentabilityIndex →
     automata.terms_multitape.MultiTapeProduct → Result Bool
 
 /-- [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::build_whitelist_overlaps]:
-    Source: 'src/automata/multi_tape_builder.rs', lines 540:4-620:5
+    Source: 'src/automata/multi_tape_builder.rs', lines 606:4-686:5
     Visibility: public -/
 axiom automata.multi_tape_builder.MultiTapeBuilder.build_whitelist_overlaps
   :
@@ -2861,7 +2922,7 @@ axiom automata.multi_tape_builder.MultiTapeBuilder.build_whitelist_overlaps
     automata.multi_tape_builder.CompileTapesError)
 
 /-- [automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::get_same_tape_states_transitioned_to]:
-    Source: 'src/automata/product_writes_map.rs', lines 638:4-723:5
+    Source: 'src/automata/product_writes_map.rs', lines 721:4-806:5
     Visibility: public -/
 axiom
   automata.product_writes_map.ProductWritesMap.get_same_tape_states_transitioned_to
@@ -2872,7 +2933,7 @@ axiom
     (alloc.collections.btree.set.BTreeSet Std.U32 alloc.alloc.Global)
 
 /-- [automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::does_product_become_unsatisfiable]:
-    Source: 'src/automata/product_writes_map.rs', lines 423:4-483:5
+    Source: 'src/automata/product_writes_map.rs', lines 506:4-566:5
     Visibility: public -/
 axiom
   automata.product_writes_map.ProductWritesMap.does_product_become_unsatisfiable
@@ -2929,7 +2990,7 @@ axiom
     automata.tape_overlaps_fsm.TapeOverlapsFSM
 
 /-- [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::build_overlaps_fsm]:
-    Source: 'src/automata/multi_tape_builder.rs', lines 780:4-815:5
+    Source: 'src/automata/multi_tape_builder.rs', lines 846:4-881:5
     Visibility: public -/
 axiom automata.multi_tape_builder.MultiTapeBuilder.build_overlaps_fsm
   :
@@ -2960,7 +3021,7 @@ axiom
     automata.multi_tape_product_trie.offset_group_path_to_product.closure)
 
 /-- [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::_build_product_same_writes]:
-    Source: 'src/automata/multi_tape_builder.rs', lines 836:4-876:5 -/
+    Source: 'src/automata/multi_tape_builder.rs', lines 902:4-942:5 -/
 axiom automata.multi_tape_builder.MultiTapeBuilder._build_product_same_writes
   :
   Slice (alloc.vec.Vec automata.terms_multitape.MultiTapeState) →
@@ -2972,7 +3033,7 @@ axiom automata.multi_tape_builder.MultiTapeBuilder._build_product_same_writes
     automata.terms_multitape.MultiTapeProduct))
 
 /-- [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::build_product_same_writes_map]:
-    Source: 'src/automata/multi_tape_builder.rs', lines 885:4-923:5
+    Source: 'src/automata/multi_tape_builder.rs', lines 951:4-989:5
     Visibility: public -/
 axiom
   automata.multi_tape_builder.MultiTapeBuilder.build_product_same_writes_map
@@ -2999,7 +3060,7 @@ axiom automata.tape_overlaps.MultiTapeStatesMap.get_tape_nos
   automata.tape_overlaps.MultiTapeStatesMap → Result (alloc.vec.Vec Std.U16)
 
 /-- [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::build_extended_products_for::{impl core::ops::function::FnMut<((usize, &'_0 usize),), core::iter::adapters::cloned::Cloned<core::slice::iter::Iter<'_1, automata_builder::automata::terms_multitape::MultiTapeTerm>>> for automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::build_extended_products_for::{closure#2}<'_0, '_1, '_2>}::call_mut]:
-    Source: 'src/automata/multi_tape_builder.rs', lines 1067:30-1067:89 -/
+    Source: 'src/automata/multi_tape_builder.rs', lines 1133:30-1133:89 -/
 axiom
   automata.multi_tape_builder.MultiTapeBuilder.build_extended_products_for.closure_2.Insts.CoreOpsFunctionFnMutTuplePairUsizeShared0UsizeClonedIter1MultiTapeTerm.call_mut
   :
@@ -3009,7 +3070,7 @@ axiom
     automata.multi_tape_builder.MultiTapeBuilder.build_extended_products_for.closure_2)
 
 /-- [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::build_extended_products_for]:
-    Source: 'src/automata/multi_tape_builder.rs', lines 983:4-1107:5
+    Source: 'src/automata/multi_tape_builder.rs', lines 1049:4-1173:5
     Visibility: public -/
 axiom automata.multi_tape_builder.MultiTapeBuilder.build_extended_products_for
   :
@@ -3033,7 +3094,7 @@ axiom automata.rule_generator.AutomataTransitionsGroup.add_transition
     automata.rule_generator.AutomataTransitionsGroup)
 
 /-- [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::build_transitions_for_product]:
-    Source: 'src/automata/multi_tape_builder.rs', lines 1233:4-1381:5 -/
+    Source: 'src/automata/multi_tape_builder.rs', lines 1299:4-1472:5 -/
 axiom
   automata.multi_tape_builder.MultiTapeBuilder.build_transitions_for_product
   :
@@ -3053,7 +3114,7 @@ axiom automata.tape_overlaps.TapeOverlaps.create_whitelist_for_offset
     automata.tape_overlaps.TapeOverlaps)
 
 /-- [automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::merge]:
-    Source: 'src/automata/product_writes_map.rs', lines 190:4-197:5
+    Source: 'src/automata/product_writes_map.rs', lines 264:4-271:5
     Visibility: public -/
 axiom automata.product_writes_map.ProductWritesMap.merge
   :
@@ -3063,7 +3124,7 @@ axiom automata.product_writes_map.ProductWritesMap.merge
     × automata.product_writes_map.ProductWritesMap)
 
 /-- [automata_builder::automata::multi_tape_builder::{automata_builder::automata::multi_tape_builder::MultiTapeBuilder}::compile_tapes]:
-    Source: 'src/automata/multi_tape_builder.rs', lines 1384:4-1501:5
+    Source: 'src/automata/multi_tape_builder.rs', lines 1475:4-1640:5
     Visibility: public -/
 axiom automata.multi_tape_builder.MultiTapeBuilder.compile_tapes
   :
@@ -3072,7 +3133,7 @@ axiom automata.multi_tape_builder.MultiTapeBuilder.compile_tapes
     automata.multi_tape_builder.CompileTapesError)
 
 /-- [automata_builder::automata::multi_tape_transition::{automata_builder::automata::multi_tape_transition::MultiTapeTransitionsGroup}::_insert_transition]:
-    Source: 'src/automata/multi_tape_transition.rs', lines 232:4-256:5
+    Source: 'src/automata/multi_tape_transition.rs', lines 242:4-266:5
     Visibility: public -/
 axiom
   automata.multi_tape_transition.MultiTapeTransitionsGroup._insert_transition
@@ -3084,7 +3145,7 @@ axiom
     automata.multi_tape_transition.MultiTapeTransitionsGroup)
 
 /-- [automata_builder::automata::product_writes_map::{automata_builder::automata::product_writes_map::ProductWritesMap}::from_pairs]:
-    Source: 'src/automata/product_writes_map.rs', lines 287:4-297:5
+    Source: 'src/automata/product_writes_map.rs', lines 361:4-371:5
     Visibility: public -/
 axiom automata.product_writes_map.ProductWritesMap.from_pairs
   :
@@ -3140,16 +3201,4 @@ axiom
   automata.terms.Expression → std.collections.hash.map.HashMap Std.U32
     automata.terms.Expression std.hash.random.RandomState alloc.alloc.Global
     → Bool → Bool → Result automata.terms.Expression
-
-/-- [automata_builder::automata::terms_multitape::{impl automata_builder::automata::terms_multitape::AbstractMultiTapeExpression<automata_builder::automata::terms_multitape::MultiTapeExpression, automata_builder::automata::terms_multitape::MultiTapeExpression> for automata_builder::automata::terms_multitape::MultiTapeExpression}::_expand]:
-    Source: 'src/automata/terms_multitape.rs', lines 876:4-899:5
-    Visibility: public -/
-axiom
-  automata.terms_multitape.MultiTapeExpression.Insts.Automata_builderAutomataTerms_multitapeAbstractMultiTapeExpressionMultiTapeExpressionMultiTapeExpression._expand
-  :
-  automata.terms_multitape.MultiTapeExpression →
-    std.collections.hash.map.HashMap (Std.U16 × Std.U32)
-    automata.terms_multitape.MultiTapeExpression std.hash.random.RandomState
-    alloc.alloc.Global → Bool → Bool → Result
-    automata.terms_multitape.MultiTapeExpression
 
