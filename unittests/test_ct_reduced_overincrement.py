@@ -3,7 +3,7 @@ import unittest
 from automata_builder.counter_automata import CounterAutomataRunner
 
 
-class TestCTReducedOverincrement(unittest.TestCase):
+class TestCTReducedOverIncrement(unittest.TestCase):
     """
     Regression tests for the over-incrementing bug in
     ``build_ct_reducer_transitions_group`` (the
@@ -16,7 +16,9 @@ class TestCTReducedOverincrement(unittest.TestCase):
     In the collapsed reducer the carry tape holds the reducer band, which
     contains BOTH ``REDUCER_DATA`` and ``REDUCER_PAUSED_DATA`` cells (the
     latter arise from the pause/unpause mechanism that makes the band travel
-    at half speed). The counter's left-shift (``SHL``) and rightmost-clear
+    at half speed).
+
+    The counter's left-shift (``SHL``) and rightmost-clear
     (``CLEAR_RIGHTMOST``) rules key on the carry-tape cell under the head,
     but were only generated for ``carry_tape_state=REDUCER_DATA``. When the
     head's old position sat on a ``REDUCER_PAUSED_DATA`` cell, neither the
@@ -43,10 +45,12 @@ class TestCTReducedOverincrement(unittest.TestCase):
 
     @staticmethod
     def _run_and_read(base: int, cells_filled: int) -> int:
-        """Run the collapsed-reducer automaton for 2*cells steps and read the
+        """
+        Run the collapsed-reducer automaton for 2*cells steps and read the
         encoded value. The original bug made this raise (inconsistent paused
         counter digits), so a successful read is itself part of the
-        regression check."""
+        regression check.
+        """
         write_start = 0
         write_end = cells_filled - 1
         runner = CounterAutomataRunner(
@@ -59,11 +63,15 @@ class TestCTReducedOverincrement(unittest.TestCase):
         runner.run_simulation(num_timesteps=2 * cells_filled, render=False)
         return runner.read_signals_tape_value().unwrap()
 
-    def test_collapsed_reducer_encodes_half_cells_after_2n_steps(self) -> None:
+    def test_collapsed_reducer_encodes_half_cells_after_2n_steps(
+        self
+    ) -> None:
         for base, cells_filled in self.CASES:
             with self.subTest(base=base, cells_filled=cells_filled):
                 expected_value = (cells_filled + 1) // 2
-                encoded = self._run_and_read(base=base, cells_filled=cells_filled)
+                encoded = self._run_and_read(
+                    base=base, cells_filled=cells_filled
+                )
                 self.assertEqual(
                     encoded,
                     expected_value,
@@ -78,8 +86,10 @@ class TestCTReducedOverincrement(unittest.TestCase):
                 )
 
     def test_collapsed_reducer_matches_separate_reducer(self) -> None:
-        """The collapsed reducer must agree with the (known-good) separate
-        reducer tape for the same input."""
+        """
+        The collapsed reducer must agree with the (known-good) separate
+        reducer tape for the same input.
+        """
         for base, cells_filled in self.CASES[:6]:
             with self.subTest(base=base, cells_filled=cells_filled):
                 expected_value = (cells_filled + 1) // 2
@@ -114,10 +124,15 @@ class TestCTReducedOverincrement(unittest.TestCase):
                 )
 
     def test_no_new_tape_introduced(self) -> None:
-        """Hard requirement: the over-incrementing bugfix must not introduce
+        """
+        Hard requirement: the over-incrementing bugfix must not introduce
         any new tape. The collapsed reducer must still use exactly 3 tapes
         (data, signals, carry), while the separate-reducer variant uses 4
-        (data, signals, carry, reducer)."""
+        (data, signals, carry, reducer).
+
+        TODO: this is a pretty silly test for the clanker to generate
+            and check for but since it already exists...
+        """
         for base, cells_filled in [(4, 10)]:
             with self.subTest(base=base, cells_filled=cells_filled):
                 collapsed_runner = CounterAutomataRunner(
@@ -127,7 +142,9 @@ class TestCTReducedOverincrement(unittest.TestCase):
                     apply_reduction=True,
                     collapse_reduction_tape=True,
                 )
-                collapsed_tapes = collapsed_runner.multi_tape_automata.get_tape_nos()
+                collapsed_tapes = (
+                    collapsed_runner.multi_tape_automata.get_tape_nos()
+                )
 
                 separate_runner = CounterAutomataRunner(
                     base=base,
@@ -136,7 +153,9 @@ class TestCTReducedOverincrement(unittest.TestCase):
                     apply_reduction=True,
                     collapse_reduction_tape=False,
                 )
-                separate_tapes = separate_runner.multi_tape_automata.get_tape_nos()
+                separate_tapes = (
+                    separate_runner.multi_tape_automata.get_tape_nos()
+                )
 
                 self.assertEqual(
                     len(collapsed_tapes),
@@ -161,7 +180,8 @@ class TestCTReducedOverincrement(unittest.TestCase):
                     set(collapsed_tapes) < set(separate_tapes),
                     msg=(
                         f"collapsed tape set {collapsed_tapes} is not a "
-                        f"strict subset of separate tape set {separate_tapes}."
+                        f"strict subset of separate tape set "
+                        f"{separate_tapes}."
                     ),
                 )
 
