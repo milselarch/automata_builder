@@ -15,9 +15,9 @@ Goals of this project:
 
 # Setup
 Rust is required to build the native extension module.
-1. Create a python3.12 virtual environment - `python3.12 -m venv venv`
+1. Create a Python 3.12 virtual environment - `python3.12 -m venv venv`
 2. Activate the virtual environment - `source venv/bin/activate`
-3. Install python dependencies - `pip install -r requirements.txt`
+3. Install python dependencies - `python -m pip install -r requirements.txt`
 4. Install this project as an editable package - `python -m pip install -e .`
    - This builds the rust extension module (`automata_builder._rust`) with
      [maturin](https://www.maturin.rs/) and installs the `automata_builder`
