@@ -23,14 +23,57 @@ from automata_builder.rule_generator_multitape import (
 
 
 class CounterAutomataBuilder(object):
-    def __init__(self, base: int = 2):
+    def __init__(self, base: int = 2, reverse_direction: bool = False):
         assert base >= 2, "Base must be at least 2"
         self.base = base
+        """
+        When True, the counter's rules are spatially mirrored (all D-term
+        offsets negated) so the encoded value travels in the opposite
+        direction: base-b digits are emitted MSB-left (most-significant at
+        the lowest position) instead of the native LSB-left order. This
+        makes the output directly compatible with MSB-left consumers such as
+        the korec Collatz CA. The mirror is an involution and a bijection on
+        rule products, so it preserves the computation exactly.
+        """
+        self.reverse_direction = reverse_direction
+
+    def _maybe_mirror(
+        self, group: PyMultiTapeTransitionsGroup
+    ) -> PyMultiTapeTransitionsGroup:
+        """
+        Apply the spatial mirror transform to a transition group if
+        reverse_direction is set. Negates every D-term offset, producing a
+        CA that computes the same value with left/right swapped.
+        """
+        if not self.reverse_direction:
+            return group
+
+        mirrored = PyMultiTapeTransitionsGroup(require_annotation=False)
+
+        for t in group.transitions:
+            terms = [
+                D(-x.get_position(), x.get_tape_no(), x.get_cell_state())
+                for x in t.input_terms
+            ]
+            mirrored.add_transition(
+                terms, t.output_state.tape_no, t.output_state.tape_cell_state,
+                annotation=t.annotation or "mirrored", priority=t.priority
+            )
+
+        return mirrored
 
     def build_shl_no_carry_transitions_group(
         self, transitions_group: PyMultiTapeTransitionsGroup | None = None,
         carry_tape_state: TapeCellState = VOID_STATE
     ):
+        """
+        Apply carry cells to counter-cells
+        Carry cells stay stationary while counter-cells move left
+
+        :param transitions_group:
+        :param carry_tape_state:
+        :return:
+        """
         if transitions_group is not None:
             _transitions_group = transitions_group
         else:
@@ -38,8 +81,6 @@ class CounterAutomataBuilder(object):
                 require_annotation=True
             )
 
-        # apply carry cells to counter-cells
-        # carry cells stay stationary while counter-cells move left
         for mid_digit in range(self.base):
             for right_digit in range(self.base):
                 annotation = (
@@ -345,17 +386,28 @@ class CounterAutomataBuilder(object):
                 require_annotation=True
             )
 
-        # apply carry cells to counter-cells
-        # carry cells stay stationary while counter-cells move left
-        _transitions_group = self.build_shl_no_carry_transitions_group(
-            transitions_group=_transitions_group,
-            carry_tape_state=REDUCER_DATA
-        )
+        """
+        Apply carry cells to counter-cells
+        Carry cells stay stationary while counter-cells move left
+        
+        In the collapsed reducer the carry tape holds the reducer band,
+        which contains BOTH REDUCER_DATA and REDUCER_PAUSED_DATA cells
+        (from the pause/unpause mechanism), so both carry states must be
+        handled here. Missing REDUCER_PAUSED_DATA left the old head
+        position uncleared when it sat on a paused reducer cell,
+        duplicating counter digits and over-incrementing the value.
+        """
+        for _reducer_state in (REDUCER_DATA, REDUCER_PAUSED_DATA):
+            _transitions_group = self.build_shl_no_carry_transitions_group(
+                transitions_group=_transitions_group,
+                carry_tape_state=_reducer_state
+            )
         # clear rightmost counter cell if no carry
-        _transitions_group = self.build_clear_rightmost_transitions_group(
-            transitions_group=_transitions_group,
-            carry_tape_state=REDUCER_DATA,
-        )
+        for _reducer_state in (REDUCER_DATA, REDUCER_PAUSED_DATA):
+            _transitions_group = self.build_clear_rightmost_transitions_group(
+                transitions_group=_transitions_group,
+                carry_tape_state=_reducer_state,
+            )
 
         # spawn data to the left of the
         # left end of initial data of the data tape, on the carry tape
@@ -488,7 +540,7 @@ class CounterAutomataBuilder(object):
             increment_trigger_term=DT_MID(DT_DATA),
             no_increment_states=(DT_MID(VOID_STATE),)
         )
-        return transitions_group
+        return self._maybe_mirror(transitions_group)
 
     def build_reduced_transitions_group(self) -> PyMultiTapeTransitionsGroup:
         """
