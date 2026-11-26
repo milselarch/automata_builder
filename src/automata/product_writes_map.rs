@@ -1,3 +1,4 @@
+use crate::automata::annotations::AnnotationId;
 use std::fmt::Write;
 use std::collections::{BTreeMap, BTreeSet, HashMap};
 use std::fmt;
@@ -32,7 +33,7 @@ pub enum ProductWritesError {
         tape_no: TapeNo,
         existing: CellState,
         incoming: CellState,
-        annotations: Vec<String>,
+        annotations: Vec<AnnotationId>,
     },
     /// Mutating a frozen map.
     Frozen,
@@ -52,7 +53,8 @@ impl fmt::Display for ProductWritesError {
                     f,
                     "Conflicting output states for product={} on tape {}: {} vs {} \
                     - Annotations: {:?}",
-                    product_repr, tape_no, existing, incoming, annotations
+                    product_repr, tape_no, existing, incoming,
+                    annotations.iter().map(|id| id.resolve()).collect::<Vec<_>>()
                 )
             },
             ProductWritesError::Frozen => {
@@ -131,8 +133,8 @@ impl ProductToStateMap {
         if existing != write_tape_cell_state {
             let existing_product = &self.products[&product];
             let annotations = vec![
-                existing_product.get_annotation().clone(),
-                product.get_annotation().clone()
+                existing_product.get_annotation(),
+                product.get_annotation()
             ];
             return Err(ProductWritesError::ConflictingOutput {
                 product,

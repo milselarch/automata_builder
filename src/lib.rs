@@ -1,4 +1,5 @@
 use pyo3::prelude::*;
+use crate::automata::py_annotations::PyAnnotationMapping;
 use crate::automata::py_multi_tape_automata::PyMultiTapeAutomata;
 use crate::automata::py_multi_tape_builder::{
     PyCompileTapesResult, PyMultiTapeBuilder, PyMultiTapeStatePathRemap,
@@ -35,6 +36,8 @@ fn _rust(module: &Bound<'_, PyModule>) -> PyResult<()> {
         eprintln!("{}", panic_info);
         std::thread::sleep(std::time::Duration::from_millis(100));
     }));
+
+    module.add_class::<PyAnnotationMapping>()?;
 
     module.add_class::<A>()?;
     module.add_class::<PyProduct>()?;

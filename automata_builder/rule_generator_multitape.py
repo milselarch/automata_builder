@@ -32,7 +32,7 @@ from automata_builder.tape_overlaps import (
 )
 from automata_builder._rust import (
     D, PyMultiTapeProduct, PyMultiTapeExpression,
-    A, PyProduct, PyMultiTapeAutomata,
+    A, PyProduct, PyMultiTapeAutomata, PyAnnotationMapping,
     PyMultiTapeBuilder, PyCompileTapesResult, PyMultiTapeStatePathRemap,
     PyTapeOverlapsFSM
 )
@@ -47,15 +47,15 @@ def generate_prod_priority_map(
 
     for transition in transitions_group.transitions:
         input_terms = transition.input_terms
-        annotation = transition.annotation
+        annotation_id = transition.annotation_id
         product = PyMultiTapeProduct(
-            terms=input_terms, annotation=annotation
+            terms=input_terms, annotation_id=annotation_id
         )
         priority = transition.priority
         assert prod_priority_map.get(product, priority) == priority
         prod_priority_map[product] = transition.priority
         if require_annotations:
-            assert product.get_annotation()
+            assert product.get_annotation_id()
 
     return prod_priority_map
 """
@@ -370,7 +370,8 @@ class MultiTapeStatePathRemap(object):
         return remap_states
 
     def remap_single_tape_terms(
-        self, terms: Sequence[A], annotation: str = ''
+        self, terms: Sequence[A],
+        annotation_id: int = PyAnnotationMapping.EMPTY_ID
     ) -> Result[PyMultiTapeProduct, TapeCellState]:
         sub_products: list[PyMultiTapeProduct] = []
         covered_offsets: set[int] = set()
@@ -386,7 +387,7 @@ class MultiTapeStatePathRemap(object):
             covered_offsets.add(term.get_position())
 
         combined_product = PyMultiTapeProduct.merge(
-            sub_products, annotation=annotation
+            sub_products, annotation_id=annotation_id
         )
         return Ok(combined_product)
 
@@ -453,13 +454,13 @@ class CompileTapesResult(object):
         transitions_group = TapeTransitionsGroup(
             num_states=None, transitions=[]
         )
-        for input_terms, output_state, annotation in (
+        for input_terms, output_state, annotation_id in (
             rust_result.get_transitions()
         ):
             transitions_group.add_transition(
                 input_terms=tuple(input_terms),
                 output_state=TapeCellState(output_state),
-                annotation=annotation
+                annotation_id=annotation_id
             )
 
         return cls(
@@ -1178,7 +1179,9 @@ class PythonMultiTapeBuilder(BaseMultiTapeBuilder):
         source_write_priority = prod_priority_map[source_product]
         higher_priority_products: set[PyMultiTapeProduct] = set()
         lower_priority_products: set[PyMultiTapeProduct] = set()
-        annotation = source_product.get_annotation()
+        annotation = PyAnnotationMapping.resolve(
+            source_product.get_annotation_id()
+        )
         product_path = MultiTapeProductTrie.group_path_from_product(
             product=source_product
         )
@@ -1271,9 +1274,11 @@ class PythonMultiTapeBuilder(BaseMultiTapeBuilder):
                 # raise RuntimeError
                 continue
 
-            new_annotation = annotation + f'_({extended_product})'
-            extended_products.add(extended_product.with_annotation(
-                annotation=new_annotation
+            new_annotation_id = PyAnnotationMapping.insert(
+                annotation + f'_({extended_product})'
+            )
+            extended_products.add(extended_product.with_annotation_id(
+                annotation_id=new_annotation_id
             ))
 
         assert extended_products
@@ -1511,7 +1516,7 @@ class PythonMultiTapeBuilder(BaseMultiTapeBuilder):
         and then determine all fully formed term combinations that
         could satisfy the multi_tape_product
         """
-        source_annotation = source_multi_tape_product.get_annotation()
+        source_annotation_id = source_multi_tape_product.get_annotation_id()
         transitions_group = TapeTransitionsGroup.spawn_new(None)
         all_tape_nos = sorted(self.get_tape_nos())
         product_terms = source_multi_tape_product.get_flat_terms()
@@ -1668,7 +1673,7 @@ class PythonMultiTapeBuilder(BaseMultiTapeBuilder):
             current_product_writes = product_writes.to_unfrozen()
             multi_tape_prod = global_state_path_remap.remap_single_tape_terms(
                 terms=remapped_product_input_terms,
-                annotation=source_annotation
+                annotation_id=source_annotation_id
             ).unwrap()
 
             representable = self.is_multi_tape_product_representable(
@@ -1750,14 +1755,14 @@ class PythonMultiTapeBuilder(BaseMultiTapeBuilder):
                     output_state_path
                 ]
 
-            annotation = multi_tape_prod.get_annotation()
-            if not annotation:
-                annotation = str(multi_tape_prod)
+            annotation_id = multi_tape_prod.get_annotation_id()
+            if not annotation_id:
+                annotation_id = PyAnnotationMapping.insert(str(multi_tape_prod))
 
             transitions_group.add_transition(
                 input_terms=tuple(remapped_product_input_terms),
                 output_state=remapped_output_state,
-                annotation=annotation,
+                annotation_id=annotation_id,
                 ban_halt_state=True
             )
 

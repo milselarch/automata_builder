@@ -501,8 +501,13 @@ impl PyWriteRecord {
         self.record.tape_cell_state
     }
     #[getter]
+    pub fn annotation_id(&self) -> u32 {
+        self.record.annotation.0
+    }
+    /// Annotation string resolved from the global annotation mapping
+    #[getter]
     pub fn annotation(&self) -> String {
-        self.record.annotation.clone()
+        self.record.annotation.to_string()
     }
     pub fn log(&self) {
         self.record.log()
@@ -549,12 +554,20 @@ impl PyProcessStepResult {
     pub fn get_num_active_writes(&self) -> usize {
         self.result.active_writes.len()
     }
+    /// All annotation IDs of the products that fired during this step.
+    pub fn get_annotation_ids(&self) -> Vec<u32> {
+        self.result
+            .active_writes
+            .iter()
+            .map(|record| record.annotation.0)
+            .collect()
+    }
     /// All annotations of the products that fired during this step.
     pub fn get_annotations(&self) -> Vec<String> {
         self.result
             .active_writes
             .iter()
-            .map(|record| record.annotation.clone())
+            .map(|record| record.annotation.to_string())
             .collect()
     }
     fn __repr__(&self) -> String {

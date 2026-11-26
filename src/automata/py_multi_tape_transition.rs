@@ -1,3 +1,4 @@
+use crate::automata::annotations::AnnotationId;
 use std::cmp::PartialEq;
 use std::collections::HashSet;
 use std::hash::{DefaultHasher, Hash, Hasher};
@@ -71,12 +72,12 @@ pub struct PyMultiTapeTransition {
 impl PyMultiTapeTransition {
     #[new]
     #[pyo3(signature = (
-        input_terms, output_state, annotation="", priority=0
+        input_terms, output_state, annotation_id=0, priority=0
     ))]
     pub fn new(
         input_terms: Vec<D>,
         output_state: PyMultiTapeState,
-        annotation: &str,
+        annotation_id: u32,
         priority: TransitionPriority,
     ) -> Self {
         let rs_terms: Vec<MultiTapeTerm> = input_terms.iter().map(|py_term| {
@@ -87,7 +88,7 @@ impl PyMultiTapeTransition {
             inner: MultiTapeTransition::new(
                 rs_terms,
                 output_state.inner.clone(),
-                annotation.parse().unwrap(),
+                AnnotationId(annotation_id),
                 priority,
             ),
         }
@@ -109,8 +110,14 @@ impl PyMultiTapeTransition {
     }
 
     #[getter]
+    pub fn annotation_id(&self) -> u32 {
+        self.inner.annotation.0
+    }
+
+    /// Annotation string resolved from the global annotation mapping
+    #[getter]
     pub fn annotation(&self) -> String {
-        self.inner.annotation.clone()
+        self.inner.annotation.to_string()
     }
 
     #[getter]
@@ -193,7 +200,7 @@ impl PyMultiTapeTransitionsGroup {
     #[pyo3(signature = (
         input_terms, output_tape_no, output_cell_state,
         validate_void=true, validate_halt=true,
-        annotation=String::new(), priority=0
+        annotation_id=0, priority=0
     ))]
     pub fn add_transition(
         &mut self,
@@ -202,7 +209,7 @@ impl PyMultiTapeTransitionsGroup {
         output_cell_state: CellState,
         validate_void: bool,
         validate_halt: bool,
-        annotation: String,
+        annotation_id: u32,
         priority: TransitionPriority,
     ) -> PyResult<()> {
         /*
@@ -213,7 +220,9 @@ impl PyMultiTapeTransitionsGroup {
         If true, check that the input terms do not all have a void state
         param validate_halt:
         If true, check that the halt state is not within input terms
-        param annotation:
+        param annotation_id:
+        ID of the annotation in the global annotation mapping
+        (see PyAnnotationMapping)
         :return:
         */
         let rs_terms = input_terms.iter().map(|py_term| {
@@ -226,7 +235,7 @@ impl PyMultiTapeTransitionsGroup {
             output_cell_state,
             validate_void,
             validate_halt,
-            annotation,
+            AnnotationId(annotation_id),
             priority,
         );
         insert_res.map_err(|e| {

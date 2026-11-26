@@ -1,3 +1,4 @@
+use crate::automata::annotations::AnnotationId;
 use crate::automata::terms::{CellState, Product, Term};
 
 pub const BLANK_INT: i64 = -1;
@@ -23,7 +24,7 @@ use crate::automata::terms_multitape::TapeNo;
 pub struct AutomataTransition {
     pub input_terms: Vec<Term>,
     pub output_state: CellState,
-    pub annotation: String,
+    pub annotation: AnnotationId,
 }
 
 /// Contains a set of transitions for a cellular automaton,
@@ -83,7 +84,7 @@ impl AutomataTransitionsGroup {
         input_terms: Vec<Term>,
         output_state: CellState,
         ban_halt_state: bool,
-        annotation: String,
+        annotation: AnnotationId,
     ) -> Result<bool, String> {
         if let Some(&existing_index) = self.transitions_map.get(&input_terms) {
             let existing_transition = &self.transitions[existing_index];

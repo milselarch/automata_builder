@@ -282,9 +282,9 @@ impl PyCompileTapesResult {
         self.result.count_unique_states()
     }
 
-    /// `(input terms, output state, annotation)` for every
+    /// `(input terms, output state, annotation ID)` for every
     /// transition, in the order in which they were added
-    pub fn get_transitions(&self) -> Vec<(Vec<A>, CellState, String)> {
+    pub fn get_transitions(&self) -> Vec<(Vec<A>, CellState, u32)> {
         self.result
             .transitions_group
             .transitions
@@ -292,7 +292,7 @@ impl PyCompileTapesResult {
             .map(|transition| (
                 transition.input_terms.iter().map(A::from_term).collect(),
                 transition.output_state,
-                transition.annotation.clone(),
+                transition.annotation.0,
             ))
             .collect()
     }
