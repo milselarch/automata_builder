@@ -23,10 +23,7 @@ ASSIGNMENTS_TAPE: Final[TapeNo] = TapeNo(1)
 CLAUSES_TAPE: Final[TapeNo] = TapeNo(2)
 SCAN_TAPE: Final[TapeNo] = TapeNo(3)
 VERDICT_TAPE: Final[TapeNo] = TapeNo(4)
-
-# TODO: THE AUTOMATA RULES DO NOT IMPLEMENT THE MOST IMPORTANT PART
-#   WHICH IS VERIFYING THAT VAR ASSIGNMENTS LAID OUT IN TAPE
-#   ARE NON-CONFLICTING
+CONFLICT_TAPE: Final[TapeNo] = TapeNo(5)
 """
 The 3SAT automata evaluates a CNF formula against a variable assignment
 using a single ruleset that is completely independent of the formula and
@@ -48,6 +45,46 @@ and to variable :variable_no:. For each such cell:
 Because a variable is identified by its offset within a clause block,
 all the rules ever need to look at is the cell they are standing on,
 which is what makes them independent of the input.
+
+ASSIGNMENT CONSISTENCY CHECK (CONFLICT_TAPE)
+============================================
+Replicating the assignment vector once per clause block means the same
+variable value is written down :num_clauses: times, so the tape could in
+principle carry a different value for the same variable in two different
+blocks (this is also what an assignment that gives the same variable two
+conflicting values has to be encoded as). The automata must therefore
+verify the replication itself instead of trusting whoever wrote the tape.
+
+That check cannot be done on ASSIGNMENTS_TAPE directly: the copies of a
+variable within one clause block are :num_variables: cells apart, and a
+ruleset whose window may not grow with the input cannot compare two cells
+at an unknown distance from one another. The copies are therefore also
+laid out in tape order on CONFLICT_TAPE, one contiguous group per
+variable, with one cell per clause block, all of which hold the value the
+ASSIGNMENTS_TAPE carries for that variable in that block:
+
+    CONFLICT_TAPE = [group(x1)][group(x2)]...[group(xn)]
+    group(xv)     = [value of xv in block 0][value of xv in block 1]...
+
+The first cell of every group is flagged as a group start, so two
+neighbouring cells belong to the same variable if and only if the one on
+the right is not a group start. That makes the consistency check local:
+any two neighbours of the same group that disagree overwrite their cell
+with CF_CONFLICT, and CF_CONFLICT then spreads leftwards one cell per
+timestep. In parallel a consistency sweep starts on the rightmost cell of
+the tape and also travels leftwards, marking every cell it passes as
+CF_SETTLED, and it stops as soon as it runs into a conflict marker (which
+travels ahead of it, so a conflict marker always reaches the verdict cell
+first). The verdict cell is only resolved once one of the two waves gets
+there, which is what makes the pending verdict wait for the check to
+finish: CF_SETTLED means the replication was consistent and lets the scan
+verdict through, CF_CONFLICT instead resolves it to VT_CONFLICTING
+(reported as UNSAT).
+
+Since a variable's group has at least as many cells as it has occurrences
+in the input, an assignment that names the same variable twice with
+different values puts the two values in different cells of the same
+group, so it is rejected by the rules rather than by the parser.
 """
 
 LT_POSITIVE: Final[TapeCellState] = TapeCellState(0b10)
@@ -73,21 +110,52 @@ For the scan tape (LSB first to MSB last):
         - bits[1] => whether all fully scanned clauses are satisfied
     - bits[2] == 0: the state is not a scan accumulator state
         - bits[1] == 1: the state is a spent (already scanned) cell
+            - bits[0] => whether all scanned clauses are satisfied
+
+The spent cells keep the formula verdict the scan accumulated before it
+moved on, so that the verdict cell can be resolved once the assignment
+consistency check has swept over the whole tape as well, and not merely
+while the scan accumulator happens to still be sitting on the leftmost
+cell
 
 Note that no cell state may be encoded as HALT_STATE (0b1), which is
 reserved by the multi-tape framework, hence the offset bits everywhere
 """
-ST_SPENT: Final[TapeCellState] = TapeCellState(0b10)
+ST_SPENT_FALSE: Final[TapeCellState] = TapeCellState(0b010)
+ST_SPENT_TRUE: Final[TapeCellState] = TapeCellState(0b011)
+ST_SPENT_STATES: Final[tuple[TapeCellState, ...]] = (
+    ST_SPENT_FALSE, ST_SPENT_TRUE
+)
 
 VT_PENDING: Final[TapeCellState] = TapeCellState(0b10)
 VT_UNSAT: Final[TapeCellState] = TapeCellState(0b11)
 VT_SAT: Final[TapeCellState] = TapeCellState(0b100)
+VT_CONFLICTING: Final[TapeCellState] = TapeCellState(0b101)
+"""the assignment the automata was given contradicts itself"""
+
+CF_FALSE: Final[TapeCellState] = TapeCellState(0b10)
+CF_TRUE: Final[TapeCellState] = TapeCellState(0b11)
+CF_FALSE_START: Final[TapeCellState] = TapeCellState(0b100)
+CF_TRUE_START: Final[TapeCellState] = TapeCellState(0b101)
+CF_CONFLICT: Final[TapeCellState] = TapeCellState(0b110)
+"""spread leftwards once a variable was given two different values"""
+CF_SETTLED: Final[TapeCellState] = TapeCellState(0b111)
+"""the consistency sweep has reached this cell without finding a conflict"""
+
+CF_VALUE_STATES: Final[tuple[TapeCellState, ...]] = (
+    CF_FALSE, CF_TRUE, CF_FALSE_START, CF_TRUE_START
+)
+CF_GROUP_START_STATES: Final[tuple[TapeCellState, ...]] = (
+    CF_FALSE_START, CF_TRUE_START
+)
 
 LITERAL_STATES: Final[tuple[TapeCellState, ...]] = (
     VOID_STATE, LT_POSITIVE, LT_NEGATED, LT_EITHER
 )
 ASSIGNMENT_STATES: Final[tuple[TapeCellState, ...]] = (AT_FALSE, AT_TRUE)
 CLAUSE_STATES: Final[tuple[TapeCellState, ...]] = (VOID_STATE, CT_CLAUSE_START)
+CONFLICT_STATES: Final[tuple[TapeCellState, ...]] = (
+    VOID_STATE,) + CF_VALUE_STATES + (CF_CONFLICT, CF_SETTLED)
 
 VERDICT_POSITION: Final[int] = -1
 """fixed position from which the verdict of the automata can be read"""
@@ -119,6 +187,43 @@ ST_MID: Final[Callable[[int], D]] = prefill_tape(MID, SCAN_TAPE)
 ST_RIGHT: Final[Callable[[int], D]] = prefill_tape(RIGHT, SCAN_TAPE)
 
 VT_MID: Final[Callable[[int], D]] = prefill_tape(MID, VERDICT_TAPE)
+
+CF_MID: Final[Callable[[int], D]] = prefill_tape(MID, CONFLICT_TAPE)
+CF_RIGHT: Final[Callable[[int], D]] = prefill_tape(RIGHT, CONFLICT_TAPE)
+
+
+def conflict_cell_state(assigned: bool, is_group_start: bool) -> int:
+    """
+    Encodes one cell of the assignment replication laid out on the
+    conflict tape
+
+    :param assigned: value the cell claims the variable has in its block
+    :param is_group_start: whether the cell starts its variable's group
+    :return:
+    """
+    if is_group_start:
+        return CF_TRUE_START if assigned else CF_FALSE_START
+
+    return CF_TRUE if assigned else CF_FALSE
+
+
+def is_conflict_value_state(cell_state: int) -> bool:
+    """
+    :param cell_state:
+    :return:
+    whether the conflict tape cell holds a variable value
+    """
+    return cell_state in CF_VALUE_STATES
+
+
+def conflict_cell_value(cell_state: int) -> bool:
+    """
+    :param cell_state: conflict tape cell state holding a variable value
+    :return:
+    the truth value the cell claims the variable has
+    """
+    assert is_conflict_value_state(cell_state), cell_state
+    return cell_state in (CF_TRUE, CF_TRUE_START)
 
 
 def scan_state(clause_sat: bool, formula_sat: bool) -> int:
@@ -301,7 +406,8 @@ class ThreeSATAutomataBuilder(object):
                             )
 
         # mark cells the scan accumulator has moved off as spent so that
-        # they are neither rescanned nor used to start a new scan
+        # they are neither rescanned nor used to start a new scan, and keep
+        # the formula verdict the accumulator had reached there
         for clause_sat in (False, True):
             for formula_sat in (False, True):
                 _transitions_group.add_transition(
@@ -309,7 +415,9 @@ class ThreeSATAutomataBuilder(object):
                         clause_sat=clause_sat, formula_sat=formula_sat
                     )),),
                     output_tape_no=SCAN_TAPE,
-                    output_cell_state=ST_SPENT,
+                    output_cell_state=(
+                        ST_SPENT_TRUE if formula_sat else ST_SPENT_FALSE
+                    ),
                     annotation=(
                         f'SCAN_SPEND_{int(clause_sat)}{int(formula_sat)}'
                     )
@@ -318,13 +426,127 @@ class ThreeSATAutomataBuilder(object):
         return _transitions_group
 
     @classmethod
+    def build_conflict_transitions_group(
+        cls, transitions_group: PyMultiTapeTransitionsGroup | None = None
+    ) -> PyMultiTapeTransitionsGroup:
+        """
+        Builds the rules that verify that the assignment replication laid
+        out on the conflict tape gives every variable one single value.
+
+        Two neighbouring conflict tape cells belong to the same variable
+        exactly when the cell on the right does not start a group, so a
+        disagreement between two such cells is detectable from a two cell
+        window, without knowing how many variables or clauses there are:
+        such a cell is overwritten with a conflict marker, which then
+        spreads leftwards one cell per timestep until it reaches the
+        verdict cell.
+
+        The remaining rules run the consistency sweep, which starts on the
+        rightmost cell that carries assignment data and also travels
+        leftwards one cell per timestep, marking the cells it passes as
+        settled. A conflict marker always travels ahead of the sweep, and
+        the sweep stops instead of overwriting it, so the verdict cell is
+        told either that the replication was consistent or that it was
+        not - and never that it has not been checked yet.
+
+        :param transitions_group:
+        :return:
+        """
+        if transitions_group is not None:
+            _transitions_group = transitions_group
+        else:
+            _transitions_group = PyMultiTapeTransitionsGroup(
+                require_annotation=True
+            )
+
+        for mid_state in CF_VALUE_STATES:
+            for right_state in (CF_FALSE, CF_TRUE):
+                # the cell on the right does not start a group, so both
+                # cells describe the same variable and have to agree
+                if conflict_cell_value(mid_state) == conflict_cell_value(
+                    right_state
+                ):
+                    continue
+
+                _transitions_group.add_transition(
+                    input_terms=(
+                        CF_MID(mid_state), CF_RIGHT(right_state)
+                    ),
+                    output_tape_no=CONFLICT_TAPE,
+                    output_cell_state=CF_CONFLICT,
+                    annotation=(
+                        f'CONFLICT_DETECT_{mid_state}_{right_state}'
+                    )
+                )
+
+        # carry the conflict marker towards the verdict cell, which sits
+        # left of the leftmost cell of the leftmost group: through the
+        # cells that still hold a variable value, and then into the verdict
+        # cell itself, which is the only cell that has neither a value nor
+        # a verdict yet, so that both waves stop there instead of running
+        # on into the empty tape forever
+        for mid_state in CF_VALUE_STATES:
+            _transitions_group.add_transition(
+                input_terms=(CF_MID(mid_state), CF_RIGHT(CF_CONFLICT)),
+                output_tape_no=CONFLICT_TAPE,
+                output_cell_state=CF_CONFLICT,
+                annotation=f'CONFLICT_PROPAGATE_LEFT_{mid_state}'
+            )
+
+        _transitions_group.add_transition(
+            input_terms=(
+                CF_MID(VOID_STATE), CF_RIGHT(CF_CONFLICT),
+                VT_MID(VT_PENDING), AT_MID(VOID_STATE)
+            ),
+            output_tape_no=CONFLICT_TAPE,
+            output_cell_state=CF_CONFLICT,
+            annotation='CONFLICT_REACH_VERDICT'
+        )
+
+        # the consistency sweep starts on the rightmost cell that carries
+        # assignment data and travels leftwards one cell per timestep,
+        # marking the cells it passes as settled so that the verdict cell
+        # can tell whether the whole replication has been checked already
+        for mid_state in CF_VALUE_STATES:
+            _transitions_group.add_transition(
+                input_terms=(CF_MID(mid_state), CF_RIGHT(VOID_STATE)),
+                output_tape_no=CONFLICT_TAPE,
+                output_cell_state=CF_SETTLED,
+                annotation=f'CONFLICT_SWEEP_START_{mid_state}'
+            )
+
+        for mid_state in CF_VALUE_STATES:
+            # a cell that already holds a conflict marker stops the sweep,
+            # so that the marker is the one that reaches the verdict cell
+            _transitions_group.add_transition(
+                input_terms=(CF_MID(mid_state), CF_RIGHT(CF_SETTLED)),
+                output_tape_no=CONFLICT_TAPE,
+                output_cell_state=CF_SETTLED,
+                annotation=f'CONFLICT_SWEEP_LEFT_{mid_state}'
+            )
+
+        _transitions_group.add_transition(
+            input_terms=(
+                CF_MID(VOID_STATE), CF_RIGHT(CF_SETTLED),
+                VT_MID(VT_PENDING), AT_MID(VOID_STATE)
+            ),
+            output_tape_no=CONFLICT_TAPE,
+            output_cell_state=CF_SETTLED,
+            annotation='CONFLICT_SWEEP_REACH_VERDICT'
+        )
+
+        return _transitions_group
+
+    @classmethod
     def build_verdict_transitions_group(
         cls, transitions_group: PyMultiTapeTransitionsGroup | None = None
     ) -> PyMultiTapeTransitionsGroup:
         """
-        Builds the rules that resolve the pending verdict cell once the
-        scan accumulator has run past the leftmost clause block cell,
-        as well as the rule that rejects input that could not be encoded.
+        Builds the rules that resolve the pending verdict cell once both
+        the scan accumulator has run past the leftmost clause block cell
+        and the assignment consistency sweep has run past it, as well as
+        the rules that reject input that could not be encoded and input
+        whose assignment contradicts itself.
 
         :param transitions_group:
         :return:
@@ -337,20 +559,33 @@ class ThreeSATAutomataBuilder(object):
             )
 
         for formula_sat in (False, True):
-            # the scan is complete once the accumulator sits on the leftmost
-            # clause block cell, i.e. the cell without assignment data on
-            # the side the accumulator is travelling towards
+            # the scan is complete once the accumulator has been spent on
+            # the leftmost clause block cell, i.e. the cell without
+            # assignment data on the side the accumulator was travelling
+            # towards, and the replication is checked once the sweep has
+            # marked the verdict cell as settled; a conflict marker instead
+            # stops the sweep, so that it always wins over this rule
             _transitions_group.add_transition(
                 input_terms=(
                     VT_MID(VT_PENDING), AT_MID(VOID_STATE),
-                    ST_RIGHT(scan_state(
-                        clause_sat=False, formula_sat=formula_sat
-                    ))
+                    ST_RIGHT(
+                        ST_SPENT_TRUE if formula_sat else ST_SPENT_FALSE
+                    ),
+                    CF_MID(CF_SETTLED)
                 ),
                 output_tape_no=VERDICT_TAPE,
                 output_cell_state=VT_SAT if formula_sat else VT_UNSAT,
                 annotation=f'VERDICT_{int(formula_sat)}'
             )
+
+        # a variable that was given two different values cannot be
+        # evaluated at all, so it overrides whatever the scan computed
+        _transitions_group.add_transition(
+            input_terms=(VT_MID(VT_PENDING), CF_MID(CF_CONFLICT)),
+            output_tape_no=VERDICT_TAPE,
+            output_cell_state=VT_CONFLICTING,
+            annotation='VERDICT_CONFLICTING_ASSIGNMENT'
+        )
 
         _transitions_group.add_transition(
             input_terms=(VT_MID(VT_PENDING), CT_MID(CT_INVALID_INPUT)),
@@ -362,6 +597,9 @@ class ThreeSATAutomataBuilder(object):
 
     def build_transitions_group(self) -> PyMultiTapeTransitionsGroup:
         transitions_group = self.build_scan_transitions_group()
+        transitions_group = self.build_conflict_transitions_group(
+            transitions_group=transitions_group
+        )
         transitions_group = self.build_verdict_transitions_group(
             transitions_group=transitions_group
         )
@@ -467,16 +705,70 @@ def parse_3sat_equation(equation: str) -> Parsed3SAT | None:
     return Parsed3SAT(clauses=tuple(clauses))
 
 
-def parse_assignment(assignment: str) -> dict[str, bool] | None:
+@dataclass(frozen=True)
+class ParsedAssignment(object):
+    """
+    Every (variable, value) pair an assignment text consists of, in the
+    order they were given.
+
+    A variable is allowed to be named more than once: rejecting that at
+    parse time would hide the contradiction from the automata, which is
+    what has to decide whether the assignment is usable at all.
+    """
+    pairs: tuple[tuple[str, bool], ...]
+
+    @property
+    def variable_names(self) -> tuple[str, ...]:
+        return tuple(sorted({variable for variable, _ in self.pairs}))
+
+    def occurrences(self, variable: str) -> tuple[bool, ...]:
+        """
+        :param variable:
+        :return:
+        every value given for the variable, in the order they were given
+        """
+        values = tuple(
+            value for name, value in self.pairs if name == variable
+        )
+        assert values, variable
+        return values
+
+    def is_conflicting(self, variable: str) -> bool:
+        """
+        :param variable:
+        :return:
+        whether the variable was given two different values
+        """
+        return len(set(self.occurrences(variable))) > 1
+
+    @property
+    def conflicting_variables(self) -> tuple[str, ...]:
+        return tuple(
+            variable for variable in self.variable_names
+            if self.is_conflicting(variable)
+        )
+
+    def __contains__(self, variable: str) -> bool:
+        return any(name == variable for name, _ in self.pairs)
+
+    def __getitem__(self, variable: str) -> bool:
+        return self.occurrences(variable)[0]
+
+
+def parse_assignment(assignment: str) -> ParsedAssignment | None:
     """
     Parse assignment text:
     x1=1,x2=0,x3=true
+
+    Naming the same variable twice is accepted here, because deciding
+    whether the resulting assignment is usable is the job of the automata
+    rules that check the assignment replication, not of the parser.
     """
     raw_assignment = assignment.strip()
     if not raw_assignment:
         return None
 
-    mapping: dict[str, bool] = {}
+    parsed_pairs: list[tuple[str, bool]] = []
     pairs = raw_assignment.split(',')
 
     for pair in pairs:
@@ -488,20 +780,18 @@ def parse_assignment(assignment: str) -> dict[str, bool] | None:
 
         if not _VAR_NAME_RE.match(variable):
             return None
-        if variable in mapping:
-            return None
 
         if value in ('1', 'true', 't'):
-            mapping[variable] = True
+            parsed_pairs.append((variable, True))
         elif value in ('0', 'false', 'f'):
-            mapping[variable] = False
+            parsed_pairs.append((variable, False))
         else:
             return None
 
-    if not mapping:
+    if not parsed_pairs:
         return None
 
-    return mapping
+    return ParsedAssignment(pairs=tuple(parsed_pairs))
 
 
 @dataclass(frozen=True)
@@ -509,20 +799,28 @@ class ThreeSATEncoding(object):
     """
     Tape data encoding of a formula and assignment pair, laid out as one
     contiguous clause block per clause, where every clause block holds one
-    cell per variable of the formula
+    cell per variable of the formula, plus the same assignment replication
+    laid out with one contiguous group per variable on the conflict tape
     """
     num_clauses: int
     num_variables: int
     literal_states: tuple[TapeCellState, ...]
     assignment_states: tuple[TapeCellState, ...]
+    conflict_states: tuple[TapeCellState, ...]
+    conflicting_variables: tuple[str, ...] = ()
 
     @property
     def num_cells(self) -> int:
         return self.num_clauses * self.num_variables
 
+    @property
+    def num_conflict_cells(self) -> int:
+        return len(self.conflict_states)
+
+
 
 def encode_3sat(
-    parsed_equation: Parsed3SAT, assignment: dict[str, bool]
+    parsed_equation: Parsed3SAT, assignment: ParsedAssignment
 ) -> ThreeSATEncoding | None:
     """
     Encode a formula and assignment pair into clause block tape data
@@ -543,16 +841,30 @@ def encode_3sat(
         for index, variable_name in enumerate(variable_names)
     }
 
+    # a variable that was given more than one value has no single value to
+    # put in a cell, so its occurrences are spread over the clause blocks
+    # instead, which is what tells the consistency check that they disagree
+    occurrences = {
+        variable_name: assignment.occurrences(variable_name)
+        for variable_name in variable_names
+    }
+
     literal_states = [VOID_STATE] * (num_clauses * num_variables)
     assignment_states = [VOID_STATE] * (num_clauses * num_variables)
+    conflict_states: list[TapeCellState] = []
+    conflicting_variables = tuple(
+        variable_name for variable_name in variable_names
+        if assignment.is_conflicting(variable_name)
+    )
 
     for clause_no, clause in enumerate(parsed_equation.clauses):
         block_start = clause_no * num_variables
 
         for variable_name in variable_names:
             cell_no = block_start + variable_positions[variable_name]
+            values = occurrences[variable_name]
             assignment_states[cell_no] = (
-                AT_TRUE if assignment[variable_name] else AT_FALSE
+                AT_TRUE if values[clause_no % len(values)] else AT_FALSE
             )
 
         for literal in clause:
@@ -566,10 +878,26 @@ def encode_3sat(
                 # the variable occurs both negated and un-negated
                 literal_states[cell_no] = LT_EITHER
 
+    for variable_name in variable_names:
+        values = occurrences[variable_name]
+
+        # one cell per clause block, so that a value that disagrees with
+        # the value of the same variable in another block has a neighbour
+        # to disagree with; naming a variable more often than there are
+        # clauses must not let an occurrence escape the check
+        group_size = max(num_clauses, len(values))
+        for occurrence_no in range(group_size):
+            conflict_states.append(conflict_cell_state(
+                assigned=values[occurrence_no % len(values)],
+                is_group_start=occurrence_no == 0
+            ))
+
     return ThreeSATEncoding(
         num_clauses=num_clauses, num_variables=num_variables,
         literal_states=tuple(literal_states),
-        assignment_states=tuple(assignment_states)
+        assignment_states=tuple(assignment_states),
+        conflict_states=tuple(conflict_states),
+        conflicting_variables=conflicting_variables
     )
 
 
@@ -616,7 +944,7 @@ class ThreeSATAutomataRunner(object):
         self.multi_tape_automata.init_tapes(
             tape_nos=[
                 LITERALS_TAPE, ASSIGNMENTS_TAPE, CLAUSES_TAPE,
-                SCAN_TAPE, VERDICT_TAPE
+                SCAN_TAPE, VERDICT_TAPE, CONFLICT_TAPE
             ]
         )
         self._initialize_tapes()
@@ -657,18 +985,36 @@ class ThreeSATAutomataRunner(object):
             if cell_no % encoding.num_variables == 0:
                 self._write_cell(position, CLAUSES_TAPE, CT_CLAUSE_START)
 
+        # the assignment replication again, but grouped per variable so
+        # that copies of the same variable end up next to each other
+        for cell_no, conflict_state in enumerate(encoding.conflict_states):
+            self._write_cell(
+                DATA_START_POSITION + cell_no, CONFLICT_TAPE, conflict_state
+            )
+
     def get_required_timesteps(self) -> int:
         """
         :return:
         Number of timesteps (including the initial one) needed for the
-        automata to reach a verdict, which is one timestep to start the
-        scan, one timestep per remaining clause block cell to move the
-        scan accumulator leftwards, and one timestep to write the verdict
+        automata to reach a verdict.
+
+        The scan takes one timestep to start, one timestep per remaining
+        clause block cell to move the accumulator leftwards and one to
+        spend the cell it ends up on. The consistency sweep starts on the
+        rightmost cell at the same time as the scan and moves leftwards
+        one cell per timestep, so it needs one timestep per conflict tape
+        cell to reach the verdict cell. Whichever of the two finishes
+        last decides the verdict one timestep later, and since a variable
+        group holds at least one cell per clause block the sweep is
+        normally the slower of the two.
         """
         if self.encoding is None:
             return 2
 
-        return self.encoding.num_cells + 2
+        return max(
+            self.encoding.num_cells + 3,
+            self.encoding.num_conflict_cells + 3
+        )
 
     def step(self, verbose: bool = False) -> PyProcessStepResult:
         return self.multi_tape_automata.step(verbose=verbose)
@@ -693,13 +1039,34 @@ class ThreeSATAutomataRunner(object):
 
         return None
 
+    def read_conflict_state(
+        self, position: int = DATA_START_POSITION
+    ) -> TapeCellState:
+        """
+        :param position:
+        :return:
+        the conflict tape cell state at the position
+        """
+        conflict_tape = self.multi_tape_automata[CONFLICT_TAPE]
+        return TapeCellState(conflict_tape.read(position))
+
     def read_verdict(self) -> str:
         verdict_state = self.read_verdict_state()
         if verdict_state == VT_SAT:
             return 'SAT'
-        if verdict_state == VT_UNSAT:
+        if verdict_state in (VT_UNSAT, VT_CONFLICTING):
             return 'UNSAT'
         return 'PENDING'
+
+    @property
+    def conflicting_assignment(self) -> bool:
+        """
+        :return:
+        whether the automata rejected the assignment because it gives some
+        variable two different values, which is decided by the transition
+        rules and not by the parser
+        """
+        return self.read_verdict_state() == VT_CONFLICTING
 
     def is_satisfiable(self) -> bool:
         return self.read_verdict_state() == VT_SAT
